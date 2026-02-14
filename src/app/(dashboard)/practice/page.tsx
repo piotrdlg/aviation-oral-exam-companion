@@ -300,11 +300,17 @@ export default function PracticePage() {
           )}
         </div>
         <div className="flex items-center gap-3">
+          <span className="text-xs text-gray-500">
+            {exchangeCount} exchange{exchangeCount !== 1 ? 's' : ''}
+          </span>
           {voiceEnabled && (
             <span className="text-xs text-green-400">Voice On</span>
           )}
           <button
-            onClick={endSession}
+            onClick={() => {
+              if (exchangeCount > 0 && !confirm('End this session? Your progress will be saved.')) return;
+              endSession();
+            }}
             className="text-sm text-gray-400 hover:text-red-400 transition-colors"
           >
             End Session
@@ -313,8 +319,11 @@ export default function PracticePage() {
       </div>
 
       {error && (
-        <div className="bg-red-900/30 border border-red-800 rounded-lg p-3 mb-4 text-red-300 text-sm">
-          {error}
+        <div className="bg-red-900/30 border border-red-800 rounded-lg p-3 mb-4 text-red-300 text-sm flex items-center justify-between">
+          <span>{error}</span>
+          <button onClick={() => setError(null)} className="text-red-400 hover:text-red-300 ml-3">
+            &times;
+          </button>
         </div>
       )}
 

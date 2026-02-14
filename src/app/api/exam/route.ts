@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import {
   pickStartingTask,
   pickNextTask,
@@ -9,6 +10,12 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { action, history, taskData, studentAnswer, coveredTaskIds } = body as {
       action: 'start' | 'respond' | 'next-task';
