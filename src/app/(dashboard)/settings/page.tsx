@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
 type TestStatus = 'idle' | 'running' | 'pass' | 'fail';
@@ -9,6 +9,11 @@ interface DiagStep {
   label: string;
   status: TestStatus;
   detail: string;
+}
+
+interface AudioDevice {
+  deviceId: string;
+  label: string;
 }
 
 export default function SettingsPage() {
@@ -24,6 +29,8 @@ export default function SettingsPage() {
   ]);
   const [micLevel, setMicLevel] = useState(0);
   const [recognizedText, setRecognizedText] = useState('');
+  const [audioDevices, setAudioDevices] = useState<AudioDevice[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
   const streamRef = useRef<MediaStream | null>(null);
   const animRef = useRef<number>(0);
 
@@ -32,6 +39,33 @@ export default function SettingsPage() {
       setEmail(data.user?.email ?? null);
     });
   }, [supabase.auth]);
+
+  // Load available audio input devices
+  const loadDevices = useCallback(async () => {
+    try {
+      // Need to request permission first to get labeled devices
+      const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      tempStream.getTracks().forEach((t) => t.stop());
+
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const audioInputs = devices
+        .filter((d) => d.kind === 'audioinput')
+        .map((d) => ({
+          deviceId: d.deviceId,
+          label: d.label || `Microphone ${d.deviceId.slice(0, 8)}`,
+        }));
+      setAudioDevices(audioInputs);
+      if (audioInputs.length > 0 && !selectedDeviceId) {
+        setSelectedDeviceId(audioInputs[0].deviceId);
+      }
+    } catch {
+      // Permission denied or no devices — will be caught during diagnostics
+    }
+  }, [selectedDeviceId]);
+
+  useEffect(() => {
+    loadDevices();
+  }, [loadDevices]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -59,15 +93,24 @@ export default function SettingsPage() {
       { label: 'Speaker / TTS playback', status: 'idle', detail: '' },
     ]);
 
+    const deviceLabel = audioDevices.find((d) => d.deviceId === selectedDeviceId)?.label || 'default';
+
     // --- Step 1: Microphone access ---
-    updateStep(0, { status: 'running', detail: 'Requesting microphone permission...' });
-    let stream: MediaStream;
+    updateStep(0, { status: 'running', detail: `Requesting "${deviceLabel}"...` });
+
+    const audioConstraints: MediaTrackConstraints = selectedDeviceId
+      ? { deviceId: { exact: selectedDeviceId } }
+      : true;
+
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
       streamRef.current = stream;
 
-      // Show live mic level for 3 seconds
-      updateStep(0, { detail: 'Mic active — speak to see level meter...' });
+      // Report which device we actually got
+      const track = stream.getAudioTracks()[0];
+      const actualDevice = track?.label || 'Unknown device';
+      updateStep(0, { detail: `Using: ${actualDevice} — speak to see level meter...` });
+
       const audioCtx = new AudioContext();
       const source = audioCtx.createMediaStreamSource(stream);
       const analyser = audioCtx.createAnalyser();
@@ -93,12 +136,12 @@ export default function SettingsPage() {
           if (peakLevel > 5) {
             updateStep(0, {
               status: 'pass',
-              detail: `Microphone working (peak level: ${peakLevel}%)`,
+              detail: `${actualDevice} — working (peak level: ${peakLevel}%)`,
             });
           } else {
             updateStep(0, {
               status: 'fail',
-              detail: 'Microphone connected but no audio detected. Check that your mic is not muted.',
+              detail: `${actualDevice} — connected but no audio detected. Check that mic is not muted.`,
             });
           }
         }
@@ -113,36 +156,42 @@ export default function SettingsPage() {
         status: 'fail',
         detail: `Microphone access denied or unavailable: ${msg}`,
       });
-      // Don't return — continue to test remaining steps
     }
 
     // --- Step 2: Speech recognition ---
     updateStep(1, { status: 'running', detail: 'Checking browser support...' });
 
-    const SpeechRecognition =
+    const SpeechRecognitionAPI =
       typeof window !== 'undefined'
         ? window.SpeechRecognition || window.webkitSpeechRecognition
         : null;
 
-    if (!SpeechRecognition) {
+    if (!SpeechRecognitionAPI) {
       updateStep(1, {
         status: 'fail',
         detail: 'SpeechRecognition API not available. This feature requires Chrome or Edge.',
       });
     } else {
+      // Acquire a fresh stream with the selected device BEFORE starting recognition.
+      // This hints Chrome to route that device to SpeechRecognition.
+      let hintStream: MediaStream | null = null;
+      try {
+        hintStream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
+      } catch {
+        // If this fails, recognition will use Chrome's default mic
+      }
+
       updateStep(1, { detail: 'Say something (you have 6 seconds)...' });
 
       const transcript = await new Promise<string>((resolve) => {
-        const recognition = new SpeechRecognition();
+        const recognition = new SpeechRecognitionAPI();
         recognition.continuous = false;
         recognition.interimResults = true;
         recognition.lang = 'en-US';
         let lastTranscript = '';
-        let gotResult = false;
         let errorMsg = '';
 
         recognition.onresult = (event: SpeechRecognitionEvent) => {
-          gotResult = true;
           let text = '';
           for (let i = 0; i < event.results.length; i++) {
             text += event.results[i][0].transcript;
@@ -160,7 +209,6 @@ export default function SettingsPage() {
         };
 
         recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-          // Capture ALL errors for diagnostics (don't suppress no-speech)
           errorMsg = event.error;
           if (event.error !== 'no-speech' && event.error !== 'aborted') {
             resolve(`ERROR:${event.error}`);
@@ -169,7 +217,6 @@ export default function SettingsPage() {
 
         recognition.start();
 
-        // Auto-stop after 6 seconds
         setTimeout(() => {
           try {
             recognition.stop();
@@ -179,16 +226,15 @@ export default function SettingsPage() {
         }, 6000);
       });
 
-      // Clean up mic stream
-      streamRef.current?.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
+      // Clean up hint stream
+      hintStream?.getTracks().forEach((t) => t.stop());
 
       if (transcript.startsWith('ERROR:')) {
         const errType = transcript.replace('ERROR:', '');
         let helpText = '';
         switch (errType) {
           case 'no-speech':
-            helpText = 'No speech detected by Google servers. Your mic may work for recording but Chrome\'s speech service isn\'t receiving audio. Try: check Chrome mic settings (chrome://settings/content/microphone).';
+            helpText = `No speech detected by Google servers. The SpeechRecognition API may be using a different mic than selected. Check Chrome's mic setting: chrome://settings/content/microphone`;
             break;
           case 'audio-capture':
             helpText = 'Chrome could not capture audio. Another app may be using the microphone exclusively.';
@@ -214,10 +260,14 @@ export default function SettingsPage() {
       } else {
         updateStep(1, {
           status: 'fail',
-          detail: 'No speech detected and no error reported. The SpeechRecognition API started and stopped without receiving audio. Check that Chrome has the correct microphone selected (chrome://settings/content/microphone).',
+          detail: `No speech detected. The SpeechRecognition API may be using a different mic than "${deviceLabel}". Check Chrome's mic at: chrome://settings/content/microphone`,
         });
       }
     }
+
+    // Clean up any remaining mic stream
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
 
     // --- Step 3: TTS playback ---
     updateStep(2, { status: 'running', detail: 'Requesting TTS audio from server...' });
@@ -225,7 +275,7 @@ export default function SettingsPage() {
       const res = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: 'Voice diagnostics complete. Your microphone and speakers are working correctly.' }),
+        body: JSON.stringify({ text: 'This is the examiner voice. If you can hear this clearly, your speaker is working.' }),
       });
 
       if (!res.ok) {
@@ -233,7 +283,7 @@ export default function SettingsPage() {
         throw new Error(errData.error || `HTTP ${res.status}`);
       }
 
-      updateStep(2, { detail: 'Playing audio — you should hear the examiner voice...' });
+      updateStep(2, { detail: 'Playing audio — listen for the examiner voice...' });
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
@@ -252,7 +302,7 @@ export default function SettingsPage() {
 
       updateStep(2, {
         status: 'pass',
-        detail: 'TTS audio played successfully.',
+        detail: 'Audio played. If you heard the voice, speakers are working.',
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error';
@@ -312,6 +362,25 @@ export default function SettingsPage() {
           Test your microphone, speech recognition, and speaker to make sure voice mode works.
         </p>
 
+        {/* Microphone selector */}
+        {audioDevices.length > 0 && (
+          <div className="mb-5">
+            <label className="block text-sm text-gray-300 mb-1.5">Microphone</label>
+            <select
+              value={selectedDeviceId}
+              onChange={(e) => setSelectedDeviceId(e.target.value)}
+              disabled={diagRunning}
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            >
+              {audioDevices.map((d) => (
+                <option key={d.deviceId} value={d.deviceId}>
+                  {d.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <div className="space-y-4 mb-5">
           {steps.map((step, i) => (
             <div key={i} className="flex items-start gap-3">
@@ -352,6 +421,11 @@ export default function SettingsPage() {
         >
           {diagRunning ? 'Running...' : 'Run Voice Test'}
         </button>
+
+        <p className="text-xs text-gray-600 mt-3">
+          Note: Speech recognition uses Chrome&apos;s built-in mic setting, which may differ from the selection above.
+          Check chrome://settings/content/microphone if recognition fails.
+        </p>
       </div>
     </div>
   );
