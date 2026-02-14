@@ -88,10 +88,18 @@ export default function PracticePage() {
     recognition.onstart = () => setIsListening(true);
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = Array.from(event.results)
-        .map((result) => result[0].transcript)
-        .join('');
-      setInput(transcript);
+      let interimTranscript = '';
+      let finalTranscript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        const result = event.results[i];
+        if (result.isFinal) {
+          finalTranscript += result[0].transcript;
+        } else {
+          interimTranscript += result[0].transcript;
+        }
+      }
+      // Show interim results while speaking, final result when done
+      setInput(finalTranscript || interimTranscript);
     };
 
     recognition.onend = () => {
