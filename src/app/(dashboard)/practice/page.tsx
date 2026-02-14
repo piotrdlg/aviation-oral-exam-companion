@@ -110,7 +110,7 @@ export default function PracticePage() {
     }
 
     const recognition = new SpeechRecognition();
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
@@ -127,18 +127,31 @@ export default function PracticePage() {
           interimTranscript += result[0].transcript;
         }
       }
-      // Show interim results while speaking, final result when done
       setInput(finalTranscript || interimTranscript);
     };
 
     recognition.onend = () => {
-      setIsListening(false);
+      // In continuous mode, Chrome may stop unexpectedly (network blip, timeout).
+      // Restart automatically if the user hasn't clicked stop.
+      if (recognitionRef.current === recognition) {
+        try {
+          recognition.start();
+        } catch {
+          // Already stopped or another instance running — let it go
+          setIsListening(false);
+        }
+      } else {
+        setIsListening(false);
+      }
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      setIsListening(false);
-      if (event.error !== 'no-speech') {
-        console.error('Speech recognition error:', event.error);
+      if (event.error === 'aborted' || event.error === 'no-speech') return;
+      console.error('Speech recognition error:', event.error);
+      // For fatal errors, stop listening
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        recognitionRef.current = null;
+        setIsListening(false);
       }
     };
 
@@ -147,7 +160,9 @@ export default function PracticePage() {
   }
 
   function stopListening() {
-    recognitionRef.current?.stop();
+    const recognition = recognitionRef.current;
+    recognitionRef.current = null; // Signal onend not to restart
+    recognition?.stop();
     setIsListening(false);
   }
 
