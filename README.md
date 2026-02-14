@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Aviation Oral Exam Companion
+
+A voice-first AI oral exam simulator for Private Pilot checkride preparation. An AI examiner follows the FAA Airman Certification Standards (ACS) to ask questions, assess answers, and naturally transition between topics — just like a real Designated Pilot Examiner (DPE).
+
+## Features
+
+- **ACS-aligned questions** covering 9 oral-exam-relevant areas from FAA-S-ACS-6C
+- **Voice mode** with speech-to-text (Web Speech API) and text-to-speech (OpenAI TTS)
+- **Adaptive examiner** that probes weak areas with follow-up questions
+- **Session tracking** with progress dashboard showing exchanges and ACS coverage
+- **Text mode** for typing answers when voice isn't available
+
+## Tech Stack
+
+- **Next.js 16** (App Router, TypeScript, Tailwind CSS v4)
+- **Supabase** (PostgreSQL, Auth, Row-Level Security)
+- **Claude Sonnet** (examiner persona + answer assessment)
+- **OpenAI TTS** (text-to-speech for examiner voice)
+- **Vitest** (unit tests)
+- **Vercel** (deployment)
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 18+
+- Supabase project
+- Anthropic API key
+- OpenAI API key
+
+### Setup
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/piotrdlg/aviation-oral-exam-companion.git
+   cd aviation-oral-exam-companion
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Copy environment variables:
+   ```bash
+   cp .env.example .env.local
+   ```
+
+4. Fill in your API keys in `.env.local`
+
+5. Link and push the database schema:
+   ```bash
+   npx supabase link --project-ref YOUR_PROJECT_REF
+   npx supabase db push --linked
+   ```
+
+6. Run the dev server:
+   ```bash
+   npm run dev
+   ```
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Production build |
+| `npm test` | Run unit tests |
+| `npm run lint` | Run ESLint |
+
+## Architecture
+
+```
+src/
+├── app/
+│   ├── (auth)/          # Login, signup pages
+│   ├── (dashboard)/     # Practice, progress, settings
+│   ├── api/
+│   │   ├── exam/        # Exam engine API (start, respond, next-task)
+│   │   ├── session/     # Session CRUD
+│   │   └── tts/         # Text-to-speech proxy
+│   ├── error.tsx        # Global error boundary
+│   └── not-found.tsx    # 404 page
+├── lib/
+│   ├── exam-engine.ts   # Claude API integration (Supabase + Anthropic)
+│   ├── exam-logic.ts    # Pure logic (task filtering, prompt building)
+│   └── supabase/        # Supabase client helpers
+└── types/
+    └── speech.d.ts      # Web Speech API type declarations
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ACS Coverage
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The exam covers these Private Pilot ACS areas during oral examination:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Area | Topic |
+|------|-------|
+| I | Preflight Preparation |
+| II | Preflight Procedures |
+| III | Airport and Seaplane Base Operations |
+| VI | Navigation |
+| VII | Slow Flight and Stalls (knowledge/risk) |
+| VIII | Basic Instrument Maneuvers (knowledge/risk) |
+| IX | Emergency Operations |
+| XI | Night Operations |
+| XII | Postflight Procedures |
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Areas IV (Takeoffs/Landings), V (Performance Maneuvers), and X (Multiengine) are excluded as they are flight-skill-only areas.
