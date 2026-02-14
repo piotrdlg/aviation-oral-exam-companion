@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# large source PDFs (keep ACS only)
+sources/afh/
+sources/phak/
+
+# supabase temp
+supabase/.temp/
