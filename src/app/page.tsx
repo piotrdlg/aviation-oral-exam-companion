@@ -40,6 +40,12 @@ export default function Home() {
             <p className="text-gray-400 text-sm">The AI examiner follows up on weak areas and navigates between topics naturally.</p>
           </div>
         </div>
+
+        <p className="mt-12 text-xs text-gray-600 max-w-md mx-auto leading-relaxed">
+          For study purposes only. Not a substitute for instruction from a certificated
+          flight instructor (CFI) or an actual DPE checkride. Always verify information
+          against current FAA publications.
+        </p>
       </div>
     </div>
   );

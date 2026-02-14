@@ -41,9 +41,12 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# large source PDFs (keep ACS only)
-sources/afh/
-sources/phak/
+# large source PDFs (ingested via script, not needed in repo)
+sources/
+!sources/README.md
+
+# scripts artifacts
+scripts/__pycache__/
 
 # supabase temp
 supabase/.temp/

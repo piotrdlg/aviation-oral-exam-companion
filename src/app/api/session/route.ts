@@ -13,12 +13,16 @@ export async function POST(request: NextRequest) {
   const { action } = body;
 
   if (action === 'create') {
+    const { study_mode, difficulty_preference, selected_areas } = body;
     const { data, error } = await supabase
       .from('exam_sessions')
       .insert({
         user_id: user.id,
         rating: 'private',
         status: 'active',
+        study_mode: study_mode || 'cross_acs',
+        difficulty_preference: difficulty_preference || 'mixed',
+        selected_areas: selected_areas || [],
       })
       .select()
       .single();
@@ -52,7 +56,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -60,6 +64,24 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const { searchParams } = new URL(request.url);
+  const action = searchParams.get('action');
+
+  // Element scores endpoint
+  if (action === 'element-scores') {
+    const { data, error } = await supabase.rpc('get_element_scores', {
+      p_user_id: user.id,
+      p_rating: 'private',
+    });
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ scores: data || [] });
+  }
+
+  // Default: list sessions
   const { data, error } = await supabase
     .from('exam_sessions')
     .select('*')

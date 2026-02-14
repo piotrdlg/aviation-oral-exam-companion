@@ -1,10 +1,27 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import SessionConfig, { type SessionConfigData } from './components/SessionConfig';
+import type { PlannerState, SessionConfig as SessionConfigType } from '@/types/database';
+
+interface Source {
+  doc_abbreviation: string;
+  heading: string | null;
+  content: string;
+  page_start: number | null;
+}
+
+interface Assessment {
+  score: 'satisfactory' | 'unsatisfactory' | 'partial';
+  feedback: string;
+  misconceptions: string[];
+}
 
 interface Message {
   role: 'examiner' | 'student';
   text: string;
+  assessment?: Assessment;
+  sources?: Source[];
 }
 
 interface TaskData {
@@ -29,6 +46,11 @@ export default function PracticePage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [exchangeCount, setExchangeCount] = useState(0);
   const [coveredTaskIds, setCoveredTaskIds] = useState<string[]>([]);
+  const [currentElement, setCurrentElement] = useState<string | null>(null);
+  const [plannerState, setPlannerState] = useState<PlannerState | null>(null);
+  const [sessionConfig, setSessionConfig] = useState<SessionConfigType | null>(null);
+  // Track per-task assessment scores (ref avoids stale closures in fire-and-forget fetches)
+  const taskScoresRef = useRef<Record<string, { score: 'satisfactory' | 'unsatisfactory' | 'partial'; attempts: number }>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -122,30 +144,53 @@ export default function PracticePage() {
     setIsListening(false);
   }
 
-  async function startSession() {
+  async function startSession(configData: SessionConfigData) {
     setSessionActive(true);
     setLoading(true);
     setError(null);
     setMessages([]);
     setExchangeCount(0);
     setCoveredTaskIds([]);
+    setCurrentElement(null);
+    setPlannerState(null);
+    taskScoresRef.current = {};
+    setVoiceEnabled(configData.voiceEnabled);
+
+    // Build session config for the planner
+    const config: SessionConfigType = {
+      studyMode: configData.studyMode,
+      difficulty: configData.difficulty,
+      selectedAreas: configData.selectedAreas,
+    };
+    setSessionConfig(config);
 
     try {
       // Create a session record in the database
       const sessionRes = await fetch('/api/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'create' }),
+        body: JSON.stringify({
+          action: 'create',
+          study_mode: configData.studyMode,
+          difficulty_preference: configData.difficulty,
+          selected_areas: configData.selectedAreas,
+        }),
       });
       const sessionData = await sessionRes.json();
+      let newSessionId: string | null = null;
       if (sessionRes.ok && sessionData.session) {
-        setSessionId(sessionData.session.id);
+        newSessionId = sessionData.session.id;
+        setSessionId(newSessionId);
       }
 
       const res = await fetch('/api/exam', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'start' }),
+        body: JSON.stringify({
+          action: 'start',
+          sessionId: newSessionId,
+          sessionConfig: config,
+        }),
       });
 
       const data = await res.json();
@@ -155,11 +200,17 @@ export default function PracticePage() {
       if (data.taskId) {
         setCoveredTaskIds([data.taskId]);
       }
+      if (data.elementCode) {
+        setCurrentElement(data.elementCode);
+      }
+      if (data.plannerState) {
+        setPlannerState(data.plannerState);
+      }
       const examinerMsg = data.examinerMessage;
       setMessages([{ role: 'examiner', text: examinerMsg }]);
 
       // Speak the opening question if voice is enabled
-      if (voiceEnabled) {
+      if (configData.voiceEnabled) {
         speakText(examinerMsg);
       }
     } catch (err) {
@@ -186,6 +237,7 @@ export default function PracticePage() {
           taskData,
           history: messages,
           studentAnswer,
+          sessionId,
         }),
       });
 
@@ -195,13 +247,55 @@ export default function PracticePage() {
       const examinerMsg = data.examinerMessage;
       const newExchangeCount = exchangeCount + 1;
       setExchangeCount(newExchangeCount);
-      setMessages((prev) => [
-        ...prev,
-        { role: 'examiner', text: examinerMsg },
-      ]);
+
+      // Attach assessment and sources to the student's message for display
+      if (data.assessment) {
+        setMessages((prev) => {
+          const updated = [...prev];
+          // Find the last student message and attach assessment + sources
+          for (let i = updated.length - 1; i >= 0; i--) {
+            if (updated[i].role === 'student') {
+              updated[i] = {
+                ...updated[i],
+                assessment: data.assessment,
+                sources: data.assessment.rag_chunks?.map((c: { doc_abbreviation: string; heading: string | null; content: string; page_start: number | null }) => ({
+                  doc_abbreviation: c.doc_abbreviation,
+                  heading: c.heading,
+                  content: c.content,
+                  page_start: c.page_start,
+                })),
+              };
+              break;
+            }
+          }
+          return [...updated, { role: 'examiner', text: examinerMsg }];
+        });
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          { role: 'examiner', text: examinerMsg },
+        ]);
+      }
+
+      // Track assessment score per task
+      if (data.assessment?.score && data.taskId) {
+        const prev = taskScoresRef.current[data.taskId];
+        taskScoresRef.current[data.taskId] = {
+          score: data.assessment.score,
+          attempts: (prev?.attempts || 0) + 1,
+        };
+      }
+
+      // Accumulate covered task IDs
+      if (data.taskId) {
+        setCoveredTaskIds((prev) =>
+          prev.includes(data.taskId) ? prev : [...prev, data.taskId]
+        );
+      }
 
       // Update session in database
       if (sessionId) {
+        const scores = taskScoresRef.current;
         fetch('/api/session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -209,7 +303,11 @@ export default function PracticePage() {
             action: 'update',
             sessionId,
             exchange_count: newExchangeCount,
-            acs_tasks_covered: coveredTaskIds.map((id) => ({ task_id: id, status: 'covered' })),
+            acs_tasks_covered: Object.entries(scores).map(([id, s]) => ({
+              task_id: id,
+              status: s.score,
+              attempts: s.attempts,
+            })),
           }),
         }).catch(() => {});
       }
@@ -241,7 +339,11 @@ export default function PracticePage() {
             sessionId,
             status: 'completed',
             exchange_count: exchangeCount,
-            acs_tasks_covered: coveredTaskIds.map((id) => ({ task_id: id, status: 'covered' })),
+            acs_tasks_covered: Object.entries(taskScoresRef.current).map(([id, s]) => ({
+              task_id: id,
+              status: s.score,
+              attempts: s.attempts,
+            })),
           }),
         });
       } catch {
@@ -257,6 +359,10 @@ export default function PracticePage() {
     setSessionId(null);
     setExchangeCount(0);
     setCoveredTaskIds([]);
+    setCurrentElement(null);
+    setPlannerState(null);
+    setSessionConfig(null);
+    taskScoresRef.current = {};
     setIsListening(false);
     setIsSpeaking(false);
   }
@@ -265,37 +371,18 @@ export default function PracticePage() {
     return (
       <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold text-white mb-2">Practice Session</h1>
-        <p className="text-gray-400 mb-8">
+        <p className="text-gray-400 mb-6">
           Start an oral exam practice session. The AI examiner will ask you questions
           based on the FAA Private Pilot ACS.
         </p>
 
-        <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-          <h2 className="text-lg font-medium text-white mb-4">New Session</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm text-gray-300 mb-1">Rating</label>
-              <select className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="private">Private Pilot</option>
-              </select>
-            </div>
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={voiceEnabled}
-                onChange={(e) => setVoiceEnabled(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500"
-              />
-              <span className="text-sm text-gray-300">Enable voice mode (mic + speaker)</span>
-            </label>
-            <button
-              onClick={startSession}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-            >
-              Start Practice Exam
-            </button>
-          </div>
+        <div className="bg-amber-900/20 border border-amber-800/50 rounded-lg p-3 mb-6 text-amber-200 text-xs leading-relaxed">
+          For study purposes only. This is not a substitute for instruction from a certificated
+          flight instructor (CFI) or an actual DPE checkride. Always verify information against
+          current FAA publications.
         </div>
+
+        <SessionConfig onStart={startSession} loading={loading} />
       </div>
     );
   }
@@ -308,6 +395,9 @@ export default function PracticePage() {
           {taskData && (
             <p className="text-sm text-gray-500 mt-1">
               {taskData.area} &gt; {taskData.task}
+              {currentElement && (
+                <span className="ml-2 font-mono text-xs text-gray-600">[{currentElement}]</span>
+              )}
             </p>
           )}
         </div>
@@ -356,6 +446,45 @@ export default function PracticePage() {
                 {msg.role === 'examiner' ? 'DPE Examiner' : 'You'}
               </p>
               <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+
+              {/* Assessment badge */}
+              {msg.assessment && (
+                <div className="mt-2 pt-2 border-t border-white/10">
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    msg.assessment.score === 'satisfactory'
+                      ? 'bg-green-900/40 text-green-400'
+                      : msg.assessment.score === 'unsatisfactory'
+                      ? 'bg-red-900/40 text-red-400'
+                      : 'bg-yellow-900/40 text-yellow-400'
+                  }`}>
+                    {msg.assessment.score}
+                  </span>
+                  {msg.assessment.feedback && (
+                    <p className="text-xs opacity-70 mt-1">{msg.assessment.feedback}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Source citations */}
+              {msg.sources && msg.sources.length > 0 && (
+                <details className="mt-2 pt-2 border-t border-white/10">
+                  <summary className="text-xs text-blue-300 cursor-pointer hover:text-blue-200">
+                    Show FAA Sources ({msg.sources.length})
+                  </summary>
+                  <div className="mt-1.5 space-y-1">
+                    {msg.sources.map((src, j) => (
+                      <div key={j} className="text-xs bg-black/20 rounded p-2">
+                        <p className="font-medium text-blue-200">
+                          {src.doc_abbreviation.toUpperCase()}
+                          {src.heading ? ` — ${src.heading}` : ''}
+                          {src.page_start ? ` (p.${src.page_start})` : ''}
+                        </p>
+                        <p className="opacity-60 mt-0.5 line-clamp-2">{src.content.slice(0, 200)}...</p>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              )}
             </div>
           </div>
         ))}

@@ -10,6 +10,12 @@ export type RelationType =
 export type AssessmentScore = 'satisfactory' | 'unsatisfactory' | 'partial';
 export type WeakAreaSeverity = 'critical' | 'moderate' | 'minor';
 export type Rating = 'private' | 'instrument' | 'commercial' | 'atp';
+export type ElementType = 'knowledge' | 'risk' | 'skill';
+export type Difficulty = 'easy' | 'medium' | 'hard';
+export type StudyMode = 'linear' | 'cross_acs' | 'weak_areas';
+export type DifficultyPreference = Difficulty | 'mixed';
+export type DocumentType = 'handbook' | 'ac' | 'cfr' | 'aim' | 'other';
+export type TagType = 'attempt' | 'mention';
 
 export interface Concept {
   id: string;
@@ -55,6 +61,18 @@ export interface AcsTask {
   skill_elements: Record<string, string>[] | null;
 }
 
+export interface AcsElement {
+  code: string;
+  task_id: string;
+  element_type: ElementType;
+  short_code: string;
+  description: string;
+  order_index: number;
+  difficulty_default: Difficulty;
+  weight: number;
+  created_at: string;
+}
+
 export interface ExamSession {
   id: string;
   user_id: string;
@@ -62,10 +80,14 @@ export interface ExamSession {
   started_at: string;
   ended_at: string | null;
   status: 'active' | 'paused' | 'completed';
+  study_mode: StudyMode;
+  difficulty_preference: DifficultyPreference;
+  selected_areas: string[];
   acs_tasks_covered: AcsTaskCoverage[];
   concept_path: ConceptPathEntry[];
   weak_areas: WeakArea[];
   metadata: Record<string, unknown>;
+  exchange_count: number;
 }
 
 export interface AcsTaskCoverage {
@@ -103,6 +125,87 @@ export interface AssessmentResult {
   feedback: string;
   misconceptions: string[];
   follow_up_needed: boolean;
+}
+
+export interface SourceDocument {
+  id: string;
+  title: string;
+  faa_number: string | null;
+  abbreviation: string;
+  document_type: DocumentType;
+  chapter_number: number | null;
+  chapter_title: string | null;
+  file_name: string;
+  total_pages: number | null;
+  storage_path: string | null;
+  created_at: string;
+}
+
+export interface SourceChunk {
+  id: string;
+  document_id: string;
+  chunk_index: number;
+  heading: string | null;
+  content: string;
+  content_hash: string | null;
+  page_start: number | null;
+  page_end: number | null;
+  embedding: number[] | null;
+  embedding_model: string;
+  embedding_dim: number;
+  embedding_status: EmbeddingStatus;
+  extraction_version: string;
+  created_at: string;
+}
+
+export interface ElementAttempt {
+  id: string;
+  session_id: string;
+  transcript_id: string;
+  element_code: string;
+  tag_type: TagType;
+  score: AssessmentScore | null;
+  is_primary: boolean;
+  confidence: number | null;
+  created_at: string;
+}
+
+export interface TranscriptCitation {
+  id: string;
+  transcript_id: string;
+  chunk_id: string;
+  rank: number;
+  score: number | null;
+  snippet: string | null;
+  created_at: string;
+}
+
+export interface ElementScore {
+  element_code: string;
+  task_id: string;
+  area: string;
+  element_type: ElementType;
+  difficulty_default: Difficulty;
+  total_attempts: number;
+  satisfactory_count: number;
+  partial_count: number;
+  unsatisfactory_count: number;
+  latest_score: AssessmentScore | null;
+  latest_attempt_at: string | null;
+}
+
+export interface PlannerState {
+  version: number;
+  queue: string[];
+  cursor: number;
+  recent: string[];
+  attempts: Record<string, number>;
+}
+
+export interface SessionConfig {
+  studyMode: StudyMode;
+  difficulty: DifficultyPreference;
+  selectedAreas: string[];
 }
 
 export interface LatencyLog {

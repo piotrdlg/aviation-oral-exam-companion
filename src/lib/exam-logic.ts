@@ -1,7 +1,9 @@
 /**
- * Pure logic for ACS task filtering — no external dependencies.
+ * Pure logic for ACS task filtering and exam planning — no external dependencies.
  * Separated from exam-engine.ts for testability.
  */
+
+import type { AcsElement as AcsElementDB, ElementScore, PlannerState, SessionConfig, Difficulty } from '@/types/database';
 
 export interface AcsElement {
   code: string;
@@ -72,13 +74,20 @@ export function selectRandomTask(
 /**
  * Build the DPE examiner system prompt for a given task.
  */
-export function buildSystemPrompt(task: AcsTaskRow): string {
+export function buildSystemPrompt(task: AcsTaskRow, targetDifficulty?: Difficulty): string {
   const knowledgeList = task.knowledge_elements
     .map((e) => `  - ${e.code}: ${e.description}`)
     .join('\n');
   const riskList = task.risk_management_elements
     .map((e) => `  - ${e.code}: ${e.description}`)
     .join('\n');
+
+  const difficultyInstruction = targetDifficulty
+    ? `\nDIFFICULTY LEVEL: ${targetDifficulty.toUpperCase()}
+${targetDifficulty === 'easy' ? '- Ask straightforward recall/definition questions.' :
+  targetDifficulty === 'medium' ? '- Ask application and scenario-based questions.' :
+  '- Ask complex edge cases, \"what if\" chains, and regulation nuances.'}`
+    : '';
 
   return `You are a Designated Pilot Examiner (DPE) conducting an FAA Private Pilot oral examination. You are professional, thorough, and encouraging — firm but fair.
 
@@ -89,6 +98,7 @@ ${knowledgeList}
 
 RISK MANAGEMENT ELEMENTS TO COVER:
 ${riskList}
+${difficultyInstruction}
 
 INSTRUCTIONS:
 1. Ask ONE clear question at a time about a specific knowledge or risk management element.
@@ -104,4 +114,169 @@ INSTRUCTIONS:
 6. When you've covered enough elements, naturally transition by saying something like "Good, let's move on to..." or end the session.
 
 IMPORTANT: Respond ONLY as the examiner. Do not include any JSON, metadata, or system text. Just speak naturally as the DPE would.`;
+}
+
+// ================================================================
+// Planner Pure Functions
+// ================================================================
+
+/**
+ * Build an ordered element queue based on session configuration.
+ *
+ * - linear: elements sorted by area/task/order_index
+ * - cross_acs: shuffled randomly
+ * - weak_areas: weighted random favoring weak elements
+ */
+export function buildElementQueue(
+  elements: AcsElementDB[],
+  config: SessionConfig,
+  weakStats?: ElementScore[]
+): string[] {
+  let filtered = elements;
+
+  // Filter by selected areas (if any)
+  if (config.selectedAreas.length > 0) {
+    filtered = filtered.filter((el) => {
+      // el.code format: "PA.I.A.K1" — area is the Roman numeral
+      const parts = el.code.split('.');
+      if (parts.length >= 2) {
+        return config.selectedAreas.includes(parts[1]);
+      }
+      return false;
+    });
+  }
+
+  // Filter by difficulty
+  if (config.difficulty !== 'mixed') {
+    filtered = filtered.filter((el) => el.difficulty_default === config.difficulty);
+  }
+
+  // Filter to oral-exam-relevant areas only (K and R elements, not S)
+  filtered = filtered.filter((el) => el.element_type !== 'skill');
+
+  const codes = filtered.map((el) => el.code);
+
+  switch (config.studyMode) {
+    case 'linear':
+      // Already in order_index order from DB
+      return codes;
+
+    case 'cross_acs':
+      // Fisher-Yates shuffle
+      return shuffleArray(codes);
+
+    case 'weak_areas': {
+      if (!weakStats || weakStats.length === 0) {
+        return shuffleArray(codes);
+      }
+      // Weight by weakness: unsatisfactory > partial > untouched > satisfactory
+      return weightedShuffle(codes, weakStats);
+    }
+
+    default:
+      return codes;
+  }
+}
+
+/**
+ * Pick the next element from the planner queue.
+ */
+export function pickNextElement(
+  state: PlannerState,
+  config: SessionConfig
+): { elementCode: string; updatedState: PlannerState } | null {
+  if (state.queue.length === 0) return null;
+
+  // Find next element not in recent list (avoid repetition)
+  let candidate: string | null = null;
+  let cursor = state.cursor;
+
+  for (let i = 0; i < state.queue.length; i++) {
+    const idx = (cursor + i) % state.queue.length;
+    const code = state.queue[idx];
+    if (!state.recent.includes(code)) {
+      candidate = code;
+      cursor = (idx + 1) % state.queue.length;
+      break;
+    }
+  }
+
+  // If all elements are in recent (short queue), just take next
+  if (!candidate) {
+    candidate = state.queue[cursor % state.queue.length];
+    cursor = (cursor + 1) % state.queue.length;
+  }
+
+  const updatedRecent = [...state.recent, candidate].slice(-5); // Keep last 5
+
+  return {
+    elementCode: candidate,
+    updatedState: {
+      ...state,
+      cursor,
+      recent: updatedRecent,
+      attempts: {
+        ...state.attempts,
+        [candidate]: (state.attempts[candidate] || 0) + 1,
+      },
+      version: state.version + 1,
+    },
+  };
+}
+
+/**
+ * Create the initial planner state.
+ */
+export function initPlannerState(queue: string[]): PlannerState {
+  return {
+    version: 0,
+    queue,
+    cursor: 0,
+    recent: [],
+    attempts: {},
+  };
+}
+
+// ================================================================
+// Utility Functions
+// ================================================================
+
+function shuffleArray<T>(arr: T[]): T[] {
+  const shuffled = [...arr];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+function weightedShuffle(codes: string[], stats: ElementScore[]): string[] {
+  const statsMap = new Map(stats.map((s) => [s.element_code, s]));
+
+  // Assign weights based on weakness
+  const weighted = codes.map((code) => {
+    const stat = statsMap.get(code);
+    let weight: number;
+
+    if (!stat || stat.total_attempts === 0) {
+      weight = 3; // Untouched — high priority
+    } else if (stat.latest_score === 'unsatisfactory') {
+      weight = 5; // Worst — highest priority
+    } else if (stat.latest_score === 'partial') {
+      weight = 4;
+    } else {
+      weight = 1; // Satisfactory — lowest priority
+    }
+
+    return { code, weight };
+  });
+
+  // Weighted shuffle: sort by random value scaled by weight
+  weighted.sort((a, b) => {
+    const ra = Math.random() * a.weight;
+    const rb = Math.random() * b.weight;
+    return rb - ra;
+  });
+
+  return weighted.map((w) => w.code);
 }

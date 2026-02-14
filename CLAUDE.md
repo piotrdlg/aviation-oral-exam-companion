@@ -227,4 +227,93 @@ npm run test:watch  # Watch mode
 
 ---
 
+## Obsidian Knowledge Base — Mandatory Sync Protocol
+
+**THIS IS A CRITICAL PROCESS FOR MAINTAINING HUMAN-AI COLLABORATION.**
+
+The project owner maintains a knowledge base in Obsidian at:
+```
+~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Piotr's Second Brain/
+  Imagine Flying/NextGen CFI/Products/Aviation Oral Exam Companion/
+```
+
+### When to Write an Obsidian Update
+
+You MUST write an Obsidian status note in **any** of these situations:
+
+1. **Before context compression** — If the conversation is approaching context limits and compression is imminent, write the current state first.
+2. **Before ending a session** — When the user says goodbye, ends the conversation, or work is wrapping up.
+3. **Before any deployment** — Before pushing to `main` or triggering a Vercel deploy.
+4. **When the user requests it** — If the user asks for an "Obsidian note", this is a **user note** (see format below).
+5. **After completing a significant feature or fix** — Any change that alters project behavior or architecture.
+
+### Obsidian Note Format & Best Practices
+
+Follow Obsidian conventions:
+- Use **wikilinks** (`[[Note Name]]`) for internal references
+- Use **YAML frontmatter** with `date`, `type`, `tags`, and `status` fields
+- Use **headings** (H2/H3) for structure, not bold text as section headers
+- Keep notes **atomic** — one concept or update per note when possible
+- Place notes in the appropriate subfolder (e.g., `Aviation Oral Exam Companion - Build Report/`)
+
+### Note Types
+
+**Session Log** (automatic, written by AI):
+```markdown
+---
+date: YYYY-MM-DD
+type: session-log
+tags: [aviation-oral-exam, dev-session]
+status: completed
+---
+
+# Session Log — YYYY-MM-DD
+
+## Changes Made
+- [Bullet list of what was implemented, fixed, or modified]
+
+## Files Changed
+- [List of key files touched with brief description]
+
+## Current State
+- [What works now that didn't before]
+- [Any new issues discovered]
+
+## Next Steps
+- [What should be picked up next session]
+
+## Decisions Made
+- [Any architectural or design decisions and their rationale]
+```
+
+**User Note** (requested by user — MUST include this marker):
+```markdown
+---
+date: YYYY-MM-DD
+type: user-note
+tags: [aviation-oral-exam]
+author: user-requested
+---
+
+> [!important] User-Requested Note
+> This note was explicitly requested by the project owner and reflects their intent, priorities, or decisions. Treat its contents as authoritative project direction.
+
+# [Title]
+
+[Content as requested]
+```
+
+### Why This Matters
+
+The Obsidian vault is the **single source of truth** for project continuity across sessions. AI context is ephemeral — it gets compressed and eventually lost. The human owner's knowledge base persists. Writing to Obsidian before any context loss ensures:
+
+- No work is forgotten or duplicated across sessions
+- Architectural decisions are preserved with rationale
+- The next session (human or AI) can pick up exactly where this one left off
+- The human owner always has a complete, browsable history of the project
+
+**Never skip this step. If in doubt, write the note.**
+
+---
+
 *Last updated: February 2026*

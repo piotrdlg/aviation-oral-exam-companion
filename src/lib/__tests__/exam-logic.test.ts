@@ -4,8 +4,12 @@ import {
   filterEligibleTasks,
   selectRandomTask,
   buildSystemPrompt,
+  buildElementQueue,
+  pickNextElement,
+  initPlannerState,
   type AcsTaskRow,
 } from '../exam-logic';
+import type { AcsElement as AcsElementDB, ElementScore, SessionConfig } from '@/types/database';
 
 function makeTask(id: string, opts?: Partial<AcsTaskRow>): AcsTaskRow {
   return {
@@ -162,5 +166,181 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('Designated Pilot Examiner');
     expect(prompt).toContain('Private Pilot oral examination');
     expect(prompt).toContain('Ask ONE clear question');
+  });
+
+  it('includes difficulty instruction when provided', () => {
+    const task = makeTask('PA.I.A');
+    const prompt = buildSystemPrompt(task, 'hard');
+    expect(prompt).toContain('DIFFICULTY LEVEL: HARD');
+    expect(prompt).toContain('complex edge cases');
+  });
+
+  it('omits difficulty instruction when not provided', () => {
+    const task = makeTask('PA.I.A');
+    const prompt = buildSystemPrompt(task);
+    expect(prompt).not.toContain('DIFFICULTY LEVEL');
+  });
+});
+
+// ================================================================
+// Planner Pure Functions
+// ================================================================
+
+function makeElement(code: string, opts?: Partial<AcsElementDB>): AcsElementDB {
+  const parts = code.split('.');
+  return {
+    code,
+    task_id: `${parts[0]}.${parts[1]}.${parts[2]}`,
+    element_type: opts?.element_type ?? 'knowledge',
+    short_code: parts[parts.length - 1],
+    description: opts?.description ?? `Description for ${code}`,
+    order_index: opts?.order_index ?? 0,
+    difficulty_default: opts?.difficulty_default ?? 'medium',
+    weight: opts?.weight ?? 1,
+    created_at: '2026-01-01T00:00:00Z',
+  };
+}
+
+describe('buildElementQueue', () => {
+  const elements: AcsElementDB[] = [
+    makeElement('PA.I.A.K1', { element_type: 'knowledge', order_index: 1 }),
+    makeElement('PA.I.A.K2', { element_type: 'knowledge', order_index: 2 }),
+    makeElement('PA.I.A.R1', { element_type: 'risk', order_index: 3 }),
+    makeElement('PA.I.A.S1', { element_type: 'skill', order_index: 4 }),
+    makeElement('PA.II.A.K1', { element_type: 'knowledge', order_index: 5 }),
+    makeElement('PA.IX.A.K1', { element_type: 'knowledge', difficulty_default: 'easy', order_index: 6 }),
+    makeElement('PA.IX.A.K2', { element_type: 'knowledge', difficulty_default: 'hard', order_index: 7 }),
+  ];
+
+  it('filters out skill elements', () => {
+    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
+    const queue = buildElementQueue(elements, config);
+    expect(queue).not.toContain('PA.I.A.S1');
+  });
+
+  it('includes knowledge and risk elements', () => {
+    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
+    const queue = buildElementQueue(elements, config);
+    expect(queue).toContain('PA.I.A.K1');
+    expect(queue).toContain('PA.I.A.R1');
+  });
+
+  it('filters by selected areas', () => {
+    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: ['IX'] };
+    const queue = buildElementQueue(elements, config);
+    expect(queue).toContain('PA.IX.A.K1');
+    expect(queue).toContain('PA.IX.A.K2');
+    expect(queue).not.toContain('PA.I.A.K1');
+  });
+
+  it('filters by difficulty when not mixed', () => {
+    const config: SessionConfig = { studyMode: 'linear', difficulty: 'easy', selectedAreas: [] };
+    const queue = buildElementQueue(elements, config);
+    expect(queue).toContain('PA.IX.A.K1');
+    expect(queue).not.toContain('PA.IX.A.K2');
+  });
+
+  it('preserves order in linear mode', () => {
+    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
+    const queue = buildElementQueue(elements, config);
+    const k1Idx = queue.indexOf('PA.I.A.K1');
+    const k2Idx = queue.indexOf('PA.I.A.K2');
+    const r1Idx = queue.indexOf('PA.I.A.R1');
+    expect(k1Idx).toBeLessThan(k2Idx);
+    expect(k2Idx).toBeLessThan(r1Idx);
+  });
+
+  it('shuffles in cross_acs mode', () => {
+    const config: SessionConfig = { studyMode: 'cross_acs', difficulty: 'mixed', selectedAreas: [] };
+    // Run multiple times — at least one ordering should differ from linear
+    const linear: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
+    const linearQueue = buildElementQueue(elements, linear);
+    let differed = false;
+    for (let i = 0; i < 20; i++) {
+      const shuffled = buildElementQueue(elements, config);
+      if (shuffled.join(',') !== linearQueue.join(',')) {
+        differed = true;
+        break;
+      }
+    }
+    expect(differed).toBe(true);
+  });
+
+  it('returns empty queue when all filtered out', () => {
+    const config: SessionConfig = { studyMode: 'linear', difficulty: 'easy', selectedAreas: ['I'] };
+    // Area I elements are all 'medium' by default, so easy filter empties it
+    const queue = buildElementQueue(elements, config);
+    expect(queue).toHaveLength(0);
+  });
+});
+
+describe('pickNextElement', () => {
+  it('picks the first element from the queue', () => {
+    const state = initPlannerState(['A', 'B', 'C']);
+    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
+    const result = pickNextElement(state, config);
+    expect(result).not.toBeNull();
+    expect(result!.elementCode).toBe('A');
+  });
+
+  it('advances cursor after pick', () => {
+    const state = initPlannerState(['A', 'B', 'C']);
+    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
+    const r1 = pickNextElement(state, config)!;
+    const r2 = pickNextElement(r1.updatedState, config)!;
+    expect(r2.elementCode).toBe('B');
+  });
+
+  it('skips recently visited elements', () => {
+    const state = initPlannerState(['A', 'B', 'C']);
+    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
+    // Simulate A being in recent
+    const stateWithRecent = { ...state, recent: ['A'] };
+    const result = pickNextElement(stateWithRecent, config);
+    expect(result!.elementCode).toBe('B');
+  });
+
+  it('wraps around the queue', () => {
+    const state = initPlannerState(['A', 'B']);
+    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
+    const r1 = pickNextElement(state, config)!;
+    const r2 = pickNextElement(r1.updatedState, config)!;
+    const r3 = pickNextElement(r2.updatedState, config)!;
+    // Should wrap back to A (recent only holds last 5)
+    expect(r3.elementCode).toBe('A');
+  });
+
+  it('increments attempt count', () => {
+    const state = initPlannerState(['A', 'B']);
+    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
+    const r1 = pickNextElement(state, config)!;
+    expect(r1.updatedState.attempts['A']).toBe(1);
+    const r2 = pickNextElement(r1.updatedState, config)!;
+    const r3 = pickNextElement(r2.updatedState, config)!;
+    expect(r3.updatedState.attempts['A']).toBe(2);
+  });
+
+  it('returns null for empty queue', () => {
+    const state = initPlannerState([]);
+    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
+    expect(pickNextElement(state, config)).toBeNull();
+  });
+
+  it('increments version', () => {
+    const state = initPlannerState(['A']);
+    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
+    const r1 = pickNextElement(state, config)!;
+    expect(r1.updatedState.version).toBe(1);
+  });
+});
+
+describe('initPlannerState', () => {
+  it('creates state with correct defaults', () => {
+    const state = initPlannerState(['X', 'Y']);
+    expect(state.version).toBe(0);
+    expect(state.cursor).toBe(0);
+    expect(state.queue).toEqual(['X', 'Y']);
+    expect(state.recent).toEqual([]);
+    expect(state.attempts).toEqual({});
   });
 });
