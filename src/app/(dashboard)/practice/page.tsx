@@ -224,25 +224,29 @@ export default function PracticePage() {
     }
   }
 
-  function endSession() {
+  async function endSession() {
     if (audioRef.current) {
       audioRef.current.pause();
     }
     recognitionRef.current?.stop();
 
-    // Mark session as completed in database
+    // Mark session as completed in database — await to ensure it saves
     if (sessionId) {
-      fetch('/api/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'update',
-          sessionId,
-          status: 'completed',
-          exchange_count: exchangeCount,
-          acs_tasks_covered: coveredTaskIds.map((id) => ({ task_id: id, status: 'covered' })),
-        }),
-      }).catch(() => {});
+      try {
+        await fetch('/api/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'update',
+            sessionId,
+            status: 'completed',
+            exchange_count: exchangeCount,
+            acs_tasks_covered: coveredTaskIds.map((id) => ({ task_id: id, status: 'covered' })),
+          }),
+        });
+      } catch {
+        // Session update failed, but still clean up UI
+      }
     }
 
     setSessionActive(false);

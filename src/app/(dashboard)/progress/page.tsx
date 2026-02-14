@@ -25,7 +25,8 @@ export default function ProgressPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const completedSessions = sessions.filter((s) => s.status === 'completed');
+  const totalSessions = sessions.length;
+  const completedSessions = sessions.filter((s) => s.status === 'completed').length;
   const totalExchanges = sessions.reduce((sum, s) => sum + (s.exchange_count || 0), 0);
   const allCoveredTasks = sessions.flatMap((s) => s.acs_tasks_covered || []);
   const uniqueTasksCovered = new Set(allCoveredTasks.map((t) => t.task_id)).size;
@@ -49,8 +50,8 @@ export default function ProgressPage() {
         <>
           <div className="grid grid-cols-3 gap-4 mb-8">
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-4 text-center">
-              <p className="text-2xl font-bold text-white">{completedSessions.length}</p>
-              <p className="text-xs text-gray-400 mt-1">Sessions</p>
+              <p className="text-2xl font-bold text-white">{totalSessions}</p>
+              <p className="text-xs text-gray-400 mt-1">Sessions{completedSessions < totalSessions ? ` (${completedSessions} completed)` : ''}</p>
             </div>
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-4 text-center">
               <p className="text-2xl font-bold text-white">{totalExchanges}</p>
