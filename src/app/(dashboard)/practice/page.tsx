@@ -26,6 +26,9 @@ export default function PracticePage() {
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [exchangeCount, setExchangeCount] = useState(0);
+  const [coveredTaskIds, setCoveredTaskIds] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -116,8 +119,21 @@ export default function PracticePage() {
     setLoading(true);
     setError(null);
     setMessages([]);
+    setExchangeCount(0);
+    setCoveredTaskIds([]);
 
     try {
+      // Create a session record in the database
+      const sessionRes = await fetch('/api/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create' }),
+      });
+      const sessionData = await sessionRes.json();
+      if (sessionRes.ok && sessionData.session) {
+        setSessionId(sessionData.session.id);
+      }
+
       const res = await fetch('/api/exam', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -128,6 +144,9 @@ export default function PracticePage() {
       if (!res.ok) throw new Error(data.error || 'Failed to start session');
 
       setTaskData(data.taskData);
+      if (data.taskId) {
+        setCoveredTaskIds([data.taskId]);
+      }
       const examinerMsg = data.examinerMessage;
       setMessages([{ role: 'examiner', text: examinerMsg }]);
 
@@ -166,10 +185,26 @@ export default function PracticePage() {
       if (!res.ok) throw new Error(data.error || 'Failed to get response');
 
       const examinerMsg = data.examinerMessage;
+      const newExchangeCount = exchangeCount + 1;
+      setExchangeCount(newExchangeCount);
       setMessages((prev) => [
         ...prev,
         { role: 'examiner', text: examinerMsg },
       ]);
+
+      // Update session in database
+      if (sessionId) {
+        fetch('/api/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'update',
+            sessionId,
+            exchange_count: newExchangeCount,
+            acs_tasks_covered: coveredTaskIds.map((id) => ({ task_id: id, status: 'covered' })),
+          }),
+        }).catch(() => {});
+      }
 
       if (voiceEnabled) {
         speakText(examinerMsg);
@@ -186,11 +221,30 @@ export default function PracticePage() {
       audioRef.current.pause();
     }
     recognitionRef.current?.stop();
+
+    // Mark session as completed in database
+    if (sessionId) {
+      fetch('/api/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update',
+          sessionId,
+          status: 'completed',
+          exchange_count: exchangeCount,
+          acs_tasks_covered: coveredTaskIds.map((id) => ({ task_id: id, status: 'covered' })),
+        }),
+      }).catch(() => {});
+    }
+
     setSessionActive(false);
     setMessages([]);
     setTaskData(null);
     setError(null);
     setInput('');
+    setSessionId(null);
+    setExchangeCount(0);
+    setCoveredTaskIds([]);
     setIsListening(false);
     setIsSpeaking(false);
   }
