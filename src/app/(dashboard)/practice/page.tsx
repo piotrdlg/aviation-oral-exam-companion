@@ -54,14 +54,20 @@ export default function PracticePage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const voiceEnabledRef = useRef(false);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Keep ref in sync so speakText never has stale closure
+  useEffect(() => {
+    voiceEnabledRef.current = voiceEnabled;
+  }, [voiceEnabled]);
+
   // Play examiner's message via TTS
   const speakText = useCallback(async (text: string) => {
-    if (!voiceEnabled) return;
+    if (!voiceEnabledRef.current) return;
     setIsSpeaking(true);
     try {
       const res = await fetch('/api/tts', {
@@ -83,10 +89,11 @@ export default function PracticePage() {
         URL.revokeObjectURL(url);
       };
       await audio.play();
-    } catch {
+    } catch (err) {
+      console.error('TTS playback error:', err);
       setIsSpeaking(false);
     }
-  }, [voiceEnabled]);
+  }, []);
 
   // Start speech recognition
   function startListening() {
@@ -155,6 +162,7 @@ export default function PracticePage() {
     setPlannerState(null);
     taskScoresRef.current = {};
     setVoiceEnabled(configData.voiceEnabled);
+    voiceEnabledRef.current = configData.voiceEnabled;
 
     // Build session config for the planner
     const config: SessionConfigType = {
