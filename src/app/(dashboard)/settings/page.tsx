@@ -113,8 +113,7 @@ export default function SettingsPage() {
         status: 'fail',
         detail: `Microphone access denied or unavailable: ${msg}`,
       });
-      setDiagRunning(false);
-      return;
+      // Don't return — continue to test remaining steps
     }
 
     // --- Step 2: Speech recognition ---
@@ -130,74 +129,94 @@ export default function SettingsPage() {
         status: 'fail',
         detail: 'SpeechRecognition API not available. This feature requires Chrome or Edge.',
       });
-      // Clean up mic
-      streamRef.current?.getTracks().forEach((t) => t.stop());
-      setDiagRunning(false);
-      return;
-    }
-
-    updateStep(1, { detail: 'Say something (you have 5 seconds)...' });
-
-    const transcript = await new Promise<string>((resolve) => {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      recognition.lang = 'en-US';
-      let lastTranscript = '';
-
-      recognition.onresult = (event: SpeechRecognitionEvent) => {
-        let text = '';
-        for (let i = 0; i < event.results.length; i++) {
-          text += event.results[i][0].transcript;
-        }
-        lastTranscript = text;
-        setRecognizedText(text);
-      };
-
-      recognition.onend = () => resolve(lastTranscript);
-      recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-        if (event.error !== 'no-speech') {
-          resolve(`ERROR:${event.error}`);
-        } else {
-          resolve('');
-        }
-      };
-
-      recognition.start();
-
-      // Auto-stop after 5 seconds
-      setTimeout(() => {
-        try {
-          recognition.stop();
-        } catch {
-          // already stopped
-        }
-      }, 5000);
-    });
-
-    // Clean up mic stream now
-    streamRef.current?.getTracks().forEach((t) => t.stop());
-    streamRef.current = null;
-
-    if (transcript.startsWith('ERROR:')) {
-      updateStep(1, {
-        status: 'fail',
-        detail: `Speech recognition error: ${transcript.replace('ERROR:', '')}`,
-      });
-      setDiagRunning(false);
-      return;
-    } else if (transcript.length > 0) {
-      updateStep(1, {
-        status: 'pass',
-        detail: `Recognized: "${transcript}"`,
-      });
     } else {
-      updateStep(1, {
-        status: 'fail',
-        detail: 'No speech detected. Speak clearly into your microphone and try again.',
+      updateStep(1, { detail: 'Say something (you have 6 seconds)...' });
+
+      const transcript = await new Promise<string>((resolve) => {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+        let lastTranscript = '';
+        let gotResult = false;
+        let errorMsg = '';
+
+        recognition.onresult = (event: SpeechRecognitionEvent) => {
+          gotResult = true;
+          let text = '';
+          for (let i = 0; i < event.results.length; i++) {
+            text += event.results[i][0].transcript;
+          }
+          lastTranscript = text;
+          setRecognizedText(text);
+        };
+
+        recognition.onend = () => {
+          if (errorMsg) {
+            resolve(`ERROR:${errorMsg}`);
+          } else {
+            resolve(lastTranscript);
+          }
+        };
+
+        recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+          // Capture ALL errors for diagnostics (don't suppress no-speech)
+          errorMsg = event.error;
+          if (event.error !== 'no-speech' && event.error !== 'aborted') {
+            resolve(`ERROR:${event.error}`);
+          }
+        };
+
+        recognition.start();
+
+        // Auto-stop after 6 seconds
+        setTimeout(() => {
+          try {
+            recognition.stop();
+          } catch {
+            // already stopped
+          }
+        }, 6000);
       });
-      setDiagRunning(false);
-      return;
+
+      // Clean up mic stream
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+
+      if (transcript.startsWith('ERROR:')) {
+        const errType = transcript.replace('ERROR:', '');
+        let helpText = '';
+        switch (errType) {
+          case 'no-speech':
+            helpText = 'No speech detected by Google servers. Your mic may work for recording but Chrome\'s speech service isn\'t receiving audio. Try: check Chrome mic settings (chrome://settings/content/microphone).';
+            break;
+          case 'audio-capture':
+            helpText = 'Chrome could not capture audio. Another app may be using the microphone exclusively.';
+            break;
+          case 'not-allowed':
+            helpText = 'Microphone permission denied for speech recognition. Allow mic access in Chrome settings.';
+            break;
+          case 'network':
+            helpText = 'Network error — Chrome Speech Recognition requires internet (audio is processed by Google servers).';
+            break;
+          case 'service-not-allowed':
+            helpText = 'Speech service blocked. This can happen if Chrome is not the default browser or speech services are restricted.';
+            break;
+          default:
+            helpText = `Error type: "${errType}". Check Chrome console for details.`;
+        }
+        updateStep(1, { status: 'fail', detail: helpText });
+      } else if (transcript.length > 0) {
+        updateStep(1, {
+          status: 'pass',
+          detail: `Recognized: "${transcript}"`,
+        });
+      } else {
+        updateStep(1, {
+          status: 'fail',
+          detail: 'No speech detected and no error reported. The SpeechRecognition API started and stopped without receiving audio. Check that Chrome has the correct microphone selected (chrome://settings/content/microphone).',
+        });
+      }
     }
 
     // --- Step 3: TTS playback ---
