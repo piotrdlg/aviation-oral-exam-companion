@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 interface Message {
   role: 'examiner' | 'student';
@@ -23,11 +23,93 @@ export default function PracticePage() {
   const [loading, setLoading] = useState(false);
   const [taskData, setTaskData] = useState<TaskData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Play examiner's message via TTS
+  const speakText = useCallback(async (text: string) => {
+    if (!voiceEnabled) return;
+    setIsSpeaking(true);
+    try {
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      if (!res.ok) throw new Error('TTS failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onended = () => {
+        setIsSpeaking(false);
+        URL.revokeObjectURL(url);
+      };
+      audio.onerror = () => {
+        setIsSpeaking(false);
+        URL.revokeObjectURL(url);
+      };
+      await audio.play();
+    } catch {
+      setIsSpeaking(false);
+    }
+  }, [voiceEnabled]);
+
+  // Start speech recognition
+  function startListening() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setError('Speech recognition not supported in this browser. Use Chrome.');
+      return;
+    }
+
+    // Stop any playing audio first
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsSpeaking(false);
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => setIsListening(true);
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const transcript = Array.from(event.results)
+        .map((result) => result[0].transcript)
+        .join('');
+      setInput(transcript);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+      setIsListening(false);
+      if (event.error !== 'no-speech') {
+        console.error('Speech recognition error:', event.error);
+      }
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  }
+
+  function stopListening() {
+    recognitionRef.current?.stop();
+    setIsListening(false);
+  }
 
   async function startSession() {
     setSessionActive(true);
@@ -46,7 +128,13 @@ export default function PracticePage() {
       if (!res.ok) throw new Error(data.error || 'Failed to start session');
 
       setTaskData(data.taskData);
-      setMessages([{ role: 'examiner', text: data.examinerMessage }]);
+      const examinerMsg = data.examinerMessage;
+      setMessages([{ role: 'examiner', text: examinerMsg }]);
+
+      // Speak the opening question if voice is enabled
+      if (voiceEnabled) {
+        speakText(examinerMsg);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start session');
     } finally {
@@ -77,10 +165,15 @@ export default function PracticePage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to get response');
 
+      const examinerMsg = data.examinerMessage;
       setMessages((prev) => [
         ...prev,
-        { role: 'examiner', text: data.examinerMessage },
+        { role: 'examiner', text: examinerMsg },
       ]);
+
+      if (voiceEnabled) {
+        speakText(examinerMsg);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to get response');
     } finally {
@@ -89,11 +182,17 @@ export default function PracticePage() {
   }
 
   function endSession() {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    recognitionRef.current?.stop();
     setSessionActive(false);
     setMessages([]);
     setTaskData(null);
     setError(null);
     setInput('');
+    setIsListening(false);
+    setIsSpeaking(false);
   }
 
   if (!sessionActive) {
@@ -114,6 +213,15 @@ export default function PracticePage() {
                 <option value="private">Private Pilot</option>
               </select>
             </div>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={voiceEnabled}
+                onChange={(e) => setVoiceEnabled(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-300">Enable voice mode (mic + speaker)</span>
+            </label>
             <button
               onClick={startSession}
               className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
@@ -137,12 +245,17 @@ export default function PracticePage() {
             </p>
           )}
         </div>
-        <button
-          onClick={endSession}
-          className="text-sm text-gray-400 hover:text-red-400 transition-colors"
-        >
-          End Session
-        </button>
+        <div className="flex items-center gap-3">
+          {voiceEnabled && (
+            <span className="text-xs text-green-400">Voice On</span>
+          )}
+          <button
+            onClick={endSession}
+            className="text-sm text-gray-400 hover:text-red-400 transition-colors"
+          >
+            End Session
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -189,12 +302,26 @@ export default function PracticePage() {
       </div>
 
       <div className="flex gap-2">
+        {voiceEnabled && (
+          <button
+            onClick={isListening ? stopListening : startListening}
+            disabled={loading || isSpeaking}
+            className={`px-4 py-3 rounded-xl font-medium transition-colors ${
+              isListening
+                ? 'bg-red-600 hover:bg-red-700 text-white animate-pulse'
+                : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+            } disabled:opacity-50`}
+            title={isListening ? 'Stop recording' : 'Start recording'}
+          >
+            {isListening ? '⏹' : '🎤'}
+          </button>
+        )}
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendAnswer()}
-          placeholder="Type your answer..."
+          placeholder={isListening ? 'Listening...' : 'Type your answer...'}
           disabled={loading}
           className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
         />
