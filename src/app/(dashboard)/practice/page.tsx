@@ -68,6 +68,15 @@ export default function PracticePage() {
   // Play examiner's message via TTS
   const speakText = useCallback(async (text: string) => {
     if (!voiceEnabledRef.current) return;
+
+    // Stop speech recognition before playing audio — Chrome can't reliably
+    // do simultaneous mic input + audio output in the same tab.
+    if (recognitionRef.current) {
+      const rec = recognitionRef.current;
+      recognitionRef.current = null; // prevent auto-restart
+      rec.stop();
+    }
+
     setIsSpeaking(true);
     try {
       const res = await fetch('/api/tts', {
@@ -75,7 +84,7 @@ export default function PracticePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text }),
       });
-      if (!res.ok) throw new Error('TTS failed');
+      if (!res.ok) throw new Error(`TTS failed: ${res.status}`);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
@@ -85,6 +94,7 @@ export default function PracticePage() {
         URL.revokeObjectURL(url);
       };
       audio.onerror = () => {
+        console.error('Audio element error');
         setIsSpeaking(false);
         URL.revokeObjectURL(url);
       };
@@ -127,7 +137,7 @@ export default function PracticePage() {
           interimTranscript += result[0].transcript;
         }
       }
-      setInput(finalTranscript || interimTranscript);
+      setInput(finalTranscript + interimTranscript);
     };
 
     recognition.onend = () => {
@@ -246,6 +256,14 @@ export default function PracticePage() {
   async function sendAnswer() {
     if (!input.trim() || !taskData || loading) return;
 
+    // Stop mic when sending — user is done talking
+    if (recognitionRef.current) {
+      const rec = recognitionRef.current;
+      recognitionRef.current = null;
+      rec.stop();
+      setIsListening(false);
+    }
+
     const studentAnswer = input.trim();
     setInput('');
     setMessages((prev) => [...prev, { role: 'student', text: studentAnswer }]);
@@ -335,7 +353,7 @@ export default function PracticePage() {
         }).catch(() => {});
       }
 
-      if (voiceEnabled) {
+      if (voiceEnabledRef.current) {
         speakText(examinerMsg);
       }
     } catch (err) {
