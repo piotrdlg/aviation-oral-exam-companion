@@ -127,6 +127,9 @@ export default function PracticePage() {
     recognition.onstart = () => setIsListening(true);
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
+      // Ignore late-firing results after recognition was stopped (e.g. after Send)
+      if (recognitionRef.current !== recognition) return;
+
       let interimTranscript = '';
       let finalTranscript = '';
       for (let i = 0; i < event.results.length; i++) {
@@ -477,7 +480,7 @@ export default function PracticePage() {
             className={`flex ${msg.role === 'student' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[85%] rounded-xl px-4 py-3 ${
+              className={`max-w-[70%] rounded-xl px-4 py-3 ${
                 msg.role === 'examiner'
                   ? 'bg-gray-800 text-gray-100'
                   : 'bg-blue-600 text-white'
@@ -561,14 +564,19 @@ export default function PracticePage() {
             {isListening ? '⏹' : '🎤'}
           </button>
         )}
-        <input
-          type="text"
+        <textarea
+          rows={3}
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendAnswer()}
-          placeholder={isListening ? 'Listening...' : 'Type your answer...'}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              sendAnswer();
+            }
+          }}
+          placeholder={isListening ? 'Listening...' : 'Type your answer... (Enter to send, Shift+Enter for new line)'}
           disabled={loading}
-          className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+          className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 resize-none"
         />
         <button
           onClick={sendAnswer}

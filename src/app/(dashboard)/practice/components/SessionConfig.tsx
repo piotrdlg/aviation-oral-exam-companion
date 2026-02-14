@@ -27,7 +27,7 @@ interface Props {
 }
 
 export default function SessionConfig({ onStart, loading }: Props) {
-  const [studyMode, setStudyMode] = useState<SessionConfigData['studyMode']>('cross_acs');
+  const [studyMode, setStudyMode] = useState<SessionConfigData['studyMode']>('linear');
   const [difficulty, setDifficulty] = useState<SessionConfigData['difficulty']>('mixed');
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
@@ -47,8 +47,8 @@ export default function SessionConfig({ onStart, loading }: Props) {
           <label className="block text-sm text-gray-300 mb-2">Study Mode</label>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { value: 'cross_acs' as const, label: 'Cross-ACS', desc: 'Random across all areas' },
               { value: 'linear' as const, label: 'Linear', desc: 'One area at a time' },
+              { value: 'cross_acs' as const, label: 'Cross-ACS', desc: 'Random across all areas' },
               { value: 'weak_areas' as const, label: 'Weak Areas', desc: 'Focus on your gaps' },
             ].map((mode) => (
               <button

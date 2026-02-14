@@ -18,18 +18,18 @@ interface TreeNode {
 }
 
 function getStatusColor(score: ElementScore): string {
-  if (score.total_attempts === 0) return 'rgba(156, 163, 175, 0.15)'; // transparent gray — untouched
-  if (!score.latest_score) return 'rgba(156, 163, 175, 0.15)';
+  if (score.total_attempts === 0) return 'rgba(156, 163, 175, 0.2)'; // transparent gray — untouched
+  if (!score.latest_score) return 'rgba(156, 163, 175, 0.2)';
 
   switch (score.latest_score) {
     case 'satisfactory':
-      return 'rgba(34, 197, 94, 0.7)';   // green
+      return 'rgba(74, 222, 128, 0.9)';   // bright green
     case 'partial':
-      return 'rgba(234, 179, 8, 0.7)';    // yellow
+      return 'rgba(250, 204, 21, 0.9)';   // bright yellow
     case 'unsatisfactory':
-      return 'rgba(239, 68, 68, 0.7)';    // red
+      return 'rgba(248, 113, 113, 0.9)';  // bright red
     default:
-      return 'rgba(156, 163, 175, 0.15)';
+      return 'rgba(156, 163, 175, 0.2)';
   }
 }
 
@@ -106,16 +106,16 @@ export default function AcsCoverageTreemap({ scores, onElementClick }: Props) {
         <h3 className="text-sm font-medium text-white">ACS Coverage Map</h3>
         <div className="flex gap-3 text-xs">
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-sm bg-green-500/70" /> {satisfactory}
+            <span className="w-2 h-2 rounded-sm bg-green-400" /> {satisfactory}
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-sm bg-yellow-500/70" /> {partial}
+            <span className="w-2 h-2 rounded-sm bg-yellow-300" /> {partial}
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-sm bg-red-500/70" /> {unsatisfactory}
+            <span className="w-2 h-2 rounded-sm bg-red-400" /> {unsatisfactory}
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-sm bg-gray-500/20" /> {total - attempted}
+            <span className="w-2 h-2 rounded-sm bg-gray-500/30" /> {total - attempted}
           </span>
         </div>
       </div>
