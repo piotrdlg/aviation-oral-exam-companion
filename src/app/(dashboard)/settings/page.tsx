@@ -98,7 +98,7 @@ export default function SettingsPage() {
     // --- Step 1: Microphone access ---
     updateStep(0, { status: 'running', detail: `Requesting "${deviceLabel}"...` });
 
-    const audioConstraints: MediaTrackConstraints = selectedDeviceId
+    const audioConstraints: MediaTrackConstraints | boolean = selectedDeviceId
       ? { deviceId: { exact: selectedDeviceId } }
       : true;
 
