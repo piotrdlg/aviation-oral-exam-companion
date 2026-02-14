@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   pickStartingTask,
+  pickNextTask,
   generateExaminerTurn,
   assessAnswer,
   type ExamMessage,
@@ -9,16 +10,15 @@ import {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action, history, taskId, taskData, studentAnswer } = body as {
-      action: 'start' | 'respond';
+    const { action, history, taskData, studentAnswer, coveredTaskIds } = body as {
+      action: 'start' | 'respond' | 'next-task';
       history?: ExamMessage[];
-      taskId?: string;
-      taskData?: ReturnType<typeof pickStartingTask> extends Promise<infer T> ? T : never;
+      taskData?: Awaited<ReturnType<typeof pickStartingTask>>;
       studentAnswer?: string;
+      coveredTaskIds?: string[];
     };
 
     if (action === 'start') {
-      // Pick a task and generate the opening question
       const task = await pickStartingTask();
       if (!task) {
         return NextResponse.json(
@@ -43,14 +43,8 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Assess the student's answer
-      const assessment = await assessAnswer(
-        taskData,
-        history,
-        studentAnswer
-      );
+      const assessment = await assessAnswer(taskData, history, studentAnswer);
 
-      // Generate the next examiner question based on full history
       const updatedHistory: ExamMessage[] = [
         ...history,
         { role: 'student', text: studentAnswer },
@@ -63,6 +57,24 @@ export async function POST(request: NextRequest) {
         taskData,
         examinerMessage: turn.examinerMessage,
         assessment,
+      });
+    }
+
+    if (action === 'next-task') {
+      const currentTaskId = taskData?.id || '';
+      const task = await pickNextTask(currentTaskId, coveredTaskIds || []);
+      if (!task) {
+        return NextResponse.json({
+          examinerMessage: 'We have covered all the areas. Great job today!',
+          sessionComplete: true,
+        });
+      }
+
+      const turn = await generateExaminerTurn(task, []);
+      return NextResponse.json({
+        taskId: task.id,
+        taskData: task,
+        examinerMessage: turn.examinerMessage,
       });
     }
 

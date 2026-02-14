@@ -37,19 +37,61 @@ interface AcsTaskRow {
   skill_elements: AcsElement[];
 }
 
+// Oral-exam-relevant areas (exclude flight maneuvers that are skill-only)
+const ORAL_EXAM_AREAS = [
+  'PA.I.%',   // Preflight Preparation
+  'PA.II.%',  // Preflight Procedures
+  'PA.III.%', // Airport and Seaplane Base Operations
+  'PA.VI.%',  // Navigation
+  'PA.VII.%', // Slow Flight and Stalls (knowledge/risk only)
+  'PA.VIII.%',// Basic Instrument Maneuvers (knowledge/risk only)
+  'PA.IX.%',  // Emergency Operations
+  'PA.XI.%',  // Night Operations
+  'PA.XII.%', // Postflight Procedures
+];
+
 /**
- * Pick a random uncovered ACS task to start examining.
- * For the tracer bullet, just picks a random task from Area I.
+ * Pick a random ACS task for the oral exam, optionally excluding already-covered tasks.
  */
-export async function pickStartingTask(): Promise<AcsTaskRow | null> {
+export async function pickStartingTask(
+  coveredTaskIds: string[] = []
+): Promise<AcsTaskRow | null> {
   const { data, error } = await supabase
     .from('acs_tasks')
     .select('*')
-    .eq('rating', 'private')
-    .like('id', 'PA.I.%');
+    .eq('rating', 'private');
 
   if (error || !data || data.length === 0) return null;
-  return data[Math.floor(Math.random() * data.length)] as AcsTaskRow;
+
+  // Filter to oral-exam-relevant areas and exclude covered tasks
+  const eligible = (data as AcsTaskRow[]).filter((t) => {
+    if (coveredTaskIds.includes(t.id)) return false;
+    return ORAL_EXAM_AREAS.some((pattern) => {
+      const prefix = pattern.replace('%', '');
+      return t.id.startsWith(prefix);
+    });
+  });
+
+  if (eligible.length === 0) {
+    // If all covered, pick from any area
+    const remaining = (data as AcsTaskRow[]).filter(
+      (t) => !coveredTaskIds.includes(t.id)
+    );
+    if (remaining.length === 0) return data[0] as AcsTaskRow;
+    return remaining[Math.floor(Math.random() * remaining.length)];
+  }
+
+  return eligible[Math.floor(Math.random() * eligible.length)];
+}
+
+/**
+ * Pick the next task, transitioning naturally from the current area.
+ */
+export async function pickNextTask(
+  currentTaskId: string,
+  coveredTaskIds: string[] = []
+): Promise<AcsTaskRow | null> {
+  return pickStartingTask([...coveredTaskIds, currentTaskId]);
 }
 
 /**
