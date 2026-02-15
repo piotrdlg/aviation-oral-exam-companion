@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import SessionConfig, { type SessionConfigData } from './components/SessionConfig';
 import type { PlannerState, SessionConfig as SessionConfigType } from '@/types/database';
+import type { VoiceTier } from '@/lib/voice/types';
+import { useVoiceProvider } from '@/hooks/useVoiceProvider';
 
 interface Source {
   doc_abbreviation: string;
@@ -41,20 +43,38 @@ export default function PracticePage() {
   const [taskData, setTaskData] = useState<TaskData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [exchangeCount, setExchangeCount] = useState(0);
   const [coveredTaskIds, setCoveredTaskIds] = useState<string[]>([]);
   const [currentElement, setCurrentElement] = useState<string | null>(null);
   const [plannerState, setPlannerState] = useState<PlannerState | null>(null);
   const [sessionConfig, setSessionConfig] = useState<SessionConfigType | null>(null);
+  const [tier, setTier] = useState<VoiceTier>('ground_school');
   // Track per-task assessment scores (ref avoids stale closures in fire-and-forget fetches)
   const taskScoresRef = useRef<Record<string, { score: 'satisfactory' | 'unsatisfactory' | 'partial'; attempts: number }>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const voiceEnabledRef = useRef(false);
+
+  // Unified voice provider hook (handles STT + TTS for all tiers)
+  const voice = useVoiceProvider({ tier, sessionId: sessionId || undefined });
+
+  // Fetch user's tier on mount
+  useEffect(() => {
+    fetch('/api/user/tier')
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => { if (data?.tier) setTier(data.tier); })
+      .catch(() => {}); // Fallback to ground_school
+  }, []);
+
+  // Sync voice transcript to input field when listening
+  useEffect(() => {
+    if (voice.isListening) {
+      const combined = voice.transcript + (voice.interimTranscript ? ' ' + voice.interimTranscript : '');
+      if (combined.trim()) {
+        setInput(combined.trim());
+      }
+    }
+  }, [voice.transcript, voice.interimTranscript, voice.isListening]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -65,119 +85,21 @@ export default function PracticePage() {
     voiceEnabledRef.current = voiceEnabled;
   }, [voiceEnabled]);
 
-  // Play examiner's message via TTS
+  // Play examiner's message via the voice provider
   const speakText = useCallback(async (text: string) => {
     if (!voiceEnabledRef.current) return;
 
-    // Stop speech recognition before playing audio — Chrome can't reliably
-    // do simultaneous mic input + audio output in the same tab.
-    if (recognitionRef.current) {
-      const rec = recognitionRef.current;
-      recognitionRef.current = null; // prevent auto-restart
-      rec.stop();
+    // Stop listening before playing audio
+    if (voice.isListening) {
+      voice.stopListening();
     }
 
-    setIsSpeaking(true);
     try {
-      const res = await fetch('/api/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
-      });
-      if (!res.ok) throw new Error(`TTS failed: ${res.status}`);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audioRef.current = audio;
-      audio.onended = () => {
-        setIsSpeaking(false);
-        URL.revokeObjectURL(url);
-      };
-      audio.onerror = () => {
-        console.error('Audio element error');
-        setIsSpeaking(false);
-        URL.revokeObjectURL(url);
-      };
-      await audio.play();
+      await voice.speak(text);
     } catch (err) {
       console.error('TTS playback error:', err);
-      setIsSpeaking(false);
     }
-  }, []);
-
-  // Start speech recognition
-  function startListening() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setError('Speech recognition not supported in this browser. Use Chrome.');
-      return;
-    }
-
-    // Stop any playing audio first
-    if (audioRef.current) {
-      audioRef.current.pause();
-      setIsSpeaking(false);
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
-
-    recognition.onstart = () => setIsListening(true);
-
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      // Ignore late-firing results after recognition was stopped (e.g. after Send)
-      if (recognitionRef.current !== recognition) return;
-
-      let interimTranscript = '';
-      let finalTranscript = '';
-      for (let i = 0; i < event.results.length; i++) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          finalTranscript += result[0].transcript;
-        } else {
-          interimTranscript += result[0].transcript;
-        }
-      }
-      setInput(finalTranscript + interimTranscript);
-    };
-
-    recognition.onend = () => {
-      // In continuous mode, Chrome may stop unexpectedly (network blip, timeout).
-      // Restart automatically if the user hasn't clicked stop.
-      if (recognitionRef.current === recognition) {
-        try {
-          recognition.start();
-        } catch {
-          // Already stopped or another instance running — let it go
-          setIsListening(false);
-        }
-      } else {
-        setIsListening(false);
-      }
-    };
-
-    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      if (event.error === 'aborted' || event.error === 'no-speech') return;
-      console.error('Speech recognition error:', event.error);
-      // For fatal errors, stop listening
-      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-        recognitionRef.current = null;
-        setIsListening(false);
-      }
-    };
-
-    recognitionRef.current = recognition;
-    recognition.start();
-  }
-
-  function stopListening() {
-    const recognition = recognitionRef.current;
-    recognitionRef.current = null; // Signal onend not to restart
-    recognition?.stop();
-    setIsListening(false);
-  }
+  }, [voice]);
 
   async function startSession(configData: SessionConfigData) {
     setSessionActive(true);
@@ -264,11 +186,8 @@ export default function PracticePage() {
     if (!input.trim() || !taskData || loading) return;
 
     // Stop mic when sending — user is done talking
-    if (recognitionRef.current) {
-      const rec = recognitionRef.current;
-      recognitionRef.current = null;
-      rec.stop();
-      setIsListening(false);
+    if (voice.isListening) {
+      voice.stopListening();
     }
 
     const studentAnswer = input.trim();
@@ -500,10 +419,8 @@ export default function PracticePage() {
   }
 
   async function endSession() {
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-    recognitionRef.current?.stop();
+    voice.stopSpeaking();
+    voice.stopListening();
 
     // Mark session as completed in database — await to ensure it saves
     if (sessionId) {
@@ -540,8 +457,6 @@ export default function PracticePage() {
     setPlannerState(null);
     setSessionConfig(null);
     taskScoresRef.current = {};
-    setIsListening(false);
-    setIsSpeaking(false);
   }
 
   if (!sessionActive) {
@@ -583,7 +498,9 @@ export default function PracticePage() {
             {exchangeCount} exchange{exchangeCount !== 1 ? 's' : ''}
           </span>
           {voiceEnabled && (
-            <span className="text-xs text-green-400">Voice On</span>
+            <span className="text-xs text-green-400">
+              Voice On {tier !== 'ground_school' && `(${tier === 'checkride_prep' ? 'Tier 2' : 'Tier 3'})`}
+            </span>
           )}
           <button
             onClick={() => {
@@ -597,9 +514,9 @@ export default function PracticePage() {
         </div>
       </div>
 
-      {error && (
+      {(error || voice.error) && (
         <div className="bg-red-900/30 border border-red-800 rounded-lg p-3 mb-4 text-red-300 text-sm flex items-center justify-between">
-          <span>{error}</span>
+          <span>{error || voice.error}</span>
           <button onClick={() => setError(null)} className="text-red-400 hover:text-red-300 ml-3">
             &times;
           </button>
@@ -685,16 +602,16 @@ export default function PracticePage() {
       <div className="flex gap-2">
         {voiceEnabled && (
           <button
-            onClick={isListening ? stopListening : startListening}
-            disabled={loading || isSpeaking}
+            onClick={voice.isListening ? () => voice.stopListening() : () => voice.startListening()}
+            disabled={loading || voice.isSpeaking}
             className={`px-4 py-3 rounded-xl font-medium transition-colors ${
-              isListening
+              voice.isListening
                 ? 'bg-red-600 hover:bg-red-700 text-white animate-pulse'
                 : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
             } disabled:opacity-50`}
-            title={isListening ? 'Stop recording' : 'Start recording'}
+            title={voice.isListening ? 'Stop recording' : 'Start recording'}
           >
-            {isListening ? '⏹' : '🎤'}
+            {voice.isListening ? '⏹' : '🎤'}
           </button>
         )}
         <textarea
@@ -707,7 +624,7 @@ export default function PracticePage() {
               sendAnswer();
             }
           }}
-          placeholder={isListening ? 'Listening...' : 'Type your answer... (Enter to send, Shift+Enter for new line)'}
+          placeholder={voice.isListening ? 'Listening...' : 'Type your answer... (Enter to send, Shift+Enter for new line)'}
           disabled={loading}
           className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 resize-none"
         />

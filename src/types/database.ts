@@ -238,3 +238,42 @@ export interface OffGraphMention {
   processed: boolean;
   timestamp: string;
 }
+
+export type VoiceTier = 'ground_school' | 'checkride_prep' | 'dpe_live';
+
+export interface UserProfile {
+  id: string;
+  user_id: string;
+  tier: VoiceTier;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  stripe_price_id: string | null;
+  stripe_product_id: string | null;
+  stripe_subscription_item_id: string | null;
+  subscription_status: 'active' | 'past_due' | 'canceled' | 'trialing' | 'incomplete';
+  cancel_at_period_end: boolean;
+  trial_end: string | null;
+  current_period_start: string | null;
+  current_period_end: string | null;
+  last_webhook_event_id: string | null;
+  last_webhook_event_ts: string | null;
+  latest_invoice_status: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UsageLog {
+  id: string;
+  user_id: string;
+  session_id: string | null;
+  request_id: string | null;
+  event_type: 'tts_request' | 'stt_session' | 'llm_request' | 'token_issued';
+  provider: string;
+  tier: string;
+  quantity: number;
+  latency_ms: number | null;
+  status: 'ok' | 'error' | 'timeout';
+  error_code: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
