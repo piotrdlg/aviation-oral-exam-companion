@@ -1,7 +1,7 @@
 import type { TTSProvider, TTSResult, TTSOptions } from '../types';
 
 const CARTESIA_TTS_URL = 'https://api.cartesia.ai/tts/bytes';
-const DEFAULT_MODEL = 'sonic-2024-10-25';
+const DEFAULT_MODEL = 'sonic-english';
 const DEFAULT_SAMPLE_RATE = 44100;
 // Default to a professional male voice (Cartesia "Classy British Man")
 // Override via CARTESIA_VOICE_ID env var
