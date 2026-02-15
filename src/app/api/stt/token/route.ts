@@ -11,40 +11,22 @@ const serviceSupabase = createServiceClient(
 const TOKEN_RATE_LIMIT = 4; // max tokens per minute per user
 const TOKEN_TTL_SECONDS = 600; // 10 minutes — enough for a full exam session
 
-// Cache project ID to avoid repeated lookups
-let cachedProjectId: string | null = null;
-
-/**
- * Discover the Deepgram project ID from the API key.
- * Most accounts have a single project. Cached for the lifetime of the server.
- */
-async function getProjectId(apiKey: string): Promise<string> {
-  if (cachedProjectId) return cachedProjectId;
-
-  const res = await fetch('https://api.deepgram.com/v1/projects', {
-    headers: { 'Authorization': `Token ${apiKey}` },
-  });
-
-  if (!res.ok) {
-    const body = await res.text().catch(() => '');
-    throw new Error(`Failed to fetch Deepgram projects (${res.status}): ${body}`);
-  }
-
-  const data = await res.json();
-  const projects = data.projects;
-  if (!projects || projects.length === 0) {
-    throw new Error('No Deepgram projects found for this API key');
-  }
-
-  cachedProjectId = projects[0].project_id;
-  return cachedProjectId!;
-}
+/** Aviation vocabulary keywords for Deepgram recognition accuracy. */
+const AVIATION_KEYWORDS = [
+  'METAR', 'TAF', 'NOTAM', 'PIREP', 'SIGMET', 'AIRMET',
+  'VOR', 'NDB', 'ILS', 'RNAV', 'GPS', 'DME',
+  'ACS', 'DPE', 'ASEL', 'AMEL', 'ASES', 'AMES',
+  'Cessna', 'Piper', 'Beechcraft', 'Cirrus',
+  'CTAF', 'ATIS', 'AWOS', 'ASOS',
+  'FAR', 'AIM', 'POH', 'AFM',
+  'ADM', 'CRM', 'SRM', 'IMSAFE', 'PAVE', 'DECIDE',
+  'sectional', 'checkride', 'logbook', 'endorsement',
+];
 
 /**
  * GET /api/stt/token
- * Issues a temporary Deepgram API key for direct client-to-Deepgram WebSocket connection.
- * Uses the Keys API (not auth/grant) to create a real API key that works with
- * Sec-WebSocket-Protocol auth in browsers.
+ * Issues a temporary Deepgram JWT for direct client-to-Deepgram WebSocket connection.
+ * Uses /v1/auth/grant which returns a JWT that works with Sec-WebSocket-Protocol auth.
  * Only available to Tier 2 (checkride_prep) and Tier 3 (dpe_live) users.
  */
 export async function GET() {
@@ -88,49 +70,40 @@ export async function GET() {
       );
     }
 
-    // Discover project ID (cached after first call)
-    const projectId = await getProjectId(deepgramApiKey);
+    // Request temporary JWT from Deepgram auth/grant
+    // The JWT works with Sec-WebSocket-Protocol: ['token', jwt] in browsers
+    const tokenResponse = await fetch('https://api.deepgram.com/v1/auth/grant', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${deepgramApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ttl_seconds: TOKEN_TTL_SECONDS }),
+    });
 
-    // Create a temporary API key using the Keys API
-    // This returns a REAL API key (not a JWT) that works with Sec-WebSocket-Protocol
-    const keyResponse = await fetch(
-      `https://api.deepgram.com/v1/projects/${projectId}/keys`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Token ${deepgramApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          comment: `Browser STT key for user ${user.id.slice(0, 8)}`,
-          scopes: ['usage:write'],
-          time_to_live_in_seconds: TOKEN_TTL_SECONDS,
-        }),
-      }
-    );
-
-    if (!keyResponse.ok) {
-      const errorBody = await keyResponse.text().catch(() => 'Unknown error');
-      console.error('Deepgram key creation failed:', keyResponse.status, errorBody);
+    if (!tokenResponse.ok) {
+      const errorBody = await tokenResponse.text().catch(() => 'Unknown error');
+      console.error('Deepgram auth/grant failed:', tokenResponse.status, errorBody);
       return NextResponse.json(
-        { error: 'Failed to create STT key' },
+        { error: 'Failed to obtain STT token' },
         { status: 502 }
       );
     }
 
-    const keyData = await keyResponse.json();
-    const tempKey = keyData.key;
-    const apiKeyId = keyData.api_key_id;
+    const tokenData = await tokenResponse.json();
+    // auth/grant returns { access_token: "eyJ...", expires_in: N }
+    const accessToken = tokenData.access_token;
+    const expiresIn = tokenData.expires_in || TOKEN_TTL_SECONDS;
 
-    if (!tempKey) {
-      console.error('Deepgram key response — no key found. Fields:', Object.keys(keyData));
+    if (!accessToken) {
+      console.error('Deepgram auth/grant — no access_token. Fields:', Object.keys(tokenData));
       return NextResponse.json(
-        { error: 'Invalid key response from STT provider' },
+        { error: 'Invalid token response from STT provider' },
         { status: 502 }
       );
     }
 
-    const expiresAt = Date.now() + TOKEN_TTL_SECONDS * 1000;
+    const expiresAt = Date.now() + expiresIn * 1000;
 
     // Build pre-configured WebSocket URL with all params including keywords
     const params = new URLSearchParams({
@@ -141,18 +114,7 @@ export async function GET() {
       utterance_end_ms: '1500',
       vad_events: 'true',
     });
-    // Aviation vocabulary keywords for recognition accuracy
-    const keywords = [
-      'METAR', 'TAF', 'NOTAM', 'PIREP', 'SIGMET', 'AIRMET',
-      'VOR', 'NDB', 'ILS', 'RNAV', 'GPS', 'DME',
-      'ACS', 'DPE', 'ASEL', 'AMEL', 'ASES', 'AMES',
-      'Cessna', 'Piper', 'Beechcraft', 'Cirrus',
-      'CTAF', 'ATIS', 'AWOS', 'ASOS',
-      'FAR', 'AIM', 'POH', 'AFM',
-      'ADM', 'CRM', 'SRM', 'IMSAFE', 'PAVE', 'DECIDE',
-      'sectional', 'checkride', 'logbook', 'endorsement',
-    ];
-    for (const kw of keywords) {
+    for (const kw of AVIATION_KEYWORDS) {
       params.append('keywords', kw);
     }
     const wsUrl = 'wss://api.deepgram.com/v1/listen?' + params.toString();
@@ -167,26 +129,21 @@ export async function GET() {
         tier,
         quantity: 1,
         status: 'ok',
-        metadata: {
-          ttl_seconds: TOKEN_TTL_SECONDS,
-          api_key_id: apiKeyId,
-          method: 'keys_api',
-        },
+        metadata: { ttl_seconds: TOKEN_TTL_SECONDS, method: 'auth_grant' },
       })
       .then(({ error }) => {
         if (error) console.error('Token issuance log error:', error.message);
       });
 
     return NextResponse.json({
-      token: tempKey,
+      token: accessToken,
       url: wsUrl,
       expiresAt,
       _debug: {
-        method: 'keys_api',
-        projectId: projectId.slice(0, 8) + '...',
-        apiKeyId,
-        tokenLen: tempKey.length,
-        tokenPrefix: tempKey.slice(0, 10) + '...',
+        method: 'auth_grant',
+        tokenLen: accessToken.length,
+        tokenPrefix: accessToken.slice(0, 12) + '...',
+        expiresIn,
         ttlSeconds: TOKEN_TTL_SECONDS,
       },
     });
