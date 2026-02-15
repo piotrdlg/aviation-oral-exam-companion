@@ -286,82 +286,211 @@ export default function PracticePage() {
           history: messages,
           studentAnswer,
           sessionId,
+          stream: true,
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to get response');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to get response');
+      }
 
-      const examinerMsg = data.examinerMessage;
-      const newExchangeCount = exchangeCount + 1;
-      setExchangeCount(newExchangeCount);
+      const contentType = res.headers.get('content-type') || '';
 
-      // Attach assessment and sources to the student's message for display
-      if (data.assessment) {
-        setMessages((prev) => {
-          const updated = [...prev];
-          // Find the last student message and attach assessment + sources
-          for (let i = updated.length - 1; i >= 0; i--) {
-            if (updated[i].role === 'student') {
-              updated[i] = {
-                ...updated[i],
-                assessment: data.assessment,
-                sources: data.assessment.rag_chunks?.map((c: { doc_abbreviation: string; heading: string | null; content: string; page_start: number | null }) => ({
+      if (contentType.includes('text/event-stream') && res.body) {
+        // Streaming path: read SSE tokens incrementally
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let examinerMsg = '';
+        let receivedAssessment: Assessment | null = null;
+        let receivedSources: Source[] | undefined;
+
+        // Add a placeholder examiner message that we'll update with streamed tokens
+        setMessages((prev) => [...prev, { role: 'examiner', text: '' }]);
+        setLoading(false); // Hide typing indicator — we're showing real tokens now
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+
+          // Process complete SSE lines from buffer
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            const payload = line.slice(6);
+
+            if (payload === '[DONE]') continue;
+
+            try {
+              const parsed = JSON.parse(payload);
+
+              if (parsed.token) {
+                // Incremental token — append to examiner message
+                examinerMsg += parsed.token;
+                setMessages((prev) => {
+                  const updated = [...prev];
+                  const lastIdx = updated.length - 1;
+                  if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
+                    updated[lastIdx] = { ...updated[lastIdx], text: examinerMsg };
+                  }
+                  return updated;
+                });
+              } else if (parsed.examinerMessage) {
+                // Full message event — use as authoritative final text
+                examinerMsg = parsed.examinerMessage;
+                setMessages((prev) => {
+                  const updated = [...prev];
+                  const lastIdx = updated.length - 1;
+                  if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
+                    updated[lastIdx] = { ...updated[lastIdx], text: examinerMsg };
+                  }
+                  return updated;
+                });
+              } else if (parsed.assessment) {
+                // Assessment arrived (from parallel assessment call)
+                receivedAssessment = parsed.assessment;
+                receivedSources = parsed.assessment.rag_chunks?.map((c: { doc_abbreviation: string; heading: string | null; content: string; page_start: number | null }) => ({
                   doc_abbreviation: c.doc_abbreviation,
                   heading: c.heading,
                   content: c.content,
                   page_start: c.page_start,
-                })),
-              };
-              break;
+                }));
+              }
+            } catch {
+              // Ignore malformed SSE payloads
             }
           }
-          return [...updated, { role: 'examiner', text: examinerMsg }];
-        });
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          { role: 'examiner', text: examinerMsg },
-        ]);
-      }
+        }
 
-      // Track assessment score per task
-      if (data.assessment?.score && data.taskId) {
-        const prev = taskScoresRef.current[data.taskId];
-        taskScoresRef.current[data.taskId] = {
-          score: data.assessment.score,
-          attempts: (prev?.attempts || 0) + 1,
-        };
-      }
+        // Apply assessment to the student message
+        if (receivedAssessment) {
+          setMessages((prev) => {
+            const updated = [...prev];
+            for (let i = updated.length - 1; i >= 0; i--) {
+              if (updated[i].role === 'student') {
+                updated[i] = {
+                  ...updated[i],
+                  assessment: receivedAssessment!,
+                  sources: receivedSources,
+                };
+                break;
+              }
+            }
+            return updated;
+          });
+        }
 
-      // Accumulate covered task IDs
-      if (data.taskId) {
+        // Track assessment + session updates
+        const newExchangeCount = exchangeCount + 1;
+        setExchangeCount(newExchangeCount);
+
+        if (receivedAssessment?.score && taskData.id) {
+          const prev = taskScoresRef.current[taskData.id];
+          taskScoresRef.current[taskData.id] = {
+            score: receivedAssessment.score,
+            attempts: (prev?.attempts || 0) + 1,
+          };
+        }
+
         setCoveredTaskIds((prev) =>
-          prev.includes(data.taskId) ? prev : [...prev, data.taskId]
+          prev.includes(taskData.id) ? prev : [...prev, taskData.id]
         );
-      }
 
-      // Update session in database
-      if (sessionId) {
-        const scores = taskScoresRef.current;
-        fetch('/api/session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'update',
-            sessionId,
-            exchange_count: newExchangeCount,
-            acs_tasks_covered: Object.entries(scores).map(([id, s]) => ({
-              task_id: id,
-              status: s.score,
-              attempts: s.attempts,
-            })),
-          }),
-        }).catch(() => {});
-      }
+        // Update session stats (examiner transcript is persisted server-side via onComplete callback)
+        if (sessionId) {
+          fetch('/api/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'update',
+              sessionId,
+              exchange_count: newExchangeCount,
+              acs_tasks_covered: Object.entries(taskScoresRef.current).map(([id, s]) => ({
+                task_id: id,
+                status: s.score,
+                attempts: s.attempts,
+              })),
+            }),
+          }).catch(() => {});
+        }
 
-      if (voiceEnabledRef.current) {
-        speakText(examinerMsg);
+        if (voiceEnabledRef.current && examinerMsg) {
+          speakText(examinerMsg);
+        }
+      } else {
+        // Fallback: non-streaming JSON response
+        const data = await res.json();
+        const examinerMsg = data.examinerMessage;
+        const newExchangeCount = exchangeCount + 1;
+        setExchangeCount(newExchangeCount);
+
+        if (data.assessment) {
+          setMessages((prev) => {
+            const updated = [...prev];
+            for (let i = updated.length - 1; i >= 0; i--) {
+              if (updated[i].role === 'student') {
+                updated[i] = {
+                  ...updated[i],
+                  assessment: data.assessment,
+                  sources: data.assessment.rag_chunks?.map((c: { doc_abbreviation: string; heading: string | null; content: string; page_start: number | null }) => ({
+                    doc_abbreviation: c.doc_abbreviation,
+                    heading: c.heading,
+                    content: c.content,
+                    page_start: c.page_start,
+                  })),
+                };
+                break;
+              }
+            }
+            return [...updated, { role: 'examiner', text: examinerMsg }];
+          });
+        } else {
+          setMessages((prev) => [
+            ...prev,
+            { role: 'examiner', text: examinerMsg },
+          ]);
+        }
+
+        if (data.assessment?.score && data.taskId) {
+          const prev = taskScoresRef.current[data.taskId];
+          taskScoresRef.current[data.taskId] = {
+            score: data.assessment.score,
+            attempts: (prev?.attempts || 0) + 1,
+          };
+        }
+
+        if (data.taskId) {
+          setCoveredTaskIds((prev) =>
+            prev.includes(data.taskId) ? prev : [...prev, data.taskId]
+          );
+        }
+
+        if (sessionId) {
+          const scores = taskScoresRef.current;
+          fetch('/api/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'update',
+              sessionId,
+              exchange_count: newExchangeCount,
+              acs_tasks_covered: Object.entries(scores).map(([id, s]) => ({
+                task_id: id,
+                status: s.score,
+                attempts: s.attempts,
+              })),
+            }),
+          }).catch(() => {});
+        }
+
+        if (voiceEnabledRef.current) {
+          speakText(examinerMsg);
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to get response');

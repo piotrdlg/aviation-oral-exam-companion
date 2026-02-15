@@ -75,26 +75,46 @@ export async function pickNextTask(
 }
 
 /**
+ * Fetch RAG context once for sharing between assessment and examiner generation.
+ * Returns both the formatted string and raw chunks.
+ */
+export async function fetchRagContext(
+  task: AcsTaskRow,
+  history: ExamMessage[],
+  studentAnswer?: string,
+  matchCount: number = 5
+): Promise<{ ragContext: string; ragChunks: ChunkSearchResult[] }> {
+  try {
+    // Combine task, recent history, and student answer for a comprehensive query
+    const recentText = history.slice(-2).map(m => m.text).join(' ');
+    const answerText = studentAnswer ? ` ${studentAnswer}` : '';
+    const query = `${task.task} ${recentText}${answerText}`.slice(0, 500);
+    const ragChunks = await searchChunks(query, { matchCount });
+    const ragContext = formatChunksForPrompt(ragChunks);
+    return { ragContext, ragChunks };
+  } catch {
+    return { ragContext: '', ragChunks: [] };
+  }
+}
+
+/**
  * Generate the next examiner turn given conversation history.
+ * Accepts optional pre-fetched RAG to avoid duplicate searches.
  */
 export async function generateExaminerTurn(
   task: AcsTaskRow,
   history: ExamMessage[],
   difficulty?: import('@/types/database').Difficulty,
-  aircraftClass?: AircraftClass
+  aircraftClass?: AircraftClass,
+  prefetchedRag?: { ragContext: string }
 ): Promise<ExamTurn> {
   const systemPrompt = buildSystemPrompt(task, difficulty, aircraftClass);
 
-  // RAG: fetch relevant source material for context
-  let ragContext = '';
-  try {
-    // Build a query from the task and recent conversation
-    const recentText = history.slice(-2).map(m => m.text).join(' ');
-    const query = `${task.task} ${recentText}`.slice(0, 500);
-    const chunks = await searchChunks(query, { matchCount: 3 });
-    ragContext = formatChunksForPrompt(chunks);
-  } catch {
-    // RAG is non-critical
+  // Use pre-fetched RAG or fetch fresh
+  let ragContext = prefetchedRag?.ragContext ?? '';
+  if (!prefetchedRag) {
+    const result = await fetchRagContext(task, history);
+    ragContext = result.ragContext;
   }
 
   const ragSection = ragContext
@@ -124,24 +144,25 @@ export async function generateExaminerTurn(
 
 /**
  * Generate examiner turn with streaming via Server-Sent Events.
+ * Accepts optional pre-fetched RAG and an optional assessmentPromise
+ * whose result will be sent as a final SSE event before [DONE].
  */
 export async function generateExaminerTurnStreaming(
   task: AcsTaskRow,
   history: ExamMessage[],
   difficulty?: import('@/types/database').Difficulty,
-  aircraftClass?: AircraftClass
+  aircraftClass?: AircraftClass,
+  prefetchedRag?: { ragContext: string },
+  assessmentPromise?: Promise<AssessmentData>,
+  onComplete?: (fullText: string) => void
 ): Promise<ReadableStream> {
   const systemPrompt = buildSystemPrompt(task, difficulty, aircraftClass);
 
-  // RAG: fetch relevant source material for context
-  let ragContext = '';
-  try {
-    const recentText = history.slice(-2).map(m => m.text).join(' ');
-    const query = `${task.task} ${recentText}`.slice(0, 500);
-    const chunks = await searchChunks(query, { matchCount: 3 });
-    ragContext = formatChunksForPrompt(chunks);
-  } catch {
-    // Non-critical
+  // Use pre-fetched RAG or fetch fresh
+  let ragContext = prefetchedRag?.ragContext ?? '';
+  if (!prefetchedRag) {
+    const result = await fetchRagContext(task, history);
+    ragContext = result.ragContext;
   }
 
   const ragSection = ragContext
@@ -168,13 +189,34 @@ export async function generateExaminerTurnStreaming(
 
   return new ReadableStream({
     async start(controller) {
+      let fullText = '';
       try {
         for await (const event of stream) {
           if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+            fullText += event.delta.text;
             const data = JSON.stringify({ token: event.delta.text });
             controller.enqueue(encoder.encode(`data: ${data}\n\n`));
           }
         }
+
+        // Send the full examiner message as a separate event for client-side persistence
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ examinerMessage: fullText })}\n\n`));
+
+        // Trigger onComplete callback for server-side persistence (e.g., writing transcript)
+        if (onComplete) {
+          try { onComplete(fullText); } catch { /* non-critical */ }
+        }
+
+        // If we have a parallel assessment promise, wait for it and send the result
+        if (assessmentPromise) {
+          try {
+            const assessment = await assessmentPromise;
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ assessment })}\n\n`));
+          } catch (err) {
+            console.error('Assessment failed during streaming:', err);
+          }
+        }
+
         controller.enqueue(encoder.encode('data: [DONE]\n\n'));
         controller.close();
       } catch (err) {
@@ -187,11 +229,13 @@ export async function generateExaminerTurnStreaming(
 /**
  * Assess the student's latest answer using Claude.
  * Returns score, feedback, and which ACS elements were addressed.
+ * Accepts optional pre-fetched RAG to avoid duplicate searches.
  */
 export async function assessAnswer(
   task: AcsTaskRow,
   history: ExamMessage[],
-  studentAnswer: string
+  studentAnswer: string,
+  prefetchedRag?: { ragContext: string; ragChunks: ChunkSearchResult[] }
 ): Promise<AssessmentData> {
   // Build complete element list for the assessment prompt
   const allElements: string[] = [];
@@ -219,15 +263,17 @@ export async function assessAnswer(
     .map((m) => `${m.role}: ${m.text}`)
     .join('\n');
 
-  // RAG: search for relevant source material to validate the answer
-  let ragContext = '';
-  let ragChunks: ChunkSearchResult[] = [];
-  try {
-    const searchQuery = `${task.task} ${studentAnswer}`.slice(0, 500);
-    ragChunks = await searchChunks(searchQuery, { matchCount: 4 });
-    ragContext = formatChunksForPrompt(ragChunks);
-  } catch {
-    // RAG is non-critical; proceed without it
+  // Use pre-fetched RAG or fetch fresh
+  let ragContext = prefetchedRag?.ragContext ?? '';
+  let ragChunks = prefetchedRag?.ragChunks ?? [];
+  if (!prefetchedRag) {
+    try {
+      const searchQuery = `${task.task} ${studentAnswer}`.slice(0, 500);
+      ragChunks = await searchChunks(searchQuery, { matchCount: 4 });
+      ragContext = formatChunksForPrompt(ragChunks);
+    } catch {
+      // RAG is non-critical; proceed without it
+    }
   }
 
   const ragSection = ragContext

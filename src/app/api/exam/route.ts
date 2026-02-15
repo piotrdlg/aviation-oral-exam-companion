@@ -6,6 +6,7 @@ import {
   generateExaminerTurn,
   generateExaminerTurnStreaming,
   assessAnswer,
+  fetchRagContext,
   type ExamMessage,
   type AssessmentData,
 } from '@/lib/exam-engine';
@@ -216,38 +217,114 @@ export async function POST(request: NextRequest) {
       // Calculate exchange number from history length
       const exchangeNumber = Math.floor(history.length / 2) + 1;
 
-      // Step 1: Persist student transcript (get back transcript_id)
-      let studentTranscriptId: string | null = null;
-      if (sessionId) {
-        const { data: transcriptRow } = await supabase
-          .from('session_transcripts')
-          .insert({
-            session_id: sessionId,
-            exchange_number: exchangeNumber,
-            role: 'student',
-            text: studentAnswer,
-          })
-          .select('id')
-          .single();
-        studentTranscriptId = transcriptRow?.id ?? null;
+      // Step 1: Persist student transcript + fetch RAG in parallel
+      const [studentTranscriptResult, rag] = await Promise.all([
+        sessionId
+          ? supabase
+              .from('session_transcripts')
+              .insert({
+                session_id: sessionId,
+                exchange_number: exchangeNumber,
+                role: 'student',
+                text: studentAnswer,
+              })
+              .select('id')
+              .single()
+          : Promise.resolve({ data: null }),
+        fetchRagContext(taskData, history, studentAnswer),
+      ]);
+      const studentTranscriptId = studentTranscriptResult.data?.id ?? null;
+
+      // Step 2: Build updated history for examiner
+      const updatedHistory: ExamMessage[] = [
+        ...history,
+        { role: 'student', text: studentAnswer },
+      ];
+
+      // Step 3: Run assessment + examiner generation IN PARALLEL (key optimization)
+      // The examiner's next question depends on history, NOT on the assessment result.
+      if (stream) {
+        // Streaming path: start assessment in background, stream examiner immediately
+        const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag);
+
+        // onComplete callback: persist examiner transcript to DB after stream finishes
+        const onStreamComplete = (fullText: string) => {
+          if (sessionId && fullText) {
+            supabase.from('session_transcripts').insert({
+              session_id: sessionId,
+              exchange_number: exchangeNumber,
+              role: 'examiner',
+              text: fullText,
+            }).then(({ error }) => {
+              if (error) console.error('Examiner transcript write error:', error.message);
+            });
+          }
+        };
+
+        const readableStream = await generateExaminerTurnStreaming(
+          taskData, updatedHistory, undefined, undefined, rag, assessmentPromise, onStreamComplete
+        );
+
+        // DB writes happen inside the stream (assessment sent as final SSE event)
+        // The client will handle persisting after receiving the full stream.
+        // Write student assessment + element_attempts + citations in the background
+        // after the assessment promise resolves.
+        assessmentPromise.then(async (assessment) => {
+          if (studentTranscriptId && assessment) {
+            const dbWrites: PromiseLike<unknown>[] = [
+              supabase
+                .from('session_transcripts')
+                .update({ assessment })
+                .eq('id', studentTranscriptId),
+            ];
+            if (sessionId) {
+              dbWrites.push(writeElementAttempts(supabase, sessionId, studentTranscriptId, assessment));
+            }
+            if (assessment.rag_chunks && assessment.rag_chunks.length > 0) {
+              const citations = assessment.rag_chunks.map((chunk, idx) => ({
+                transcript_id: studentTranscriptId,
+                chunk_id: chunk.id,
+                rank: idx + 1,
+                score: chunk.score,
+                snippet: chunk.content.slice(0, 300),
+              }));
+              dbWrites.push(
+                supabase.from('transcript_citations').insert(citations).then(({ error: citErr }) => {
+                  if (citErr) console.error('Citation write error:', citErr.message);
+                })
+              );
+            }
+            await Promise.all(dbWrites);
+          }
+        }).catch(err => console.error('Background assessment/DB error:', err));
+
+        return new Response(readableStream, {
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'X-Task-Id': taskData.id,
+          },
+        });
       }
 
-      // Step 2: Assess the answer (now returns element codes)
-      const assessment = await assessAnswer(taskData, history, studentAnswer);
+      // Non-streaming path: run both in parallel, wait for both
+      const [assessment, turn] = await Promise.all([
+        assessAnswer(taskData, history, studentAnswer, rag),
+        generateExaminerTurn(taskData, updatedHistory, undefined, undefined, rag),
+      ]);
 
-      // Step 3: Update student transcript with assessment + write element_attempts + citations
+      // Step 4: Persist all DB writes in parallel (non-blocking for response)
       if (studentTranscriptId && assessment) {
-        await supabase
-          .from('session_transcripts')
-          .update({ assessment })
-          .eq('id', studentTranscriptId);
-
-        // Step 3b: Write element_attempts rows
+        const dbWrites: PromiseLike<unknown>[] = [
+          supabase
+            .from('session_transcripts')
+            .update({ assessment })
+            .eq('id', studentTranscriptId),
+        ];
         if (sessionId) {
-          await writeElementAttempts(supabase, sessionId, studentTranscriptId, assessment);
+          dbWrites.push(writeElementAttempts(supabase, sessionId, studentTranscriptId, assessment));
         }
-
-        // Step 3c: Write transcript_citations from RAG chunks
         if (assessment.rag_chunks && assessment.rag_chunks.length > 0) {
           const citations = assessment.rag_chunks.map((chunk, idx) => ({
             transcript_id: studentTranscriptId,
@@ -256,41 +333,33 @@ export async function POST(request: NextRequest) {
             score: chunk.score,
             snippet: chunk.content.slice(0, 300),
           }));
-          const { error: citErr } = await supabase.from('transcript_citations').insert(citations);
-          if (citErr) console.error('Citation write error:', citErr.message);
+          dbWrites.push(
+            supabase.from('transcript_citations').insert(citations).then(({ error: citErr }) => {
+              if (citErr) console.error('Citation write error:', citErr.message);
+            })
+          );
         }
-      }
-
-      // Step 4: Generate next examiner turn (support streaming)
-      const updatedHistory: ExamMessage[] = [
-        ...history,
-        { role: 'student', text: studentAnswer },
-      ];
-
-      if (stream) {
-        const readableStream = await generateExaminerTurnStreaming(taskData, updatedHistory);
-
-        return new Response(readableStream, {
-          headers: {
-            'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive',
-            'X-Assessment': Buffer.from(JSON.stringify(assessment)).toString('base64'),
-            'X-Task-Id': taskData.id,
-          },
-        });
-      }
-
-      const turn = await generateExaminerTurn(taskData, updatedHistory);
-
-      // Step 5: Persist examiner transcript
-      if (sessionId) {
-        await supabase.from('session_transcripts').insert({
+        // Write examiner transcript in same batch
+        if (sessionId) {
+          dbWrites.push(
+            supabase.from('session_transcripts').insert({
+              session_id: sessionId,
+              exchange_number: exchangeNumber,
+              role: 'examiner',
+              text: turn.examinerMessage,
+            })
+          );
+        }
+        // Fire all DB writes in parallel — don't block response
+        Promise.all(dbWrites).catch(err => console.error('DB write error:', err));
+      } else if (sessionId) {
+        // No assessment to write, but still persist examiner transcript
+        supabase.from('session_transcripts').insert({
           session_id: sessionId,
           exchange_number: exchangeNumber,
           role: 'examiner',
           text: turn.examinerMessage,
-        });
+        }).then(({ error }) => { if (error) console.error('Examiner transcript error:', error.message); });
       }
 
       return NextResponse.json({
