@@ -58,13 +58,13 @@ export async function GET() {
       );
     }
 
-    const tokenResponse = await fetch('https://api.deepgram.com/v1/auth/token', {
+    const tokenResponse = await fetch('https://api.deepgram.com/v1/auth/grant', {
       method: 'POST',
       headers: {
         'Authorization': `Token ${deepgramApiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ ttl_seconds: TOKEN_TTL_SECONDS }),
+      body: JSON.stringify({ time_to_live_in_seconds: TOKEN_TTL_SECONDS }),
     });
 
     if (!tokenResponse.ok) {
