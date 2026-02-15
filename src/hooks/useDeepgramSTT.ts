@@ -124,7 +124,8 @@ export function useDeepgramSTT(options: UseDeepgramSTTOptions = {}): UseDeepgram
       }
       const { token, url: baseWsUrl } = await tokenRes.json();
 
-      // 3. Build WebSocket URL with aviation keywords (no token in URL)
+      // 3. Build WebSocket URL with aviation keywords
+      // Token is already embedded in baseWsUrl by the server
       const keywordsParam = AVIATION_KEYWORDS.map(k => `keywords=${encodeURIComponent(k)}`).join('&');
       const wsUrl = `${baseWsUrl}&${keywordsParam}`;
 
@@ -132,8 +133,8 @@ export function useDeepgramSTT(options: UseDeepgramSTTOptions = {}): UseDeepgram
       await reportUsage('start');
       startTimeRef.current = Date.now();
 
-      // 5. Open WebSocket to Deepgram using Sec-WebSocket-Protocol for auth
-      const ws = new WebSocket(wsUrl, ['token', token]);
+      // 5. Open WebSocket to Deepgram (token is in URL query params)
+      const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => {

@@ -101,16 +101,16 @@ export function useStreamingPlayer(): UseStreamingPlayerReturn {
 
   /**
    * Convert pcm_f32le bytes to Float32Array.
+   * Always copies to a fresh buffer to avoid transferring oversized
+   * underlying ArrayBuffers when the input is a view.
    */
   function pcmF32leToFloat32(data: Uint8Array): Float32Array {
-    // Ensure alignment
-    if (data.byteOffset % 4 === 0) {
-      return new Float32Array(data.buffer, data.byteOffset, data.byteLength >> 2);
+    const copy = new Float32Array(data.byteLength >> 2);
+    const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    for (let i = 0; i < copy.length; i++) {
+      copy[i] = view.getFloat32(i * 4, true); // little-endian
     }
-    // Copy to aligned buffer
-    const aligned = new ArrayBuffer(data.byteLength);
-    new Uint8Array(aligned).set(data);
-    return new Float32Array(aligned);
+    return copy;
   }
 
   const playStream = useCallback(async (response: Response, encoding: AudioEncoding, sampleRate: number) => {
@@ -137,12 +137,25 @@ export function useStreamingPlayer(): UseStreamingPlayerReturn {
       }
 
       // PCM streaming via AudioWorklet with stateful resampling.
-      // Configure worklet with source sample rate — it handles resampling internally.
       const abortController = new AbortController();
       abortControllerRef.current = abortController;
 
-      // Tell worklet the source sample rate so it can resample correctly
-      node.port.postMessage({ type: 'config', sourceRate: sampleRate });
+      // Configure worklet with source sample rate and WAIT for ACK
+      // before sending any audio data (prevents config/data race)
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Worklet config timeout')), 5000);
+        const onAck = (event: MessageEvent) => {
+          if (event.data?.type === 'configured') {
+            clearTimeout(timeout);
+            node.port.removeEventListener('message', onAck);
+            resolve();
+          }
+        };
+        node.port.addEventListener('message', onAck);
+        node.port.postMessage({ type: 'config', sourceRate: sampleRate });
+      });
+
+      if (abortController.signal.aborted) return;
 
       // Clear any leftover remainder from a previous stream
       remainderRef.current = null;
@@ -183,7 +196,7 @@ export function useStreamingPlayer(): UseStreamingPlayerReturn {
 
           if (chunk.length === 0) continue;
 
-          // Convert to Float32 and send to worklet
+          // Convert to Float32 (always a fresh copy — safe to transfer)
           let float32: Float32Array;
           if (encoding === 'linear16') {
             float32 = linear16ToFloat32(chunk);
@@ -203,32 +216,31 @@ export function useStreamingPlayer(): UseStreamingPlayerReturn {
       }
 
       // Wait for worklet to drain its buffer before marking as done
-      // Listen for buffer_level messages; when buffered drops to 0, we're done
       if (!abortController.signal.aborted) {
         await new Promise<void>((resolve) => {
-          const checkInterval = setInterval(() => {
-            if (abortController.signal.aborted) {
-              clearInterval(checkInterval);
-              resolve();
-            }
-          }, 200);
-
-          // Also listen for buffer drain via worklet messages
           const onMessage = (event: MessageEvent) => {
-            if (event.data?.type === 'buffer_level' && event.data.buffered <= 0) {
-              clearInterval(checkInterval);
+            if (event.data?.type === 'drain') {
               node.port.removeEventListener('message', onMessage);
               resolve();
             }
           };
           node.port.addEventListener('message', onMessage);
 
-          // Timeout: max 30 seconds of drain wait
+          // Also check abort periodically
+          const checkInterval = setInterval(() => {
+            if (abortController.signal.aborted) {
+              clearInterval(checkInterval);
+              node.port.removeEventListener('message', onMessage);
+              resolve();
+            }
+          }, 200);
+
+          // Timeout: max 120 seconds (covers longest possible exam utterance)
           setTimeout(() => {
             clearInterval(checkInterval);
             node.port.removeEventListener('message', onMessage);
             resolve();
-          }, 30000);
+          }, 120000);
         });
       }
 

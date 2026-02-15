@@ -77,11 +77,12 @@ export async function GET() {
     }
 
     const tokenData = await tokenResponse.json();
-    const accessToken = tokenData.access_token || tokenData.token;
+    // Deepgram /v1/auth/grant may return key under different field names
+    const accessToken = tokenData.key || tokenData.api_key || tokenData.access_token || tokenData.token;
     const expiresIn = tokenData.expires_in || TOKEN_TTL_SECONDS;
 
     if (!accessToken) {
-      console.error('Deepgram token response missing access_token:', tokenData);
+      console.error('Deepgram token response — no usable key found. Fields:', Object.keys(tokenData));
       return NextResponse.json(
         { error: 'Invalid token response from STT provider' },
         { status: 502 }
@@ -90,7 +91,8 @@ export async function GET() {
 
     const expiresAt = Date.now() + expiresIn * 1000;
 
-    // Build pre-configured WebSocket URL
+    // Build pre-configured WebSocket URL with token included for browser auth
+    // Browsers cannot set Authorization headers on WebSocket, so token goes in URL
     const wsUrl = 'wss://api.deepgram.com/v1/listen?' + new URLSearchParams({
       model: 'nova-3',
       language: 'en-US',
@@ -98,6 +100,7 @@ export async function GET() {
       interim_results: 'true',
       utterance_end_ms: '1500',
       vad_events: 'true',
+      token: accessToken,
     }).toString();
 
     // Log token issuance (non-blocking)
