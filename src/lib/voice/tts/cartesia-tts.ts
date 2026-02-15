@@ -2,7 +2,7 @@ import type { TTSProvider, TTSResult, TTSOptions } from '../types';
 
 const CARTESIA_TTS_URL = 'https://api.cartesia.ai/tts/bytes';
 const DEFAULT_MODEL = 'sonic-english';
-const DEFAULT_SAMPLE_RATE = 44100;
+const DEFAULT_SAMPLE_RATE = 48000;
 // Default to an American male voice (Cartesia "Victor - Voiceover Man")
 // Versatile, engaging adult male — professional and authoritative for DPE persona
 // Override via CARTESIA_VOICE_ID env var

@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { VoiceTier, TierFeatures } from '@/lib/voice/types';
+import VoiceLab from './components/VoiceLab';
 
 type TestStatus = 'idle' | 'running' | 'pass' | 'fail';
 
@@ -602,6 +603,8 @@ export default function SettingsPage() {
           Check chrome://settings/content/microphone if recognition fails.
         </p>
       </div>
+
+      <VoiceLab />
     </div>
   );
 }
