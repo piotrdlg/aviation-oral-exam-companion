@@ -11,18 +11,6 @@ const serviceSupabase = createServiceClient(
 const TOKEN_RATE_LIMIT = 4; // max tokens per minute per user
 const TOKEN_TTL_SECONDS = 600; // 10 minutes — enough for a full exam session
 
-/** Aviation vocabulary keywords for Deepgram recognition accuracy. */
-const AVIATION_KEYWORDS = [
-  'METAR', 'TAF', 'NOTAM', 'PIREP', 'SIGMET', 'AIRMET',
-  'VOR', 'NDB', 'ILS', 'RNAV', 'GPS', 'DME',
-  'ACS', 'DPE', 'ASEL', 'AMEL', 'ASES', 'AMES',
-  'Cessna', 'Piper', 'Beechcraft', 'Cirrus',
-  'CTAF', 'ATIS', 'AWOS', 'ASOS',
-  'FAR', 'AIM', 'POH', 'AFM',
-  'ADM', 'CRM', 'SRM', 'IMSAFE', 'PAVE', 'DECIDE',
-  'sectional', 'checkride', 'logbook', 'endorsement',
-];
-
 /**
  * GET /api/stt/token
  * Issues a temporary Deepgram JWT for direct client-to-Deepgram WebSocket connection.
@@ -105,7 +93,9 @@ export async function GET() {
 
     const expiresAt = Date.now() + expiresIn * 1000;
 
-    // Build pre-configured WebSocket URL with all params including keywords
+    // Build pre-configured WebSocket URL (minimal params — keywords removed
+    // per GPT-5.2/Gemini consensus: 30 repeated keywords= params caused
+    // Deepgram to reject the WebSocket handshake)
     const params = new URLSearchParams({
       model: 'nova-3',
       language: 'en-US',
@@ -114,9 +104,6 @@ export async function GET() {
       utterance_end_ms: '1500',
       vad_events: 'true',
     });
-    for (const kw of AVIATION_KEYWORDS) {
-      params.append('keywords', kw);
-    }
     const wsUrl = 'wss://api.deepgram.com/v1/listen?' + params.toString();
 
     // Log token issuance (non-blocking)
