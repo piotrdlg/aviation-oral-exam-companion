@@ -614,7 +614,7 @@ export default function PracticePage() {
                 </div>
               )}
 
-              {/* FAA source summary (LLM-synthesized) + document references */}
+              {/* FAA source summary (LLM-synthesized) + deduplicated document references */}
               {(msg.assessment?.source_summary || (msg.sources && msg.sources.length > 0)) && (
                 <details className="mt-2 pt-2 border-t border-white/10">
                   <summary className="text-xs text-blue-300 cursor-pointer hover:text-blue-200">
@@ -624,17 +624,44 @@ export default function PracticePage() {
                     {msg.assessment?.source_summary && (
                       <p className="text-xs text-gray-300 leading-relaxed mb-1.5">{msg.assessment.source_summary}</p>
                     )}
-                    {msg.sources && msg.sources.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {msg.sources.map((src, j) => (
-                          <span key={j} className="text-xs bg-black/20 rounded px-1.5 py-0.5 text-blue-200/70">
-                            {src.doc_abbreviation.toUpperCase()}
-                            {src.heading ? ` — ${src.heading}` : ''}
-                            {src.page_start ? ` (p.${src.page_start})` : ''}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                    {msg.sources && msg.sources.length > 0 && (() => {
+                      // Deduplicate sources by abbreviation + heading
+                      const seen = new Set<string>();
+                      const unique = msg.sources!.filter(src => {
+                        const key = `${src.doc_abbreviation}|${src.heading || ''}`;
+                        if (seen.has(key)) return false;
+                        seen.add(key);
+                        return true;
+                      });
+                      const FAA_LINKS: Record<string, string> = {
+                        phak: 'https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/phak',
+                        afh: 'https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/airplane_handbook',
+                        aim: 'https://www.faa.gov/air_traffic/publications/atpubs/aim_html/',
+                        cfr: 'https://www.ecfr.gov/current/title-14',
+                        ac: 'https://www.faa.gov/regulations_policies/advisory_circulars',
+                        acs: 'https://www.faa.gov/training_testing/testing/acs',
+                      };
+                      return (
+                        <div className="flex flex-wrap gap-1">
+                          {unique.map((src, j) => {
+                            const link = FAA_LINKS[src.doc_abbreviation.toLowerCase()];
+                            const label = src.doc_abbreviation.toUpperCase()
+                              + (src.heading ? ` — ${src.heading}` : '')
+                              + (src.page_start ? ` (p.${src.page_start})` : '');
+                            return link ? (
+                              <a key={j} href={link} target="_blank" rel="noopener noreferrer"
+                                className="text-xs bg-black/20 rounded px-1.5 py-0.5 text-blue-300 hover:text-blue-200 hover:bg-black/30 transition-colors">
+                                {label} ↗
+                              </a>
+                            ) : (
+                              <span key={j} className="text-xs bg-black/20 rounded px-1.5 py-0.5 text-blue-200/70">
+                                {label}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </details>
               )}
