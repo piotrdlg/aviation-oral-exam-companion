@@ -17,6 +17,7 @@ interface Assessment {
   score: 'satisfactory' | 'unsatisfactory' | 'partial';
   feedback: string;
   misconceptions: string[];
+  source_summary?: string | null;
 }
 
 interface Message {
@@ -613,23 +614,27 @@ export default function PracticePage() {
                 </div>
               )}
 
-              {/* Source citations */}
-              {msg.sources && msg.sources.length > 0 && (
+              {/* FAA source summary (LLM-synthesized) + document references */}
+              {(msg.assessment?.source_summary || (msg.sources && msg.sources.length > 0)) && (
                 <details className="mt-2 pt-2 border-t border-white/10">
                   <summary className="text-xs text-blue-300 cursor-pointer hover:text-blue-200">
-                    Show FAA Sources ({msg.sources.length})
+                    FAA References
                   </summary>
-                  <div className="mt-1.5 space-y-1">
-                    {msg.sources.map((src, j) => (
-                      <div key={j} className="text-xs bg-black/20 rounded p-2">
-                        <p className="font-medium text-blue-200">
-                          {src.doc_abbreviation.toUpperCase()}
-                          {src.heading ? ` — ${src.heading}` : ''}
-                          {src.page_start ? ` (p.${src.page_start})` : ''}
-                        </p>
-                        <p className="opacity-60 mt-0.5 line-clamp-2">{src.content.slice(0, 200)}...</p>
+                  <div className="mt-1.5">
+                    {msg.assessment?.source_summary && (
+                      <p className="text-xs text-gray-300 leading-relaxed mb-1.5">{msg.assessment.source_summary}</p>
+                    )}
+                    {msg.sources && msg.sources.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {msg.sources.map((src, j) => (
+                          <span key={j} className="text-xs bg-black/20 rounded px-1.5 py-0.5 text-blue-200/70">
+                            {src.doc_abbreviation.toUpperCase()}
+                            {src.heading ? ` — ${src.heading}` : ''}
+                            {src.page_start ? ` (p.${src.page_start})` : ''}
+                          </span>
+                        ))}
                       </div>
-                    ))}
+                    )}
                   </div>
                 </details>
               )}

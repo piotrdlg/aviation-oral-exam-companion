@@ -27,6 +27,7 @@ export interface AssessmentData {
   follow_up_needed: boolean;
   primary_element: string | null;
   mentioned_elements: string[];
+  source_summary: string | null;
   rag_chunks?: ChunkSearchResult[];
 }
 
@@ -296,7 +297,8 @@ Respond in JSON only with this schema:
   "misconceptions": ["list any misconceptions, or empty array"],
   "follow_up_needed": true | false,
   "primary_element": "the ACS element code (e.g., PA.I.A.K1) most directly addressed by this answer, or null",
-  "mentioned_elements": ["other element codes touched on in the answer"]
+  "mentioned_elements": ["other element codes touched on in the answer"],
+  "source_summary": "1-3 sentences summarizing the key FAA references that apply to this question. Cite specific regulation/document names and section numbers (e.g., '14 CFR 61.23 requires...'). If no FAA source material was provided, set to null."
 }`,
     messages: [
       {
@@ -319,6 +321,7 @@ Respond in JSON only with this schema:
       follow_up_needed: parsed.follow_up_needed ?? false,
       primary_element: parsed.primary_element || null,
       mentioned_elements: parsed.mentioned_elements || [],
+      source_summary: parsed.source_summary || null,
       rag_chunks: ragChunks.length > 0 ? ragChunks : undefined,
     };
   } catch {
@@ -329,6 +332,7 @@ Respond in JSON only with this schema:
       follow_up_needed: false,
       primary_element: null,
       mentioned_elements: [],
+      source_summary: null,
       rag_chunks: ragChunks.length > 0 ? ragChunks : undefined,
     };
   }
