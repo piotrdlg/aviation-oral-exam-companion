@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import type { VoiceTier, TierFeatures } from '@/lib/voice/types';
 
 type TestStatus = 'idle' | 'running' | 'pass' | 'fail';
 
@@ -16,9 +17,43 @@ interface AudioDevice {
   label: string;
 }
 
+interface TierInfo {
+  tier: VoiceTier;
+  features: TierFeatures;
+  usage: {
+    sessionsThisMonth: number;
+    ttsCharsThisMonth: number;
+    sttSecondsThisMonth: number;
+  };
+}
+
+const TIER_OPTIONS: { value: VoiceTier; label: string; description: string }[] = [
+  {
+    value: 'ground_school',
+    label: 'Ground School',
+    description: 'Browser STT + OpenAI TTS (Chrome only)',
+  },
+  {
+    value: 'checkride_prep',
+    label: 'Checkride Prep',
+    description: 'Deepgram STT & TTS (all browsers, aviation vocabulary)',
+  },
+  {
+    value: 'dpe_live',
+    label: 'DPE Live',
+    description: 'Deepgram STT + Cartesia Sonic TTS (ultra-low latency)',
+  },
+];
+
 export default function SettingsPage() {
   const [email, setEmail] = useState<string | null>(null);
   const supabase = createClient();
+
+  // Voice tier state
+  const [tierInfo, setTierInfo] = useState<TierInfo | null>(null);
+  const [tierLoading, setTierLoading] = useState(true);
+  const [tierSaving, setTierSaving] = useState(false);
+  const [tierMessage, setTierMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   // Voice diagnostics state
   const [diagRunning, setDiagRunning] = useState(false);
@@ -39,6 +74,40 @@ export default function SettingsPage() {
       setEmail(data.user?.email ?? null);
     });
   }, [supabase.auth]);
+
+  // Fetch current voice tier
+  useEffect(() => {
+    fetch('/api/user/tier')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.tier) {
+          setTierInfo({ tier: data.tier, features: data.features, usage: data.usage });
+        }
+      })
+      .catch(() => {})
+      .finally(() => setTierLoading(false));
+  }, []);
+
+  async function switchTier(newTier: VoiceTier) {
+    if (tierInfo?.tier === newTier || tierSaving) return;
+    setTierSaving(true);
+    setTierMessage(null);
+    try {
+      const res = await fetch('/api/user/tier', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier: newTier }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update tier');
+      setTierInfo((prev) => prev ? { ...prev, tier: newTier, features: data.features } : null);
+      setTierMessage({ text: `Switched to ${TIER_OPTIONS.find((t) => t.value === newTier)?.label}`, type: 'success' });
+    } catch (err) {
+      setTierMessage({ text: err instanceof Error ? err.message : 'Failed to update tier', type: 'error' });
+    } finally {
+      setTierSaving(false);
+    }
+  }
 
   // Load available audio input devices
   const loadDevices = useCallback(async () => {
@@ -354,6 +423,83 @@ export default function SettingsPage() {
           <span className="text-gray-400">Email: </span>
           <span className="text-white">{email ?? 'Loading...'}</span>
         </div>
+      </div>
+
+      <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
+        <h2 className="text-lg font-medium text-white mb-1">Voice Quality Tier</h2>
+        <p className="text-sm text-gray-400 mb-5">
+          Select the voice engine for your exam sessions. Higher tiers use professional STT/TTS providers.
+        </p>
+
+        {tierLoading ? (
+          <div className="text-sm text-gray-500">Loading tier info...</div>
+        ) : (
+          <>
+            <div className="grid gap-3">
+              {TIER_OPTIONS.map((option) => {
+                const isActive = tierInfo?.tier === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    onClick={() => switchTier(option.value)}
+                    disabled={tierSaving || isActive}
+                    className={`w-full text-left px-4 py-3 rounded-lg border transition-colors ${
+                      isActive
+                        ? 'border-blue-500 bg-blue-950/40 ring-1 ring-blue-500/50'
+                        : 'border-gray-700 bg-gray-800 hover:border-gray-600 hover:bg-gray-750'
+                    } ${tierSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className={`text-sm font-medium ${isActive ? 'text-blue-400' : 'text-white'}`}>
+                        {option.label}
+                      </span>
+                      {isActive && (
+                        <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">
+                          Active
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">{option.description}</p>
+                  </button>
+                );
+              })}
+            </div>
+
+            {tierMessage && (
+              <p className={`text-sm mt-3 ${tierMessage.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                {tierMessage.text}
+              </p>
+            )}
+
+            {tierInfo && (
+              <div className="mt-5 pt-4 border-t border-gray-800">
+                <h3 className="text-sm font-medium text-gray-300 mb-3">Current Usage</h3>
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <div className="text-lg font-semibold text-white">{tierInfo.usage.sessionsThisMonth}</div>
+                    <div className="text-xs text-gray-500">
+                      Sessions / {tierInfo.features.maxSessionsPerMonth === Infinity ? 'Unlimited' : tierInfo.features.maxSessionsPerMonth}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-semibold text-white">
+                      {Math.round(tierInfo.usage.ttsCharsThisMonth / 1000)}k
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      TTS chars / {tierInfo.features.maxTtsCharsPerMonth === Infinity ? 'Unlimited' : `${Math.round(tierInfo.features.maxTtsCharsPerMonth / 1000)}k`}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-semibold text-white">
+                      {tierInfo.features.maxExchangesPerSession}
+                    </div>
+                    <div className="text-xs text-gray-500">Max Q&A / session</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
