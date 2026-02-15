@@ -3,9 +3,10 @@ import type { TTSProvider, TTSResult, TTSOptions } from '../types';
 const CARTESIA_TTS_URL = 'https://api.cartesia.ai/tts/bytes';
 const DEFAULT_MODEL = 'sonic-english';
 const DEFAULT_SAMPLE_RATE = 44100;
-// Default to a professional male voice (Cartesia "Classy British Man")
+// Default to an authoritative American male voice (Cartesia "Paul - Straight Talker")
+// Deep and firm with a relaxed, conversational delivery — fits DPE persona
 // Override via CARTESIA_VOICE_ID env var
-const DEFAULT_VOICE_ID = '95856005-0332-41b0-935f-352e296aa0df';
+const DEFAULT_VOICE_ID = '3e1ed423-17e5-4773-b87c-25b031106e41';
 
 /**
  * Cartesia Sonic TTS provider.
