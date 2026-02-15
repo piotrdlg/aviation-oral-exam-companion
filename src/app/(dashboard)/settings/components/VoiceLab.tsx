@@ -40,6 +40,7 @@ export default function VoiceLab() {
 
       const node = new AudioWorkletNode(ctx, 'pcm-playback-processor');
       node.connect(ctx.destination);
+      node.port.start(); // Required for addEventListener to dispatch messages
       workletNodeRef.current = node;
 
       // Wait for config ACK
@@ -155,6 +156,7 @@ export default function VoiceLab() {
         await audioCtxRef.current.audioWorklet.addModule(WORKLET_URL);
         const node = new AudioWorkletNode(audioCtxRef.current, 'pcm-playback-processor');
         node.connect(audioCtxRef.current.destination);
+        node.port.start(); // Required for addEventListener to dispatch messages
         workletNodeRef.current = node;
       }
 
@@ -329,59 +331,105 @@ export default function VoiceLab() {
 
       const tokenData = await tokenRes.json();
       const tokenPreview = tokenData.token ? `${tokenData.token.slice(0, 20)}...` : 'MISSING';
+      const tokenLen = tokenData.token?.length || 0;
+      const debugInfo = tokenData._debug ? `field=${tokenData._debug.tokenFieldUsed}, respFields=[${tokenData._debug.responseFields}], expiresIn=${tokenData._debug.expiresIn}s` : 'no debug';
 
-      setSttTest({ status: 'running', detail: `Token fetched in ${tokenTime}ms (${tokenPreview}). Connecting WebSocket...` });
+      setSttTest({ status: 'running', detail: `Token in ${tokenTime}ms (len=${tokenLen}, ${debugInfo}). Trying auth methods...` });
 
-      const wsUrl = `${tokenData.url}&encoding=linear16&sample_rate=48000&channels=1`;
+      const baseWsUrl = `${tokenData.url}&encoding=linear16&sample_rate=48000&channels=1`;
 
-      // Try Sec-WebSocket-Protocol auth
-      const result = await new Promise<{ connected: boolean; closeCode?: number; closeReason?: string; error?: string }>((resolve) => {
-        try {
-          const ws = new WebSocket(wsUrl, ['token', tokenData.token]);
-          const timeout = setTimeout(() => {
-            ws.close();
-            resolve({ connected: false, error: 'Connection timeout (8s)' });
-          }, 8000);
+      // Helper to test a WebSocket connection with a given auth approach
+      function tryConnect(url: string, protocols?: string[]): Promise<{ connected: boolean; closeCode?: number; closeReason?: string; error?: string }> {
+        return new Promise((resolve) => {
+          try {
+            const ws = protocols ? new WebSocket(url, protocols) : new WebSocket(url);
+            let resolved = false;
+            const timeout = setTimeout(() => {
+              if (!resolved) { resolved = true; ws.close(); resolve({ connected: false, error: 'Timeout (8s)' }); }
+            }, 8000);
 
-          ws.onopen = () => {
-            clearTimeout(timeout);
-            // Send close immediately — we just wanted to test auth
-            ws.send(JSON.stringify({ type: 'CloseStream' }));
-            setTimeout(() => ws.close(), 500);
-            resolve({ connected: true });
-          };
+            ws.onopen = () => {
+              if (resolved) return;
+              resolved = true;
+              clearTimeout(timeout);
+              ws.send(JSON.stringify({ type: 'CloseStream' }));
+              setTimeout(() => ws.close(), 500);
+              resolve({ connected: true });
+            };
 
-          ws.onerror = () => {
-            clearTimeout(timeout);
-            resolve({ connected: false, error: 'WebSocket error (check browser console)' });
-          };
+            ws.onerror = () => {
+              if (resolved) return;
+              resolved = true;
+              clearTimeout(timeout);
+              resolve({ connected: false, error: 'WebSocket error event' });
+            };
 
-          ws.onclose = (event) => {
-            clearTimeout(timeout);
-            if (!event.wasClean && event.code !== 1000) {
-              resolve({ connected: false, closeCode: event.code, closeReason: event.reason || 'No reason' });
-            }
-          };
-        } catch (err) {
-          resolve({ connected: false, error: err instanceof Error ? err.message : 'Unknown error' });
-        }
-      });
-
-      const totalTime = Math.round(performance.now() - t0);
-
-      if (result.connected) {
-        setSttTest({
-          status: 'pass',
-          detail: `STT WebSocket connected! TokenTime=${tokenTime}ms, Total=${totalTime}ms. Auth via Sec-WebSocket-Protocol works.`,
-          timing: totalTime,
-        });
-      } else {
-        const reason = result.error || `Close code: ${result.closeCode}, reason: ${result.closeReason}`;
-        setSttTest({
-          status: 'fail',
-          detail: `STT WebSocket FAILED. TokenTime=${tokenTime}ms. ${reason}. Token preview: ${tokenPreview}`,
+            ws.onclose = (event) => {
+              if (resolved) return;
+              resolved = true;
+              clearTimeout(timeout);
+              resolve({ connected: false, closeCode: event.code, closeReason: event.reason || 'No reason given' });
+            };
+          } catch (err) {
+            resolve({ connected: false, error: err instanceof Error ? err.message : 'Constructor threw' });
+          }
         });
       }
+
+      // Method A: Sec-WebSocket-Protocol ['token', jwt]
+      setSttTest({ status: 'running', detail: `Trying Method A: Sec-WebSocket-Protocol auth...` });
+      const resultA = await tryConnect(baseWsUrl, ['token', tokenData.token]);
+      const timeA = Math.round(performance.now() - t0);
+
+      if (resultA.connected) {
+        setSttTest({
+          status: 'pass',
+          detail: `Method A (Sec-WebSocket-Protocol) connected! TokenTime=${tokenTime}ms, Total=${timeA}ms.`,
+          timing: timeA,
+        });
+        return;
+      }
+
+      const reasonA = resultA.error || `code=${resultA.closeCode}, reason=${resultA.closeReason}`;
+
+      // Method B: Token in URL query parameter
+      setSttTest({ status: 'running', detail: `Method A failed (${reasonA}). Trying Method B: token in URL...` });
+      const urlWithToken = `${baseWsUrl}&token=${encodeURIComponent(tokenData.token)}`;
+      const resultB = await tryConnect(urlWithToken);
+      const timeB = Math.round(performance.now() - t0);
+
+      if (resultB.connected) {
+        setSttTest({
+          status: 'pass',
+          detail: `Method B (token in URL) connected! TokenTime=${tokenTime}ms, Total=${timeB}ms. Method A failed: ${reasonA}`,
+          timing: timeB,
+        });
+        return;
+      }
+
+      const reasonB = resultB.error || `code=${resultB.closeCode}, reason=${resultB.closeReason}`;
+
+      // Method C: Authorization header via query param (some providers support this)
+      setSttTest({ status: 'running', detail: `Method B failed (${reasonB}). Trying Method C: Authorization bearer in URL...` });
+      const urlWithBearer = `${baseWsUrl}&Authorization=Bearer+${encodeURIComponent(tokenData.token)}`;
+      const resultC = await tryConnect(urlWithBearer);
+      const timeC = Math.round(performance.now() - t0);
+
+      if (resultC.connected) {
+        setSttTest({
+          status: 'pass',
+          detail: `Method C (bearer in URL) connected! TokenTime=${tokenTime}ms, Total=${timeC}ms.`,
+          timing: timeC,
+        });
+        return;
+      }
+
+      const reasonC = resultC.error || `code=${resultC.closeCode}, reason=${resultC.closeReason}`;
+
+      setSttTest({
+        status: 'fail',
+        detail: `All 3 auth methods failed. A(SecWSProtocol): ${reasonA}. B(token URL): ${reasonB}. C(bearer URL): ${reasonC}. Token len=${tokenLen}, preview: ${tokenPreview}`,
+      });
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error';
       setSttTest({ status: 'fail', detail: `STT test failed: ${msg}` });

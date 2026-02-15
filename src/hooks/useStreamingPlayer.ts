@@ -68,6 +68,9 @@ export function useStreamingPlayer(): UseStreamingPlayerReturn {
 
         const node = new AudioWorkletNode(ctx, 'pcm-playback-processor');
         node.connect(ctx.destination);
+        // MessagePort requires explicit start() when using addEventListener
+        // (onmessage calls it implicitly, but addEventListener does not)
+        node.port.start();
         workletNodeRef.current = node;
 
         // Resume if needed

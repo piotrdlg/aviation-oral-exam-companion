@@ -122,6 +122,12 @@ export async function GET() {
       token: accessToken,
       url: wsUrl,
       expiresAt,
+      // Debug info for VoiceLab diagnostics
+      _debug: {
+        responseFields: Object.keys(tokenData),
+        tokenFieldUsed: tokenData.access_token ? 'access_token' : tokenData.key ? 'key' : tokenData.api_key ? 'api_key' : 'token',
+        expiresIn,
+      },
     });
   } catch (error) {
     console.error('STT token error:', error);
