@@ -5,6 +5,24 @@ import SessionConfig, { type SessionConfigData } from './components/SessionConfi
 import type { PlannerState, SessionConfig as SessionConfigType } from '@/types/database';
 import type { VoiceTier } from '@/lib/voice/types';
 import { useVoiceProvider } from '@/hooks/useVoiceProvider';
+import { detectSentenceBoundary } from '@/lib/voice/sentence-boundary';
+
+/** Split full text into sentences using aviation-aware boundary detection. */
+function splitIntoSentences(text: string): string[] {
+  const sentences: string[] = [];
+  let remaining = text;
+  while (remaining.trim().length > 0) {
+    const result = detectSentenceBoundary(remaining);
+    if (result) {
+      sentences.push(result.sentence);
+      remaining = result.remainder;
+    } else {
+      if (remaining.trim()) sentences.push(remaining.trim());
+      break;
+    }
+  }
+  return sentences.length > 0 ? sentences : [text];
+}
 
 interface Source {
   doc_abbreviation: string;
@@ -54,6 +72,9 @@ export default function PracticePage() {
   const taskScoresRef = useRef<Record<string, { score: 'satisfactory' | 'unsatisfactory' | 'partial'; attempts: number }>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const voiceEnabledRef = useRef(false);
+  // Sentence-by-sentence reveal for voice mode (syncs text with TTS audio)
+  const revealTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const pendingFullTextRef = useRef<string | null>(null);
 
   // Unified voice provider hook (handles STT + TTS for all tiers)
   const voice = useVoiceProvider({ tier, sessionId: sessionId || undefined });
@@ -85,6 +106,72 @@ export default function PracticePage() {
     voiceEnabledRef.current = voiceEnabled;
   }, [voiceEnabled]);
 
+  // Flush any pending sentence reveal — show all remaining text immediately
+  const flushReveal = useCallback(() => {
+    revealTimersRef.current.forEach(clearTimeout);
+    revealTimersRef.current = [];
+    const fullText = pendingFullTextRef.current;
+    if (fullText) {
+      pendingFullTextRef.current = null;
+      setMessages(prev => {
+        const updated = [...prev];
+        const lastIdx = updated.length - 1;
+        if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
+          updated[lastIdx] = { ...updated[lastIdx], text: fullText };
+        }
+        return updated;
+      });
+    }
+  }, []);
+
+  // Reveal examiner text sentence-by-sentence synchronized with TTS audio
+  const revealExaminerText = useCallback((fullText: string) => {
+    revealTimersRef.current.forEach(clearTimeout);
+    revealTimersRef.current = [];
+    pendingFullTextRef.current = fullText;
+
+    const sentences = splitIntoSentences(fullText);
+    const WORDS_PER_SECOND = 2.8; // ~168 wpm typical TTS rate
+    const TTS_TTFB_MS = 600; // Estimated delay before audio starts
+
+    let cumulativeMs = TTS_TTFB_MS;
+    let accumulated = '';
+
+    for (let i = 0; i < sentences.length; i++) {
+      accumulated += (accumulated ? ' ' : '') + sentences[i];
+      const revealText = i === sentences.length - 1 ? fullText : accumulated;
+      const isLast = i === sentences.length - 1;
+
+      const timer = setTimeout(() => {
+        setMessages(prev => {
+          const updated = [...prev];
+          const lastIdx = updated.length - 1;
+          if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
+            updated[lastIdx] = { ...updated[lastIdx], text: revealText };
+          }
+          return updated;
+        });
+        if (isLast) pendingFullTextRef.current = null;
+      }, cumulativeMs);
+      revealTimersRef.current.push(timer);
+
+      const wordCount = sentences[i].split(/\s+/).length;
+      cumulativeMs += (wordCount / WORDS_PER_SECOND) * 1000;
+    }
+  }, []);
+
+  // When audio stops (natural end or barge-in), flush any remaining reveal text
+  useEffect(() => {
+    if (!voice.isSpeaking && pendingFullTextRef.current) {
+      flushReveal();
+    }
+  }, [voice.isSpeaking, flushReveal]);
+
+  // Clean up reveal timers on unmount
+  useEffect(() => {
+    return () => revealTimersRef.current.forEach(clearTimeout);
+  }, []);
+
   // Play examiner's message via the voice provider
   const speakText = useCallback(async (text: string) => {
     if (!voiceEnabledRef.current) return;
@@ -98,8 +185,9 @@ export default function PracticePage() {
       await voice.speak(text);
     } catch (err) {
       console.error('TTS playback error:', err);
+      flushReveal(); // Ensure text is visible if TTS fails
     }
-  }, [voice]);
+  }, [voice, flushReveal]);
 
   async function startSession(configData: SessionConfigData) {
     setSessionActive(true);
@@ -169,11 +257,15 @@ export default function PracticePage() {
         setPlannerState(data.plannerState);
       }
       const examinerMsg = data.examinerMessage;
-      setMessages([{ role: 'examiner', text: examinerMsg }]);
 
-      // Speak the opening question if voice is enabled
       if (configData.voiceEnabled) {
+        // Voice ON: start with empty text, reveal sentence-by-sentence in sync with audio
+        setMessages([{ role: 'examiner', text: '' }]);
+        revealExaminerText(examinerMsg);
         speakText(examinerMsg);
+      } else {
+        // Voice OFF: show full text immediately
+        setMessages([{ role: 'examiner', text: examinerMsg }]);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start session');
@@ -225,9 +317,12 @@ export default function PracticePage() {
         let receivedAssessment: Assessment | null = null;
         let receivedSources: Source[] | undefined;
 
-        // Add a placeholder examiner message that we'll update with streamed tokens
-        setMessages((prev) => [...prev, { role: 'examiner', text: '' }]);
-        setLoading(false); // Hide typing indicator — we're showing real tokens now
+        if (!voiceEnabledRef.current) {
+          // Voice OFF: show placeholder and stream tokens visually
+          setMessages((prev) => [...prev, { role: 'examiner', text: '' }]);
+          setLoading(false); // Hide typing indicator — we're showing real tokens now
+        }
+        // Voice ON: keep loading indicator (typing dots) visible during generation
 
         while (true) {
           const { done, value } = await reader.read();
@@ -251,25 +346,31 @@ export default function PracticePage() {
               if (parsed.token) {
                 // Incremental token — append to examiner message
                 examinerMsg += parsed.token;
-                setMessages((prev) => {
-                  const updated = [...prev];
-                  const lastIdx = updated.length - 1;
-                  if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
-                    updated[lastIdx] = { ...updated[lastIdx], text: examinerMsg };
-                  }
-                  return updated;
-                });
+                if (!voiceEnabledRef.current) {
+                  // Voice OFF: update message text in real-time (streaming display)
+                  setMessages((prev) => {
+                    const updated = [...prev];
+                    const lastIdx = updated.length - 1;
+                    if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
+                      updated[lastIdx] = { ...updated[lastIdx], text: examinerMsg };
+                    }
+                    return updated;
+                  });
+                }
+                // Voice ON: accumulate silently, reveal after stream completes
               } else if (parsed.examinerMessage) {
                 // Full message event — use as authoritative final text
                 examinerMsg = parsed.examinerMessage;
-                setMessages((prev) => {
-                  const updated = [...prev];
-                  const lastIdx = updated.length - 1;
-                  if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
-                    updated[lastIdx] = { ...updated[lastIdx], text: examinerMsg };
-                  }
-                  return updated;
-                });
+                if (!voiceEnabledRef.current) {
+                  setMessages((prev) => {
+                    const updated = [...prev];
+                    const lastIdx = updated.length - 1;
+                    if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
+                      updated[lastIdx] = { ...updated[lastIdx], text: examinerMsg };
+                    }
+                    return updated;
+                  });
+                }
               } else if (parsed.assessment) {
                 // Assessment arrived (from parallel assessment call)
                 receivedAssessment = parsed.assessment;
@@ -339,6 +440,10 @@ export default function PracticePage() {
         }
 
         if (voiceEnabledRef.current && examinerMsg) {
+          // Voice ON: add placeholder with empty text, then reveal in sync with audio
+          setMessages((prev) => [...prev, { role: 'examiner', text: '' }]);
+          setLoading(false);
+          revealExaminerText(examinerMsg);
           speakText(examinerMsg);
         }
       } else {
@@ -419,6 +524,7 @@ export default function PracticePage() {
   }
 
   async function endSession() {
+    flushReveal(); // Clear any pending sentence reveal timers
     voice.stopSpeaking();
     voice.stopListening();
 
