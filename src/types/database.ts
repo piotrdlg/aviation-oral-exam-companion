@@ -16,6 +16,7 @@ export type StudyMode = 'linear' | 'cross_acs' | 'weak_areas';
 export type DifficultyPreference = Difficulty | 'mixed';
 export type DocumentType = 'handbook' | 'ac' | 'cfr' | 'aim' | 'other';
 export type TagType = 'attempt' | 'mention';
+export type AircraftClass = 'ASEL' | 'AMEL' | 'ASES' | 'AMES';
 
 export interface Concept {
   id: string;
@@ -59,6 +60,7 @@ export interface AcsTask {
   knowledge_elements: Record<string, string>[];
   risk_management_elements: Record<string, string>[] | null;
   skill_elements: Record<string, string>[] | null;
+  applicable_classes: AircraftClass[];
 }
 
 export interface AcsElement {
@@ -83,6 +85,8 @@ export interface ExamSession {
   study_mode: StudyMode;
   difficulty_preference: DifficultyPreference;
   selected_areas: string[];
+  aircraft_class: AircraftClass;
+  selected_tasks: string[];
   acs_tasks_covered: AcsTaskCoverage[];
   concept_path: ConceptPathEntry[];
   weak_areas: WeakArea[];
@@ -203,9 +207,11 @@ export interface PlannerState {
 }
 
 export interface SessionConfig {
+  aircraftClass: AircraftClass;
   studyMode: StudyMode;
   difficulty: DifficultyPreference;
   selectedAreas: string[];
+  selectedTasks: string[];
 }
 
 export interface LatencyLog {

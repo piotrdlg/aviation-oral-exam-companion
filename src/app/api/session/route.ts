@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
   const { action } = body;
 
   if (action === 'create') {
-    const { study_mode, difficulty_preference, selected_areas } = body;
+    const { study_mode, difficulty_preference, selected_areas, aircraft_class, selected_tasks } = body;
     const { data, error } = await supabase
       .from('exam_sessions')
       .insert({
@@ -23,6 +23,8 @@ export async function POST(request: NextRequest) {
         study_mode: study_mode || 'cross_acs',
         difficulty_preference: difficulty_preference || 'mixed',
         selected_areas: selected_areas || [],
+        aircraft_class: aircraft_class || 'ASEL',
+        selected_tasks: selected_tasks || [],
       })
       .select()
       .single();

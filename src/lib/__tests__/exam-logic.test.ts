@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  ORAL_EXAM_AREAS,
+  ORAL_EXAM_AREA_PREFIXES,
   filterEligibleTasks,
   selectRandomTask,
   buildSystemPrompt,
@@ -19,32 +19,41 @@ function makeTask(id: string, opts?: Partial<AcsTaskRow>): AcsTaskRow {
     knowledge_elements: opts?.knowledge_elements ?? [],
     risk_management_elements: opts?.risk_management_elements ?? [],
     skill_elements: opts?.skill_elements ?? [],
+    applicable_classes: opts?.applicable_classes ?? ['ASEL', 'AMEL', 'ASES', 'AMES'],
   };
 }
 
-describe('ORAL_EXAM_AREAS', () => {
-  it('includes 9 oral-exam-relevant areas', () => {
-    expect(ORAL_EXAM_AREAS).toHaveLength(9);
+const defaultConfig: SessionConfig = {
+  aircraftClass: 'ASEL',
+  studyMode: 'linear',
+  difficulty: 'mixed',
+  selectedAreas: [],
+  selectedTasks: [],
+};
+
+describe('ORAL_EXAM_AREA_PREFIXES', () => {
+  it('includes 10 oral-exam-relevant areas (including multiengine)', () => {
+    expect(ORAL_EXAM_AREA_PREFIXES).toHaveLength(10);
   });
 
   it('includes Preflight Preparation (Area I)', () => {
-    expect(ORAL_EXAM_AREAS).toContain('PA.I.%');
+    expect(ORAL_EXAM_AREA_PREFIXES).toContain('PA.I.');
   });
 
   it('includes Emergency Operations (Area IX)', () => {
-    expect(ORAL_EXAM_AREAS).toContain('PA.IX.%');
+    expect(ORAL_EXAM_AREA_PREFIXES).toContain('PA.IX.');
+  });
+
+  it('includes Multiengine Operations (Area X) — filtered by class, not area', () => {
+    expect(ORAL_EXAM_AREA_PREFIXES).toContain('PA.X.');
   });
 
   it('excludes Takeoffs/Landings (Area IV)', () => {
-    expect(ORAL_EXAM_AREAS).not.toContain('PA.IV.%');
+    expect(ORAL_EXAM_AREA_PREFIXES).not.toContain('PA.IV.');
   });
 
   it('excludes Performance Maneuvers (Area V)', () => {
-    expect(ORAL_EXAM_AREAS).not.toContain('PA.V.%');
-  });
-
-  it('excludes Multiengine Operations (Area X)', () => {
-    expect(ORAL_EXAM_AREAS).not.toContain('PA.X.%');
+    expect(ORAL_EXAM_AREA_PREFIXES).not.toContain('PA.V.');
   });
 });
 
@@ -54,13 +63,13 @@ describe('filterEligibleTasks', () => {
     makeTask('PA.I.B'),
     makeTask('PA.II.A'),
     makeTask('PA.III.A'),
-    makeTask('PA.IV.A'),  // Takeoffs — excluded
-    makeTask('PA.V.A'),   // Performance — excluded
+    makeTask('PA.IV.A'),  // Takeoffs — excluded by area
+    makeTask('PA.V.A'),   // Performance — excluded by area
     makeTask('PA.VI.A'),
     makeTask('PA.VII.A'),
     makeTask('PA.VIII.A'),
     makeTask('PA.IX.A'),
-    makeTask('PA.X.A'),   // Multiengine — excluded
+    makeTask('PA.X.A', { applicable_classes: ['AMEL', 'AMES'] }), // Multiengine — class-filtered
     makeTask('PA.XI.A'),
     makeTask('PA.XII.A'),
   ];
@@ -74,12 +83,11 @@ describe('filterEligibleTasks', () => {
     expect(ids).toContain('PA.XII.A');
     expect(ids).not.toContain('PA.IV.A');
     expect(ids).not.toContain('PA.V.A');
-    expect(ids).not.toContain('PA.X.A');
   });
 
-  it('returns 10 eligible tasks from the 13 total', () => {
+  it('returns 11 eligible tasks from the 13 total (Area X now included)', () => {
     const eligible = filterEligibleTasks(allTasks);
-    expect(eligible).toHaveLength(10);
+    expect(eligible).toHaveLength(11);
   });
 
   it('excludes already-covered tasks', () => {
@@ -89,7 +97,23 @@ describe('filterEligibleTasks', () => {
     expect(ids).not.toContain('PA.I.A');
     expect(ids).not.toContain('PA.II.A');
     expect(ids).toContain('PA.I.B');
-    expect(eligible).toHaveLength(8);
+    expect(eligible).toHaveLength(9);
+  });
+
+  it('filters by aircraft class', () => {
+    const eligible = filterEligibleTasks(allTasks, [], 'ASEL');
+    const ids = eligible.map((t) => t.id);
+
+    // PA.X.A is AMEL/AMES only — should be excluded for ASEL
+    expect(ids).not.toContain('PA.X.A');
+    expect(eligible).toHaveLength(10);
+  });
+
+  it('includes multiengine tasks for AMEL class', () => {
+    const eligible = filterEligibleTasks(allTasks, [], 'AMEL');
+    const ids = eligible.map((t) => t.id);
+
+    expect(ids).toContain('PA.X.A');
   });
 
   it('returns empty when all eligible are covered', () => {
@@ -108,6 +132,7 @@ describe('selectRandomTask', () => {
     makeTask('PA.I.A'),
     makeTask('PA.IV.A'), // excluded from oral areas
     makeTask('PA.IX.A'),
+    makeTask('PA.X.A', { applicable_classes: ['AMEL', 'AMES'] }),
   ];
 
   it('returns null for empty task list', () => {
@@ -115,7 +140,6 @@ describe('selectRandomTask', () => {
   });
 
   it('selects from oral-exam areas when available', () => {
-    // Run multiple times to ensure randomness doesn't pick PA.IV.A
     const results = new Set<string>();
     for (let i = 0; i < 50; i++) {
       const task = selectRandomTask(tasks);
@@ -125,14 +149,24 @@ describe('selectRandomTask', () => {
     expect(results.size).toBeGreaterThanOrEqual(1);
   });
 
+  it('filters by aircraft class in random selection', () => {
+    const results = new Set<string>();
+    for (let i = 0; i < 50; i++) {
+      const task = selectRandomTask(tasks, [], 'ASEL');
+      if (task) results.add(task.id);
+    }
+    // PA.X.A is AMEL/AMES only — should never appear for ASEL
+    expect(results).not.toContain('PA.X.A');
+  });
+
   it('falls back to any task when all oral-exam tasks are covered', () => {
-    const task = selectRandomTask(tasks, ['PA.I.A', 'PA.IX.A']);
+    const task = selectRandomTask(tasks, ['PA.I.A', 'PA.IX.A', 'PA.X.A']);
     expect(task).not.toBeNull();
     expect(task!.id).toBe('PA.IV.A');
   });
 
   it('returns first task when all are covered', () => {
-    const task = selectRandomTask(tasks, ['PA.I.A', 'PA.IV.A', 'PA.IX.A']);
+    const task = selectRandomTask(tasks, ['PA.I.A', 'PA.IV.A', 'PA.IX.A', 'PA.X.A']);
     expect(task).not.toBeNull();
     expect(task!.id).toBe('PA.I.A');
   });
@@ -180,6 +214,20 @@ describe('buildSystemPrompt', () => {
     const prompt = buildSystemPrompt(task);
     expect(prompt).not.toContain('DIFFICULTY LEVEL');
   });
+
+  it('includes aircraft class instruction when provided', () => {
+    const task = makeTask('PA.I.A');
+    const prompt = buildSystemPrompt(task, undefined, 'ASEL');
+    expect(prompt).toContain('AIRCRAFT CLASS: ASEL');
+    expect(prompt).toContain('Single-Engine Land');
+    expect(prompt).toContain('Only ask questions relevant to this class');
+  });
+
+  it('omits aircraft class instruction when not provided', () => {
+    const task = makeTask('PA.I.A');
+    const prompt = buildSystemPrompt(task);
+    expect(prompt).not.toContain('AIRCRAFT CLASS');
+  });
 });
 
 // ================================================================
@@ -213,36 +261,42 @@ describe('buildElementQueue', () => {
   ];
 
   it('filters out skill elements', () => {
-    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
-    const queue = buildElementQueue(elements, config);
+    const queue = buildElementQueue(elements, defaultConfig);
     expect(queue).not.toContain('PA.I.A.S1');
   });
 
   it('includes knowledge and risk elements', () => {
-    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
-    const queue = buildElementQueue(elements, config);
+    const queue = buildElementQueue(elements, defaultConfig);
     expect(queue).toContain('PA.I.A.K1');
     expect(queue).toContain('PA.I.A.R1');
   });
 
   it('filters by selected areas', () => {
-    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: ['IX'] };
+    const config: SessionConfig = { ...defaultConfig, selectedAreas: ['IX'] };
     const queue = buildElementQueue(elements, config);
     expect(queue).toContain('PA.IX.A.K1');
     expect(queue).toContain('PA.IX.A.K2');
     expect(queue).not.toContain('PA.I.A.K1');
   });
 
+  it('filters by selected tasks (overrides areas)', () => {
+    const config: SessionConfig = { ...defaultConfig, selectedTasks: ['PA.IX.A'], selectedAreas: ['I'] };
+    const queue = buildElementQueue(elements, config);
+    // selectedTasks wins over selectedAreas
+    expect(queue).toContain('PA.IX.A.K1');
+    expect(queue).toContain('PA.IX.A.K2');
+    expect(queue).not.toContain('PA.I.A.K1');
+  });
+
   it('filters by difficulty when not mixed', () => {
-    const config: SessionConfig = { studyMode: 'linear', difficulty: 'easy', selectedAreas: [] };
+    const config: SessionConfig = { ...defaultConfig, difficulty: 'easy' };
     const queue = buildElementQueue(elements, config);
     expect(queue).toContain('PA.IX.A.K1');
     expect(queue).not.toContain('PA.IX.A.K2');
   });
 
   it('preserves order in linear mode', () => {
-    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
-    const queue = buildElementQueue(elements, config);
+    const queue = buildElementQueue(elements, defaultConfig);
     const k1Idx = queue.indexOf('PA.I.A.K1');
     const k2Idx = queue.indexOf('PA.I.A.K2');
     const r1Idx = queue.indexOf('PA.I.A.R1');
@@ -251,10 +305,8 @@ describe('buildElementQueue', () => {
   });
 
   it('shuffles in cross_acs mode', () => {
-    const config: SessionConfig = { studyMode: 'cross_acs', difficulty: 'mixed', selectedAreas: [] };
-    // Run multiple times — at least one ordering should differ from linear
-    const linear: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
-    const linearQueue = buildElementQueue(elements, linear);
+    const config: SessionConfig = { ...defaultConfig, studyMode: 'cross_acs' };
+    const linearQueue = buildElementQueue(elements, defaultConfig);
     let differed = false;
     for (let i = 0; i < 20; i++) {
       const shuffled = buildElementQueue(elements, config);
@@ -267,7 +319,7 @@ describe('buildElementQueue', () => {
   });
 
   it('returns empty queue when all filtered out', () => {
-    const config: SessionConfig = { studyMode: 'linear', difficulty: 'easy', selectedAreas: ['I'] };
+    const config: SessionConfig = { ...defaultConfig, difficulty: 'easy', selectedAreas: ['I'] };
     // Area I elements are all 'medium' by default, so easy filter empties it
     const queue = buildElementQueue(elements, config);
     expect(queue).toHaveLength(0);
@@ -277,59 +329,50 @@ describe('buildElementQueue', () => {
 describe('pickNextElement', () => {
   it('picks the first element from the queue', () => {
     const state = initPlannerState(['A', 'B', 'C']);
-    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
-    const result = pickNextElement(state, config);
+    const result = pickNextElement(state, defaultConfig);
     expect(result).not.toBeNull();
     expect(result!.elementCode).toBe('A');
   });
 
   it('advances cursor after pick', () => {
     const state = initPlannerState(['A', 'B', 'C']);
-    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
-    const r1 = pickNextElement(state, config)!;
-    const r2 = pickNextElement(r1.updatedState, config)!;
+    const r1 = pickNextElement(state, defaultConfig)!;
+    const r2 = pickNextElement(r1.updatedState, defaultConfig)!;
     expect(r2.elementCode).toBe('B');
   });
 
   it('skips recently visited elements', () => {
     const state = initPlannerState(['A', 'B', 'C']);
-    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
-    // Simulate A being in recent
     const stateWithRecent = { ...state, recent: ['A'] };
-    const result = pickNextElement(stateWithRecent, config);
+    const result = pickNextElement(stateWithRecent, defaultConfig);
     expect(result!.elementCode).toBe('B');
   });
 
   it('wraps around the queue', () => {
     const state = initPlannerState(['A', 'B']);
-    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
-    const r1 = pickNextElement(state, config)!;
-    const r2 = pickNextElement(r1.updatedState, config)!;
-    const r3 = pickNextElement(r2.updatedState, config)!;
-    // Should wrap back to A (recent only holds last 5)
+    const r1 = pickNextElement(state, defaultConfig)!;
+    const r2 = pickNextElement(r1.updatedState, defaultConfig)!;
+    const r3 = pickNextElement(r2.updatedState, defaultConfig)!;
     expect(r3.elementCode).toBe('A');
   });
 
   it('increments attempt count', () => {
     const state = initPlannerState(['A', 'B']);
-    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
-    const r1 = pickNextElement(state, config)!;
+    const r1 = pickNextElement(state, defaultConfig)!;
     expect(r1.updatedState.attempts['A']).toBe(1);
-    const r2 = pickNextElement(r1.updatedState, config)!;
-    const r3 = pickNextElement(r2.updatedState, config)!;
+    const r2 = pickNextElement(r1.updatedState, defaultConfig)!;
+    const r3 = pickNextElement(r2.updatedState, defaultConfig)!;
     expect(r3.updatedState.attempts['A']).toBe(2);
   });
 
   it('returns null for empty queue', () => {
     const state = initPlannerState([]);
-    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
-    expect(pickNextElement(state, config)).toBeNull();
+    expect(pickNextElement(state, defaultConfig)).toBeNull();
   });
 
   it('increments version', () => {
     const state = initPlannerState(['A']);
-    const config: SessionConfig = { studyMode: 'linear', difficulty: 'mixed', selectedAreas: [] };
-    const r1 = pickNextElement(state, config)!;
+    const r1 = pickNextElement(state, defaultConfig)!;
     expect(r1.updatedState.version).toBe(1);
   });
 });

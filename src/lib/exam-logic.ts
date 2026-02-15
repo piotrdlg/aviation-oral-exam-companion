@@ -3,7 +3,7 @@
  * Separated from exam-engine.ts for testability.
  */
 
-import type { AcsElement as AcsElementDB, ElementScore, PlannerState, SessionConfig, Difficulty } from '@/types/database';
+import type { AcsElement as AcsElementDB, ElementScore, PlannerState, SessionConfig, Difficulty, AircraftClass } from '@/types/database';
 
 export interface AcsElement {
   code: string;
@@ -17,34 +17,46 @@ export interface AcsTaskRow {
   knowledge_elements: AcsElement[];
   risk_management_elements: AcsElement[];
   skill_elements: AcsElement[];
+  applicable_classes: AircraftClass[];
 }
 
-// Oral-exam-relevant areas (exclude flight maneuvers that are skill-only)
-export const ORAL_EXAM_AREAS = [
-  'PA.I.%',   // Preflight Preparation
-  'PA.II.%',  // Preflight Procedures
-  'PA.III.%', // Airport and Seaplane Base Operations
-  'PA.VI.%',  // Navigation
-  'PA.VII.%', // Slow Flight and Stalls (knowledge/risk only)
-  'PA.VIII.%',// Basic Instrument Maneuvers (knowledge/risk only)
-  'PA.IX.%',  // Emergency Operations
-  'PA.XI.%',  // Night Operations
-  'PA.XII.%', // Postflight Procedures
+// Oral-exam-relevant area prefixes (exclude flight maneuvers that are skill-only)
+// Areas IV (Takeoffs/Landings), V (Performance Maneuvers) are excluded.
+// Area X (Multiengine) IS included — it's filtered by aircraft class instead.
+export const ORAL_EXAM_AREA_PREFIXES = [
+  'PA.I.',    // Preflight Preparation
+  'PA.II.',   // Preflight Procedures
+  'PA.III.',  // Airport and Seaplane Base Operations
+  'PA.VI.',   // Navigation
+  'PA.VII.',  // Slow Flight and Stalls (knowledge/risk only)
+  'PA.VIII.', // Basic Instrument Maneuvers (knowledge/risk only)
+  'PA.IX.',   // Emergency Operations
+  'PA.X.',    // Multiengine Operations (class-filtered, not area-excluded)
+  'PA.XI.',   // Night Operations
+  'PA.XII.',  // Postflight Procedures
 ];
 
 /**
- * Filter tasks to oral-exam-relevant areas, excluding covered tasks.
+ * Filter tasks to oral-exam-relevant areas, by aircraft class, and exclude covered tasks.
  */
 export function filterEligibleTasks(
   tasks: AcsTaskRow[],
-  coveredTaskIds: string[] = []
+  coveredTaskIds: string[] = [],
+  aircraftClass?: AircraftClass
 ): AcsTaskRow[] {
   return tasks.filter((t) => {
     if (coveredTaskIds.includes(t.id)) return false;
-    return ORAL_EXAM_AREAS.some((pattern) => {
-      const prefix = pattern.replace('%', '');
-      return t.id.startsWith(prefix);
-    });
+
+    // Filter by oral-exam-relevant areas
+    const inOralArea = ORAL_EXAM_AREA_PREFIXES.some((prefix) => t.id.startsWith(prefix));
+    if (!inOralArea) return false;
+
+    // Filter by aircraft class if provided
+    if (aircraftClass && t.applicable_classes) {
+      if (!t.applicable_classes.includes(aircraftClass)) return false;
+    }
+
+    return true;
   });
 }
 
@@ -55,26 +67,37 @@ export function filterEligibleTasks(
  */
 export function selectRandomTask(
   allTasks: AcsTaskRow[],
-  coveredTaskIds: string[] = []
+  coveredTaskIds: string[] = [],
+  aircraftClass?: AircraftClass
 ): AcsTaskRow | null {
   if (allTasks.length === 0) return null;
 
-  const eligible = filterEligibleTasks(allTasks, coveredTaskIds);
+  const eligible = filterEligibleTasks(allTasks, coveredTaskIds, aircraftClass);
 
   if (eligible.length > 0) {
     return eligible[Math.floor(Math.random() * eligible.length)];
   }
 
-  // Fallback: pick from any non-covered task
-  const remaining = allTasks.filter((t) => !coveredTaskIds.includes(t.id));
+  // Fallback: pick from any non-covered task (still class-filtered if provided)
+  let remaining = allTasks.filter((t) => !coveredTaskIds.includes(t.id));
+  if (aircraftClass) {
+    remaining = remaining.filter((t) => !t.applicable_classes || t.applicable_classes.includes(aircraftClass));
+  }
   if (remaining.length === 0) return allTasks[0];
   return remaining[Math.floor(Math.random() * remaining.length)];
 }
 
+export const AIRCRAFT_CLASS_LABELS: Record<AircraftClass, string> = {
+  ASEL: 'Single-Engine Land',
+  AMEL: 'Multi-Engine Land',
+  ASES: 'Single-Engine Sea',
+  AMES: 'Multi-Engine Sea',
+};
+
 /**
  * Build the DPE examiner system prompt for a given task.
  */
-export function buildSystemPrompt(task: AcsTaskRow, targetDifficulty?: Difficulty): string {
+export function buildSystemPrompt(task: AcsTaskRow, targetDifficulty?: Difficulty, aircraftClass?: AircraftClass): string {
   const knowledgeList = task.knowledge_elements
     .map((e) => `  - ${e.code}: ${e.description}`)
     .join('\n');
@@ -89,9 +112,17 @@ ${targetDifficulty === 'easy' ? '- Ask straightforward recall/definition questio
   '- Ask complex edge cases, \"what if\" chains, and regulation nuances.'}`
     : '';
 
+  const classInstruction = aircraftClass
+    ? `\nAIRCRAFT CLASS: ${aircraftClass} (${AIRCRAFT_CLASS_LABELS[aircraftClass]})
+- Only ask questions relevant to this class of aircraft.
+- Frame scenarios for ${AIRCRAFT_CLASS_LABELS[aircraftClass].toLowerCase()} operations.
+- If element descriptions reference other classes, adapt the question to the applicable class context.`
+    : '';
+
   return `You are a Designated Pilot Examiner (DPE) conducting an FAA Private Pilot oral examination. You are professional, thorough, and encouraging — firm but fair.
 
 CURRENT ACS TASK: ${task.area} > ${task.task} (${task.id})
+${classInstruction}
 
 KNOWLEDGE ELEMENTS TO COVER:
 ${knowledgeList}
@@ -134,8 +165,14 @@ export function buildElementQueue(
 ): string[] {
   let filtered = elements;
 
-  // Filter by selected areas (if any)
-  if (config.selectedAreas.length > 0) {
+  // Filter by selected tasks (most granular, wins over selectedAreas)
+  if (config.selectedTasks && config.selectedTasks.length > 0) {
+    filtered = filtered.filter((el) => {
+      // el.task_id format: "PA.I.A" — match against selectedTasks
+      return config.selectedTasks.includes(el.task_id);
+    });
+  } else if (config.selectedAreas.length > 0) {
+    // Fallback: filter by selected areas
     filtered = filtered.filter((el) => {
       // el.code format: "PA.I.A.K1" — area is the Roman numeral
       const parts = el.code.split('.');

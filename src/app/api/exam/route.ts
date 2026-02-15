@@ -72,6 +72,41 @@ async function writeElementAttempts(
   }
 }
 
+/**
+ * GET /api/exam?action=list-tasks — return all ACS tasks for the task picker.
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const action = searchParams.get('action');
+
+    if (action === 'list-tasks') {
+      const { data, error } = await supabase
+        .from('acs_tasks')
+        .select('id, area, task, applicable_classes')
+        .eq('rating', 'private')
+        .order('id');
+
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+
+      return NextResponse.json({ tasks: data || [] });
+    }
+
+    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+  } catch (error) {
+    console.error('Exam GET API error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -104,7 +139,9 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const turn = await generateExaminerTurn(plannerResult.task, []);
+        const turn = await generateExaminerTurn(
+          plannerResult.task, [], plannerResult.difficulty, sessionConfig.aircraftClass
+        );
 
         // Persist examiner opening turn to transcript
         if (sessionId) {
@@ -125,7 +162,7 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Fallback: random task selection (legacy mode)
+      // Fallback: random task selection (legacy mode, no class filtering)
       const task = await pickStartingTask();
       if (!task) {
         return NextResponse.json(
@@ -275,7 +312,9 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        const turn = await generateExaminerTurn(plannerResult.task, []);
+        const turn = await generateExaminerTurn(
+          plannerResult.task, [], plannerResult.difficulty, sessionConfig.aircraftClass
+        );
 
         if (sessionId) {
           const { count } = await supabase
@@ -301,7 +340,7 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Fallback: random task selection (legacy mode)
+      // Fallback: random task selection (legacy mode, no class filtering)
       const currentTaskId = taskData?.id || '';
       const task = await pickNextTask(currentTaskId, coveredTaskIds || []);
       if (!task) {

@@ -5,6 +5,7 @@ import {
   selectRandomTask,
   buildSystemPrompt,
 } from './exam-logic';
+import type { AircraftClass } from '@/types/database';
 import { searchChunks, formatChunksForPrompt, type ChunkSearchResult } from './rag-retrieval';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
@@ -39,18 +40,27 @@ export { type AcsTaskRow } from './exam-logic';
 
 /**
  * Pick a random ACS task for the oral exam, optionally excluding already-covered tasks.
+ * Filters by aircraft class when provided.
  */
 export async function pickStartingTask(
-  coveredTaskIds: string[] = []
+  coveredTaskIds: string[] = [],
+  aircraftClass?: AircraftClass
 ): Promise<AcsTaskRow | null> {
-  const { data, error } = await supabase
+  let query = supabase
     .from('acs_tasks')
     .select('*')
     .eq('rating', 'private');
 
+  // Filter by aircraft class at the DB level
+  if (aircraftClass) {
+    query = query.contains('applicable_classes', [aircraftClass]);
+  }
+
+  const { data, error } = await query;
+
   if (error || !data || data.length === 0) return null;
 
-  return selectRandomTask(data as AcsTaskRow[], coveredTaskIds);
+  return selectRandomTask(data as AcsTaskRow[], coveredTaskIds, aircraftClass);
 }
 
 /**
@@ -58,9 +68,10 @@ export async function pickStartingTask(
  */
 export async function pickNextTask(
   currentTaskId: string,
-  coveredTaskIds: string[] = []
+  coveredTaskIds: string[] = [],
+  aircraftClass?: AircraftClass
 ): Promise<AcsTaskRow | null> {
-  return pickStartingTask([...coveredTaskIds, currentTaskId]);
+  return pickStartingTask([...coveredTaskIds, currentTaskId], aircraftClass);
 }
 
 /**
@@ -69,9 +80,10 @@ export async function pickNextTask(
 export async function generateExaminerTurn(
   task: AcsTaskRow,
   history: ExamMessage[],
-  difficulty?: import('@/types/database').Difficulty
+  difficulty?: import('@/types/database').Difficulty,
+  aircraftClass?: AircraftClass
 ): Promise<ExamTurn> {
-  const systemPrompt = buildSystemPrompt(task, difficulty);
+  const systemPrompt = buildSystemPrompt(task, difficulty, aircraftClass);
 
   // RAG: fetch relevant source material for context
   let ragContext = '';
@@ -116,9 +128,10 @@ export async function generateExaminerTurn(
 export async function generateExaminerTurnStreaming(
   task: AcsTaskRow,
   history: ExamMessage[],
-  difficulty?: import('@/types/database').Difficulty
+  difficulty?: import('@/types/database').Difficulty,
+  aircraftClass?: AircraftClass
 ): Promise<ReadableStream> {
-  const systemPrompt = buildSystemPrompt(task, difficulty);
+  const systemPrompt = buildSystemPrompt(task, difficulty, aircraftClass);
 
   // RAG: fetch relevant source material for context
   let ragContext = '';

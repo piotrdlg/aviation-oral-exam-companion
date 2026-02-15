@@ -194,9 +194,11 @@ export default function PracticePage() {
 
     // Build session config for the planner
     const config: SessionConfigType = {
+      aircraftClass: configData.aircraftClass,
       studyMode: configData.studyMode,
       difficulty: configData.difficulty,
       selectedAreas: configData.selectedAreas,
+      selectedTasks: configData.selectedTasks,
     };
     setSessionConfig(config);
 
@@ -210,6 +212,8 @@ export default function PracticePage() {
           study_mode: configData.studyMode,
           difficulty_preference: configData.difficulty,
           selected_areas: configData.selectedAreas,
+          aircraft_class: configData.aircraftClass,
+          selected_tasks: configData.selectedTasks,
         }),
       });
       const sessionData = await sessionRes.json();

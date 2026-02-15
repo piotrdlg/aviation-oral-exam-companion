@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import WeakAreas from './components/WeakAreas';
 import StudyRecommendations from './components/StudyRecommendations';
-import type { ElementScore } from '@/types/database';
+import type { ElementScore, AircraftClass } from '@/types/database';
 
 // Dynamic import to avoid SSR issues with Nivo
 const AcsCoverageTreemap = dynamic(() => import('./components/AcsCoverageTreemap'), {
@@ -24,56 +24,107 @@ interface Session {
   exchange_count: number;
   study_mode: string;
   difficulty_preference: string;
+  aircraft_class?: string;
   acs_tasks_covered: { task_id: string; status: string; attempts?: number }[];
 }
+
+interface TaskInfo {
+  id: string;
+  applicable_classes: string[];
+}
+
+const CLASS_OPTIONS: { value: AircraftClass; label: string }[] = [
+  { value: 'ASEL', label: 'ASEL' },
+  { value: 'AMEL', label: 'AMEL' },
+  { value: 'ASES', label: 'ASES' },
+  { value: 'AMES', label: 'AMES' },
+];
 
 export default function ProgressPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [elementScores, setElementScores] = useState<ElementScore[]>([]);
+  const [tasks, setTasks] = useState<TaskInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'overview' | 'treemap'>('overview');
+  const [selectedClass, setSelectedClass] = useState<AircraftClass>('ASEL');
 
   useEffect(() => {
     Promise.all([
       fetch('/api/session').then((res) => res.json()),
       fetch('/api/session?action=element-scores').then((res) => res.json()).catch(() => ({ scores: [] })),
+      fetch('/api/exam?action=list-tasks').then((res) => res.json()).catch(() => ({ tasks: [] })),
     ])
-      .then(([sessionData, scoresData]) => {
+      .then(([sessionData, scoresData, taskData]) => {
         setSessions(sessionData.sessions || []);
         setElementScores(scoresData.scores || []);
+        setTasks(taskData.tasks || []);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  // Build set of task IDs applicable to the selected class
+  const classTaskIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const task of tasks) {
+      if (task.applicable_classes?.includes(selectedClass)) {
+        ids.add(task.id);
+      }
+    }
+    return ids;
+  }, [tasks, selectedClass]);
+
+  // Filter element scores by class
+  const filteredScores = useMemo(
+    () => elementScores.filter((s) => classTaskIds.has(s.task_id)),
+    [elementScores, classTaskIds]
+  );
 
   const totalSessions = sessions.length;
   const completedSessions = sessions.filter((s) => s.status === 'completed').length;
   const totalExchanges = sessions.reduce((sum, s) => sum + (s.exchange_count || 0), 0);
   const allCoveredTasks = sessions.flatMap((s) => s.acs_tasks_covered || []);
   const uniqueTasksCovered = new Set(allCoveredTasks.map((t) => t.task_id)).size;
-  const attemptedElements = elementScores.filter(s => s.total_attempts > 0).length;
+  const attemptedElements = filteredScores.filter(s => s.total_attempts > 0).length;
 
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-2xl font-bold text-white">Your Progress</h1>
-        <div className="flex gap-1 bg-gray-800 rounded-lg p-0.5">
-          <button
-            onClick={() => setView('overview')}
-            className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
-              view === 'overview' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-300'
-            }`}
-          >
-            Overview
-          </button>
-          <button
-            onClick={() => setView('treemap')}
-            className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
-              view === 'treemap' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-300'
-            }`}
-          >
-            ACS Map
-          </button>
+        <div className="flex items-center gap-3">
+          {/* Class selector */}
+          <div className="flex gap-0.5 bg-gray-800 rounded-lg p-0.5">
+            {CLASS_OPTIONS.map((cls) => (
+              <button
+                key={cls.value}
+                onClick={() => setSelectedClass(cls.value)}
+                className={`px-2 py-1.5 text-xs rounded-md transition-colors ${
+                  selectedClass === cls.value ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                {cls.label}
+              </button>
+            ))}
+          </div>
+          {/* View toggle */}
+          <div className="flex gap-1 bg-gray-800 rounded-lg p-0.5">
+            <button
+              onClick={() => setView('overview')}
+              className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
+                view === 'overview' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-300'
+              }`}
+            >
+              Overview
+            </button>
+            <button
+              onClick={() => setView('treemap')}
+              className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
+                view === 'treemap' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-300'
+              }`}
+            >
+              ACS Map
+            </button>
+          </div>
         </div>
       </div>
       <p className="text-gray-400 mb-6">
@@ -108,17 +159,17 @@ export default function ProgressPage() {
             </div>
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-3 text-center">
               <p className="text-xl font-bold text-white">{attemptedElements}</p>
-              <p className="text-xs text-gray-400 mt-0.5">Elements</p>
+              <p className="text-xs text-gray-400 mt-0.5">Elements ({selectedClass})</p>
             </div>
           </div>
 
           {view === 'treemap' ? (
             /* Treemap + Weak Areas View */
             <div className="space-y-4">
-              <AcsCoverageTreemap scores={elementScores} />
+              <AcsCoverageTreemap scores={filteredScores} />
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <WeakAreas scores={elementScores} />
-                <StudyRecommendations scores={elementScores} />
+                <WeakAreas scores={filteredScores} />
+                <StudyRecommendations scores={filteredScores} />
               </div>
             </div>
           ) : (
@@ -147,6 +198,7 @@ export default function ProgressPage() {
                           {session.acs_tasks_covered?.length
                             ? ` / ${session.acs_tasks_covered.length} tasks`
                             : ''}
+                          {session.aircraft_class ? ` · ${session.aircraft_class}` : ''}
                         </p>
                       </div>
                       <span
@@ -168,11 +220,11 @@ export default function ProgressPage() {
               <div className="space-y-4">
                 <div>
                   <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide mb-3">Weak Areas</h2>
-                  <WeakAreas scores={elementScores} />
+                  <WeakAreas scores={filteredScores} />
                 </div>
                 <div>
                   <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide mb-3">Study Plan</h2>
-                  <StudyRecommendations scores={elementScores} />
+                  <StudyRecommendations scores={filteredScores} />
                 </div>
               </div>
             </div>

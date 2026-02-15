@@ -4,7 +4,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import type { AcsElement as AcsElementDB, ElementScore, PlannerState, SessionConfig, Difficulty } from '@/types/database';
+import type { AcsElement as AcsElementDB, ElementScore, PlannerState, SessionConfig, Difficulty, AircraftClass } from '@/types/database';
 import { buildElementQueue, pickNextElement, initPlannerState, buildSystemPrompt, type AcsTaskRow } from './exam-logic';
 
 const supabase = createClient(
@@ -28,15 +28,32 @@ export async function initPlanner(
   config: SessionConfig,
   userId: string
 ): Promise<PlannerResult | null> {
-  // Load all ACS elements
-  const { data: elements, error: elErr } = await supabase
+  // Load ACS elements, filtering by aircraft class via task join
+  let elementQuery = supabase
     .from('acs_elements')
     .select('*')
     .order('order_index');
 
+  const { data: elements, error: elErr } = await elementQuery;
+
   if (elErr || !elements || elements.length === 0) {
     console.error('Failed to load ACS elements:', elErr?.message);
     return null;
+  }
+
+  // Filter elements by aircraft class: only include elements whose parent task
+  // is applicable to the selected class
+  let filteredElements = elements as AcsElementDB[];
+  if (config.aircraftClass) {
+    const { data: classTasks } = await supabase
+      .from('acs_tasks')
+      .select('id')
+      .contains('applicable_classes', [config.aircraftClass]);
+
+    if (classTasks) {
+      const validTaskIds = new Set(classTasks.map((t: { id: string }) => t.id));
+      filteredElements = filteredElements.filter((el) => validTaskIds.has(el.task_id));
+    }
   }
 
   // Load weak stats if using weak_areas mode
@@ -50,7 +67,7 @@ export async function initPlanner(
   }
 
   // Build queue using pure function
-  const queue = buildElementQueue(elements as AcsElementDB[], config, weakStats);
+  const queue = buildElementQueue(filteredElements, config, weakStats);
 
   if (queue.length === 0) {
     console.error('Empty element queue after filtering');
@@ -104,8 +121,8 @@ export async function advancePlanner(
   const difficulty: Difficulty =
     config.difficulty === 'mixed' ? element.difficulty_default : (config.difficulty as Difficulty);
 
-  // Build system prompt with difficulty
-  const systemPrompt = buildSystemPrompt(task as AcsTaskRow, difficulty);
+  // Build system prompt with difficulty and aircraft class
+  const systemPrompt = buildSystemPrompt(task as AcsTaskRow, difficulty, config.aircraftClass);
 
   return {
     elementCode,
