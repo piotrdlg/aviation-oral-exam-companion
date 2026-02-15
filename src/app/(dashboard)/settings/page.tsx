@@ -349,29 +349,58 @@ export default function SettingsPage() {
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `HTTP ${res.status}`);
+        throw new Error(errData.detail || errData.error || `HTTP ${res.status}`);
       }
 
-      updateStep(2, { detail: 'Playing audio — listen for the examiner voice...' });
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
+      const encoding = res.headers.get('X-Audio-Encoding') || 'mp3';
+      const sampleRate = parseInt(res.headers.get('X-Audio-Sample-Rate') || '44100', 10);
+      const provider = res.headers.get('X-TTS-Provider') || 'unknown';
 
-      await new Promise<void>((resolve, reject) => {
-        audio.onended = () => {
-          URL.revokeObjectURL(url);
-          resolve();
-        };
-        audio.onerror = () => {
-          URL.revokeObjectURL(url);
-          reject(new Error('Audio playback failed'));
-        };
-        audio.play().catch(reject);
-      });
+      updateStep(2, { detail: `Playing audio (${provider})...` });
+      const arrayBuffer = await res.arrayBuffer();
+
+      if (encoding === 'mp3') {
+        // MP3: use standard Audio element
+        const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+
+        await new Promise<void>((resolve, reject) => {
+          audio.onended = () => { URL.revokeObjectURL(url); resolve(); };
+          audio.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Audio playback failed')); };
+          audio.play().catch(reject);
+        });
+      } else {
+        // PCM (linear16 or pcm_f32le): decode and play via AudioContext
+        const audioCtx = new AudioContext({ sampleRate });
+        let float32: Float32Array;
+
+        if (encoding === 'linear16') {
+          const int16 = new Int16Array(arrayBuffer);
+          float32 = new Float32Array(int16.length);
+          for (let i = 0; i < int16.length; i++) {
+            float32[i] = int16[i] / 32768;
+          }
+        } else {
+          // pcm_f32le
+          float32 = new Float32Array(arrayBuffer);
+        }
+
+        const audioBuffer = audioCtx.createBuffer(1, float32.length, sampleRate);
+        audioBuffer.getChannelData(0).set(float32);
+        const source = audioCtx.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioCtx.destination);
+
+        await new Promise<void>((resolve) => {
+          source.onended = () => { audioCtx.close(); resolve(); };
+          source.start();
+        });
+      }
 
       updateStep(2, {
         status: 'pass',
-        detail: 'Audio played. If you heard the voice, speakers are working.',
+        detail: `Audio played (${provider}, ${encoding}). If you heard the voice, speakers are working.`,
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error';

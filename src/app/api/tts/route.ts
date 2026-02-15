@@ -90,9 +90,10 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('TTS error:', error);
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    console.error('TTS error:', msg);
     return NextResponse.json(
-      { error: 'TTS generation failed' },
+      { error: 'TTS generation failed', detail: msg },
       { status: 500 }
     );
   }
