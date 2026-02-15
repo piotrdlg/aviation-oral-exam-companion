@@ -64,7 +64,7 @@ export function useStreamingPlayer(): UseStreamingPlayerReturn {
         const ctx = new AudioContext({ sampleRate: 48000 });
         audioContextRef.current = ctx;
 
-        await ctx.audioWorklet.addModule('/audio-worklet/pcm-playback-processor.js?v=3');
+        await ctx.audioWorklet.addModule('/audio-worklet/pcm-playback-processor.js?v=4');
 
         const node = new AudioWorkletNode(ctx, 'pcm-playback-processor');
         node.connect(ctx.destination);

@@ -8,7 +8,7 @@ interface TestResult {
   timing?: number;
 }
 
-const WORKLET_URL = '/audio-worklet/pcm-playback-processor.js?v=3';
+const WORKLET_URL = '/audio-worklet/pcm-playback-processor.js?v=4';
 
 export default function VoiceLab() {
   const [workletTest, setWorkletTest] = useState<TestResult>({ status: 'idle', detail: '' });

@@ -143,9 +143,11 @@ class PCMPlaybackProcessor extends AudioWorkletProcessor {
       if (retireTo > this._readPos) this._readPos = retireTo;
     }
 
-    // Notify drain when buffer is exhausted after having had data
+    // Notify drain when buffer is exhausted after having had data.
+    // Interpolation requires TWO adjacent samples (srcPos and srcPos+1),
+    // so we're drained when fewer than 2 source samples remain.
     var bufferedNow = this._writePos - Math.floor(this._srcPos);
-    if (this._hadData && bufferedNow <= 0 && !this._drainNotified) {
+    if (this._hadData && bufferedNow <= 1 && !this._drainNotified) {
       this._drainNotified = true;
       this.port.postMessage({ type: 'drain' });
     }
