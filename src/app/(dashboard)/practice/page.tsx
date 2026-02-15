@@ -5,23 +5,13 @@ import SessionConfig, { type SessionConfigData } from './components/SessionConfi
 import type { PlannerState, SessionConfig as SessionConfigType } from '@/types/database';
 import type { VoiceTier } from '@/lib/voice/types';
 import { useVoiceProvider } from '@/hooks/useVoiceProvider';
-import { detectSentenceBoundary } from '@/lib/voice/sentence-boundary';
-
-/** Split full text into sentences using aviation-aware boundary detection. */
-function splitIntoSentences(text: string): string[] {
-  const sentences: string[] = [];
-  let remaining = text;
-  while (remaining.trim().length > 0) {
-    const result = detectSentenceBoundary(remaining);
-    if (result) {
-      sentences.push(result.sentence);
-      remaining = result.remainder;
-    } else {
-      if (remaining.trim()) sentences.push(remaining.trim());
-      break;
-    }
-  }
-  return sentences.length > 0 ? sentences : [text];
+/** Split text into paragraphs (on blank lines or single newlines). */
+function splitIntoParagraphs(text: string): string[] {
+  // Split on double-newline (real paragraphs) first, then single newlines
+  const parts = text.split(/\n\s*\n/).flatMap(block =>
+    block.split(/\n/).map(l => l.trim()).filter(Boolean)
+  );
+  return parts.length > 0 ? parts : [text];
 }
 
 interface Source {
@@ -124,23 +114,24 @@ export default function PracticePage() {
     }
   }, []);
 
-  // Reveal examiner text sentence-by-sentence synchronized with TTS audio
+  // Reveal examiner text paragraph-by-paragraph synchronized with TTS audio.
+  // If the response has no paragraph breaks, the full text appears at once after TTS TTFB.
   const revealExaminerText = useCallback((fullText: string) => {
     revealTimersRef.current.forEach(clearTimeout);
     revealTimersRef.current = [];
     pendingFullTextRef.current = fullText;
 
-    const sentences = splitIntoSentences(fullText);
+    const paragraphs = splitIntoParagraphs(fullText);
     const WORDS_PER_SECOND = 2.8; // ~168 wpm typical TTS rate
     const TTS_TTFB_MS = 600; // Estimated delay before audio starts
 
     let cumulativeMs = TTS_TTFB_MS;
     let accumulated = '';
 
-    for (let i = 0; i < sentences.length; i++) {
-      accumulated += (accumulated ? ' ' : '') + sentences[i];
-      const revealText = i === sentences.length - 1 ? fullText : accumulated;
-      const isLast = i === sentences.length - 1;
+    for (let i = 0; i < paragraphs.length; i++) {
+      accumulated += (accumulated ? '\n\n' : '') + paragraphs[i];
+      const revealText = i === paragraphs.length - 1 ? fullText : accumulated;
+      const isLast = i === paragraphs.length - 1;
 
       const timer = setTimeout(() => {
         setMessages(prev => {
@@ -155,7 +146,7 @@ export default function PracticePage() {
       }, cumulativeMs);
       revealTimersRef.current.push(timer);
 
-      const wordCount = sentences[i].split(/\s+/).length;
+      const wordCount = paragraphs[i].split(/\s+/).length;
       cumulativeMs += (wordCount / WORDS_PER_SECOND) * 1000;
     }
   }, []);
