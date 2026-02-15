@@ -85,7 +85,6 @@ export async function GET() {
           connection.on(LiveTranscriptionEvents.Open, () => {
             events.push('open');
             clearTimeout(timeout);
-            // Send close immediately — we just want to test connectivity
             connection.requestClose();
             resolve({ connected: true, events });
           });
@@ -114,7 +113,9 @@ export async function GET() {
       results.sdkDirectKey = { error: err instanceof Error ? err.message : String(err) };
     }
 
-    // 4. Test with auth/grant token via SDK (mimics what browser should do)
+    // 4. Test with auth/grant token via SDK using accessToken option
+    // SDK source: AbstractLiveClient uses ["bearer", accessToken] for JWTs
+    // vs ["token", apiKey] for API keys — this is the critical difference
     if (accessToken) {
       const sdkTokenT0 = Date.now();
       try {
@@ -125,8 +126,9 @@ export async function GET() {
           }, 10000);
 
           try {
-            // Use accessToken option per SDK v4.5.0+
-            const deepgram = createDeepgramClient({ key: accessToken! });
+            // accessToken option uses Bearer auth (correct for JWTs)
+            // key option uses Token auth (only for raw API keys)
+            const deepgram = createDeepgramClient({ accessToken: accessToken! });
             const connection = deepgram.listen.live({
               model: 'nova-3',
               language: 'en-US',
@@ -156,16 +158,18 @@ export async function GET() {
           }
         });
 
-        results.sdkWithToken = {
+        results.sdkWithAccessToken = {
           ...sdkTokenResult,
           ms: Date.now() - sdkTokenT0,
+          note: 'Uses ["bearer", jwt] protocol (correct for auth/grant JWTs)',
         };
       } catch (err) {
-        results.sdkWithToken = { error: err instanceof Error ? err.message : String(err) };
+        results.sdkWithAccessToken = { error: err instanceof Error ? err.message : String(err) };
       }
     }
 
     results.totalMs = Date.now() - t0;
+    results.sdkProtocolNote = 'SDK uses ["bearer", jwt] for accessToken, ["token", key] for API keys';
     return NextResponse.json(results);
   } catch (error) {
     return NextResponse.json(

@@ -379,15 +379,18 @@ export default function VoiceLab() {
         });
       }
 
-      // Method A: Sec-WebSocket-Protocol ['token', jwt]
-      setSttTest({ status: 'running', detail: `Trying Method A: Sec-WebSocket-Protocol auth...` });
-      const resultA = await tryConnect(baseWsUrl, ['token', tokenData.token]);
+      // Detect JWT vs raw API key — JWTs need 'bearer' protocol, API keys need 'token'
+      const isJwt = tokenData.token.startsWith('eyJ');
+
+      // Method A: Sec-WebSocket-Protocol ['bearer', jwt] (correct for auth/grant JWTs)
+      setSttTest({ status: 'running', detail: `Trying Method A: bearer protocol (isJwt=${isJwt})...` });
+      const resultA = await tryConnect(baseWsUrl, ['bearer', tokenData.token]);
       const timeA = Math.round(performance.now() - t0);
 
       if (resultA.connected) {
         setSttTest({
           status: 'pass',
-          detail: `Method A (Sec-WebSocket-Protocol) connected! TokenTime=${tokenTime}ms, Total=${timeA}ms.`,
+          detail: `Method A (bearer protocol) connected! TokenTime=${tokenTime}ms, Total=${timeA}ms, isJwt=${isJwt}.`,
           timing: timeA,
         });
         return;
@@ -395,16 +398,15 @@ export default function VoiceLab() {
 
       const reasonA = resultA.error || `code=${resultA.closeCode}, reason=${resultA.closeReason}`;
 
-      // Method B: Token in URL query parameter
-      setSttTest({ status: 'running', detail: `Method A failed (${reasonA}). Trying Method B: token in URL...` });
-      const urlWithToken = `${baseWsUrl}&token=${encodeURIComponent(tokenData.token)}`;
-      const resultB = await tryConnect(urlWithToken);
+      // Method B: Sec-WebSocket-Protocol ['token', key] (for raw API keys)
+      setSttTest({ status: 'running', detail: `Method A failed (${reasonA}). Trying Method B: token protocol...` });
+      const resultB = await tryConnect(baseWsUrl, ['token', tokenData.token]);
       const timeB = Math.round(performance.now() - t0);
 
       if (resultB.connected) {
         setSttTest({
           status: 'pass',
-          detail: `Method B (token in URL) connected! TokenTime=${tokenTime}ms, Total=${timeB}ms. Method A failed: ${reasonA}`,
+          detail: `Method B (token protocol) connected! TokenTime=${tokenTime}ms, Total=${timeB}ms.`,
           timing: timeB,
         });
         return;
@@ -412,16 +414,16 @@ export default function VoiceLab() {
 
       const reasonB = resultB.error || `code=${resultB.closeCode}, reason=${resultB.closeReason}`;
 
-      // Method C: Authorization header via query param (some providers support this)
-      setSttTest({ status: 'running', detail: `Method B failed (${reasonB}). Trying Method C: Authorization bearer in URL...` });
-      const urlWithBearer = `${baseWsUrl}&Authorization=Bearer+${encodeURIComponent(tokenData.token)}`;
-      const resultC = await tryConnect(urlWithBearer);
+      // Method C: Token in URL query parameter
+      setSttTest({ status: 'running', detail: `Method B failed (${reasonB}). Trying Method C: token in URL...` });
+      const urlWithToken = `${baseWsUrl}&token=${encodeURIComponent(tokenData.token)}`;
+      const resultC = await tryConnect(urlWithToken);
       const timeC = Math.round(performance.now() - t0);
 
       if (resultC.connected) {
         setSttTest({
           status: 'pass',
-          detail: `Method C (bearer in URL) connected! TokenTime=${tokenTime}ms, Total=${timeC}ms.`,
+          detail: `Method C (token in URL) connected! TokenTime=${tokenTime}ms, Total=${timeC}ms.`,
           timing: timeC,
         });
         return;
@@ -433,7 +435,7 @@ export default function VoiceLab() {
       const urlPreview = baseWsUrl.length > 80 ? baseWsUrl.slice(0, 80) + '...' : baseWsUrl;
       setSttTest({
         status: 'fail',
-        detail: `All 3 auth methods failed. A(SecWSProtocol): ${reasonA}. B(token URL): ${reasonB}. C(bearer URL): ${reasonC}. Token len=${tokenLen}, preview: ${tokenPreview}. URL: ${urlPreview}`,
+        detail: `All 3 methods failed. A(bearer): ${reasonA}. B(token): ${reasonB}. C(URL): ${reasonC}. Token len=${tokenLen}, isJwt=${isJwt}. URL: ${urlPreview}`,
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error';

@@ -120,8 +120,10 @@ export function useDeepgramSTT(options: UseDeepgramSTTOptions = {}): UseDeepgram
       startTimeRef.current = Date.now();
 
       // 4. Open WebSocket to Deepgram using Sec-WebSocket-Protocol for auth
-      // Per Deepgram docs: ['token', key] produces header "Sec-WebSocket-Protocol: token, <key>"
-      const ws = new WebSocket(wsUrl, ['token', token]);
+      // auth/grant JWTs require 'bearer' protocol (not 'token' which is for raw API keys)
+      // See: https://github.com/deepgram/deepgram-js-sdk/issues/392
+      const isJwt = token.startsWith('eyJ');
+      const ws = new WebSocket(wsUrl, [isJwt ? 'bearer' : 'token', token]);
       wsRef.current = ws;
 
       ws.onopen = () => {
