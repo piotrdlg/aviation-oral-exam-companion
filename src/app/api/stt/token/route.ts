@@ -132,15 +132,30 @@ export async function GET() {
 
     const expiresAt = Date.now() + TOKEN_TTL_SECONDS * 1000;
 
-    // Build pre-configured WebSocket URL
-    const wsUrl = 'wss://api.deepgram.com/v1/listen?' + new URLSearchParams({
+    // Build pre-configured WebSocket URL with all params including keywords
+    const params = new URLSearchParams({
       model: 'nova-3',
       language: 'en-US',
       smart_format: 'true',
       interim_results: 'true',
       utterance_end_ms: '1500',
       vad_events: 'true',
-    }).toString();
+    });
+    // Aviation vocabulary keywords for recognition accuracy
+    const keywords = [
+      'METAR', 'TAF', 'NOTAM', 'PIREP', 'SIGMET', 'AIRMET',
+      'VOR', 'NDB', 'ILS', 'RNAV', 'GPS', 'DME',
+      'ACS', 'DPE', 'ASEL', 'AMEL', 'ASES', 'AMES',
+      'Cessna', 'Piper', 'Beechcraft', 'Cirrus',
+      'CTAF', 'ATIS', 'AWOS', 'ASOS',
+      'FAR', 'AIM', 'POH', 'AFM',
+      'ADM', 'CRM', 'SRM', 'IMSAFE', 'PAVE', 'DECIDE',
+      'sectional', 'checkride', 'logbook', 'endorsement',
+    ];
+    for (const kw of keywords) {
+      params.append('keywords', kw);
+    }
+    const wsUrl = 'wss://api.deepgram.com/v1/listen?' + params.toString();
 
     // Log token issuance (non-blocking)
     serviceSupabase

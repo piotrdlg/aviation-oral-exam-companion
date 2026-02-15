@@ -338,7 +338,8 @@ export default function VoiceLab() {
 
       setSttTest({ status: 'running', detail: `Token in ${tokenTime}ms (len=${tokenLen}, ${debugInfo}). Trying auth methods...` });
 
-      const baseWsUrl = `${tokenData.url}&encoding=linear16&sample_rate=48000&channels=1`;
+      // Use the URL as-is from the server (already includes keywords and config)
+      const baseWsUrl = tokenData.url;
 
       // Helper to test a WebSocket connection with a given auth approach
       function tryConnect(url: string, protocols?: string[]): Promise<{ connected: boolean; closeCode?: number; closeReason?: string; error?: string }> {

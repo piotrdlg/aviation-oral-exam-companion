@@ -2,17 +2,8 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 
-/** Aviation-specific vocabulary keywords for Deepgram custom vocabulary. */
-const AVIATION_KEYWORDS = [
-  'METAR', 'TAF', 'NOTAM', 'PIREP', 'SIGMET', 'AIRMET',
-  'VOR', 'NDB', 'ILS', 'RNAV', 'GPS', 'DME',
-  'ACS', 'DPE', 'ASEL', 'AMEL', 'ASES', 'AMES',
-  'Cessna', 'Piper', 'Beechcraft', 'Cirrus',
-  'CTAF', 'ATIS', 'AWOS', 'ASOS',
-  'FAR', 'AIM', 'POH', 'AFM',
-  'ADM', 'CRM', 'SRM', 'IMSAFE', 'PAVE', 'DECIDE',
-  'sectional', 'checkride', 'logbook', 'endorsement',
-];
+// Aviation keywords are now included in the server-side WebSocket URL
+// built by /api/stt/token to keep URL construction in one place.
 
 interface UseDeepgramSTTOptions {
   sessionId?: string;
@@ -122,18 +113,14 @@ export function useDeepgramSTT(options: UseDeepgramSTTOptions = {}): UseDeepgram
         const tokenErr = await tokenRes.json();
         throw new Error(tokenErr.error || 'Failed to get STT token');
       }
-      const { token, url: baseWsUrl } = await tokenRes.json();
+      const { token, url: wsUrl } = await tokenRes.json();
 
-      // 3. Build WebSocket URL with aviation keywords (no token in URL)
-      const keywordsParam = AVIATION_KEYWORDS.map(k => `keywords=${encodeURIComponent(k)}`).join('&');
-      const wsUrl = `${baseWsUrl}&${keywordsParam}`;
-
-      // 4. Report usage start
+      // 3. Report usage start
       await reportUsage('start');
       startTimeRef.current = Date.now();
 
-      // 5. Open WebSocket to Deepgram using Sec-WebSocket-Protocol for auth
-      // Per Deepgram docs: ['token', jwt] produces header "Sec-WebSocket-Protocol: token, <jwt>"
+      // 4. Open WebSocket to Deepgram using Sec-WebSocket-Protocol for auth
+      // Per Deepgram docs: ['token', key] produces header "Sec-WebSocket-Protocol: token, <key>"
       const ws = new WebSocket(wsUrl, ['token', token]);
       wsRef.current = ws;
 
