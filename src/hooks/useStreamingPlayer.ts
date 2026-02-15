@@ -37,6 +37,8 @@ export function useStreamingPlayer(): UseStreamingPlayerReturn {
   const workletNodeRef = useRef<AudioWorkletNode | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const initPromiseRef = useRef<Promise<void> | null>(null);
+  // Remainder buffer for handling partial samples across chunk boundaries
+  const remainderRef = useRef<Uint8Array | null>(null);
 
   /**
    * Initialize AudioContext and load AudioWorklet processor.
@@ -164,6 +166,10 @@ export function useStreamingPlayer(): UseStreamingPlayerReturn {
 
       const reader = response.body.getReader();
       const targetRate = ctx.sampleRate; // 48000
+      const bytesPerSample = encoding === 'linear16' ? 2 : 4; // pcm_f32le = 4
+
+      // Clear remainder from any previous stream
+      remainderRef.current = null;
 
       try {
         while (true) {
@@ -172,12 +178,32 @@ export function useStreamingPlayer(): UseStreamingPlayerReturn {
 
           if (!value || value.byteLength === 0) continue;
 
+          // Prepend any remainder bytes from the previous chunk
+          let chunk: Uint8Array;
+          if (remainderRef.current) {
+            chunk = new Uint8Array(remainderRef.current.length + value.length);
+            chunk.set(remainderRef.current, 0);
+            chunk.set(value, remainderRef.current.length);
+            remainderRef.current = null;
+          } else {
+            chunk = value;
+          }
+
+          // Save any trailing bytes that don't form a complete sample
+          const leftover = chunk.byteLength % bytesPerSample;
+          if (leftover > 0) {
+            remainderRef.current = chunk.slice(chunk.byteLength - leftover);
+            chunk = chunk.slice(0, chunk.byteLength - leftover);
+          }
+
+          if (chunk.byteLength === 0) continue;
+
           let float32: Float32Array;
           if (encoding === 'linear16') {
-            float32 = linear16ToFloat32(value);
+            float32 = linear16ToFloat32(chunk);
           } else {
             // pcm_f32le
-            float32 = pcmF32leToFloat32(value);
+            float32 = pcmF32leToFloat32(chunk);
           }
 
           // Resample if needed
@@ -193,10 +219,10 @@ export function useStreamingPlayer(): UseStreamingPlayerReturn {
           console.error('Stream reading error:', err);
         }
       } finally {
+        remainderRef.current = null;
         reader.releaseLock();
 
         // Wait a bit for the ring buffer to drain before marking as not speaking
-        // Estimate: buffered samples / sample rate
         setTimeout(() => {
           if (abortControllerRef.current === abortController) {
             setIsSpeaking(false);
