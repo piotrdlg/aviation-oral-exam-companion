@@ -56,6 +56,8 @@ export default function PracticePage() {
   const voiceEnabledRef = useRef(false);
   // Text waiting to be revealed when TTS audio actually starts playing
   const pendingFullTextRef = useRef<string | null>(null);
+  // When true, user is manually editing the textarea — don't overwrite with STT transcript
+  const userEditingRef = useRef(false);
 
   // Unified voice provider hook (handles STT + TTS for all tiers)
   const voice = useVoiceProvider({ tier, sessionId: sessionId || undefined });
@@ -68,13 +70,17 @@ export default function PracticePage() {
       .catch(() => {}); // Fallback to ground_school
   }, []);
 
-  // Sync voice transcript to input field when listening
+  // Sync voice transcript to input field when listening (unless user is manually editing)
   useEffect(() => {
-    if (voice.isListening) {
+    if (voice.isListening && !userEditingRef.current) {
       const combined = voice.transcript + (voice.interimTranscript ? ' ' + voice.interimTranscript : '');
       if (combined.trim()) {
         setInput(combined.trim());
       }
+    }
+    // Reset editing flag when listening stops (next listen session starts fresh)
+    if (!voice.isListening) {
+      userEditingRef.current = false;
     }
   }, [voice.transcript, voice.interimTranscript, voice.isListening]);
 
@@ -225,6 +231,7 @@ export default function PracticePage() {
 
     const studentAnswer = input.trim();
     setInput('');
+    userEditingRef.current = false;
     setMessages((prev) => [...prev, { role: 'student', text: studentAnswer }]);
     setLoading(true);
 
@@ -664,7 +671,13 @@ export default function PracticePage() {
         <textarea
           rows={3}
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => {
+            setInput(e.target.value);
+            // If user types while STT is active, stop overwriting their edits
+            if (voice.isListening) {
+              userEditingRef.current = true;
+            }
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
