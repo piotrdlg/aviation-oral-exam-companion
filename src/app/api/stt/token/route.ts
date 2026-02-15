@@ -9,7 +9,7 @@ const serviceSupabase = createServiceClient(
 );
 
 const TOKEN_RATE_LIMIT = 4; // max tokens per minute per user
-const TOKEN_TTL_SECONDS = 30;
+const TOKEN_TTL_SECONDS = 600; // 10 minutes — enough for a full exam session
 
 /**
  * GET /api/stt/token

@@ -142,7 +142,7 @@ export function useStreamingPlayer(): UseStreamingPlayerReturn {
         throw new Error('Audio playback not initialized');
       }
 
-      // Handle MP3 (non-streaming): decode entire buffer
+      // Handle MP3: decode entire buffer via decodeAudioData
       if (encoding === 'mp3') {
         const arrayBuffer = await response.arrayBuffer();
         const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
@@ -155,80 +155,45 @@ export function useStreamingPlayer(): UseStreamingPlayerReturn {
         return;
       }
 
-      // Streaming PCM playback
-      if (!response.body) {
-        throw new Error('Response has no body for streaming playback');
-      }
-
+      // PCM (linear16 or pcm_f32le): buffer the full response and play at native sample rate.
+      // Avoids per-chunk resampling discontinuities that cause buzzing artifacts.
       const abortController = new AbortController();
       abortControllerRef.current = abortController;
       setIsSpeaking(true);
 
-      const reader = response.body.getReader();
-      const targetRate = ctx.sampleRate; // 48000
-      const bytesPerSample = encoding === 'linear16' ? 2 : 4; // pcm_f32le = 4
-
-      // Clear remainder from any previous stream
-      remainderRef.current = null;
-
       try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done || abortController.signal.aborted) break;
+        const arrayBuffer = await response.arrayBuffer();
+        if (abortController.signal.aborted) return;
 
-          if (!value || value.byteLength === 0) continue;
-
-          // Prepend any remainder bytes from the previous chunk
-          let chunk: Uint8Array;
-          if (remainderRef.current) {
-            chunk = new Uint8Array(remainderRef.current.length + value.length);
-            chunk.set(remainderRef.current, 0);
-            chunk.set(value, remainderRef.current.length);
-            remainderRef.current = null;
-          } else {
-            chunk = value;
-          }
-
-          // Save any trailing bytes that don't form a complete sample
-          const leftover = chunk.byteLength % bytesPerSample;
-          if (leftover > 0) {
-            remainderRef.current = chunk.slice(chunk.byteLength - leftover);
-            chunk = chunk.slice(0, chunk.byteLength - leftover);
-          }
-
-          if (chunk.byteLength === 0) continue;
-
-          let float32: Float32Array;
-          if (encoding === 'linear16') {
-            float32 = linear16ToFloat32(chunk);
-          } else {
-            // pcm_f32le
-            float32 = pcmF32leToFloat32(chunk);
-          }
-
-          // Resample if needed
-          if (sampleRate !== targetRate) {
-            float32 = resample(float32, sampleRate, targetRate);
-          }
-
-          // Send to worklet ring buffer
-          node.port.postMessage(float32);
+        let float32: Float32Array;
+        if (encoding === 'linear16') {
+          float32 = linear16ToFloat32(new Uint8Array(arrayBuffer));
+        } else {
+          // pcm_f32le — direct interpretation
+          float32 = new Float32Array(arrayBuffer);
         }
-      } catch (err) {
-        if (!(err instanceof Error && err.name === 'AbortError')) {
-          console.error('Stream reading error:', err);
-        }
-      } finally {
-        remainderRef.current = null;
-        reader.releaseLock();
 
-        // Wait a bit for the ring buffer to drain before marking as not speaking
-        setTimeout(() => {
+        // Create AudioContext at the source sample rate for correct playback
+        const playbackCtx = new AudioContext({ sampleRate });
+        const audioBuffer = playbackCtx.createBuffer(1, float32.length, sampleRate);
+        audioBuffer.getChannelData(0).set(float32);
+
+        const source = playbackCtx.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(playbackCtx.destination);
+        source.onended = () => {
+          playbackCtx.close().catch(() => {});
           if (abortControllerRef.current === abortController) {
             setIsSpeaking(false);
             abortControllerRef.current = null;
           }
-        }, 500);
+        };
+        source.start();
+      } catch (err) {
+        if (!(err instanceof Error && err.name === 'AbortError')) {
+          console.error('PCM playback error:', err);
+        }
+        setIsSpeaking(false);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Playback failed';

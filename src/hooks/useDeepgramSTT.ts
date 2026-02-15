@@ -191,7 +191,8 @@ export function useDeepgramSTT(options: UseDeepgramSTTOptions = {}): UseDeepgram
       };
 
       ws.onclose = (event) => {
-        if (event.code !== 1000 && event.code !== 1005) {
+        // 1000 = normal close, 1005 = no status code, 1006 = abnormal (can happen on stop)
+        if (event.code !== 1000 && event.code !== 1005 && event.code !== 1006) {
           setError(`Speech service disconnected (code: ${event.code})`);
         }
         setIsListening(false);
