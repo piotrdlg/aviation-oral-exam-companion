@@ -5,14 +5,6 @@ import SessionConfig, { type SessionConfigData } from './components/SessionConfi
 import type { PlannerState, SessionConfig as SessionConfigType } from '@/types/database';
 import type { VoiceTier } from '@/lib/voice/types';
 import { useVoiceProvider } from '@/hooks/useVoiceProvider';
-/** Split text into paragraphs (on blank lines or single newlines). */
-function splitIntoParagraphs(text: string): string[] {
-  // Split on double-newline (real paragraphs) first, then single newlines
-  const parts = text.split(/\n\s*\n/).flatMap(block =>
-    block.split(/\n/).map(l => l.trim()).filter(Boolean)
-  );
-  return parts.length > 0 ? parts : [text];
-}
 
 interface Source {
   doc_abbreviation: string;
@@ -62,8 +54,7 @@ export default function PracticePage() {
   const taskScoresRef = useRef<Record<string, { score: 'satisfactory' | 'unsatisfactory' | 'partial'; attempts: number }>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const voiceEnabledRef = useRef(false);
-  // Sentence-by-sentence reveal for voice mode (syncs text with TTS audio)
-  const revealTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // Text waiting to be revealed when TTS audio actually starts playing
   const pendingFullTextRef = useRef<string | null>(null);
 
   // Unified voice provider hook (handles STT + TTS for all tiers)
@@ -96,10 +87,8 @@ export default function PracticePage() {
     voiceEnabledRef.current = voiceEnabled;
   }, [voiceEnabled]);
 
-  // Flush any pending sentence reveal — show all remaining text immediately
+  // Show pending examiner text immediately (used on barge-in, TTS error, end session)
   const flushReveal = useCallback(() => {
-    revealTimersRef.current.forEach(clearTimeout);
-    revealTimersRef.current = [];
     const fullText = pendingFullTextRef.current;
     if (fullText) {
       pendingFullTextRef.current = null;
@@ -114,54 +103,15 @@ export default function PracticePage() {
     }
   }, []);
 
-  // Reveal examiner text paragraph-by-paragraph synchronized with TTS audio.
-  // If the response has no paragraph breaks, the full text appears at once after TTS TTFB.
-  const revealExaminerText = useCallback((fullText: string) => {
-    revealTimersRef.current.forEach(clearTimeout);
-    revealTimersRef.current = [];
-    pendingFullTextRef.current = fullText;
-
-    const paragraphs = splitIntoParagraphs(fullText);
-    const WORDS_PER_SECOND = 2.8; // ~168 wpm typical TTS rate
-    const TTS_TTFB_MS = 600; // Estimated delay before audio starts
-
-    let cumulativeMs = TTS_TTFB_MS;
-    let accumulated = '';
-
-    for (let i = 0; i < paragraphs.length; i++) {
-      accumulated += (accumulated ? '\n\n' : '') + paragraphs[i];
-      const revealText = i === paragraphs.length - 1 ? fullText : accumulated;
-      const isLast = i === paragraphs.length - 1;
-
-      const timer = setTimeout(() => {
-        setMessages(prev => {
-          const updated = [...prev];
-          const lastIdx = updated.length - 1;
-          if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
-            updated[lastIdx] = { ...updated[lastIdx], text: revealText };
-          }
-          return updated;
-        });
-        if (isLast) pendingFullTextRef.current = null;
-      }, cumulativeMs);
-      revealTimersRef.current.push(timer);
-
-      const wordCount = paragraphs[i].split(/\s+/).length;
-      cumulativeMs += (wordCount / WORDS_PER_SECOND) * 1000;
-    }
-  }, []);
-
-  // When audio stops (natural end or barge-in), flush any remaining reveal text
+  // When TTS audio starts playing, reveal the pending text
+  // When audio stops (barge-in) and text is still pending, flush it
   useEffect(() => {
-    if (!voice.isSpeaking && pendingFullTextRef.current) {
+    if (voice.isSpeaking && pendingFullTextRef.current) {
+      flushReveal();
+    } else if (!voice.isSpeaking && pendingFullTextRef.current) {
       flushReveal();
     }
   }, [voice.isSpeaking, flushReveal]);
-
-  // Clean up reveal timers on unmount
-  useEffect(() => {
-    return () => revealTimersRef.current.forEach(clearTimeout);
-  }, []);
 
   // Play examiner's message via the voice provider
   const speakText = useCallback(async (text: string) => {
@@ -250,9 +200,9 @@ export default function PracticePage() {
       const examinerMsg = data.examinerMessage;
 
       if (configData.voiceEnabled) {
-        // Voice ON: start with empty text, reveal sentence-by-sentence in sync with audio
+        // Voice ON: start with empty text, reveal when audio actually starts playing
         setMessages([{ role: 'examiner', text: '' }]);
-        revealExaminerText(examinerMsg);
+        pendingFullTextRef.current = examinerMsg;
         speakText(examinerMsg);
       } else {
         // Voice OFF: show full text immediately
@@ -431,10 +381,10 @@ export default function PracticePage() {
         }
 
         if (voiceEnabledRef.current && examinerMsg) {
-          // Voice ON: add placeholder with empty text, then reveal in sync with audio
+          // Voice ON: add placeholder with empty text, reveal when audio starts
           setMessages((prev) => [...prev, { role: 'examiner', text: '' }]);
           setLoading(false);
-          revealExaminerText(examinerMsg);
+          pendingFullTextRef.current = examinerMsg;
           speakText(examinerMsg);
         }
       } else {
