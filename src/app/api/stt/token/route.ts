@@ -11,9 +11,40 @@ const serviceSupabase = createServiceClient(
 const TOKEN_RATE_LIMIT = 4; // max tokens per minute per user
 const TOKEN_TTL_SECONDS = 600; // 10 minutes — enough for a full exam session
 
+// Cache project ID to avoid repeated lookups
+let cachedProjectId: string | null = null;
+
+/**
+ * Discover the Deepgram project ID from the API key.
+ * Most accounts have a single project. Cached for the lifetime of the server.
+ */
+async function getProjectId(apiKey: string): Promise<string> {
+  if (cachedProjectId) return cachedProjectId;
+
+  const res = await fetch('https://api.deepgram.com/v1/projects', {
+    headers: { 'Authorization': `Token ${apiKey}` },
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`Failed to fetch Deepgram projects (${res.status}): ${body}`);
+  }
+
+  const data = await res.json();
+  const projects = data.projects;
+  if (!projects || projects.length === 0) {
+    throw new Error('No Deepgram projects found for this API key');
+  }
+
+  cachedProjectId = projects[0].project_id;
+  return cachedProjectId!;
+}
+
 /**
  * GET /api/stt/token
- * Issues a temporary Deepgram STT token for direct client-to-Deepgram WebSocket connection.
+ * Issues a temporary Deepgram API key for direct client-to-Deepgram WebSocket connection.
+ * Uses the Keys API (not auth/grant) to create a real API key that works with
+ * Sec-WebSocket-Protocol auth in browsers.
  * Only available to Tier 2 (checkride_prep) and Tier 3 (dpe_live) users.
  */
 export async function GET() {
@@ -49,7 +80,6 @@ export async function GET() {
       );
     }
 
-    // Request temporary token from Deepgram
     const deepgramApiKey = process.env.DEEPGRAM_API_KEY;
     if (!deepgramApiKey) {
       return NextResponse.json(
@@ -58,41 +88,51 @@ export async function GET() {
       );
     }
 
-    const tokenResponse = await fetch('https://api.deepgram.com/v1/auth/grant', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Token ${deepgramApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ ttl_seconds: TOKEN_TTL_SECONDS }),
-    });
+    // Discover project ID (cached after first call)
+    const projectId = await getProjectId(deepgramApiKey);
 
-    if (!tokenResponse.ok) {
-      const errorBody = await tokenResponse.text().catch(() => 'Unknown error');
-      console.error('Deepgram token request failed:', tokenResponse.status, errorBody);
+    // Create a temporary API key using the Keys API
+    // This returns a REAL API key (not a JWT) that works with Sec-WebSocket-Protocol
+    const keyResponse = await fetch(
+      `https://api.deepgram.com/v1/projects/${projectId}/keys`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${deepgramApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          comment: `Browser STT key for user ${user.id.slice(0, 8)}`,
+          scopes: ['usage:write'],
+          time_to_live_in_seconds: TOKEN_TTL_SECONDS,
+        }),
+      }
+    );
+
+    if (!keyResponse.ok) {
+      const errorBody = await keyResponse.text().catch(() => 'Unknown error');
+      console.error('Deepgram key creation failed:', keyResponse.status, errorBody);
       return NextResponse.json(
-        { error: 'Failed to obtain STT token' },
+        { error: 'Failed to create STT key' },
         { status: 502 }
       );
     }
 
-    const tokenData = await tokenResponse.json();
-    // /v1/auth/grant returns JWT in access_token field (per Deepgram docs)
-    const accessToken = tokenData.access_token || tokenData.key || tokenData.api_key || tokenData.token;
-    const expiresIn = tokenData.expires_in || TOKEN_TTL_SECONDS;
+    const keyData = await keyResponse.json();
+    const tempKey = keyData.key;
+    const apiKeyId = keyData.api_key_id;
 
-    if (!accessToken) {
-      console.error('Deepgram grant response — no token found. Fields:', Object.keys(tokenData), 'Full response:', JSON.stringify(tokenData).slice(0, 200));
+    if (!tempKey) {
+      console.error('Deepgram key response — no key found. Fields:', Object.keys(keyData));
       return NextResponse.json(
-        { error: 'Invalid token response from STT provider' },
+        { error: 'Invalid key response from STT provider' },
         { status: 502 }
       );
     }
 
-    const expiresAt = Date.now() + expiresIn * 1000;
+    const expiresAt = Date.now() + TOKEN_TTL_SECONDS * 1000;
 
-    // Build pre-configured WebSocket URL WITHOUT token
-    // Browser auth uses Sec-WebSocket-Protocol header via WebSocket constructor
+    // Build pre-configured WebSocket URL
     const wsUrl = 'wss://api.deepgram.com/v1/listen?' + new URLSearchParams({
       model: 'nova-3',
       language: 'en-US',
@@ -112,27 +152,33 @@ export async function GET() {
         tier,
         quantity: 1,
         status: 'ok',
-        metadata: { ttl_seconds: TOKEN_TTL_SECONDS },
+        metadata: {
+          ttl_seconds: TOKEN_TTL_SECONDS,
+          api_key_id: apiKeyId,
+          method: 'keys_api',
+        },
       })
       .then(({ error }) => {
         if (error) console.error('Token issuance log error:', error.message);
       });
 
     return NextResponse.json({
-      token: accessToken,
+      token: tempKey,
       url: wsUrl,
       expiresAt,
-      // Debug info for VoiceLab diagnostics
       _debug: {
-        responseFields: Object.keys(tokenData),
-        tokenFieldUsed: tokenData.access_token ? 'access_token' : tokenData.key ? 'key' : tokenData.api_key ? 'api_key' : 'token',
-        expiresIn,
+        method: 'keys_api',
+        projectId: projectId.slice(0, 8) + '...',
+        apiKeyId,
+        tokenLen: tempKey.length,
+        tokenPrefix: tempKey.slice(0, 10) + '...',
+        ttlSeconds: TOKEN_TTL_SECONDS,
       },
     });
   } catch (error) {
     console.error('STT token error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     );
   }

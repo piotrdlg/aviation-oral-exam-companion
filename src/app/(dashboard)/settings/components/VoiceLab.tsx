@@ -332,7 +332,9 @@ export default function VoiceLab() {
       const tokenData = await tokenRes.json();
       const tokenPreview = tokenData.token ? `${tokenData.token.slice(0, 20)}...` : 'MISSING';
       const tokenLen = tokenData.token?.length || 0;
-      const debugInfo = tokenData._debug ? `field=${tokenData._debug.tokenFieldUsed}, respFields=[${tokenData._debug.responseFields}], expiresIn=${tokenData._debug.expiresIn}s` : 'no debug';
+      const debugInfo = tokenData._debug
+        ? `method=${tokenData._debug.method}, prefix=${tokenData._debug.tokenPrefix}, ttl=${tokenData._debug.ttlSeconds}s`
+        : 'no debug';
 
       setSttTest({ status: 'running', detail: `Token in ${tokenTime}ms (len=${tokenLen}, ${debugInfo}). Trying auth methods...` });
 
