@@ -429,9 +429,11 @@ export default function VoiceLab() {
 
       const reasonC = resultC.error || `code=${resultC.closeCode}, reason=${resultC.closeReason}`;
 
+      // Show URL (truncated) to verify deployment state
+      const urlPreview = baseWsUrl.length > 80 ? baseWsUrl.slice(0, 80) + '...' : baseWsUrl;
       setSttTest({
         status: 'fail',
-        detail: `All 3 auth methods failed. A(SecWSProtocol): ${reasonA}. B(token URL): ${reasonB}. C(bearer URL): ${reasonC}. Token len=${tokenLen}, preview: ${tokenPreview}`,
+        detail: `All 3 auth methods failed. A(SecWSProtocol): ${reasonA}. B(token URL): ${reasonB}. C(bearer URL): ${reasonC}. Token len=${tokenLen}, preview: ${tokenPreview}. URL: ${urlPreview}`,
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error';
