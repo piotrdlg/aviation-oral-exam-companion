@@ -144,7 +144,8 @@ INSTRUCTIONS:
 5. Keep questions conversational, not robotic. A real DPE connects topics naturally.
 6. When you've covered enough elements, naturally transition by saying something like "Good, let's move on to..." or end the session.
 
-IMPORTANT: Respond ONLY as the examiner. Do not include any JSON, metadata, or system text. Just speak naturally as the DPE would.`;
+IMPORTANT: Respond ONLY as the examiner. Do not include any JSON, metadata, or system text. Just speak naturally as the DPE would.
+NEVER include stage directions, action descriptions, or parenthetical comments like *(pauses)*, *(shuffles papers)*, *(waits for response)*, or similar. Your text will be read aloud by a text-to-speech engine — only output words the examiner would actually say.`;
 }
 
 // ================================================================
