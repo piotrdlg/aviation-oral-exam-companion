@@ -1,3 +1,4 @@
+import 'server-only';
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
 import {
@@ -5,8 +6,8 @@ import {
   selectRandomTask,
   buildSystemPrompt,
 } from './exam-logic';
-import type { AircraftClass } from '@/types/database';
-import { searchChunks, formatChunksForPrompt, type ChunkSearchResult } from './rag-retrieval';
+import type { AircraftClass, Rating } from '@/types/database';
+import { searchChunks, formatChunksForPrompt, getImagesForChunks, type ChunkSearchResult, type ImageResult } from './rag-retrieval';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
@@ -38,6 +39,7 @@ export interface ExamTurn {
 
 // Re-export for consumers
 export { type AcsTaskRow } from './exam-logic';
+export { type ImageResult } from './rag-retrieval';
 
 /**
  * Pick a random ACS task for the oral exam, optionally excluding already-covered tasks.
@@ -45,12 +47,13 @@ export { type AcsTaskRow } from './exam-logic';
  */
 export async function pickStartingTask(
   coveredTaskIds: string[] = [],
-  aircraftClass?: AircraftClass
+  aircraftClass?: AircraftClass,
+  rating: Rating = 'private'
 ): Promise<AcsTaskRow | null> {
   let query = supabase
     .from('acs_tasks')
     .select('*')
-    .eq('rating', 'private');
+    .eq('rating', rating);
 
   // Filter by aircraft class at the DB level
   if (aircraftClass) {
@@ -61,7 +64,7 @@ export async function pickStartingTask(
 
   if (error || !data || data.length === 0) return null;
 
-  return selectRandomTask(data as AcsTaskRow[], coveredTaskIds, aircraftClass);
+  return selectRandomTask(data as AcsTaskRow[], coveredTaskIds, aircraftClass, rating);
 }
 
 /**
@@ -70,9 +73,10 @@ export async function pickStartingTask(
 export async function pickNextTask(
   currentTaskId: string,
   coveredTaskIds: string[] = [],
-  aircraftClass?: AircraftClass
+  aircraftClass?: AircraftClass,
+  rating: Rating = 'private'
 ): Promise<AcsTaskRow | null> {
-  return pickStartingTask([...coveredTaskIds, currentTaskId], aircraftClass);
+  return pickStartingTask([...coveredTaskIds, currentTaskId], aircraftClass, rating);
 }
 
 /**
@@ -84,7 +88,7 @@ export async function fetchRagContext(
   history: ExamMessage[],
   studentAnswer?: string,
   matchCount: number = 5
-): Promise<{ ragContext: string; ragChunks: ChunkSearchResult[] }> {
+): Promise<{ ragContext: string; ragChunks: ChunkSearchResult[]; ragImages: ImageResult[] }> {
   try {
     // Combine task, recent history, and student answer for a comprehensive query
     const recentText = history.slice(-2).map(m => m.text).join(' ');
@@ -92,9 +96,15 @@ export async function fetchRagContext(
     const query = `${task.task} ${recentText}${answerText}`.slice(0, 500);
     const ragChunks = await searchChunks(query, { matchCount });
     const ragContext = formatChunksForPrompt(ragChunks);
-    return { ragContext, ragChunks };
-  } catch {
-    return { ragContext: '', ragChunks: [] };
+
+    // Fetch linked images for the retrieved chunks
+    const chunkIds = ragChunks.map(c => c.id);
+    const ragImages = await getImagesForChunks(chunkIds);
+
+    return { ragContext, ragChunks, ragImages };
+  } catch (err) {
+    console.error('fetchRagContext failed:', err instanceof Error ? err.message : err);
+    return { ragContext: '', ragChunks: [], ragImages: [] };
   }
 }
 
@@ -107,9 +117,10 @@ export async function generateExaminerTurn(
   history: ExamMessage[],
   difficulty?: import('@/types/database').Difficulty,
   aircraftClass?: AircraftClass,
-  prefetchedRag?: { ragContext: string }
+  prefetchedRag?: { ragContext: string },
+  rating: Rating = 'private'
 ): Promise<ExamTurn> {
-  const systemPrompt = buildSystemPrompt(task, difficulty, aircraftClass);
+  const systemPrompt = buildSystemPrompt(task, difficulty, aircraftClass, rating);
 
   // Use pre-fetched RAG or fetch fresh
   let ragContext = prefetchedRag?.ragContext ?? '';
@@ -153,11 +164,12 @@ export async function generateExaminerTurnStreaming(
   history: ExamMessage[],
   difficulty?: import('@/types/database').Difficulty,
   aircraftClass?: AircraftClass,
-  prefetchedRag?: { ragContext: string },
+  prefetchedRag?: { ragContext: string; ragImages?: ImageResult[] },
   assessmentPromise?: Promise<AssessmentData>,
-  onComplete?: (fullText: string) => void
+  onComplete?: (fullText: string) => void,
+  rating: Rating = 'private'
 ): Promise<ReadableStream> {
-  const systemPrompt = buildSystemPrompt(task, difficulty, aircraftClass);
+  const systemPrompt = buildSystemPrompt(task, difficulty, aircraftClass, rating);
 
   // Use pre-fetched RAG or fetch fresh
   let ragContext = prefetchedRag?.ragContext ?? '';
@@ -203,6 +215,15 @@ export async function generateExaminerTurnStreaming(
         // Send the full examiner message as a separate event for client-side persistence
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ examinerMessage: fullText })}\n\n`));
 
+        // Send linked images (if any) — max 3, filtered by relevance
+        const ragImages = prefetchedRag?.ragImages ?? [];
+        if (ragImages.length > 0) {
+          const selectedImages = ragImages
+            .sort((a, b) => b.relevance_score - a.relevance_score)
+            .slice(0, 3);
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ images: selectedImages })}\n\n`));
+        }
+
         // Trigger onComplete callback for server-side persistence (e.g., writing transcript)
         if (onComplete) {
           try { onComplete(fullText); } catch { /* non-critical */ }
@@ -236,7 +257,9 @@ export async function assessAnswer(
   task: AcsTaskRow,
   history: ExamMessage[],
   studentAnswer: string,
-  prefetchedRag?: { ragContext: string; ragChunks: ChunkSearchResult[] }
+  prefetchedRag?: { ragContext: string; ragChunks: ChunkSearchResult[] },
+  questionImages?: ImageResult[],
+  rating: Rating = 'private'
 ): Promise<AssessmentData> {
   // Build complete element list for the assessment prompt
   const allElements: string[] = [];
@@ -284,7 +307,7 @@ export async function assessAnswer(
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-5-20250929',
     max_tokens: 400,
-    system: `You are assessing a private pilot applicant's oral exam answer. Rate it against the ACS standards.
+    system: `You are assessing a ${rating === 'commercial' ? 'commercial pilot' : rating === 'instrument' ? 'instrument rating' : rating === 'atp' ? 'airline transport pilot' : 'private pilot'} applicant's oral exam answer. Rate it against the ACS standards.
 
 ACS Task: ${task.id} - ${task.task}
 All elements for this task:
@@ -303,7 +326,18 @@ Respond in JSON only with this schema:
     messages: [
       {
         role: 'user',
-        content: `Recent conversation:\n${recentContext}\n\nStudent's answer: ${studentAnswer}\n\nAssess this answer.`,
+        content: questionImages && questionImages.length > 0
+          ? [
+              ...questionImages.map(img => ({
+                type: 'image' as const,
+                source: { type: 'url' as const, url: img.public_url },
+              })),
+              {
+                type: 'text' as const,
+                text: `The applicant was shown the above image(s) during this question.\n\nRecent conversation:\n${recentContext}\n\nStudent's answer: ${studentAnswer}\n\nAssess this answer.`,
+              },
+            ]
+          : `Recent conversation:\n${recentContext}\n\nStudent's answer: ${studentAnswer}\n\nAssess this answer.`,
       },
     ],
   });

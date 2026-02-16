@@ -57,13 +57,23 @@ function classifyDifficulty(description: string, elementType: string): 'easy' | 
 async function main() {
   console.log('Classifying element difficulties...\n');
 
-  const { data: elements, error } = await supabase
-    .from('acs_elements')
-    .select('code, description, element_type, difficulty_default');
+  // Paginate to get all elements (Supabase default limit is 1000)
+  const elements: { code: string; description: string; element_type: string; difficulty_default: string }[] = [];
+  let offset = 0;
+  const pageSize = 1000;
+  while (true) {
+    const { data, error } = await supabase
+      .from('acs_elements')
+      .select('code, description, element_type, difficulty_default')
+      .range(offset, offset + pageSize - 1);
 
-  if (error || !elements) {
-    console.error('Error fetching elements:', error?.message);
-    process.exit(1);
+    if (error || !data) {
+      console.error('Error fetching elements:', error?.message);
+      process.exit(1);
+    }
+    elements.push(...data);
+    if (data.length < pageSize) break;
+    offset += pageSize;
   }
 
   let updated = 0;

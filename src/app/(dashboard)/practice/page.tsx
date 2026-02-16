@@ -5,6 +5,7 @@ import SessionConfig, { type SessionConfigData } from './components/SessionConfi
 import type { PlannerState, SessionConfig as SessionConfigType } from '@/types/database';
 import type { VoiceTier } from '@/lib/voice/types';
 import { useVoiceProvider } from '@/hooks/useVoiceProvider';
+import { ExamImages } from '@/components/ui/ExamImages';
 
 interface Source {
   doc_abbreviation: string;
@@ -20,11 +21,27 @@ interface Assessment {
   source_summary?: string | null;
 }
 
+interface ExamImage {
+  image_id: string;
+  figure_label: string | null;
+  caption: string | null;
+  image_category: string;
+  public_url: string;
+  width: number;
+  height: number;
+  description: string | null;
+  doc_abbreviation: string;
+  page_number: number;
+  link_type: string;
+  relevance_score: number;
+}
+
 interface Message {
   role: 'examiner' | 'student';
   text: string;
   assessment?: Assessment;
   sources?: Source[];
+  images?: ExamImage[];
 }
 
 interface TaskData {
@@ -152,6 +169,7 @@ export default function PracticePage() {
 
     // Build session config for the planner
     const config: SessionConfigType = {
+      rating: configData.rating,
       aircraftClass: configData.aircraftClass,
       studyMode: configData.studyMode,
       difficulty: configData.difficulty,
@@ -167,6 +185,7 @@ export default function PracticePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'create',
+          rating: configData.rating,
           study_mode: configData.studyMode,
           difficulty_preference: configData.difficulty,
           selected_areas: configData.selectedAreas,
@@ -316,6 +335,19 @@ export default function PracticePage() {
                     const lastIdx = updated.length - 1;
                     if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
                       updated[lastIdx] = { ...updated[lastIdx], text: examinerMsg };
+                    }
+                    return updated;
+                  });
+                }
+              } else if (parsed.images) {
+                // Image references for the examiner message
+                const showImages = process.env.NEXT_PUBLIC_SHOW_EXAM_IMAGES === 'true';
+                if (showImages && Array.isArray(parsed.images) && parsed.images.length > 0) {
+                  setMessages((prev) => {
+                    const updated = [...prev];
+                    const lastIdx = updated.length - 1;
+                    if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
+                      updated[lastIdx] = { ...updated[lastIdx], images: parsed.images };
                     }
                     return updated;
                   });
@@ -595,6 +627,11 @@ export default function PracticePage() {
                 {msg.role === 'examiner' ? 'DPE Examiner' : 'You'}
               </p>
               <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+
+              {/* Reference images (feature-flagged) */}
+              {msg.images && msg.images.length > 0 && (
+                <ExamImages images={msg.images} />
+              )}
 
               {/* Assessment badge */}
               {msg.assessment && (

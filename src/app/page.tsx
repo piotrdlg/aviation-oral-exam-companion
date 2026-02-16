@@ -8,7 +8,7 @@ export default function Home() {
           Aviation Oral Exam Companion
         </h1>
         <p className="text-lg text-gray-400 mb-8 max-w-lg mx-auto">
-          Practice for your private pilot checkride with an AI examiner that follows FAA ACS standards.
+          Practice for your FAA checkride with an AI examiner that follows ACS standards. Supports Private Pilot, Commercial Pilot, and Instrument Rating.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -29,7 +29,7 @@ export default function Home() {
         <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
           <div className="p-4 bg-gray-900 rounded-lg border border-gray-800">
             <h3 className="text-white font-medium mb-2">ACS-Aligned</h3>
-            <p className="text-gray-400 text-sm">Questions follow the FAA Airman Certification Standards for Private Pilot.</p>
+            <p className="text-gray-400 text-sm">Questions follow the FAA Airman Certification Standards for Private, Commercial, and Instrument ratings.</p>
           </div>
           <div className="p-4 bg-gray-900 rounded-lg border border-gray-800">
             <h3 className="text-white font-medium mb-2">Voice-First</h3>

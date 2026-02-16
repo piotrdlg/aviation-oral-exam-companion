@@ -12,6 +12,10 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+const RATING_PREFIX: Record<string, string> = {
+  private: 'PA.', commercial: 'CA.', instrument: 'IR.', atp: 'ATP.',
+};
+
 export interface PlannerResult {
   elementCode: string;
   element: AcsElementDB;
@@ -28,10 +32,13 @@ export async function initPlanner(
   config: SessionConfig,
   userId: string
 ): Promise<PlannerResult | null> {
-  // Load ACS elements, filtering by aircraft class via task join
-  let elementQuery = supabase
+  const prefix = RATING_PREFIX[config.rating] || 'PA.';
+
+  // Load ACS elements filtered by rating prefix
+  const elementQuery = supabase
     .from('acs_elements')
     .select('*')
+    .like('code', `${prefix}%`)
     .order('order_index');
 
   const { data: elements, error: elErr } = await elementQuery;
@@ -48,6 +55,7 @@ export async function initPlanner(
     const { data: classTasks } = await supabase
       .from('acs_tasks')
       .select('id')
+      .eq('rating', config.rating || 'private')
       .contains('applicable_classes', [config.aircraftClass]);
 
     if (classTasks) {
@@ -61,7 +69,7 @@ export async function initPlanner(
   if (config.studyMode === 'weak_areas') {
     const { data: scores } = await supabase.rpc('get_element_scores', {
       p_user_id: userId,
-      p_rating: 'private',
+      p_rating: config.rating || 'private',
     });
     weakStats = (scores || []) as ElementScore[];
   }
@@ -92,9 +100,11 @@ export async function advancePlanner(
   // Load elements if not cached
   let elements = cachedElements;
   if (!elements) {
+    const prefix = RATING_PREFIX[config.rating] || 'PA.';
     const { data } = await supabase
       .from('acs_elements')
       .select('*')
+      .like('code', `${prefix}%`)
       .order('order_index');
     elements = (data || []) as AcsElementDB[];
   }
@@ -121,8 +131,8 @@ export async function advancePlanner(
   const difficulty: Difficulty =
     config.difficulty === 'mixed' ? element.difficulty_default : (config.difficulty as Difficulty);
 
-  // Build system prompt with difficulty and aircraft class
-  const systemPrompt = buildSystemPrompt(task as AcsTaskRow, difficulty, config.aircraftClass);
+  // Build system prompt with difficulty, aircraft class, and rating
+  const systemPrompt = buildSystemPrompt(task as AcsTaskRow, difficulty, config.aircraftClass, config.rating || 'private');
 
   return {
     elementCode,

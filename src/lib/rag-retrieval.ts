@@ -1,3 +1,4 @@
+import 'server-only';
 import OpenAI from 'openai';
 import { createClient } from '@supabase/supabase-js';
 
@@ -51,6 +52,9 @@ export async function searchChunks(
     filterAbbreviation,
   } = options;
 
+  // Skip embedding calls for trivially short queries
+  if (query.trim().length < 3) return [];
+
   const queryEmbedding = await generateEmbedding(query);
 
   const { data, error } = await supabase.rpc('chunk_hybrid_search', {
@@ -88,6 +92,52 @@ export function formatChunksForPrompt(chunks: ChunkSearchResult[]): string {
       return `[${i + 1}] ${source}${heading}${pages ? ` (${pages})` : ''}\n${chunk.content}`;
     })
     .join('\n\n');
+}
+
+// ---------------------------------------------------------------------------
+// Image retrieval (linked to RAG chunks)
+// ---------------------------------------------------------------------------
+
+export interface ImageResult {
+  image_id: string;
+  figure_label: string | null;
+  caption: string | null;
+  image_category: string;
+  public_url: string;
+  width: number;
+  height: number;
+  description: string | null;
+  doc_abbreviation: string;
+  page_number: number;
+  link_type: string;
+  relevance_score: number;
+}
+
+/**
+ * Fetch linked images for a set of RAG chunk IDs.
+ * Uses the get_images_for_chunks RPC (returns deduplicated, priority-ordered images).
+ */
+export async function getImagesForChunks(
+  chunkIds: string[]
+): Promise<ImageResult[]> {
+  if (chunkIds.length === 0) return [];
+
+  const { data, error } = await supabase.rpc('get_images_for_chunks', {
+    chunk_ids: chunkIds,
+    supabase_url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  });
+
+  if (error) {
+    console.error('getImagesForChunks RPC failed:', error.message, { chunkCount: chunkIds.length });
+    return [];
+  }
+
+  const results = (data ?? []) as ImageResult[];
+  const valid = results.filter(img => img.public_url != null);
+  if (valid.length < results.length) {
+    console.warn(`${results.length - valid.length} images had NULL public_url (check app.settings.supabase_url)`);
+  }
+  return valid;
 }
 
 /**

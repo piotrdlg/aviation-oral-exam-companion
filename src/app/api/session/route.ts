@@ -13,12 +13,12 @@ export async function POST(request: NextRequest) {
   const { action } = body;
 
   if (action === 'create') {
-    const { study_mode, difficulty_preference, selected_areas, aircraft_class, selected_tasks } = body;
+    const { study_mode, difficulty_preference, selected_areas, aircraft_class, selected_tasks, rating } = body;
     const { data, error } = await supabase
       .from('exam_sessions')
       .insert({
         user_id: user.id,
-        rating: 'private',
+        rating: rating || 'private',
         status: 'active',
         study_mode: study_mode || 'cross_acs',
         difficulty_preference: difficulty_preference || 'mixed',
@@ -71,9 +71,10 @@ export async function GET(request: NextRequest) {
 
   // Element scores endpoint
   if (action === 'element-scores') {
+    const rating = searchParams.get('rating') || 'private';
     const { data, error } = await supabase.rpc('get_element_scores', {
       p_user_id: user.id,
-      p_rating: 'private',
+      p_rating: rating,
     });
 
     if (error) {

@@ -4,7 +4,13 @@ import { useEffect, useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import WeakAreas from './components/WeakAreas';
 import StudyRecommendations from './components/StudyRecommendations';
-import type { ElementScore, AircraftClass } from '@/types/database';
+import type { ElementScore, AircraftClass, Rating } from '@/types/database';
+
+const RATING_OPTIONS: { value: Rating; label: string }[] = [
+  { value: 'private', label: 'PPL' },
+  { value: 'commercial', label: 'CPL' },
+  { value: 'instrument', label: 'IR' },
+];
 
 // Dynamic import to avoid SSR issues with Nivo
 const AcsCoverageTreemap = dynamic(() => import('./components/AcsCoverageTreemap'), {
@@ -18,6 +24,7 @@ const AcsCoverageTreemap = dynamic(() => import('./components/AcsCoverageTreemap
 
 interface Session {
   id: string;
+  rating: Rating;
   status: 'active' | 'paused' | 'completed';
   started_at: string;
   ended_at: string | null;
@@ -47,12 +54,14 @@ export default function ProgressPage() {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'overview' | 'treemap'>('overview');
   const [selectedClass, setSelectedClass] = useState<AircraftClass>('ASEL');
+  const [selectedRating, setSelectedRating] = useState<Rating>('private');
 
   useEffect(() => {
+    setLoading(true);
     Promise.all([
       fetch('/api/session').then((res) => res.json()),
-      fetch('/api/session?action=element-scores').then((res) => res.json()).catch(() => ({ scores: [] })),
-      fetch('/api/exam?action=list-tasks').then((res) => res.json()).catch(() => ({ tasks: [] })),
+      fetch(`/api/session?action=element-scores&rating=${selectedRating}`).then((res) => res.json()).catch(() => ({ scores: [] })),
+      fetch(`/api/exam?action=list-tasks&rating=${selectedRating}`).then((res) => res.json()).catch(() => ({ tasks: [] })),
     ])
       .then(([sessionData, scoresData, taskData]) => {
         setSessions(sessionData.sessions || []);
@@ -61,7 +70,13 @@ export default function ProgressPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [selectedRating]);
+
+  // Filter sessions by selected rating
+  const filteredSessions = useMemo(
+    () => sessions.filter((s) => s.rating === selectedRating),
+    [sessions, selectedRating]
+  );
 
   // Build set of task IDs applicable to the selected class
   const classTaskIds = useMemo(() => {
@@ -80,10 +95,10 @@ export default function ProgressPage() {
     [elementScores, classTaskIds]
   );
 
-  const totalSessions = sessions.length;
-  const completedSessions = sessions.filter((s) => s.status === 'completed').length;
-  const totalExchanges = sessions.reduce((sum, s) => sum + (s.exchange_count || 0), 0);
-  const allCoveredTasks = sessions.flatMap((s) => s.acs_tasks_covered || []);
+  const totalSessions = filteredSessions.length;
+  const completedSessions = filteredSessions.filter((s) => s.status === 'completed').length;
+  const totalExchanges = filteredSessions.reduce((sum, s) => sum + (s.exchange_count || 0), 0);
+  const allCoveredTasks = filteredSessions.flatMap((s) => s.acs_tasks_covered || []);
   const uniqueTasksCovered = new Set(allCoveredTasks.map((t) => t.task_id)).size;
   const attemptedElements = filteredScores.filter(s => s.total_attempts > 0).length;
 
@@ -92,6 +107,20 @@ export default function ProgressPage() {
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-2xl font-bold text-white">Your Progress</h1>
         <div className="flex items-center gap-3">
+          {/* Rating selector */}
+          <div className="flex gap-0.5 bg-gray-800 rounded-lg p-0.5">
+            {RATING_OPTIONS.map((r) => (
+              <button
+                key={r.value}
+                onClick={() => setSelectedRating(r.value)}
+                className={`px-2 py-1.5 text-xs rounded-md transition-colors ${
+                  selectedRating === r.value ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
           {/* Class selector */}
           <div className="flex gap-0.5 bg-gray-800 rounded-lg p-0.5">
             {CLASS_OPTIONS.map((cls) => (
@@ -135,7 +164,7 @@ export default function ProgressPage() {
         <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 flex items-center justify-center min-h-[200px]">
           <p className="text-gray-500">Loading...</p>
         </div>
-      ) : sessions.length === 0 && elementScores.length === 0 ? (
+      ) : filteredSessions.length === 0 && elementScores.length === 0 ? (
         <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 flex items-center justify-center min-h-[200px]">
           <p className="text-gray-500">No sessions yet. Start a practice exam to track your progress.</p>
         </div>
@@ -178,7 +207,7 @@ export default function ProgressPage() {
               <div>
                 <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide mb-3">Recent Sessions</h2>
                 <div className="space-y-2">
-                  {sessions.slice(0, 10).map((session) => (
+                  {filteredSessions.slice(0, 10).map((session) => (
                     <div
                       key={session.id}
                       className="bg-gray-900 rounded-xl border border-gray-800 p-3 flex items-center justify-between"

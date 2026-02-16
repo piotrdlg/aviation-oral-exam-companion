@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import type { AircraftClass } from '@/types/database';
+import type { AircraftClass, Rating } from '@/types/database';
 
 export interface SessionConfigData {
+  rating: Rating;
   studyMode: 'linear' | 'cross_acs' | 'weak_areas';
   difficulty: 'easy' | 'medium' | 'hard' | 'mixed';
   aircraftClass: AircraftClass;
@@ -11,6 +12,12 @@ export interface SessionConfigData {
   selectedTasks: string[];
   voiceEnabled: boolean;
 }
+
+const RATING_OPTIONS: { value: Rating; label: string; desc: string }[] = [
+  { value: 'private', label: 'Private Pilot', desc: 'PPL — FAA-S-ACS-6C' },
+  { value: 'commercial', label: 'Commercial', desc: 'CPL — FAA-S-ACS-7B' },
+  { value: 'instrument', label: 'Instrument', desc: 'IR — FAA-S-ACS-8C' },
+];
 
 interface AcsTaskItem {
   id: string;
@@ -38,6 +45,7 @@ interface Props {
 }
 
 export default function SessionConfig({ onStart, loading }: Props) {
+  const [rating, setRating] = useState<Rating>('private');
   const [studyMode, setStudyMode] = useState<SessionConfigData['studyMode']>('linear');
   const [difficulty, setDifficulty] = useState<SessionConfigData['difficulty']>('mixed');
   const [aircraftClass, setAircraftClass] = useState<AircraftClass>('ASEL');
@@ -47,15 +55,16 @@ export default function SessionConfig({ onStart, loading }: Props) {
   const [allTasks, setAllTasks] = useState<AcsTaskItem[]>([]);
   const [tasksLoading, setTasksLoading] = useState(false);
 
-  // Fetch tasks from DB when component mounts
+  // Fetch tasks from DB when rating changes
   useEffect(() => {
     setTasksLoading(true);
-    fetch('/api/exam?action=list-tasks')
+    setSelectedTasks([]);
+    fetch(`/api/exam?action=list-tasks&rating=${rating}`)
       .then((res) => res.json())
       .then((data) => setAllTasks(data.tasks || []))
       .catch(() => {})
       .finally(() => setTasksLoading(false));
-  }, []);
+  }, [rating]);
 
   // Filter tasks by aircraft class
   const filteredTasks = useMemo(
@@ -118,6 +127,27 @@ export default function SessionConfig({ onStart, loading }: Props) {
     <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
       <h2 className="text-lg font-medium text-white mb-4">New Session</h2>
       <div className="space-y-5">
+        {/* Certificate Rating */}
+        <div>
+          <label className="block text-sm text-gray-300 mb-2">Certificate Rating</label>
+          <div className="grid grid-cols-3 gap-2">
+            {RATING_OPTIONS.map((r) => (
+              <button
+                key={r.value}
+                onClick={() => setRating(r.value)}
+                className={`p-3 rounded-lg border text-center transition-colors ${
+                  rating === r.value
+                    ? 'border-blue-500 bg-blue-500/10 text-blue-400'
+                    : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
+                }`}
+              >
+                <p className="text-sm font-medium">{r.label}</p>
+                <p className="text-[10px] mt-0.5 opacity-70">{r.desc}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Aircraft Class */}
         <div>
           <label className="block text-sm text-gray-300 mb-2">Aircraft Class</label>
@@ -251,7 +281,7 @@ export default function SessionConfig({ onStart, loading }: Props) {
                                 : 'text-gray-500'
                             }`}
                           >
-                            <span className="font-mono opacity-50 mr-1.5">{task.id.replace('PA.', '')}</span>
+                            <span className="font-mono opacity-50 mr-1.5">{task.id.replace(/^(PA|CA|IR)\./, '')}</span>
                             {task.task}
                           </button>
                         ))}
@@ -290,6 +320,7 @@ export default function SessionConfig({ onStart, loading }: Props) {
         {/* Start Button */}
         <button
           onClick={() => onStart({
+            rating,
             studyMode,
             difficulty,
             aircraftClass,

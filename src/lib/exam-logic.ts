@@ -3,7 +3,7 @@
  * Separated from exam-engine.ts for testability.
  */
 
-import type { AcsElement as AcsElementDB, ElementScore, PlannerState, SessionConfig, Difficulty, AircraftClass } from '@/types/database';
+import type { AcsElement as AcsElementDB, ElementScore, PlannerState, SessionConfig, Difficulty, AircraftClass, Rating } from '@/types/database';
 
 export interface AcsElement {
   code: string;
@@ -20,21 +20,40 @@ export interface AcsTaskRow {
   applicable_classes: AircraftClass[];
 }
 
-// Oral-exam-relevant area prefixes (exclude flight maneuvers that are skill-only)
-// Areas IV (Takeoffs/Landings), V (Performance Maneuvers) are excluded.
-// Area X (Multiengine) IS included — it's filtered by aircraft class instead.
-export const ORAL_EXAM_AREA_PREFIXES = [
-  'PA.I.',    // Preflight Preparation
-  'PA.II.',   // Preflight Procedures
-  'PA.III.',  // Airport and Seaplane Base Operations
-  'PA.VI.',   // Navigation
-  'PA.VII.',  // Slow Flight and Stalls (knowledge/risk only)
-  'PA.VIII.', // Basic Instrument Maneuvers (knowledge/risk only)
-  'PA.IX.',   // Emergency Operations
-  'PA.X.',    // Multiengine Operations (class-filtered, not area-excluded)
-  'PA.XI.',   // Night Operations
-  'PA.XII.',  // Postflight Procedures
-];
+// Oral-exam-relevant area prefixes per rating.
+// Excludes flight-only areas (takeoffs/landings, performance maneuvers, instrument approaches).
+export const ORAL_EXAM_AREA_PREFIXES: Record<Rating, string[]> = {
+  private: [
+    'PA.I.',    // Preflight Preparation
+    'PA.II.',   // Preflight Procedures
+    'PA.III.',  // Airport and Seaplane Base Operations
+    'PA.VI.',   // Navigation
+    'PA.VII.',  // Slow Flight and Stalls (knowledge/risk only)
+    'PA.VIII.', // Basic Instrument Maneuvers (knowledge/risk only)
+    'PA.IX.',   // Emergency Operations
+    'PA.X.',    // Multiengine Operations (class-filtered, not area-excluded)
+    'PA.XI.',   // Night Operations
+    'PA.XII.',  // Postflight Procedures
+  ],
+  commercial: [
+    'CA.I.',    // Preflight Preparation
+    'CA.II.',   // Preflight Procedures
+    'CA.III.',  // Airport and Seaplane Base Operations
+    'CA.VI.',   // Navigation
+    'CA.VIII.', // High-Altitude Operations
+    'CA.IX.',   // Emergency Operations
+    'CA.XI.',   // Postflight Procedures
+  ],
+  instrument: [
+    'IR.I.',    // Preflight Preparation
+    'IR.II.',   // Preflight Procedures
+    'IR.III.',  // ATC Clearances and Procedures
+    'IR.V.',    // Navigation Systems
+    'IR.VII.',  // Emergency Operations
+    'IR.VIII.', // Postflight Procedures
+  ],
+  atp: [], // Future
+};
 
 /**
  * Filter tasks to oral-exam-relevant areas, by aircraft class, and exclude covered tasks.
@@ -42,13 +61,15 @@ export const ORAL_EXAM_AREA_PREFIXES = [
 export function filterEligibleTasks(
   tasks: AcsTaskRow[],
   coveredTaskIds: string[] = [],
-  aircraftClass?: AircraftClass
+  aircraftClass?: AircraftClass,
+  rating: Rating = 'private'
 ): AcsTaskRow[] {
+  const prefixes = ORAL_EXAM_AREA_PREFIXES[rating] || ORAL_EXAM_AREA_PREFIXES.private;
   return tasks.filter((t) => {
     if (coveredTaskIds.includes(t.id)) return false;
 
-    // Filter by oral-exam-relevant areas
-    const inOralArea = ORAL_EXAM_AREA_PREFIXES.some((prefix) => t.id.startsWith(prefix));
+    // Filter by oral-exam-relevant areas for this rating
+    const inOralArea = prefixes.some((prefix) => t.id.startsWith(prefix));
     if (!inOralArea) return false;
 
     // Filter by aircraft class if provided
@@ -68,11 +89,12 @@ export function filterEligibleTasks(
 export function selectRandomTask(
   allTasks: AcsTaskRow[],
   coveredTaskIds: string[] = [],
-  aircraftClass?: AircraftClass
+  aircraftClass?: AircraftClass,
+  rating: Rating = 'private'
 ): AcsTaskRow | null {
   if (allTasks.length === 0) return null;
 
-  const eligible = filterEligibleTasks(allTasks, coveredTaskIds, aircraftClass);
+  const eligible = filterEligibleTasks(allTasks, coveredTaskIds, aircraftClass, rating);
 
   if (eligible.length > 0) {
     return eligible[Math.floor(Math.random() * eligible.length)];
@@ -97,7 +119,7 @@ export const AIRCRAFT_CLASS_LABELS: Record<AircraftClass, string> = {
 /**
  * Build the DPE examiner system prompt for a given task.
  */
-export function buildSystemPrompt(task: AcsTaskRow, targetDifficulty?: Difficulty, aircraftClass?: AircraftClass): string {
+export function buildSystemPrompt(task: AcsTaskRow, targetDifficulty?: Difficulty, aircraftClass?: AircraftClass, rating: Rating = 'private'): string {
   const knowledgeList = task.knowledge_elements
     .map((e) => `  - ${e.code}: ${e.description}`)
     .join('\n');
@@ -119,7 +141,15 @@ ${targetDifficulty === 'easy' ? '- Ask straightforward recall/definition questio
 - If element descriptions reference other classes, adapt the question to the applicable class context.`
     : '';
 
-  return `You are a Designated Pilot Examiner (DPE) conducting an FAA Private Pilot oral examination. You are professional, thorough, and encouraging — firm but fair.
+  const ratingLabel: Record<Rating, string> = {
+    private: 'Private Pilot',
+    commercial: 'Commercial Pilot',
+    instrument: 'Instrument Rating',
+    atp: 'Airline Transport Pilot',
+  };
+  const examName = ratingLabel[rating] || 'Private Pilot';
+
+  return `You are a Designated Pilot Examiner (DPE) conducting an FAA ${examName} oral examination. You are professional, thorough, and encouraging — firm but fair.
 
 CURRENT ACS TASK: ${task.area} > ${task.task} (${task.id})
 ${classInstruction}

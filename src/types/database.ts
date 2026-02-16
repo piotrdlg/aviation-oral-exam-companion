@@ -207,6 +207,7 @@ export interface PlannerState {
 }
 
 export interface SessionConfig {
+  rating: Rating;
   aircraftClass: AircraftClass;
   studyMode: StudyMode;
   difficulty: DifficultyPreference;

@@ -157,6 +157,7 @@ function buildDocumentRegistry(subset: 'gold' | 'all'): DocMeta[] {
     { dir: 'handbooks/awh_chapters', abbrev: 'awh', faa: 'FAA-H-8083-28A' },
     { dir: 'handbooks/rmh_chapters', abbrev: 'rmh', faa: 'FAA-H-8083-2A' },
     { dir: 'handbooks/wbh_chapters', abbrev: 'wbh', faa: 'FAA-H-8083-1B' },
+    { dir: 'handbooks/iph_chapters', abbrev: 'iph', faa: 'FAA-H-8083-16B' },
   ];
 
   for (const hb of handbookDirs) {
@@ -195,14 +196,26 @@ function buildDocumentRegistry(subset: 'gold' | 'all'): DocMeta[] {
     }
   }
 
-  // ACS document
+  // ACS documents (detect rating from filename)
   const acsDir = path.join(SOURCES_DIR, 'acs');
   if (fs.existsSync(acsDir)) {
     const acsFiles = fs.readdirSync(acsDir).filter(f => f.endsWith('.pdf')).sort();
     for (const file of acsFiles) {
+      let title = 'ACS Document';
+      let faaNumber: string | null = null;
+      if (file.includes('6C') || file.toLowerCase().includes('private')) {
+        title = 'FAA-S-ACS-6C Private Pilot ACS';
+        faaNumber = 'FAA-S-ACS-6C';
+      } else if (file.includes('7B') || file.toLowerCase().includes('commercial')) {
+        title = 'FAA-S-ACS-7B Commercial Pilot ACS';
+        faaNumber = 'FAA-S-ACS-7B';
+      } else if (file.includes('8C') || file.toLowerCase().includes('instrument')) {
+        title = 'FAA-S-ACS-8C Instrument Rating ACS';
+        faaNumber = 'FAA-S-ACS-8C';
+      }
       docs.push({
-        title: 'FAA-S-ACS-6C Private Pilot ACS',
-        faa_number: 'FAA-S-ACS-6C',
+        title,
+        faa_number: faaNumber,
         abbreviation: 'acs',
         document_type: 'other',
         chapter_number: null,
@@ -457,14 +470,25 @@ async function main() {
 
           const sorted = response.data.sort((a, b) => a.index - b.index);
 
-          for (let j = 0; j < sorted.length; j++) {
-            await supabase
-              .from('source_chunks')
-              .update({
-                embedding: sorted[j].embedding as unknown as string,
-                embedding_status: 'current',
-              })
-              .eq('id', idBatch[j]);
+          // Batch DB updates with concurrency limit instead of sequential
+          const CONCURRENCY = 10;
+          for (let start = 0; start < sorted.length; start += CONCURRENCY) {
+            const batch = sorted.slice(start, start + CONCURRENCY);
+            const results = await Promise.allSettled(
+              batch.map((item, idx) =>
+                supabase
+                  .from('source_chunks')
+                  .update({
+                    embedding: item.embedding as unknown as string,
+                    embedding_status: 'current',
+                  })
+                  .eq('id', idBatch[start + idx])
+              )
+            );
+            const failures = results.filter(r => r.status === 'rejected');
+            if (failures.length > 0) {
+              console.log(` DB UPDATE: ${failures.length}/${batch.length} failed`);
+            }
           }
 
           totalEmbedded += sorted.length;

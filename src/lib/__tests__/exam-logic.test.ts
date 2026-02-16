@@ -24,6 +24,7 @@ function makeTask(id: string, opts?: Partial<AcsTaskRow>): AcsTaskRow {
 }
 
 const defaultConfig: SessionConfig = {
+  rating: 'private',
   aircraftClass: 'ASEL',
   studyMode: 'linear',
   difficulty: 'mixed',
@@ -32,28 +33,42 @@ const defaultConfig: SessionConfig = {
 };
 
 describe('ORAL_EXAM_AREA_PREFIXES', () => {
-  it('includes 10 oral-exam-relevant areas (including multiengine)', () => {
-    expect(ORAL_EXAM_AREA_PREFIXES).toHaveLength(10);
+  it('is a Record with private, commercial, instrument, and atp keys', () => {
+    expect(Object.keys(ORAL_EXAM_AREA_PREFIXES)).toEqual(
+      expect.arrayContaining(['private', 'commercial', 'instrument', 'atp'])
+    );
   });
 
-  it('includes Preflight Preparation (Area I)', () => {
-    expect(ORAL_EXAM_AREA_PREFIXES).toContain('PA.I.');
+  it('includes 10 oral-exam-relevant areas for private (including multiengine)', () => {
+    expect(ORAL_EXAM_AREA_PREFIXES.private).toHaveLength(10);
   });
 
-  it('includes Emergency Operations (Area IX)', () => {
-    expect(ORAL_EXAM_AREA_PREFIXES).toContain('PA.IX.');
+  it('includes Preflight Preparation (Area I) for private', () => {
+    expect(ORAL_EXAM_AREA_PREFIXES.private).toContain('PA.I.');
   });
 
-  it('includes Multiengine Operations (Area X) — filtered by class, not area', () => {
-    expect(ORAL_EXAM_AREA_PREFIXES).toContain('PA.X.');
+  it('includes Emergency Operations (Area IX) for private', () => {
+    expect(ORAL_EXAM_AREA_PREFIXES.private).toContain('PA.IX.');
   });
 
-  it('excludes Takeoffs/Landings (Area IV)', () => {
-    expect(ORAL_EXAM_AREA_PREFIXES).not.toContain('PA.IV.');
+  it('includes Multiengine Operations (Area X) for private — filtered by class, not area', () => {
+    expect(ORAL_EXAM_AREA_PREFIXES.private).toContain('PA.X.');
   });
 
-  it('excludes Performance Maneuvers (Area V)', () => {
-    expect(ORAL_EXAM_AREA_PREFIXES).not.toContain('PA.V.');
+  it('excludes Takeoffs/Landings (Area IV) for private', () => {
+    expect(ORAL_EXAM_AREA_PREFIXES.private).not.toContain('PA.IV.');
+  });
+
+  it('excludes Performance Maneuvers (Area V) for private', () => {
+    expect(ORAL_EXAM_AREA_PREFIXES.private).not.toContain('PA.V.');
+  });
+
+  it('has 7 commercial oral-exam areas', () => {
+    expect(ORAL_EXAM_AREA_PREFIXES.commercial).toHaveLength(7);
+  });
+
+  it('has 6 instrument oral-exam areas', () => {
+    expect(ORAL_EXAM_AREA_PREFIXES.instrument).toHaveLength(6);
   });
 });
 

@@ -88,10 +88,11 @@ export async function GET(request: NextRequest) {
     const action = searchParams.get('action');
 
     if (action === 'list-tasks') {
+      const rating = searchParams.get('rating') || 'private';
       const { data, error } = await supabase
         .from('acs_tasks')
         .select('id, area, task, applicable_classes')
-        .eq('rating', 'private')
+        .eq('rating', rating)
         .order('id');
 
       if (error) {
@@ -140,8 +141,9 @@ export async function POST(request: NextRequest) {
           );
         }
 
+        const rating = sessionConfig.rating || 'private';
         const turn = await generateExaminerTurn(
-          plannerResult.task, [], plannerResult.difficulty, sessionConfig.aircraftClass
+          plannerResult.task, [], plannerResult.difficulty, sessionConfig.aircraftClass, undefined, rating
         );
 
         // Persist examiner opening turn to transcript
@@ -164,7 +166,8 @@ export async function POST(request: NextRequest) {
       }
 
       // Fallback: random task selection (legacy mode, no class filtering)
-      const task = await pickStartingTask();
+      const rating = (body.sessionConfig as SessionConfig | undefined)?.rating || 'private';
+      const task = await pickStartingTask([], undefined, rating);
       if (!task) {
         return NextResponse.json(
           { error: 'No ACS tasks found. Check database seed.' },
@@ -243,9 +246,10 @@ export async function POST(request: NextRequest) {
 
       // Step 3: Run assessment + examiner generation IN PARALLEL (key optimization)
       // The examiner's next question depends on history, NOT on the assessment result.
+      const respondRating = sessionConfig?.rating || 'private';
       if (stream) {
         // Streaming path: start assessment in background, stream examiner immediately
-        const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag);
+        const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating);
 
         // onComplete callback: persist examiner transcript to DB after stream finishes
         const onStreamComplete = (fullText: string) => {
@@ -262,7 +266,7 @@ export async function POST(request: NextRequest) {
         };
 
         const readableStream = await generateExaminerTurnStreaming(
-          taskData, updatedHistory, undefined, undefined, rag, assessmentPromise, onStreamComplete
+          taskData, updatedHistory, undefined, undefined, rag, assessmentPromise, onStreamComplete, respondRating
         );
 
         // DB writes happen inside the stream (assessment sent as final SSE event)
@@ -310,8 +314,8 @@ export async function POST(request: NextRequest) {
 
       // Non-streaming path: run both in parallel, wait for both
       const [assessment, turn] = await Promise.all([
-        assessAnswer(taskData, history, studentAnswer, rag),
-        generateExaminerTurn(taskData, updatedHistory, undefined, undefined, rag),
+        assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating),
+        generateExaminerTurn(taskData, updatedHistory, undefined, undefined, rag, respondRating),
       ]);
 
       // Step 4: Persist all DB writes in parallel (non-blocking for response)
@@ -381,8 +385,9 @@ export async function POST(request: NextRequest) {
           });
         }
 
+        const nextTaskRating = sessionConfig.rating || 'private';
         const turn = await generateExaminerTurn(
-          plannerResult.task, [], plannerResult.difficulty, sessionConfig.aircraftClass
+          plannerResult.task, [], plannerResult.difficulty, sessionConfig.aircraftClass, undefined, nextTaskRating
         );
 
         if (sessionId) {
@@ -411,7 +416,8 @@ export async function POST(request: NextRequest) {
 
       // Fallback: random task selection (legacy mode, no class filtering)
       const currentTaskId = taskData?.id || '';
-      const task = await pickNextTask(currentTaskId, coveredTaskIds || []);
+      const legacyRating = sessionConfig?.rating || 'private';
+      const task = await pickNextTask(currentTaskId, coveredTaskIds || [], undefined, legacyRating);
       if (!task) {
         return NextResponse.json({
           examinerMessage: 'We have covered all the areas. Great job today!',

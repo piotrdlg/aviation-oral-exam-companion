@@ -153,7 +153,19 @@ async function main() {
   }
 
   // Clear existing elements (for idempotent re-runs)
-  console.log('\nClearing existing acs_elements...');
+  // Must clear element_attempts first due to FK constraint
+  console.log('\nClearing element_attempts (FK dependency)...');
+  const { error: attDeleteError } = await supabase
+    .from('element_attempts')
+    .delete()
+    .neq('id', '00000000-0000-0000-0000-000000000000');
+
+  if (attDeleteError) {
+    console.error('Error clearing element_attempts:', attDeleteError.message);
+    process.exit(1);
+  }
+
+  console.log('Clearing existing acs_elements...');
   const { error: deleteError } = await supabase
     .from('acs_elements')
     .delete()

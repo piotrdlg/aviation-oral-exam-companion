@@ -6,7 +6,7 @@
 
 ## Overview
 
-**Aviation Oral Exam Companion** is a voice-first AI web application that simulates FAA Designated Pilot Examiner (DPE) oral examinations for Private Pilot checkride preparation. The AI examiner follows the FAA Airman Certification Standards (ACS) document FAA-S-ACS-6C (November 2023) to ask questions, assess answers, and naturally transition between topics.
+**Aviation Oral Exam Companion** is a voice-first AI web application that simulates FAA Designated Pilot Examiner (DPE) oral examinations for checkride preparation. Supports Private Pilot (FAA-S-ACS-6C), Commercial Pilot (FAA-S-ACS-7B), and Instrument Rating (FAA-S-ACS-8C). The AI examiner follows the FAA Airman Certification Standards (ACS) to ask questions, assess answers, and naturally transition between topics.
 
 **Owner**: Piotr (pd@imagineflying.com) — Imagine Flying LLC, Jacksonville, FL
 **Live URL**: https://aviation-oral-exam-companion.vercel.app
@@ -136,12 +136,14 @@ Only 9 of 12 ACS areas are used for oral exam simulation. Areas IV (Takeoffs/Lan
 
 ### ACS Task ID Format
 
-Task IDs follow the pattern: `PA.{Roman numeral}.{Letter}`
-- `PA` = Private Pilot Airplane
+Task IDs follow the pattern: `{PREFIX}.{Roman numeral}.{Letter}`
+- `PA` = Private Pilot Airplane (61 tasks, FAA-S-ACS-6C)
+- `CA` = Commercial Pilot Airplane (60 tasks, FAA-S-ACS-7B)
+- `IR` = Instrument Rating (22 tasks, FAA-S-ACS-8C)
 - Roman numeral = Area of Operation (I through XII)
 - Letter = Task within area (A, B, C, ...)
 
-Element codes: `PA.{Area}.{Task}.{K/R/S}{number}` where K=Knowledge, R=Risk Management, S=Skill
+Element codes: `{PREFIX}.{Area}.{Task}.{K/R/S}{number}` where K=Knowledge, R=Risk Management, S=Skill
 
 ---
 
@@ -197,8 +199,8 @@ npm test          # Run all tests (Vitest)
 npm run test:watch  # Watch mode
 ```
 
-17 unit tests cover:
-- `ORAL_EXAM_AREAS` — correct inclusion/exclusion of areas
+77 unit tests cover:
+- `ORAL_EXAM_AREA_PREFIXES` — per-rating area inclusion/exclusion
 - `filterEligibleTasks()` — filtering, exclusion, edge cases
 - `selectRandomTask()` — selection with fallback logic
 - `buildSystemPrompt()` — prompt construction with task data
@@ -223,7 +225,7 @@ npm run test:watch  # Watch mode
 - **No latency logging** — `latency_logs` table exists but isn't populated.
 - **Voice mode is Chrome-only** — Web Speech API (`SpeechRecognition`) is not available in Firefox/Safari.
 - **No admin interface** — Admin RLS policies exist but no UI for managing concepts or reviewing off-graph mentions.
-- **Single rating** — Only Private Pilot is supported. Schema supports instrument/commercial/ATP but no ACS data is seeded for them.
+- **Three ratings supported** — Private Pilot (61 tasks), Commercial Pilot (60 tasks), and Instrument Rating (22 tasks) are fully seeded. ATP is schemaed but not yet populated.
 
 ---
 
