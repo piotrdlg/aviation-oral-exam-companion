@@ -5,7 +5,7 @@ const CARTESIA_TTS_URL = 'https://api.cartesia.ai/tts/bytes';
 const DEFAULTS: CartesiaTTSConfig = {
   model: 'sonic-3',
   voice_id: '95856005-0332-41b0-935f-352e296aa0df',
-  voice_name: 'Classy British Man',
+  voice_name: 'Hugo — Teatime Friend (British)',
   speed: 0.95,
   volume: 1.0,
   emotion: 'confident',

@@ -59,49 +59,35 @@ const SAMPLE_RATES = [
 ];
 
 const CARTESIA_VOICES = [
-  // ── Aviation / Authority ──
-  { value: '36b42fcb-60c5-4bec-b077-cb1a00a92ec6', label: 'Pilot over Intercom', group: 'Aviation' },
-  // ── Male — Authoritative / Professional ──
-  { value: '63ff761f-c1e8-414b-b969-d1833d1c870c', label: 'Confident British Man', group: 'Male — Professional' },
-  { value: '95856005-0332-41b0-935f-352e296aa0df', label: 'Classy British Man', group: 'Male — Professional' },
-  { value: 'b043dea0-a007-4bbe-a708-769dc0d0c569', label: 'Wise Man', group: 'Male — Professional' },
-  { value: 'd46abd1d-2d02-43e8-819f-51fb652c1c61', label: 'Newsman', group: 'Male — Professional' },
-  { value: '69267136-1bdc-412f-ad78-0caad210fb40', label: 'Friendly Man', group: 'Male — Professional' },
-  { value: 'ee7ea9f8-c0c1-498c-9f62-dc2571ec235e', label: 'Middle-Aged American Man', group: 'Male — Professional' },
-  { value: '41534e16-2966-4c6b-9670-111411def906', label: 'Barbershop Man', group: 'Male — Professional' },
-  { value: 'a0e99571-1535-43b5-8c6a-43eb3e42e2c6', label: 'Storyteller Man', group: 'Male — Professional' },
-  // ── Male — Narrator / Deep ──
-  { value: 'fb26447f-308b-471e-8b00-8e9f04284eb5', label: 'Deep Narrator Man', group: 'Male — Narrator' },
-  { value: 'c45bc5ec-dc68-4feb-8829-6e6b2748095d', label: 'Movie Narrator Man', group: 'Male — Narrator' },
-  { value: '15a9cd88-84b0-4a8b-95f2-5d583b54c72e', label: 'Teacher Man', group: 'Male — Narrator' },
-  { value: '726d5ae5-055f-4c3d-8571-8c18cdf420e8', label: 'Commercial Man', group: 'Male — Narrator' },
-  { value: '50d6beb4-80ea-4802-8387-6c948fe84208', label: 'Announcer Man', group: 'Male — Narrator' },
-  { value: 'ed81fd13-2016-4a49-8fe3-c0d2761695fc', label: 'Calm Man', group: 'Male — Narrator' },
-  // ── Male — Casual ──
-  { value: '2ee87190-8f84-4925-97da-e52547f9462c', label: 'Nonfiction Man', group: 'Male — Casual' },
-  { value: 'f9836c6e-a0bd-460e-9d3c-f7299fa60f94', label: 'Conversational Man', group: 'Male — Casual' },
-  { value: 'bd9120b6-7761-47a6-a446-77ca49132781', label: 'Enthusiastic Man', group: 'Male — Casual' },
-  { value: '87748186-691b-497e-b88d-9590dbc3f014', label: 'Australian Man', group: 'Male — Casual' },
-  { value: 'a3520a8f-226a-428d-9f2c-ab39f005e090', label: 'Indian Man', group: 'Male — Casual' },
+  // ── Male — Professional / Authority ──
+  { value: '36b42fcb-60c5-4bec-b077-cb1a00a92ec6', label: 'Gordon — Pilot (intercom)', group: 'Male — Professional' },
+  { value: 'bd9120b6-7761-47a6-a446-77ca49132781', label: 'Owen — Tutorial Man (mature)', group: 'Male — Professional' },
+  { value: 'b043dea0-a007-4bbe-a708-769dc0d0c569', label: 'Wise Man (deep, deliberate)', group: 'Male — Professional' },
+  { value: '41534e16-2966-4c6b-9670-111411def906', label: 'Clarence — Newsman (firm, deep)', group: 'Male — Professional' },
+  { value: 'd46abd1d-2d02-43e8-819f-51fb652c1c61', label: 'Grant — Friendly Support (neutral)', group: 'Male — Professional' },
+  { value: '63ff761f-c1e8-414b-b969-d1833d1c870c', label: 'Malcom — Talk Show Host (lively)', group: 'Male — Professional' },
+  { value: '95856005-0332-41b0-935f-352e296aa0df', label: 'Hugo — Teatime Friend (British)', group: 'Male — Professional' },
+  // ── Male — Narrator / Character ──
+  { value: 'c45bc5ec-dc68-4feb-8829-6e6b2748095d', label: 'Trevor — Movieman (deep, elderly)', group: 'Male — Narrator' },
+  { value: '50d6beb4-80ea-4802-8387-6c948fe84208', label: 'Alfred — Cheeky Person (elderly)', group: 'Male — Narrator' },
+  { value: 'ed81fd13-2016-4a49-8fe3-c0d2761695fc', label: 'Zack — Sportsman (energetic)', group: 'Male — Narrator' },
+  { value: '69267136-1bdc-412f-ad78-0caad210fb40', label: 'Friendly Reading Man', group: 'Male — Narrator' },
+  { value: 'f114a467-c40a-4db8-964d-aaba89cd08fa', label: 'Miles — Yogi (deep, soothing)', group: 'Male — Narrator' },
+  // ── Other ──
+  { value: 'fb26447f-308b-471e-8b00-8e9f04284eb5', label: 'Thistle — Troublemaker (neutral)', group: 'Other' },
+  { value: '2ee87190-8f84-4925-97da-e52547f9462c', label: 'Child (young voice)', group: 'Other' },
   // ── Female — Professional ──
-  { value: 'b7d50908-b179-4d23-8183-6a75d5c6b1d3', label: 'Confident Woman', group: 'Female — Professional' },
-  { value: '21b81c14-f85b-436d-aff5-43f2e788ecf8', label: 'Professional Woman', group: 'Female — Professional' },
-  { value: '00a77add-48d5-4ef6-8157-71e5437b282d', label: 'Calm Woman', group: 'Female — Professional' },
-  { value: '248be419-c632-4f23-adf1-5324ed7dbf1d', label: 'Announcer Woman', group: 'Female — Professional' },
-  { value: 'c2ac25f9-ecc4-4f56-9095-651354df60c0', label: 'Commercial Woman', group: 'Female — Professional' },
-  // ── Female — Narrator ──
-  { value: '5619d38c-cf51-4514-82fb-7e73bfe9be0e', label: 'Narrator Woman', group: 'Female — Narrator' },
-  { value: 'a01c369f-6d2d-4571-b735-0b3a01c828b5', label: 'Storyteller Woman', group: 'Female — Narrator' },
-  { value: 'e3827ec5-697a-4b7c-9704-1a23041bbc51', label: 'British Narrator Woman', group: 'Female — Narrator' },
-  { value: 'daf747c6-6bc2-4083-bd59-aa94571c3728', label: 'Wise Woman', group: 'Female — Narrator' },
-  { value: '694f9389-aac1-45b6-b726-9d9369183238', label: 'Teacher Woman', group: 'Female — Narrator' },
+  { value: '248be419-c632-4f23-adf1-5324ed7dbf1d', label: 'Elizabeth — Manager (clear)', group: 'Female — Professional' },
+  { value: 'c2ac25f9-ecc4-4f56-9095-651354df60c0', label: 'Renee — Commander (firm)', group: 'Female — Professional' },
+  { value: '15a9cd88-84b0-4a8b-95f2-5d583b54c72e', label: 'Claire — Storyteller (soothing)', group: 'Female — Professional' },
+  { value: '694f9389-aac1-45b6-b726-9d9369183238', label: 'Sarah — Mindful Woman (calming)', group: 'Female — Professional' },
   // ── Female — Casual ──
-  { value: '79a125e8-cd45-4c13-8a67-188112f4dd22', label: 'Friendly Woman', group: 'Female — Casual' },
-  { value: '2b568345-1d48-4047-b25f-7baccf842eb0', label: 'Conversational Woman', group: 'Female — Casual' },
-  { value: 'e00d0e4c-a5c8-443f-a8a1-8d82f2e0b4a1', label: 'Young Woman', group: 'Female — Casual' },
-  { value: '156fb8d2-335b-4950-9cb3-a2d33befec77', label: 'Cheerful Woman', group: 'Female — Casual' },
-  { value: 'f114a467-c40a-4db8-964d-aaba89cd08fa', label: 'Australian Woman', group: 'Female — Casual' },
-  { value: '3f6e78f4-30c5-4c56-b61a-9ffc3db7c79d', label: 'Indian Woman', group: 'Female — Casual' },
+  { value: 'f9836c6e-a0bd-460e-9d3c-f7299fa60f94', label: 'Caroline — Southern Guide (friendly)', group: 'Female — Casual' },
+  { value: '21b81c14-f85b-436d-aff5-43f2e788ecf8', label: 'Riley — Chill Friend (casual)', group: 'Female — Casual' },
+  { value: '00a77add-48d5-4ef6-8157-71e5437b282d', label: 'Callie — Encourager (smooth)', group: 'Female — Casual' },
+  { value: '79a125e8-cd45-4c13-8a67-188112f4dd22', label: 'British Lady (elegant)', group: 'Female — Casual' },
+  { value: '156fb8d2-335b-4950-9cb3-a2d33befec77', label: 'Sunny — Pep Talker (upbeat)', group: 'Female — Casual' },
+  { value: 'e3827ec5-697a-4b7c-9704-1a23041bbc51', label: 'Dottie — Sweet Gal (young)', group: 'Female — Casual' },
 ];
 
 const CARTESIA_MODELS = [
@@ -171,7 +157,7 @@ const DEFAULTS: TTSState = {
   cartesia: {
     model: 'sonic-3',
     voice_id: '95856005-0332-41b0-935f-352e296aa0df',
-    voice_name: 'Classy British Man',
+    voice_name: 'Hugo — Teatime Friend (British)',
     speed: 0.95,
     volume: 1.0,
     emotion: 'confident',
