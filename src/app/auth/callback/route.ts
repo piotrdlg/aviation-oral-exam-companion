@@ -58,7 +58,7 @@ async function ensureProfile(userId: string): Promise<void> {
   if (!data) {
     const { error } = await serviceSupabase
       .from('user_profiles')
-      .insert({ user_id: userId, tier: 'ground_school', subscription_status: 'none' });
+      .insert({ user_id: userId, tier: 'checkride_prep', subscription_status: 'none' });
 
     if (error && !error.message.includes('duplicate')) {
       console.error('[auth/callback] Failed to create user profile:', error.message);

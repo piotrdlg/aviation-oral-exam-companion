@@ -56,13 +56,13 @@ export interface TierFeatures {
 
 export const TIER_FEATURES: Record<VoiceTier, TierFeatures> = {
   ground_school: {
-    sttProvider: 'browser',
-    ttsProvider: 'openai',
-    supportsAllBrowsers: false,
-    customVocabulary: false,
-    maxSessionsPerMonth: 30,
-    maxExchangesPerSession: 20,
-    maxTtsCharsPerMonth: 200_000,
+    sttProvider: 'deepgram',
+    ttsProvider: 'deepgram',
+    supportsAllBrowsers: true,
+    customVocabulary: true,
+    maxSessionsPerMonth: 60,
+    maxExchangesPerSession: 30,
+    maxTtsCharsPerMonth: 500_000,
   },
   checkride_prep: {
     sttProvider: 'deepgram',

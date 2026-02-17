@@ -10,7 +10,7 @@ const serviceSupabase = createServiceClient(
 
 // Concurrent STT session caps per tier
 const CONCURRENT_CAPS: Record<string, number> = {
-  ground_school: 0,
+  ground_school: 1,
   checkride_prep: 1,
   dpe_live: 2,
 };

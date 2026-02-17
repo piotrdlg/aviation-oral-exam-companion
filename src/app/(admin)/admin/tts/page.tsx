@@ -171,6 +171,11 @@ const DEFAULTS: TTSState = {
   },
 };
 
+interface UserVoiceOption {
+  model: string;
+  label: string;
+}
+
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function TTSConfigPage() {
@@ -182,6 +187,11 @@ export default function TTSConfigPage() {
   const [state, setState] = useState<TTSState>({ ...DEFAULTS });
   const [testing, setTesting] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // User voice options curation state
+  const [userVoiceOptions, setUserVoiceOptions] = useState<UserVoiceOption[]>([]);
+  const [voiceOptionsSaving, setVoiceOptionsSaving] = useState(false);
+  const [voiceOptionsSaved, setVoiceOptionsSaved] = useState(false);
 
   const fetchConfig = useCallback(async () => {
     setLoading(true);
@@ -203,6 +213,8 @@ export default function TTSConfigPage() {
           newState.deepgram = { ...DEFAULTS.deepgram, ...entry.value } as DeepgramConfig;
         } else if (entry.key === 'tts.cartesia') {
           newState.cartesia = { ...DEFAULTS.cartesia, ...entry.value } as CartesiaConfig;
+        } else if (entry.key === 'voice.user_options') {
+          setUserVoiceOptions(entry.value as unknown as UserVoiceOption[]);
         }
       }
       setState(newState);
@@ -279,6 +291,41 @@ export default function TTSConfigPage() {
     }
   }
 
+  function toggleUserVoice(model: string, label: string) {
+    setVoiceOptionsSaved(false);
+    setUserVoiceOptions((prev) => {
+      const exists = prev.some((v) => v.model === model);
+      if (exists) {
+        // Don't allow removing the last voice
+        if (prev.length <= 1) return prev;
+        return prev.filter((v) => v.model !== model);
+      }
+      // Max 5 voices
+      if (prev.length >= 5) return prev;
+      return [...prev, { model, label }];
+    });
+  }
+
+  async function saveUserVoiceOptions() {
+    setVoiceOptionsSaving(true);
+    setVoiceOptionsSaved(false);
+    try {
+      const res = await fetch('/api/admin/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          updates: [{ key: 'voice.user_options', value: userVoiceOptions }],
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to save');
+      setVoiceOptionsSaved(true);
+    } catch {
+      setSaveError('Failed to save voice options');
+    } finally {
+      setVoiceOptionsSaving(false);
+    }
+  }
+
   function updateOpenAI<K extends keyof OpenAIConfig>(key: K, value: OpenAIConfig[K]) {
     setState((prev) => ({ ...prev, openai: { ...prev.openai, [key]: value } }));
     setSaveSuccess(false);
@@ -342,6 +389,63 @@ export default function TTSConfigPage() {
       </div>
 
       <div className="space-y-6">
+        {/* ─── User Voice Options (curated by admin) ─── */}
+        <section className="bg-gray-900 rounded-xl border border-blue-800/50 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-sm font-medium text-blue-400 uppercase tracking-wide">
+                User Voice Options
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Select up to 5 Deepgram voices that users can choose from in Settings. Minimum 1 required.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              {voiceOptionsSaved && <span className="text-xs text-green-400">Saved</span>}
+              <button
+                onClick={saveUserVoiceOptions}
+                disabled={voiceOptionsSaving || userVoiceOptions.length === 0}
+                className="px-3 py-1.5 text-xs rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              >
+                {voiceOptionsSaving ? 'Saving...' : 'Save Voice Options'}
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {DEEPGRAM_VOICES.map((voice) => {
+              const isSelected = userVoiceOptions.some((v) => v.model === voice.value);
+              return (
+                <button
+                  key={voice.value}
+                  onClick={() => toggleUserVoice(voice.value, voice.label)}
+                  className={`text-left px-3 py-2 rounded-lg border text-xs transition-colors ${
+                    isSelected
+                      ? 'border-blue-500 bg-blue-950/40 text-blue-300'
+                      : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
+                  }`}
+                >
+                  <span className="mr-2">{isSelected ? '✓' : '○'}</span>
+                  {voice.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {userVoiceOptions.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-gray-800">
+              <p className="text-xs text-gray-500 mb-1">Currently curated ({userVoiceOptions.length}/5):</p>
+              <div className="flex flex-wrap gap-1">
+                {userVoiceOptions.map((v) => (
+                  <span key={v.model} className="text-xs bg-blue-900/30 text-blue-300 px-2 py-0.5 rounded-full">
+                    {v.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+
         {/* ─── Tier 1: Ground School (OpenAI) ─── */}
         <section className="bg-gray-900 rounded-xl border border-gray-800 p-6">
           <div className="flex items-center justify-between mb-4">

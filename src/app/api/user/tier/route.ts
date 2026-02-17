@@ -9,8 +9,6 @@ const serviceSupabase = createServiceClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-const VALID_TIERS: VoiceTier[] = ['ground_school', 'checkride_prep', 'dpe_live'];
-
 export async function GET() {
   try {
     const supabase = await createClient();
@@ -19,14 +17,22 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get user's tier
-    const { data: profile } = await serviceSupabase
-      .from('user_profiles')
-      .select('tier, subscription_status, cancel_at_period_end, current_period_end')
-      .eq('user_id', user.id)
-      .single();
+    // Get user's profile and voice options in parallel
+    const [profileResult, voiceOptionsResult] = await Promise.all([
+      serviceSupabase
+        .from('user_profiles')
+        .select('tier, preferred_voice, subscription_status, cancel_at_period_end, current_period_end')
+        .eq('user_id', user.id)
+        .single(),
+      serviceSupabase
+        .from('system_config')
+        .select('value')
+        .eq('key', 'voice.user_options')
+        .maybeSingle(),
+    ]);
 
-    const tier: VoiceTier = (profile?.tier as VoiceTier) || 'ground_school';
+    const profile = profileResult.data;
+    const tier: VoiceTier = (profile?.tier as VoiceTier) || 'checkride_prep';
     const features = TIER_FEATURES[tier];
 
     // Get usage for current month
@@ -59,7 +65,7 @@ export async function GET() {
 
     return NextResponse.json({
       tier,
-      subscriptionStatus: profile?.subscription_status || 'active',
+      subscriptionStatus: profile?.subscription_status || 'none',
       cancelAtPeriodEnd: profile?.cancel_at_period_end || false,
       currentPeriodEnd: profile?.current_period_end || null,
       features,
@@ -68,6 +74,8 @@ export async function GET() {
         ttsCharsThisMonth: ttsChars,
         sttSecondsThisMonth: sttSeconds,
       },
+      preferredVoice: profile?.preferred_voice || null,
+      voiceOptions: voiceOptionsResult.data?.value || [],
     });
   } catch (error) {
     console.error('Tier lookup error:', error);
@@ -75,6 +83,10 @@ export async function GET() {
   }
 }
 
+/**
+ * POST /api/user/tier — Update user's preferred voice.
+ * Validates voice is in the admin-curated list from system_config.
+ */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -83,35 +95,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { tier } = await request.json();
+    const { preferredVoice } = await request.json();
 
-    if (!tier || !VALID_TIERS.includes(tier as VoiceTier)) {
+    // Validate the voice is in the admin-curated list
+    const { data: configRow } = await serviceSupabase
+      .from('system_config')
+      .select('value')
+      .eq('key', 'voice.user_options')
+      .maybeSingle();
+
+    const options = (configRow?.value || []) as { model: string }[];
+    const validModels = options.map((o) => o.model);
+
+    if (preferredVoice && !validModels.includes(preferredVoice)) {
       return NextResponse.json(
-        { error: 'Invalid tier. Must be one of: ground_school, checkride_prep, dpe_live' },
+        { error: 'Invalid voice option' },
         { status: 400 }
       );
     }
 
-    // Update user's tier directly (no billing for testing)
     const { error: updateError } = await serviceSupabase
       .from('user_profiles')
-      .update({ tier, updated_at: new Date().toISOString() })
+      .update({
+        preferred_voice: preferredVoice || null,
+        updated_at: new Date().toISOString(),
+      })
       .eq('user_id', user.id);
 
     if (updateError) {
-      console.error('Tier update error:', updateError);
-      return NextResponse.json({ error: 'Failed to update tier' }, { status: 500 });
+      console.error('Voice preference update error:', updateError);
+      return NextResponse.json({ error: 'Failed to update voice preference' }, { status: 500 });
     }
 
-    const features = TIER_FEATURES[tier as VoiceTier];
-
-    return NextResponse.json({
-      tier,
-      features,
-      message: `Tier updated to ${tier}`,
-    });
+    return NextResponse.json({ ok: true, preferredVoice: preferredVoice || null });
   } catch (error) {
-    console.error('Tier update error:', error);
+    console.error('Voice preference update error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

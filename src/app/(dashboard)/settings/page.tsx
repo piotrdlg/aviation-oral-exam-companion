@@ -18,6 +18,11 @@ interface AudioDevice {
   label: string;
 }
 
+interface VoiceOption {
+  model: string;
+  label: string;
+}
+
 interface TierInfo {
   tier: VoiceTier;
   features: TierFeatures;
@@ -26,6 +31,8 @@ interface TierInfo {
     ttsCharsThisMonth: number;
     sttSecondsThisMonth: number;
   };
+  preferredVoice: string | null;
+  voiceOptions: VoiceOption[];
 }
 
 interface SubscriptionInfo {
@@ -35,24 +42,6 @@ interface SubscriptionInfo {
   renewalDate: string | null;
   hasStripeCustomer: boolean;
 }
-
-const TIER_OPTIONS: { value: VoiceTier; label: string; description: string }[] = [
-  {
-    value: 'ground_school',
-    label: 'Ground School',
-    description: 'Browser STT + OpenAI TTS (Chrome only)',
-  },
-  {
-    value: 'checkride_prep',
-    label: 'Checkride Prep',
-    description: 'Deepgram STT & TTS (all browsers, aviation vocabulary)',
-  },
-  {
-    value: 'dpe_live',
-    label: 'DPE Live',
-    description: 'Deepgram STT + Cartesia Sonic TTS (ultra-low latency)',
-  },
-];
 
 interface ActiveSessionItem {
   id: string;
@@ -68,11 +57,11 @@ export default function SettingsPage() {
   const [email, setEmail] = useState<string | null>(null);
   const supabase = createClient();
 
-  // Voice tier state
+  // Voice tier & voice preference state
   const [tierInfo, setTierInfo] = useState<TierInfo | null>(null);
   const [tierLoading, setTierLoading] = useState(true);
-  const [tierSaving, setTierSaving] = useState(false);
-  const [tierMessage, setTierMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [voiceSaving, setVoiceSaving] = useState(false);
+  const [voiceMessage, setVoiceMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   // Subscription state (Task 35)
   const [subInfo, setSubInfo] = useState<SubscriptionInfo | null>(null);
@@ -111,13 +100,19 @@ export default function SettingsPage() {
     });
   }, [supabase.auth]);
 
-  // Fetch current voice tier
+  // Fetch current voice tier + voice options
   useEffect(() => {
     fetch('/api/user/tier')
       .then((res) => res.json())
       .then((data) => {
         if (data.tier) {
-          setTierInfo({ tier: data.tier, features: data.features, usage: data.usage });
+          setTierInfo({
+            tier: data.tier,
+            features: data.features,
+            usage: data.usage,
+            preferredVoice: data.preferredVoice || null,
+            voiceOptions: data.voiceOptions || [],
+          });
         }
       })
       .catch(() => {})
@@ -130,7 +125,7 @@ export default function SettingsPage() {
       .then((res) => res.json())
       .then((data) => {
         setSubInfo({
-          tier: data.tier || 'ground_school',
+          tier: data.tier || 'checkride_prep',
           status: data.status || 'free',
           plan: data.plan || null,
           renewalDate: data.renewalDate || null,
@@ -176,24 +171,25 @@ export default function SettingsPage() {
     }
   }
 
-  async function switchTier(newTier: VoiceTier) {
-    if (tierInfo?.tier === newTier || tierSaving) return;
-    setTierSaving(true);
-    setTierMessage(null);
+  async function switchVoice(model: string) {
+    if (tierInfo?.preferredVoice === model || voiceSaving) return;
+    setVoiceSaving(true);
+    setVoiceMessage(null);
     try {
       const res = await fetch('/api/user/tier', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier: newTier }),
+        body: JSON.stringify({ preferredVoice: model }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to update tier');
-      setTierInfo((prev) => prev ? { ...prev, tier: newTier, features: data.features } : null);
-      setTierMessage({ text: `Switched to ${TIER_OPTIONS.find((t) => t.value === newTier)?.label}`, type: 'success' });
+      if (!res.ok) throw new Error(data.error || 'Failed to update voice');
+      setTierInfo((prev) => prev ? { ...prev, preferredVoice: data.preferredVoice } : null);
+      const label = tierInfo?.voiceOptions.find((v) => v.model === model)?.label || model;
+      setVoiceMessage({ text: `Voice changed to ${label}`, type: 'success' });
     } catch (err) {
-      setTierMessage({ text: err instanceof Error ? err.message : 'Failed to update tier', type: 'error' });
+      setVoiceMessage({ text: err instanceof Error ? err.message : 'Failed to update voice', type: 'error' });
     } finally {
-      setTierSaving(false);
+      setVoiceSaving(false);
     }
   }
 
@@ -647,28 +643,29 @@ export default function SettingsPage() {
       </div>
 
       <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-        <h2 className="text-lg font-medium text-white mb-1">Voice Quality Tier</h2>
+        <h2 className="text-lg font-medium text-white mb-1">Examiner Voice</h2>
         <p className="text-sm text-gray-400 mb-5">
-          Select the voice engine for your exam sessions. Higher tiers use professional STT/TTS providers.
+          Choose the voice your DPE examiner will use during practice sessions.
         </p>
 
         {tierLoading ? (
-          <div className="text-sm text-gray-500">Loading tier info...</div>
-        ) : (
+          <div className="text-sm text-gray-500">Loading voice options...</div>
+        ) : tierInfo?.voiceOptions && tierInfo.voiceOptions.length > 0 ? (
           <>
             <div className="grid gap-3">
-              {TIER_OPTIONS.map((option) => {
-                const isActive = tierInfo?.tier === option.value;
+              {tierInfo.voiceOptions.map((option) => {
+                const isActive = tierInfo.preferredVoice === option.model
+                  || (!tierInfo.preferredVoice && option === tierInfo.voiceOptions[0]);
                 return (
                   <button
-                    key={option.value}
-                    onClick={() => switchTier(option.value)}
-                    disabled={tierSaving || isActive}
+                    key={option.model}
+                    onClick={() => switchVoice(option.model)}
+                    disabled={voiceSaving || isActive}
                     className={`w-full text-left px-4 py-3 rounded-lg border transition-colors ${
                       isActive
                         ? 'border-blue-500 bg-blue-950/40 ring-1 ring-blue-500/50'
                         : 'border-gray-700 bg-gray-800 hover:border-gray-600 hover:bg-gray-750'
-                    } ${tierSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    } ${voiceSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <div className="flex items-center justify-between">
                       <span className={`text-sm font-medium ${isActive ? 'text-blue-400' : 'text-white'}`}>
@@ -676,50 +673,24 @@ export default function SettingsPage() {
                       </span>
                       {isActive && (
                         <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">
-                          Active
+                          Selected
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">{option.description}</p>
+                    <p className="text-xs text-gray-400 mt-1">Deepgram Aura-2 &middot; {option.model}</p>
                   </button>
                 );
               })}
             </div>
 
-            {tierMessage && (
-              <p className={`text-sm mt-3 ${tierMessage.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
-                {tierMessage.text}
+            {voiceMessage && (
+              <p className={`text-sm mt-3 ${voiceMessage.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                {voiceMessage.text}
               </p>
             )}
-
-            {tierInfo && (
-              <div className="mt-5 pt-4 border-t border-gray-800">
-                <h3 className="text-sm font-medium text-gray-300 mb-3">Current Usage</h3>
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <div className="text-lg font-semibold text-white">{tierInfo.usage.sessionsThisMonth}</div>
-                    <div className="text-xs text-gray-500">
-                      Sessions / {tierInfo.features.maxSessionsPerMonth === Infinity ? 'Unlimited' : tierInfo.features.maxSessionsPerMonth}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-lg font-semibold text-white">
-                      {Math.round(tierInfo.usage.ttsCharsThisMonth / 1000)}k
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      TTS chars / {tierInfo.features.maxTtsCharsPerMonth === Infinity ? 'Unlimited' : `${Math.round(tierInfo.features.maxTtsCharsPerMonth / 1000)}k`}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-lg font-semibold text-white">
-                      {tierInfo.features.maxExchangesPerSession}
-                    </div>
-                    <div className="text-xs text-gray-500">Max Q&A / session</div>
-                  </div>
-                </div>
-              </div>
-            )}
           </>
+        ) : (
+          <div className="text-sm text-gray-500">No voice options available. Contact admin.</div>
         )}
       </div>
 

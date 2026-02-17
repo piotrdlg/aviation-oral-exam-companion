@@ -250,6 +250,7 @@ export interface UserProfile {
   id: string;
   user_id: string;
   tier: VoiceTier;
+  preferred_voice: string | null;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   stripe_price_id: string | null;

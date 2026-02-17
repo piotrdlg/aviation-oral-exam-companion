@@ -33,13 +33,6 @@ export async function GET() {
       getSystemConfig(serviceSupabase),
     ]);
 
-    if (tier === 'ground_school') {
-      return NextResponse.json(
-        { error: 'STT tokens are only available for Checkride Prep and DPE Live tiers.' },
-        { status: 403 }
-      );
-    }
-
     // Kill switch check for Deepgram
     const killResult = checkKillSwitch(config, 'deepgram', tier);
     if (killResult.blocked) {

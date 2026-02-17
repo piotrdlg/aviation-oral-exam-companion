@@ -70,7 +70,7 @@ export default function PracticePage() {
   const [currentElement, setCurrentElement] = useState<string | null>(null);
   const [plannerState, setPlannerState] = useState<PlannerState | null>(null);
   const [sessionConfig, setSessionConfig] = useState<SessionConfigType | null>(null);
-  const [tier, setTier] = useState<VoiceTier>('ground_school');
+  const [tier, setTier] = useState<VoiceTier>('checkride_prep');
   // Upgrade prompt states (Task 34)
   const [showQuotaModal, setShowQuotaModal] = useState(false);
   const [quotaWarning, setQuotaWarning] = useState<string | null>(null);
@@ -115,7 +115,7 @@ export default function PracticePage() {
           }
         }
       })
-      .catch(() => {}); // Fallback to ground_school
+      .catch(() => {}); // Fallback to checkride_prep
   }, []);
 
   // Post-checkout entitlement sync (Task 36)
@@ -700,7 +700,7 @@ export default function PracticePage() {
           </span>
           {voiceEnabled && (
             <span className="text-xs text-green-400">
-              Voice On {tier !== 'ground_school' && `(${tier === 'checkride_prep' ? 'Tier 2' : 'Tier 3'})`}
+              Voice On
             </span>
           )}
           <button

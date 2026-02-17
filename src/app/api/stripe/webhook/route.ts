@@ -152,7 +152,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription, even
 
   const tier = subscription.status === 'active' || subscription.status === 'trialing'
     ? 'dpe_live'
-    : 'ground_school';
+    : 'checkride_prep';
 
   // Guard against out-of-order event delivery: only apply if no newer event was processed
   await serviceSupabase
@@ -186,7 +186,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription, even
   await serviceSupabase
     .from('user_profiles')
     .update({
-      tier: 'ground_school',
+      tier: 'checkride_prep',
       subscription_status: 'canceled',
       cancel_at_period_end: false,
       cancel_at: null,
@@ -215,7 +215,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice, eventId: string) {
 
   const tier = subscription.status === 'active' || subscription.status === 'trialing'
     ? 'dpe_live'
-    : 'ground_school';
+    : 'checkride_prep';
 
   await serviceSupabase
     .from('user_profiles')

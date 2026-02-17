@@ -33,8 +33,8 @@ export interface VoiceConfig {
  * - Tier 3 (dpe_live) requires AudioWorklet for streaming Cartesia audio.
  *   If AudioWorklet is unavailable, fall back to Tier 2 (Deepgram TTS which
  *   can serve MP3).
- * - Tier 1 (ground_school) requires Web Speech API for STT (Chrome only).
- *   If unavailable, STT is disabled but TTS still works.
+ * - Tier 1 (ground_school) now uses Deepgram STT & TTS (same as checkride_prep).
+ *   All tiers use Deepgram for cross-browser compatibility.
  * - On iOS, all browsers require a user gesture before audio can play.
  */
 export function getVoiceConfig(requestedTier: VoiceTier): VoiceConfig {
@@ -48,24 +48,12 @@ export function getVoiceConfig(requestedTier: VoiceTier): VoiceConfig {
     warning = 'Your browser does not support AudioWorklet. Falling back to Checkride Prep voice tier.';
   }
 
-  // Determine STT provider
-  let sttProvider: 'browser' | 'deepgram' | 'none';
-  if (effectiveTier === 'ground_school') {
-    // Tier 1: Browser STT (Web Speech API, Chrome only)
-    if (capabilities.supportsSpeechRecognition) {
-      sttProvider = 'browser';
-    } else {
-      sttProvider = 'none';
-      warning = warning || 'Speech recognition is not available in this browser. Voice input is disabled. Use Chrome for full voice support, or upgrade to Checkride Prep tier for cross-browser STT.';
-    }
-  } else {
-    // Tier 2/3: Deepgram STT (all browsers)
-    sttProvider = 'deepgram';
-  }
+  // All tiers use Deepgram STT (cross-browser)
+  const sttProvider: 'browser' | 'deepgram' | 'none' = 'deepgram';
 
   // Determine TTS provider based on effective tier
   const ttsProviderMap: Record<VoiceTier, 'openai' | 'deepgram' | 'cartesia'> = {
-    ground_school: 'openai',
+    ground_school: 'deepgram',
     checkride_prep: 'deepgram',
     dpe_live: 'cartesia',
   };

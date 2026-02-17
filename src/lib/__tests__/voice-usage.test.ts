@@ -15,28 +15,28 @@ describe('checkQuota', () => {
     expect(result.reason).toBeNull();
   });
 
-  it('blocks ground_school user at session limit', () => {
+  it('blocks ground_school user at session limit (now same as checkride_prep)', () => {
     const result = checkQuota('ground_school', {
       ...emptyUsage,
-      sessionsThisMonth: 30,
+      sessionsThisMonth: 60,
     });
     expect(result.allowed).toBe(false);
     expect(result.reason).toContain('session');
   });
 
-  it('blocks at TTS char limit', () => {
+  it('blocks at TTS char limit (now 500k for ground_school)', () => {
     const result = checkQuota('ground_school', {
       ...emptyUsage,
-      ttsCharsThisMonth: 200_001,
+      ttsCharsThisMonth: 500_001,
     });
     expect(result.allowed).toBe(false);
     expect(result.reason).toContain('TTS');
   });
 
-  it('blocks at exchange limit', () => {
+  it('blocks at exchange limit (now 30 for ground_school)', () => {
     const result = checkQuota('ground_school', {
       ...emptyUsage,
-      exchangesThisSession: 20,
+      exchangesThisSession: 30,
     });
     expect(result.allowed).toBe(false);
     expect(result.reason).toContain('exchange');

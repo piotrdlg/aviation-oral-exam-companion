@@ -66,7 +66,7 @@ export async function GET() {
       }
     }
 
-    return NextResponse.json({ tier: profile?.tier ?? 'ground_school', status: 'free' });
+    return NextResponse.json({ tier: profile?.tier ?? 'checkride_prep', status: 'free' });
   } catch (error) {
     console.error('Stripe status error:', error);
     const message = error instanceof Error ? error.message : 'Status check failed';

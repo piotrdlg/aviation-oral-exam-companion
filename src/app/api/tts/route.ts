@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { getUserTier } from '@/lib/voice/tier-lookup';
+import { getUserTier, getUserPreferredVoice } from '@/lib/voice/tier-lookup';
 import { createTTSProvider, getTTSProviderName } from '@/lib/voice/provider-factory';
 import { getSystemConfig } from '@/lib/system-config';
 import { checkKillSwitch } from '@/lib/kill-switch';
@@ -29,10 +29,11 @@ export async function POST(request: NextRequest) {
     // Enforce max text length
     const truncated = text.slice(0, 2000);
 
-    // Look up user's tier + system config in parallel
-    const [tier, config] = await Promise.all([
+    // Look up user's tier, system config, and preferred voice in parallel
+    const [tier, config, preferredVoice] = await Promise.all([
       getUserTier(serviceSupabase, user.id),
       getSystemConfig(serviceSupabase),
+      getUserPreferredVoice(serviceSupabase, user.id),
     ]);
 
     // Kill switch check for TTS provider
@@ -79,7 +80,11 @@ export async function POST(request: NextRequest) {
     const provider = await createTTSProvider(tier);
     const ttsConfigKey = `tts.${provider.name}`;
     const ttsConfig = config[ttsConfigKey] as Record<string, unknown> | undefined;
-    const result = await provider.synthesize(truncated, { config: ttsConfig });
+    // Override with user's preferred voice if set (applies to Deepgram model selection)
+    const effectiveConfig = preferredVoice
+      ? { ...ttsConfig, model: preferredVoice }
+      : ttsConfig;
+    const result = await provider.synthesize(truncated, { config: effectiveConfig });
 
     // Log usage (non-blocking)
     serviceSupabase
