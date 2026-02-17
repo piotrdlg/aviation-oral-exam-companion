@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { Suspense, useState, useRef, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { Provider } from '@supabase/supabase-js';
@@ -26,7 +26,28 @@ function getErrorMessage(code: string | null, detail: string | null): string | n
   }
 }
 
+/** Suspense wrapper required by Next.js for useSearchParams() during static generation */
 export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-950">
+        <div className="w-full max-w-md p-8 bg-gray-900 rounded-xl border border-gray-800 animate-pulse">
+          <div className="h-8 bg-gray-800 rounded w-32 mb-2" />
+          <div className="h-4 bg-gray-800 rounded w-64 mb-8" />
+          <div className="space-y-3">
+            <div className="h-10 bg-gray-800 rounded" />
+            <div className="h-10 bg-gray-800 rounded" />
+            <div className="h-10 bg-gray-800 rounded" />
+          </div>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState<string | null>(null);
