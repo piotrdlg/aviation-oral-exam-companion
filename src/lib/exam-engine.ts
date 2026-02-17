@@ -226,8 +226,8 @@ export async function generateExaminerTurn(
 
 /**
  * Generate examiner turn with streaming via Server-Sent Events.
- * Accepts optional pre-fetched RAG and an optional assessment promise.
- * The assessment is awaited after streaming completes and sent as a final SSE event.
+ * Accepts optional pre-fetched RAG and an optional assessmentPromise
+ * whose result will be sent as a final SSE event before [DONE].
  */
 export async function generateExaminerTurnStreaming(
   task: AcsTaskRow,
@@ -305,13 +305,13 @@ export async function generateExaminerTurnStreaming(
           try { onComplete(fullText); } catch { /* non-critical */ }
         }
 
-        // Await the assessment (runs in parallel, should be done by now) and send as SSE event
+        // If we have a parallel assessment promise, wait for it and send the result
         if (assessmentPromise) {
           try {
             const assessment = await assessmentPromise;
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ assessment })}\n\n`));
           } catch (err) {
-            console.error('Assessment promise failed:', err);
+            console.error('Assessment failed during streaming:', err);
           }
         }
 

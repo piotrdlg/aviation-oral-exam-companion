@@ -169,15 +169,7 @@ ${knowledgeList}
 
 RISK MANAGEMENT ELEMENTS TO COVER:
 ${riskList}
-${difficultyInstruction}
-
-ANSWER EVALUATION (CRITICAL — follow this for EVERY student response):
-After the applicant answers, you MUST accurately assess their response before continuing:
-- If correct and complete: acknowledge positively ("Good", "That's right") and move to the next element.
-- If partially correct or incomplete: acknowledge what's right, clearly state what's missing, and probe deeper.
-- If incorrect: clearly and professionally note the error. Do NOT praise a wrong answer. Rephrase or give a hint.
-- NEVER say "Excellent", "That's correct", "Good answer", or similar praise when the applicant's answer contains errors or misconceptions.
-- Your feedback MUST match the actual quality of the answer. A wrong answer must be corrected, not praised.`;
+${difficultyInstruction}`;
 
   // If DB prompt content provided (via prompt_versions), use it as the base
   if (dbPromptContent) {
