@@ -163,9 +163,28 @@ export async function fetchRagContext(
 }
 
 /**
+ * Build an assessment context block for the examiner prompt.
+ * Tells the examiner how the student's answer scored so it can respond coherently.
+ */
+function buildAssessmentContext(assessment: AssessmentData): string {
+  const lines = [
+    '\n\nASSESSMENT OF THE STUDENT\'S LATEST ANSWER (use this to guide your response):',
+    `Score: ${assessment.score}`,
+    `Feedback: ${assessment.feedback}`,
+  ];
+  if (assessment.misconceptions.length > 0) {
+    lines.push(`Misconceptions: ${assessment.misconceptions.join('; ')}`);
+  }
+  lines.push('');
+  lines.push('IMPORTANT: Your response MUST be consistent with this assessment. If the score is "unsatisfactory" or "partial", acknowledge what was wrong or incomplete before moving on. If "satisfactory", briefly affirm the student\'s knowledge. Never contradict the assessment.');
+  return lines.join('\n');
+}
+
+/**
  * Generate the next examiner turn given conversation history.
  * Accepts optional pre-fetched RAG to avoid duplicate searches.
  * Loads the best-matching prompt from prompt_versions DB table.
+ * When assessment is provided, the examiner's response will be consistent with it.
  */
 export async function generateExaminerTurn(
   task: AcsTaskRow,
@@ -174,7 +193,8 @@ export async function generateExaminerTurn(
   aircraftClass?: AircraftClass,
   prefetchedRag?: { ragContext: string },
   rating: Rating = 'private',
-  studyMode?: string
+  studyMode?: string,
+  assessment?: AssessmentData
 ): Promise<ExamTurn> {
   // Load the best-matching prompt from DB (specificity: rating + studyMode + difficulty)
   const { content: dbPromptContent } = await loadPromptFromDB(
@@ -194,6 +214,9 @@ export async function generateExaminerTurn(
     ? `\n\nFAA SOURCE MATERIAL (use to ask accurate, specific questions):\n${ragContext}`
     : '';
 
+  // Inject assessment context so the examiner responds consistently
+  const assessmentSection = assessment ? buildAssessmentContext(assessment) : '';
+
   const messages = history.map((msg) => ({
     role: msg.role === 'examiner' ? 'assistant' as const : 'user' as const,
     content: msg.text,
@@ -203,7 +226,7 @@ export async function generateExaminerTurn(
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-5-20250929',
     max_tokens: 500,
-    system: systemPrompt + ragSection,
+    system: systemPrompt + ragSection + assessmentSection,
     messages:
       messages.length === 0
         ? [{ role: 'user', content: 'Begin the oral examination.' }]
@@ -226,8 +249,9 @@ export async function generateExaminerTurn(
 
 /**
  * Generate examiner turn with streaming via Server-Sent Events.
- * Accepts optional pre-fetched RAG and an optional assessmentPromise
- * whose result will be sent as a final SSE event before [DONE].
+ * Accepts optional pre-fetched RAG and an optional resolved assessment.
+ * The assessment is injected into the prompt so the examiner responds consistently,
+ * and also sent as a final SSE event for client-side display.
  */
 export async function generateExaminerTurnStreaming(
   task: AcsTaskRow,
@@ -235,7 +259,7 @@ export async function generateExaminerTurnStreaming(
   difficulty?: import('@/types/database').Difficulty,
   aircraftClass?: AircraftClass,
   prefetchedRag?: { ragContext: string; ragImages?: ImageResult[] },
-  assessmentPromise?: Promise<AssessmentData>,
+  assessment?: AssessmentData,
   onComplete?: (fullText: string) => void,
   rating: Rating = 'private',
   studyMode?: string
@@ -258,6 +282,9 @@ export async function generateExaminerTurnStreaming(
     ? `\n\nFAA SOURCE MATERIAL (use to ask accurate, specific questions):\n${ragContext}`
     : '';
 
+  // Inject assessment context so the examiner responds consistently
+  const assessmentSection = assessment ? buildAssessmentContext(assessment) : '';
+
   const messages = history.map((msg) => ({
     role: msg.role === 'examiner' ? 'assistant' as const : 'user' as const,
     content: msg.text,
@@ -266,7 +293,7 @@ export async function generateExaminerTurnStreaming(
   const stream = await anthropic.messages.create({
     model: 'claude-sonnet-4-5-20250929',
     max_tokens: 500,
-    system: systemPrompt + ragSection,
+    system: systemPrompt + ragSection + assessmentSection,
     stream: true,
     messages:
       messages.length === 0
@@ -305,14 +332,9 @@ export async function generateExaminerTurnStreaming(
           try { onComplete(fullText); } catch { /* non-critical */ }
         }
 
-        // If we have a parallel assessment promise, wait for it and send the result
-        if (assessmentPromise) {
-          try {
-            const assessment = await assessmentPromise;
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ assessment })}\n\n`));
-          } catch (err) {
-            console.error('Assessment failed during streaming:', err);
-          }
+        // Send the assessment as an SSE event for client-side display
+        if (assessment) {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ assessment })}\n\n`));
         }
 
         controller.enqueue(encoder.encode('data: [DONE]\n\n'));
