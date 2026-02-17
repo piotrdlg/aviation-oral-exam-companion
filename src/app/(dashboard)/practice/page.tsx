@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import SessionConfig, { type SessionConfigData } from './components/SessionConfig';
 import type { PlannerState, SessionConfig as SessionConfigType } from '@/types/database';
 import type { VoiceTier } from '@/lib/voice/types';
@@ -54,6 +55,8 @@ interface TaskData {
 }
 
 export default function PracticePage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [sessionActive, setSessionActive] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -68,6 +71,18 @@ export default function PracticePage() {
   const [plannerState, setPlannerState] = useState<PlannerState | null>(null);
   const [sessionConfig, setSessionConfig] = useState<SessionConfigType | null>(null);
   const [tier, setTier] = useState<VoiceTier>('ground_school');
+  // Upgrade prompt states (Task 34)
+  const [showQuotaModal, setShowQuotaModal] = useState(false);
+  const [quotaWarning, setQuotaWarning] = useState<string | null>(null);
+  // Post-checkout success banner (Task 36)
+  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+  // Report inaccurate answer modal state (Task 26)
+  const [reportModal, setReportModal] = useState<{ exchangeIndex: number; examinerText: string } | null>(null);
+  const [reportErrorType, setReportErrorType] = useState<'factual' | 'scoring' | 'safety'>('factual');
+  const [reportComment, setReportComment] = useState('');
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+  // Session paused notification toast (Task 30)
+  const [pausedSessionToast, setPausedSessionToast] = useState(false);
   // Track per-task assessment scores (ref avoids stale closures in fire-and-forget fetches)
   const taskScoresRef = useRef<Record<string, { score: 'satisfactory' | 'unsatisfactory' | 'partial'; attempts: number }>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -80,13 +95,46 @@ export default function PracticePage() {
   // Unified voice provider hook (handles STT + TTS for all tiers)
   const voice = useVoiceProvider({ tier, sessionId: sessionId || undefined });
 
-  // Fetch user's tier on mount
+  // Fetch user's tier on mount + check quota usage for proactive warning
   useEffect(() => {
     fetch('/api/user/tier')
       .then((res) => res.ok ? res.json() : null)
-      .then((data) => { if (data?.tier) setTier(data.tier); })
+      .then((data) => {
+        if (data?.tier) setTier(data.tier);
+        // Check if usage is at 80% or above for proactive warning (Task 34)
+        if (data?.usage && data?.features) {
+          const sessionPct = data.features.maxSessionsPerMonth !== Infinity
+            ? data.usage.sessionsThisMonth / data.features.maxSessionsPerMonth
+            : 0;
+          const ttsPct = data.features.maxTtsCharsPerMonth !== Infinity
+            ? data.usage.ttsCharsThisMonth / data.features.maxTtsCharsPerMonth
+            : 0;
+          if (sessionPct >= 0.8 || ttsPct >= 0.8) {
+            const pct = Math.max(sessionPct, ttsPct);
+            setQuotaWarning(`You've used ${Math.round(pct * 100)}% of your monthly limit.`);
+          }
+        }
+      })
       .catch(() => {}); // Fallback to ground_school
   }, []);
+
+  // Post-checkout entitlement sync (Task 36)
+  useEffect(() => {
+    if (searchParams.get('checkout') === 'success') {
+      fetch('/api/stripe/status')
+        .then((res) => res.ok ? res.json() : null)
+        .then((data) => {
+          if (data?.tier) {
+            setTier(data.tier);
+            setCheckoutSuccess(true);
+            setQuotaWarning(null); // Clear any quota warning after upgrade
+          }
+        })
+        .catch(() => {});
+      // Clean the URL so the banner doesn't reappear on refresh
+      router.replace('/practice');
+    }
+  }, [searchParams, router]);
 
   // Sync voice transcript to input field when listening (unless user is manually editing)
   useEffect(() => {
@@ -213,6 +261,12 @@ export default function PracticePage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to start session');
 
+      // Task 30: Show notification if another session was paused
+      if (data.pausedSessionId) {
+        setPausedSessionToast(true);
+        setTimeout(() => setPausedSessionToast(false), 8000);
+      }
+
       setTaskData(data.taskData);
       if (data.taskId) {
         setCoveredTaskIds([data.taskId]);
@@ -271,6 +325,18 @@ export default function PracticePage() {
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
+        // Show upgrade modal on quota exceeded (Task 34)
+        if (res.status === 429 && errData.error === 'quota_exceeded') {
+          setShowQuotaModal(true);
+          setLoading(false);
+          return;
+        }
+        // Handle session superseded by another device (Task 30)
+        if (res.status === 409 && errData.error === 'session_superseded') {
+          setError('This exam session has been superseded by another device. Please end this session.');
+          setLoading(false);
+          return;
+        }
         throw new Error(errData.error || 'Failed to get response');
       }
 
@@ -555,6 +621,26 @@ export default function PracticePage() {
           based on the FAA Private Pilot ACS.
         </p>
 
+        {/* Post-checkout success banner (Task 36) */}
+        {checkoutSuccess && (
+          <div className="bg-green-900/30 border border-green-800/50 rounded-lg p-3 mb-6 text-green-300 text-sm flex items-center justify-between">
+            <span>Welcome to HeyDPE! Your subscription is active. Enjoy unlimited practice sessions.</span>
+            <button onClick={() => setCheckoutSuccess(false)} className="text-green-400 hover:text-green-300 ml-3 shrink-0">
+              &times;
+            </button>
+          </div>
+        )}
+
+        {/* Proactive quota warning banner (Task 34) */}
+        {quotaWarning && (
+          <div className="bg-amber-900/20 border border-amber-800/50 rounded-lg p-3 mb-6 text-amber-200 text-sm flex items-center justify-between">
+            <span>{quotaWarning} <a href="/pricing" className="underline hover:text-amber-100">Upgrade</a> for unlimited access.</span>
+            <button onClick={() => setQuotaWarning(null)} className="text-amber-400 hover:text-amber-300 ml-3 shrink-0">
+              &times;
+            </button>
+          </div>
+        )}
+
         <div className="bg-amber-900/20 border border-amber-800/50 rounded-lg p-3 mb-6 text-amber-200 text-xs leading-relaxed">
           For study purposes only. This is not a substitute for instruction from a certificated
           flight instructor (CFI) or an actual DPE checkride. Always verify information against
@@ -562,6 +648,33 @@ export default function PracticePage() {
         </div>
 
         <SessionConfig onStart={startSession} loading={loading} />
+
+        {/* Quota exceeded modal (Task 34) */}
+        {showQuotaModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md mx-4 shadow-2xl">
+              <h2 className="text-xl font-bold text-white mb-2">Session Limit Reached</h2>
+              <p className="text-gray-400 text-sm mb-6">
+                You&apos;ve reached your monthly session limit. Upgrade your plan to continue practicing
+                for your checkride.
+              </p>
+              <div className="flex gap-3">
+                <a
+                  href="/pricing"
+                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm text-center transition-colors"
+                >
+                  View Plans
+                </a>
+                <button
+                  onClick={() => setShowQuotaModal(false)}
+                  className="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition-colors"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -623,9 +736,27 @@ export default function PracticePage() {
                   : 'bg-blue-600 text-white'
               }`}
             >
-              <p className="text-xs font-medium mb-1 opacity-60">
-                {msg.role === 'examiner' ? 'DPE Examiner' : 'You'}
-              </p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs font-medium opacity-60">
+                  {msg.role === 'examiner' ? 'DPE Examiner' : 'You'}
+                </p>
+                {/* Report button on examiner messages (Task 26) */}
+                {msg.role === 'examiner' && msg.text && (
+                  <button
+                    onClick={() => {
+                      setReportModal({ exchangeIndex: i, examinerText: msg.text });
+                      setReportErrorType('factual');
+                      setReportComment('');
+                    }}
+                    className="text-gray-600 hover:text-amber-400 transition-colors ml-2"
+                    title="Report inaccurate answer"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5" />
+                    </svg>
+                  </button>
+                )}
+              </div>
               <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
 
               {/* Reference images (feature-flagged) */}
@@ -765,6 +896,131 @@ export default function PracticePage() {
           Send
         </button>
       </div>
+
+      {/* Quota exceeded modal during active session (Task 34) */}
+      {showQuotaModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md mx-4 shadow-2xl">
+            <h2 className="text-xl font-bold text-white mb-2">Session Limit Reached</h2>
+            <p className="text-gray-400 text-sm mb-6">
+              You&apos;ve reached your monthly session limit. Upgrade your plan to continue practicing
+              for your checkride.
+            </p>
+            <div className="flex gap-3">
+              <a
+                href="/pricing"
+                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm text-center transition-colors"
+              >
+                View Plans
+              </a>
+              <button
+                onClick={() => setShowQuotaModal(false)}
+                className="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition-colors"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Session paused toast (Task 30) */}
+      {pausedSessionToast && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-amber-900/90 border border-amber-700 rounded-lg px-4 py-3 shadow-lg flex items-center gap-3 max-w-md">
+          <svg className="w-5 h-5 text-amber-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+          </svg>
+          <p className="text-sm text-amber-200">Your exam on another device has been paused. Your progress is saved.</p>
+          <button onClick={() => setPausedSessionToast(false)} className="text-amber-400 hover:text-amber-300 flex-shrink-0">
+            &times;
+          </button>
+        </div>
+      )}
+
+      {/* Report inaccurate answer modal (Task 26) */}
+      {reportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md mx-4 shadow-2xl">
+            <h3 className="text-lg font-bold text-white mb-1">Report Inaccurate Answer</h3>
+            <p className="text-xs text-gray-500 mb-4">Exchange #{Math.ceil((reportModal.exchangeIndex + 1) / 2)}</p>
+
+            <div className="mb-4">
+              <label className="block text-sm text-gray-300 mb-2">Error type</label>
+              <div className="flex gap-2">
+                {(['factual', 'scoring', 'safety'] as const).map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => setReportErrorType(type)}
+                    className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${
+                      reportErrorType === type
+                        ? 'border-blue-500 bg-blue-950/40 text-blue-400'
+                        : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
+                    }`}
+                  >
+                    {type === 'factual' ? 'Factual Error' : type === 'scoring' ? 'Scoring Error' : 'Safety Concern'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm text-gray-300 mb-1.5">What was incorrect?</label>
+              <textarea
+                value={reportComment}
+                onChange={(e) => setReportComment(e.target.value)}
+                placeholder="Describe the issue..."
+                rows={3}
+                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setReportModal(null)}
+                disabled={reportSubmitting}
+                className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  setReportSubmitting(true);
+                  try {
+                    const res = await fetch('/api/report', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        report_type: 'inaccurate_answer',
+                        session_id: sessionId,
+                        details: {
+                          exchange_number: Math.ceil((reportModal.exchangeIndex + 1) / 2),
+                          error_type: reportErrorType,
+                          comment: reportComment,
+                          examiner_text_snippet: reportModal.examinerText.slice(0, 500),
+                        },
+                      }),
+                    });
+                    if (res.ok) {
+                      setReportModal(null);
+                    } else {
+                      const data = await res.json().catch(() => ({}));
+                      setError(data.error || 'Failed to submit report');
+                    }
+                  } catch {
+                    setError('Failed to submit report');
+                  } finally {
+                    setReportSubmitting(false);
+                  }
+                }}
+                disabled={reportSubmitting || !reportComment.trim()}
+                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
+              >
+                {reportSubmitting ? 'Submitting...' : 'Submit Report'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getUserTier } from '@/lib/voice/tier-lookup';
-import { createTTSProvider } from '@/lib/voice/provider-factory';
+import { createTTSProvider, getTTSProviderName } from '@/lib/voice/provider-factory';
+import { getSystemConfig } from '@/lib/system-config';
+import { checkKillSwitch } from '@/lib/kill-switch';
 
 // Service-role client for usage logging (bypasses RLS)
 import { createClient as createServiceClient } from '@supabase/supabase-js';
@@ -27,8 +29,24 @@ export async function POST(request: NextRequest) {
     // Enforce max text length
     const truncated = text.slice(0, 2000);
 
-    // Look up user's tier
-    const tier = await getUserTier(serviceSupabase, user.id);
+    // Look up user's tier + system config in parallel
+    const [tier, config] = await Promise.all([
+      getUserTier(serviceSupabase, user.id),
+      getSystemConfig(serviceSupabase),
+    ]);
+
+    // Kill switch check for TTS provider
+    const ttsProviderName = getTTSProviderName(tier);
+    const killResult = checkKillSwitch(config, ttsProviderName, tier);
+    if (killResult.blocked) {
+      return NextResponse.json(
+        { error: 'service_unavailable', reason: killResult.reason },
+        { status: 503 }
+      );
+    }
+
+    // If kill switch suggests a fallback tier, we still proceed — the provider factory
+    // has its own fallback chain. The kill switch fallback is informational here.
 
     // Check TTS quota
     const now = new Date();

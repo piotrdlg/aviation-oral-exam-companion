@@ -118,8 +118,18 @@ export const AIRCRAFT_CLASS_LABELS: Record<AircraftClass, string> = {
 
 /**
  * Build the DPE examiner system prompt for a given task.
+ * Accepts an optional `dbPromptContent` parameter for DB-sourced prompts
+ * (from prompt_versions table via loadPromptFromDB). When provided,
+ * it replaces the default prompt template. Task-specific dynamic sections
+ * (elements, difficulty, class) are always appended.
  */
-export function buildSystemPrompt(task: AcsTaskRow, targetDifficulty?: Difficulty, aircraftClass?: AircraftClass, rating: Rating = 'private'): string {
+export function buildSystemPrompt(
+  task: AcsTaskRow,
+  targetDifficulty?: Difficulty,
+  aircraftClass?: AircraftClass,
+  rating: Rating = 'private',
+  dbPromptContent?: string
+): string {
   const knowledgeList = task.knowledge_elements
     .map((e) => `  - ${e.code}: ${e.description}`)
     .join('\n');
@@ -149,8 +159,8 @@ ${targetDifficulty === 'easy' ? '- Ask straightforward recall/definition questio
   };
   const examName = ratingLabel[rating] || 'Private Pilot';
 
-  return `You are a Designated Pilot Examiner (DPE) conducting an FAA ${examName} oral examination. You are professional, thorough, and encouraging — firm but fair.
-
+  // Dynamic task-specific sections (always appended regardless of prompt source)
+  const taskSection = `
 CURRENT ACS TASK: ${task.area} > ${task.task} (${task.id})
 ${classInstruction}
 
@@ -159,7 +169,16 @@ ${knowledgeList}
 
 RISK MANAGEMENT ELEMENTS TO COVER:
 ${riskList}
-${difficultyInstruction}
+${difficultyInstruction}`;
+
+  // If DB prompt content provided (via prompt_versions), use it as the base
+  if (dbPromptContent) {
+    return `${dbPromptContent}\n${taskSection}`;
+  }
+
+  // Default hardcoded prompt template (fallback when no DB prompt available)
+  return `You are a Designated Pilot Examiner (DPE) conducting an FAA ${examName} oral examination. You are professional, thorough, and encouraging — firm but fair.
+${taskSection}
 
 INSTRUCTIONS:
 1. Ask ONE clear question at a time about a specific knowledge or risk management element.

@@ -1,6 +1,6 @@
 import 'server-only';
 import Anthropic from '@anthropic-ai/sdk';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import {
   type AcsTaskRow,
   selectRandomTask,
@@ -8,6 +8,7 @@ import {
 } from './exam-logic';
 import type { AircraftClass, Rating } from '@/types/database';
 import { searchChunks, formatChunksForPrompt, getImagesForChunks, type ChunkSearchResult, type ImageResult } from './rag-retrieval';
+import { getPromptContent } from './prompts';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
@@ -30,16 +31,64 @@ export interface AssessmentData {
   mentioned_elements: string[];
   source_summary: string | null;
   rag_chunks?: ChunkSearchResult[];
+  usage?: LlmUsage;
+}
+
+export interface LlmUsage {
+  input_tokens: number;
+  output_tokens: number;
+  latency_ms: number;
 }
 
 export interface ExamTurn {
   examinerMessage: string;
   assessment?: AssessmentData;
+  usage?: LlmUsage;
 }
 
 // Re-export for consumers
 export { type AcsTaskRow } from './exam-logic';
 export { type ImageResult } from './rag-retrieval';
+
+/**
+ * Load the best-matching prompt version from the DB with specificity scoring.
+ * Falls back gracefully via getPromptContent() if no DB rows found.
+ *
+ * Specificity scoring:
+ *   +1 if rating matches, +1 if study_mode matches
+ *   Ties broken by higher version number
+ *   Rows with non-matching rating/study_mode (that aren't null) are excluded.
+ */
+export async function loadPromptFromDB(
+  supabaseClient: SupabaseClient,
+  promptKey: string,
+  rating?: string,
+  studyMode?: string
+): Promise<{ content: string; versionId: string | null }> {
+  const { data: candidates } = await supabaseClient
+    .from('prompt_versions')
+    .select('id, content, rating, study_mode, version')
+    .eq('prompt_key', promptKey)
+    .eq('status', 'published')
+    .order('version', { ascending: false });
+
+  const scored = (candidates ?? [])
+    .filter(c =>
+      (c.rating === rating || c.rating === null) &&
+      (c.study_mode === studyMode || c.study_mode === null)
+    )
+    .map(c => ({
+      ...c,
+      specificity: (c.rating === rating ? 1 : 0) + (c.study_mode === studyMode ? 1 : 0),
+    }))
+    .sort((a, b) => b.specificity - a.specificity || b.version - a.version);
+
+  const best = scored[0] ?? null;
+  return {
+    content: getPromptContent(best, promptKey),
+    versionId: best?.id ?? null,
+  };
+}
 
 /**
  * Pick a random ACS task for the oral exam, optionally excluding already-covered tasks.
@@ -138,6 +187,7 @@ export async function generateExaminerTurn(
     content: msg.text,
   }));
 
+  const startMs = Date.now();
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-5-20250929',
     max_tokens: 500,
@@ -147,11 +197,19 @@ export async function generateExaminerTurn(
         ? [{ role: 'user', content: 'Begin the oral examination.' }]
         : messages,
   });
+  const latencyMs = Date.now() - startMs;
 
   const examinerMessage =
     response.content[0].type === 'text' ? response.content[0].text : '';
 
-  return { examinerMessage };
+  return {
+    examinerMessage,
+    usage: {
+      input_tokens: response.usage.input_tokens,
+      output_tokens: response.usage.output_tokens,
+      latency_ms: latencyMs,
+    },
+  };
 }
 
 /**
@@ -304,6 +362,7 @@ export async function assessAnswer(
     ? `\n\nFAA SOURCE MATERIAL (use to validate the answer):\n${ragContext}`
     : '';
 
+  const startMs = Date.now();
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-5-20250929',
     max_tokens: 400,
@@ -341,6 +400,13 @@ Respond in JSON only with this schema:
       },
     ],
   });
+  const latencyMs = Date.now() - startMs;
+
+  const usageData: LlmUsage = {
+    input_tokens: response.usage.input_tokens,
+    output_tokens: response.usage.output_tokens,
+    latency_ms: latencyMs,
+  };
 
   const text =
     response.content[0].type === 'text' ? response.content[0].text : '{}';
@@ -357,6 +423,7 @@ Respond in JSON only with this schema:
       mentioned_elements: parsed.mentioned_elements || [],
       source_summary: parsed.source_summary || null,
       rag_chunks: ragChunks.length > 0 ? ragChunks : undefined,
+      usage: usageData,
     };
   } catch {
     return {
@@ -368,6 +435,7 @@ Respond in JSON only with this schema:
       mentioned_elements: [],
       source_summary: null,
       rag_chunks: ragChunks.length > 0 ? ragChunks : undefined,
+      usage: usageData,
     };
   }
 }

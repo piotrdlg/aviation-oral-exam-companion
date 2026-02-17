@@ -42,10 +42,30 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Account status enforcement for authenticated users on protected routes
+  // RLS note: user_profiles SELECT policy allows users to read own profile
+  // where user_id = auth.uid(), so this query uses the user's session (not service role)
+  if (user && isProtectedRoute) {
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('account_status')
+      .eq('user_id', user.id)
+      .single();
+
+    if (profile?.account_status === 'banned') {
+      // Sign out the banned user and redirect to /banned
+      await supabase.auth.signOut();
+      return NextResponse.redirect(new URL('/banned', request.url));
+    }
+
+    if (profile?.account_status === 'suspended') {
+      return NextResponse.redirect(new URL('/suspended', request.url));
+    }
+  }
+
   // Redirect logged-in users away from auth pages
-  const isAuthRoute =
-    request.nextUrl.pathname === '/login' ||
-    request.nextUrl.pathname === '/signup';
+  // Note: /signup removed — OTP login auto-creates accounts, no separate signup needed
+  const isAuthRoute = request.nextUrl.pathname === '/login';
 
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone();

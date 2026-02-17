@@ -28,6 +28,14 @@ interface TierInfo {
   };
 }
 
+interface SubscriptionInfo {
+  tier: string;
+  status: string;
+  plan: string | null;
+  renewalDate: string | null;
+  hasStripeCustomer: boolean;
+}
+
 const TIER_OPTIONS: { value: VoiceTier; label: string; description: string }[] = [
   {
     value: 'ground_school',
@@ -46,6 +54,16 @@ const TIER_OPTIONS: { value: VoiceTier; label: string; description: string }[] =
   },
 ];
 
+interface ActiveSessionItem {
+  id: string;
+  device_label: string;
+  approximate_location: string | null;
+  is_exam_active: boolean;
+  last_activity_at: string;
+  created_at: string;
+  this_device: boolean;
+}
+
 export default function SettingsPage() {
   const [email, setEmail] = useState<string | null>(null);
   const supabase = createClient();
@@ -55,6 +73,23 @@ export default function SettingsPage() {
   const [tierLoading, setTierLoading] = useState(true);
   const [tierSaving, setTierSaving] = useState(false);
   const [tierMessage, setTierMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+  // Subscription state (Task 35)
+  const [subInfo, setSubInfo] = useState<SubscriptionInfo | null>(null);
+  const [subLoading, setSubLoading] = useState(true);
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  // Feedback widget state (Task 27)
+  const [feedbackType, setFeedbackType] = useState<'bug_report' | 'content_error' | null>(null);
+  const [feedbackDescription, setFeedbackDescription] = useState('');
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+  // Active sessions state (Task 32)
+  const [activeSessions, setActiveSessions] = useState<ActiveSessionItem[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
+  const [signOutOthersLoading, setSignOutOthersLoading] = useState(false);
+  const [sessionsMessage, setSessionsMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   // Voice diagnostics state
   const [diagRunning, setDiagRunning] = useState(false);
@@ -88,6 +123,58 @@ export default function SettingsPage() {
       .catch(() => {})
       .finally(() => setTierLoading(false));
   }, []);
+
+  // Fetch subscription status (Task 35)
+  useEffect(() => {
+    fetch('/api/stripe/status')
+      .then((res) => res.json())
+      .then((data) => {
+        setSubInfo({
+          tier: data.tier || 'ground_school',
+          status: data.status || 'free',
+          plan: data.plan || null,
+          renewalDate: data.renewalDate || null,
+          hasStripeCustomer: !!data.tier && data.status !== 'free',
+        });
+      })
+      .catch(() => {})
+      .finally(() => setSubLoading(false));
+  }, []);
+
+  // Fetch active sessions (Task 32)
+  const fetchActiveSessions = useCallback(() => {
+    setSessionsLoading(true);
+    fetch('/api/user/sessions')
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data?.sessions) setActiveSessions(data.sessions);
+      })
+      .catch(() => {})
+      .finally(() => setSessionsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetchActiveSessions();
+  }, [fetchActiveSessions]);
+
+  async function openCustomerPortal() {
+    setPortalLoading(true);
+    try {
+      const res = await fetch('/api/stripe/portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to open portal');
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch {
+      // Failed to open portal — user may not have a Stripe customer
+    } finally {
+      setPortalLoading(false);
+    }
+  }
 
   async function switchTier(newTier: VoiceTier) {
     if (tierInfo?.tier === newTier || tierSaving) return;
@@ -455,6 +542,110 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* Usage Dashboard (Task 35) */}
+      <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
+        <h2 className="text-lg font-medium text-white mb-1">Plan &amp; Usage</h2>
+        <p className="text-sm text-gray-400 mb-5">
+          Your current subscription and usage this billing period.
+        </p>
+
+        {subLoading || tierLoading ? (
+          <div className="text-sm text-gray-500">Loading subscription info...</div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-4 mb-5">
+              <div className="bg-gray-800 rounded-lg p-4">
+                <div className="text-xs text-gray-500 mb-1">Current Plan</div>
+                <div className="text-white font-semibold capitalize">
+                  {subInfo?.status === 'active' || subInfo?.status === 'trialing'
+                    ? (subInfo.plan || 'Paid')
+                    : 'Free'}
+                </div>
+                {subInfo?.status === 'trialing' && (
+                  <div className="text-xs text-blue-400 mt-1">Trial active</div>
+                )}
+              </div>
+              <div className="bg-gray-800 rounded-lg p-4">
+                <div className="text-xs text-gray-500 mb-1">Renewal Date</div>
+                <div className="text-white font-semibold">
+                  {subInfo?.renewalDate
+                    ? new Date(subInfo.renewalDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                    : 'N/A'}
+                </div>
+              </div>
+            </div>
+
+            {tierInfo && (
+              <div className="grid grid-cols-2 gap-4 mb-5">
+                <div className="bg-gray-800 rounded-lg p-4">
+                  <div className="text-xs text-gray-500 mb-1">Sessions This Month</div>
+                  <div className="text-white font-semibold">
+                    {tierInfo.usage.sessionsThisMonth}
+                    <span className="text-gray-500 font-normal">
+                      {' / '}
+                      {tierInfo.features.maxSessionsPerMonth === Infinity ? 'Unlimited' : tierInfo.features.maxSessionsPerMonth}
+                    </span>
+                  </div>
+                  {tierInfo.features.maxSessionsPerMonth !== Infinity && (
+                    <div className="mt-2 h-1.5 w-full bg-gray-700 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all ${
+                          tierInfo.usage.sessionsThisMonth / tierInfo.features.maxSessionsPerMonth >= 0.8
+                            ? 'bg-amber-500'
+                            : 'bg-blue-500'
+                        }`}
+                        style={{ width: `${Math.min(100, (tierInfo.usage.sessionsThisMonth / tierInfo.features.maxSessionsPerMonth) * 100)}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="bg-gray-800 rounded-lg p-4">
+                  <div className="text-xs text-gray-500 mb-1">TTS Characters</div>
+                  <div className="text-white font-semibold">
+                    {Math.round(tierInfo.usage.ttsCharsThisMonth / 1000)}k
+                    <span className="text-gray-500 font-normal">
+                      {' / '}
+                      {tierInfo.features.maxTtsCharsPerMonth === Infinity ? 'Unlimited' : `${Math.round(tierInfo.features.maxTtsCharsPerMonth / 1000)}k`}
+                    </span>
+                  </div>
+                  {tierInfo.features.maxTtsCharsPerMonth !== Infinity && (
+                    <div className="mt-2 h-1.5 w-full bg-gray-700 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all ${
+                          tierInfo.usage.ttsCharsThisMonth / tierInfo.features.maxTtsCharsPerMonth >= 0.8
+                            ? 'bg-amber-500'
+                            : 'bg-blue-500'
+                        }`}
+                        style={{ width: `${Math.min(100, (tierInfo.usage.ttsCharsThisMonth / tierInfo.features.maxTtsCharsPerMonth) * 100)}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              {subInfo?.hasStripeCustomer ? (
+                <button
+                  onClick={openCustomerPortal}
+                  disabled={portalLoading}
+                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white text-sm rounded-lg font-medium transition-colors disabled:opacity-50"
+                >
+                  {portalLoading ? 'Opening...' : 'Manage Subscription'}
+                </button>
+              ) : (
+                <a
+                  href="/pricing"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-medium transition-colors inline-block"
+                >
+                  Upgrade Plan
+                </a>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+
       <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
         <h2 className="text-lg font-medium text-white mb-1">Voice Quality Tier</h2>
         <p className="text-sm text-gray-400 mb-5">
@@ -605,6 +796,219 @@ export default function SettingsPage() {
       </div>
 
       <VoiceLab />
+
+      {/* Active Sessions (Task 32) */}
+      <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
+        <h2 className="text-lg font-medium text-white mb-1">Active Sessions</h2>
+        <p className="text-sm text-gray-400 mb-5">
+          Devices where you are currently signed in.
+        </p>
+
+        {sessionsLoading ? (
+          <div className="text-sm text-gray-500">Loading sessions...</div>
+        ) : activeSessions.length === 0 ? (
+          <div className="text-sm text-gray-500">No active sessions found.</div>
+        ) : (
+          <div className="space-y-3 mb-5">
+            {activeSessions.map((session) => (
+              <div
+                key={session.id}
+                className={`flex items-center justify-between p-3 rounded-lg border ${
+                  session.this_device
+                    ? 'border-blue-500/30 bg-blue-950/20'
+                    : 'border-gray-800 bg-gray-800/50'
+                }`}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <svg className="w-5 h-5 text-gray-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25A2.25 2.25 0 0 1 5.25 3h13.5A2.25 2.25 0 0 1 21 5.25Z" />
+                  </svg>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-white truncate">{session.device_label}</span>
+                      {session.this_device && (
+                        <span className="text-xs bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                          This device
+                        </span>
+                      )}
+                      {session.is_exam_active && (
+                        <span className="text-xs bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                          Exam active
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
+                      {session.approximate_location && (
+                        <span>{session.approximate_location}</span>
+                      )}
+                      <span>
+                        Last active: {new Date(session.last_activity_at).toLocaleString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {sessionsMessage && (
+          <p className={`text-sm mb-3 ${sessionsMessage.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+            {sessionsMessage.text}
+          </p>
+        )}
+
+        {activeSessions.length > 1 && (
+          <button
+            onClick={async () => {
+              setSignOutOthersLoading(true);
+              setSessionsMessage(null);
+              try {
+                const res = await fetch('/api/user/sessions', { method: 'DELETE' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to sign out other sessions');
+                setSessionsMessage({ text: 'All other sessions have been signed out.', type: 'success' });
+                fetchActiveSessions();
+              } catch (err) {
+                setSessionsMessage({ text: err instanceof Error ? err.message : 'Failed to sign out other sessions', type: 'error' });
+              } finally {
+                setSignOutOthersLoading(false);
+              }
+            }}
+            disabled={signOutOthersLoading}
+            className="px-4 py-2 bg-red-600/80 hover:bg-red-600 disabled:opacity-50 text-white text-sm rounded-lg font-medium transition-colors"
+          >
+            {signOutOthersLoading ? 'Signing out...' : 'Sign Out All Other Sessions'}
+          </button>
+        )}
+      </div>
+
+      {/* Feedback Widget (Task 27) */}
+      <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
+        <h2 className="text-lg font-medium text-white mb-1">Feedback</h2>
+        <p className="text-sm text-gray-400 mb-5">
+          Help us improve HeyDPE by reporting bugs or content errors.
+        </p>
+
+        {feedbackType === null ? (
+          <div className="flex gap-3">
+            <button
+              onClick={() => { setFeedbackType('bug_report'); setFeedbackMessage(null); }}
+              className="flex-1 px-4 py-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 rounded-lg text-left transition-colors"
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <svg className="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 12.75c1.148 0 2.278.08 3.383.237 1.037.146 1.866.966 1.866 2.013 0 3.728-2.35 6.75-5.25 6.75S6.75 18.728 6.75 15c0-1.046.83-1.867 1.866-2.013A24.204 24.204 0 0 1 12 12.75Zm0 0c2.883 0 5.647.508 8.207 1.44a23.91 23.91 0 0 1-1.152-6.135c-.117-1.08-.83-1.868-1.868-1.868H6.812c-1.037 0-1.75.788-1.868 1.868A23.91 23.91 0 0 1 3.793 14.19 24.232 24.232 0 0 1 12 12.75ZM2.25 6.75c0-2.071 1.679-3.75 3.75-3.75h12c2.071 0 3.75 1.679 3.75 3.75v.006c0 .243-.022.483-.065.72a.75.75 0 0 1-1.474-.267A3.753 3.753 0 0 0 21.75 6.75 2.25 2.25 0 0 0 18 4.5H6A2.25 2.25 0 0 0 2.25 6.75c0 .075.002.15.007.224a.75.75 0 0 1-1.474.267A5.265 5.265 0 0 1 .75 6.75h1.5Z" />
+                </svg>
+                <span className="text-sm font-medium text-white">Report a Bug</span>
+              </div>
+              <p className="text-xs text-gray-400">Something isn&apos;t working correctly</p>
+            </button>
+            <button
+              onClick={() => { setFeedbackType('content_error'); setFeedbackMessage(null); }}
+              className="flex-1 px-4 py-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 rounded-lg text-left transition-colors"
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                </svg>
+                <span className="text-sm font-medium text-white">Report Content Error</span>
+              </div>
+              <p className="text-xs text-gray-400">Incorrect aviation information</p>
+            </button>
+          </div>
+        ) : (
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <span className={`text-xs px-2 py-0.5 rounded-full ${
+                feedbackType === 'bug_report'
+                  ? 'bg-amber-900/40 text-amber-400'
+                  : 'bg-blue-900/40 text-blue-400'
+              }`}>
+                {feedbackType === 'bug_report' ? 'Bug Report' : 'Content Error'}
+              </span>
+            </div>
+
+            <textarea
+              value={feedbackDescription}
+              onChange={(e) => setFeedbackDescription(e.target.value)}
+              placeholder={feedbackType === 'bug_report'
+                ? 'Describe the bug... What happened? What did you expect?'
+                : 'Describe the content error... What information was incorrect?'}
+              rows={4}
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none mb-4"
+            />
+
+            {feedbackMessage && (
+              <p className={`text-sm mb-3 ${feedbackMessage.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                {feedbackMessage.text}
+              </p>
+            )}
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setFeedbackType(null);
+                  setFeedbackDescription('');
+                  setFeedbackMessage(null);
+                }}
+                disabled={feedbackSubmitting}
+                className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  setFeedbackSubmitting(true);
+                  setFeedbackMessage(null);
+                  try {
+                    const details: Record<string, unknown> = {
+                      description: feedbackDescription,
+                    };
+                    // Capture browser info for bug reports
+                    if (feedbackType === 'bug_report' && typeof navigator !== 'undefined') {
+                      details.browser_info = navigator.userAgent;
+                      details.page_url = window.location.href;
+                    }
+                    const res = await fetch('/api/report', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        report_type: feedbackType,
+                        details,
+                      }),
+                    });
+                    if (res.ok) {
+                      setFeedbackMessage({ text: 'Thank you! Your feedback has been submitted.', type: 'success' });
+                      setFeedbackDescription('');
+                      setTimeout(() => {
+                        setFeedbackType(null);
+                        setFeedbackMessage(null);
+                      }, 3000);
+                    } else {
+                      const data = await res.json().catch(() => ({}));
+                      setFeedbackMessage({ text: data.error || 'Failed to submit feedback', type: 'error' });
+                    }
+                  } catch {
+                    setFeedbackMessage({ text: 'Failed to submit feedback', type: 'error' });
+                  } finally {
+                    setFeedbackSubmitting(false);
+                  }
+                }}
+                disabled={feedbackSubmitting || !feedbackDescription.trim()}
+                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
+              >
+                {feedbackSubmitting ? 'Submitting...' : 'Submit'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

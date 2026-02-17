@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 import {
   pickStartingTask,
   pickNextTask,
@@ -9,9 +10,54 @@ import {
   fetchRagContext,
   type ExamMessage,
   type AssessmentData,
+  type LlmUsage,
 } from '@/lib/exam-engine';
 import { initPlanner, advancePlanner, type PlannerResult } from '@/lib/exam-planner';
+import { getSystemConfig } from '@/lib/system-config';
+import { checkKillSwitch } from '@/lib/kill-switch';
+import { getUserTier } from '@/lib/voice/tier-lookup';
+import { enforceOneActiveExam, getSessionTokenHash } from '@/lib/session-enforcement';
 import type { SessionConfig, PlannerState } from '@/types/database';
+
+// Service-role client for usage logging + config lookups (bypasses RLS)
+const serviceSupabase = createServiceClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+/**
+ * Log LLM usage to usage_logs (non-blocking).
+ * Called after each Anthropic API call for cost tracking and monitoring.
+ */
+function logLlmUsage(
+  userId: string,
+  usage: LlmUsage | undefined,
+  tier: string,
+  sessionId?: string,
+  metadata?: Record<string, unknown>
+): void {
+  if (!usage) return;
+  serviceSupabase
+    .from('usage_logs')
+    .insert({
+      user_id: userId,
+      session_id: sessionId ?? null,
+      event_type: 'llm_request',
+      provider: 'anthropic',
+      tier,
+      quantity: usage.input_tokens + usage.output_tokens,
+      latency_ms: usage.latency_ms,
+      status: 'ok',
+      metadata: {
+        input_tokens: usage.input_tokens,
+        output_tokens: usage.output_tokens,
+        ...metadata,
+      },
+    })
+    .then(({ error }) => {
+      if (error) console.error('LLM usage log error:', error.message);
+    });
+}
 
 /**
  * Write element_attempts rows based on assessment element codes.
@@ -117,6 +163,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Kill switch check: fetch config + tier, block if Anthropic or tier is disabled
+    const [config, tier] = await Promise.all([
+      getSystemConfig(serviceSupabase),
+      getUserTier(serviceSupabase, user.id),
+    ]);
+
+    const killResult = checkKillSwitch(config, 'anthropic', tier);
+    if (killResult.blocked) {
+      return NextResponse.json(
+        { error: 'service_unavailable', reason: killResult.reason },
+        { status: 503 }
+      );
+    }
+
     const body = await request.json();
     const { action, history, taskData, studentAnswer, coveredTaskIds, sessionId, stream, sessionConfig, plannerState: clientPlannerState } = body as {
       action: 'start' | 'respond' | 'next-task';
@@ -130,7 +190,43 @@ export async function POST(request: NextRequest) {
       plannerState?: PlannerState;
     };
 
+    // Session enforcement: ensure only one active exam per user
+    let enforcementPausedSessionId: string | undefined;
+    if (sessionId) {
+      try {
+        // Extract token hash from the user's current session
+        const { data: { session: authSession } } = await supabase.auth.getSession();
+        if (authSession?.access_token) {
+          const tokenHash = getSessionTokenHash(authSession);
+          const enforcement = await enforceOneActiveExam(
+            serviceSupabase, user.id, sessionId, tokenHash, action
+          );
+
+          if (enforcement.rejected) {
+            return NextResponse.json(
+              { error: 'session_superseded', message: 'This exam session has been superseded by another device. Please end this session.' },
+              { status: 409 }
+            );
+          }
+
+          enforcementPausedSessionId = enforcement.pausedSessionId;
+        }
+      } catch (err) {
+        // Session enforcement is non-critical — log and continue
+        console.error('Session enforcement error:', err);
+      }
+    }
+
     if (action === 'start') {
+      // Track last active usage — non-blocking (Task 25)
+      serviceSupabase
+        .from('user_profiles')
+        .update({ last_login_at: new Date().toISOString() })
+        .eq('user_id', user.id)
+        .then(({ error: profileErr }) => {
+          if (profileErr) console.error('last_login_at update error:', profileErr.message);
+        });
+
       // If session config provided, use the planner for element-level scheduling
       if (sessionConfig) {
         const plannerResult = await initPlanner(sessionConfig, user.id);
@@ -145,6 +241,9 @@ export async function POST(request: NextRequest) {
         const turn = await generateExaminerTurn(
           plannerResult.task, [], plannerResult.difficulty, sessionConfig.aircraftClass, undefined, rating
         );
+
+        // Log LLM usage (non-blocking)
+        logLlmUsage(user.id, turn.usage, tier, sessionId, { action: 'start', call: 'generateExaminerTurn' });
 
         // Persist examiner opening turn to transcript
         if (sessionId) {
@@ -162,6 +261,7 @@ export async function POST(request: NextRequest) {
           examinerMessage: turn.examinerMessage,
           elementCode: plannerResult.elementCode,
           plannerState: plannerResult.plannerState,
+          ...(enforcementPausedSessionId ? { pausedSessionId: enforcementPausedSessionId } : {}),
         });
       }
 
@@ -192,6 +292,9 @@ export async function POST(request: NextRequest) {
 
       const turn = await generateExaminerTurn(task, []);
 
+      // Log LLM usage (non-blocking)
+      logLlmUsage(user.id, turn.usage, tier, sessionId, { action: 'start', call: 'generateExaminerTurn' });
+
       // Persist examiner opening turn to transcript
       if (sessionId) {
         await supabase.from('session_transcripts').insert({
@@ -206,6 +309,7 @@ export async function POST(request: NextRequest) {
         taskId: task.id,
         taskData: task,
         examinerMessage: turn.examinerMessage,
+        ...(enforcementPausedSessionId ? { pausedSessionId: enforcementPausedSessionId } : {}),
       });
     }
 
@@ -274,6 +378,9 @@ export async function POST(request: NextRequest) {
         // Write student assessment + element_attempts + citations in the background
         // after the assessment promise resolves.
         assessmentPromise.then(async (assessment) => {
+          // Log assessment LLM usage (non-blocking)
+          logLlmUsage(user.id, assessment.usage, tier, sessionId, { action: 'respond', call: 'assessAnswer' });
+
           if (studentTranscriptId && assessment) {
             const dbWrites: PromiseLike<unknown>[] = [
               supabase
@@ -317,6 +424,10 @@ export async function POST(request: NextRequest) {
         assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating),
         generateExaminerTurn(taskData, updatedHistory, undefined, undefined, rag, respondRating),
       ]);
+
+      // Log LLM usage for both calls (non-blocking)
+      logLlmUsage(user.id, assessment.usage, tier, sessionId, { action: 'respond', call: 'assessAnswer' });
+      logLlmUsage(user.id, turn.usage, tier, sessionId, { action: 'respond', call: 'generateExaminerTurn' });
 
       // Step 4: Persist all DB writes in parallel (non-blocking for response)
       if (studentTranscriptId && assessment) {
@@ -390,6 +501,9 @@ export async function POST(request: NextRequest) {
           plannerResult.task, [], plannerResult.difficulty, sessionConfig.aircraftClass, undefined, nextTaskRating
         );
 
+        // Log LLM usage (non-blocking)
+        logLlmUsage(user.id, turn.usage, tier, sessionId, { action: 'next-task', call: 'generateExaminerTurn' });
+
         if (sessionId) {
           const { count } = await supabase
             .from('session_transcripts')
@@ -426,6 +540,9 @@ export async function POST(request: NextRequest) {
       }
 
       const turn = await generateExaminerTurn(task, []);
+
+      // Log LLM usage (non-blocking)
+      logLlmUsage(user.id, turn.usage, tier, sessionId, { action: 'next-task', call: 'generateExaminerTurn' });
 
       // Persist examiner transition to transcript
       if (sessionId) {

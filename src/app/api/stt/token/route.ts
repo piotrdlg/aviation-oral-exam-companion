@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { getUserTier } from '@/lib/voice/tier-lookup';
+import { getSystemConfig } from '@/lib/system-config';
+import { checkKillSwitch } from '@/lib/kill-switch';
 
 const serviceSupabase = createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,12 +27,25 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Verify tier
-    const tier = await getUserTier(serviceSupabase, user.id);
+    // Verify tier + load config in parallel
+    const [tier, config] = await Promise.all([
+      getUserTier(serviceSupabase, user.id),
+      getSystemConfig(serviceSupabase),
+    ]);
+
     if (tier === 'ground_school') {
       return NextResponse.json(
         { error: 'STT tokens are only available for Checkride Prep and DPE Live tiers.' },
         { status: 403 }
+      );
+    }
+
+    // Kill switch check for Deepgram
+    const killResult = checkKillSwitch(config, 'deepgram', tier);
+    if (killResult.blocked) {
+      return NextResponse.json(
+        { error: 'service_unavailable', reason: killResult.reason },
+        { status: 503 }
       );
     }
 

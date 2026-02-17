@@ -24,9 +24,11 @@
     "pdf-parse": "^1.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "server-only": "^0.0.1"
+    "server-only": "^0.0.1",
+    "stripe": "^20.3.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

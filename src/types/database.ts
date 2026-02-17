@@ -81,7 +81,7 @@ export interface ExamSession {
   rating: Rating;
   started_at: string;
   ended_at: string | null;
-  status: 'active' | 'paused' | 'completed';
+  status: 'active' | 'paused' | 'completed' | 'abandoned' | 'errored';
   study_mode: StudyMode;
   difficulty_preference: DifficultyPreference;
   selected_areas: string[];
@@ -242,6 +242,10 @@ export interface OffGraphMention {
 
 export type VoiceTier = 'ground_school' | 'checkride_prep' | 'dpe_live';
 
+export type AccountStatus = 'active' | 'suspended' | 'banned';
+export type SubscriptionStatus = 'active' | 'past_due' | 'canceled' | 'trialing' | 'incomplete' | 'none';
+export type AuthMethod = 'email_otp' | 'google' | 'apple' | 'microsoft' | 'password';
+
 export interface UserProfile {
   id: string;
   user_id: string;
@@ -251,7 +255,7 @@ export interface UserProfile {
   stripe_price_id: string | null;
   stripe_product_id: string | null;
   stripe_subscription_item_id: string | null;
-  subscription_status: 'active' | 'past_due' | 'canceled' | 'trialing' | 'incomplete';
+  subscription_status: SubscriptionStatus;
   cancel_at_period_end: boolean;
   trial_end: string | null;
   current_period_start: string | null;
@@ -259,6 +263,12 @@ export interface UserProfile {
   last_webhook_event_id: string | null;
   last_webhook_event_ts: string | null;
   latest_invoice_status: string | null;
+  account_status: AccountStatus;
+  status_reason: string | null;
+  status_changed_at: string | null;
+  status_changed_by: string | null;
+  last_login_at: string | null;
+  auth_method: AuthMethod | null;
   created_at: string;
   updated_at: string;
 }
@@ -277,4 +287,135 @@ export interface UsageLog {
   error_code: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
+}
+
+// ============================================================
+// Pre-commercialization types
+// ============================================================
+
+// System config
+export interface SystemConfig {
+  key: string;
+  value: Record<string, unknown>;
+  description: string | null;
+  updated_at: string;
+  updated_by: string | null;
+}
+
+export interface KillSwitchValue {
+  enabled: boolean;
+}
+
+export interface MaintenanceModeValue {
+  enabled: boolean;
+  message: string;
+}
+
+export interface UserHardCapsValue {
+  daily_llm_tokens: number;
+  daily_tts_chars: number;
+  daily_stt_seconds: number;
+}
+
+// Admin
+export interface AdminDevice {
+  id: string;
+  user_id: string;
+  device_fingerprint: string;
+  device_label: string | null;
+  last_used_at: string;
+  created_at: string;
+}
+
+export interface AdminAuditLog {
+  id: string;
+  admin_user_id: string;
+  action: string;
+  target_type: string | null;
+  target_id: string | null;
+  details: Record<string, unknown>;
+  ip_address: string | null;
+  device_fingerprint: string | null;
+  reason: string | null;
+  created_at: string;
+}
+
+export interface AdminNote {
+  id: string;
+  target_user_id: string;
+  admin_user_id: string;
+  note: string;
+  created_at: string;
+}
+
+// Prompts
+export type PromptStatus = 'draft' | 'published' | 'archived';
+
+export interface PromptVersion {
+  id: string;
+  prompt_key: string;
+  rating: string | null;
+  study_mode: string | null;
+  version: number;
+  content: string;
+  status: PromptStatus;
+  change_summary: string | null;
+  published_at: string | null;
+  published_by: string | null;
+  created_at: string;
+  created_by: string | null;
+}
+
+// Moderation
+export type ModerationStatus = 'open' | 'reviewing' | 'resolved' | 'dismissed';
+export type ReportType = 'inaccurate_answer' | 'safety_incident' | 'bug_report' | 'content_error';
+
+export interface ModerationQueueItem {
+  id: string;
+  report_type: ReportType;
+  reporter_user_id: string | null;
+  session_id: string | null;
+  transcript_id: string | null;
+  prompt_version_id: string | null;
+  details: Record<string, unknown>;
+  status: ModerationStatus;
+  resolution_notes: string | null;
+  resolved_by: string | null;
+  resolved_at: string | null;
+  created_at: string;
+}
+
+// Sessions
+export interface ActiveSession {
+  id: string;
+  user_id: string;
+  session_token_hash: string;
+  device_info: Record<string, unknown>;
+  device_label: string | null;
+  ip_address: string | null;
+  approximate_location: string | null;
+  is_exam_active: boolean;
+  exam_session_id: string | null;
+  last_activity_at: string;
+  created_at: string;
+}
+
+// Billing
+export interface SubscriptionEvent {
+  id: string;
+  stripe_event_id: string;
+  event_type: string;
+  status: 'processing' | 'processed' | 'failed';
+  error: string | null;
+  created_at: string;
+  payload: Record<string, unknown>;
+}
+
+// Structured view of system config values (for typed access after parsing).
+// NOTE: The runtime SystemConfigMap used by kill-switch.ts and system-config.ts
+// is Record<string, Record<string, unknown>>. This is the typed overlay.
+export interface SystemConfigStructured {
+  killSwitches: Record<string, KillSwitchValue>;
+  maintenanceMode: MaintenanceModeValue;
+  userHardCaps: UserHardCapsValue;
 }

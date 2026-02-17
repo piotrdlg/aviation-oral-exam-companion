@@ -1,4 +1,4 @@
-# Claude Context File — Aviation Oral Exam Companion
+# Claude Context File — HeyDPE
 
 > Read this file first when working on any task in this repository.
 
@@ -6,8 +6,9 @@
 
 ## Overview
 
-**Aviation Oral Exam Companion** is a voice-first AI web application that simulates FAA Designated Pilot Examiner (DPE) oral examinations for checkride preparation. Supports Private Pilot (FAA-S-ACS-6C), Commercial Pilot (FAA-S-ACS-7B), and Instrument Rating (FAA-S-ACS-8C). The AI examiner follows the FAA Airman Certification Standards (ACS) to ask questions, assess answers, and naturally transition between topics.
+**HeyDPE** is a voice-first AI web application that simulates FAA Designated Pilot Examiner (DPE) oral examinations for checkride preparation. Supports Private Pilot (FAA-S-ACS-6C), Commercial Pilot (FAA-S-ACS-7B), and Instrument Rating (FAA-S-ACS-8C). The AI examiner follows the FAA Airman Certification Standards (ACS) to ask questions, assess answers, and naturally transition between topics.
 
+**Brand**: HeyDPE (formerly HeyDPE)
 **Owner**: Piotr (pd@imagineflying.com) — Imagine Flying LLC, Jacksonville, FL
 **Live URL**: https://aviation-oral-exam-companion.vercel.app
 **Repository**: https://github.com/piotrdlg/aviation-oral-exam-companion
@@ -236,7 +237,7 @@ npm run test:watch  # Watch mode
 The project owner maintains a knowledge base in Obsidian at:
 ```
 ~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Piotr's Second Brain/
-  Imagine Flying/NextGen CFI/Products/Aviation Oral Exam Companion/
+  Imagine Flying/NextGen CFI/Products/HeyDPE/
 ```
 
 ### When to Write an Obsidian Update
@@ -256,7 +257,7 @@ Follow Obsidian conventions:
 - Use **YAML frontmatter** with `date`, `type`, `tags`, and `status` fields
 - Use **headings** (H2/H3) for structure, not bold text as section headers
 - Keep notes **atomic** — one concept or update per note when possible
-- Place notes in the appropriate subfolder (e.g., `Aviation Oral Exam Companion - Build Report/`)
+- Place notes in the appropriate subfolder (e.g., `HeyDPE - Build Report/`)
 
 ### Note Types
 
