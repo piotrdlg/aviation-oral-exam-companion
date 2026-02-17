@@ -348,50 +348,50 @@ export async function POST(request: NextRequest) {
         { role: 'student', text: studentAnswer },
       ];
 
-      // Step 3: Assess first, then generate examiner response (serial).
-      // The examiner must see the assessment to respond consistently
-      // (e.g., not say "Excellent!" when the answer was unsatisfactory).
+      // Step 3: Run assessment + examiner generation in PARALLEL for low latency.
+      // The examiner prompt includes strong ANSWER EVALUATION instructions so it
+      // independently evaluates the student's answer without needing the assessment result.
       const respondRating = sessionConfig?.rating || 'private';
       // Resolve difficulty for prompt selection: 'mixed' → undefined (use generic prompt)
       const respondDifficulty = sessionConfig?.difficulty && sessionConfig.difficulty !== 'mixed'
         ? sessionConfig.difficulty as import('@/types/database').Difficulty
         : undefined;
 
-      // Step 3a: Run assessment first
-      const assessment = await assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating);
+      // Fire assessment in parallel (examiner doesn't need to wait for it)
+      const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating);
 
-      // Log assessment LLM usage (non-blocking)
-      logLlmUsage(user.id, assessment.usage, tier, sessionId, { action: 'respond', call: 'assessAnswer' });
+      // Persist assessment + element_attempts + citations when assessment resolves (non-blocking)
+      assessmentPromise.then((assessment) => {
+        logLlmUsage(user.id, assessment.usage, tier, sessionId, { action: 'respond', call: 'assessAnswer' });
 
-      // Step 3b: Persist assessment + element_attempts + citations (non-blocking)
-      if (studentTranscriptId && assessment) {
-        const assessDbWrites: PromiseLike<unknown>[] = [
-          supabase
-            .from('session_transcripts')
-            .update({ assessment })
-            .eq('id', studentTranscriptId),
-        ];
-        if (sessionId) {
-          assessDbWrites.push(writeElementAttempts(supabase, sessionId, studentTranscriptId, assessment));
+        if (studentTranscriptId) {
+          const assessDbWrites: PromiseLike<unknown>[] = [
+            supabase
+              .from('session_transcripts')
+              .update({ assessment })
+              .eq('id', studentTranscriptId),
+          ];
+          if (sessionId) {
+            assessDbWrites.push(writeElementAttempts(supabase, sessionId, studentTranscriptId, assessment));
+          }
+          if (assessment.rag_chunks && assessment.rag_chunks.length > 0) {
+            const citations = assessment.rag_chunks.map((chunk, idx) => ({
+              transcript_id: studentTranscriptId,
+              chunk_id: chunk.id,
+              rank: idx + 1,
+              score: chunk.score,
+              snippet: chunk.content.slice(0, 300),
+            }));
+            assessDbWrites.push(
+              supabase.from('transcript_citations').insert(citations).then(({ error: citErr }) => {
+                if (citErr) console.error('Citation write error:', citErr.message);
+              })
+            );
+          }
+          Promise.all(assessDbWrites).catch(err => console.error('Assessment DB write error:', err));
         }
-        if (assessment.rag_chunks && assessment.rag_chunks.length > 0) {
-          const citations = assessment.rag_chunks.map((chunk, idx) => ({
-            transcript_id: studentTranscriptId,
-            chunk_id: chunk.id,
-            rank: idx + 1,
-            score: chunk.score,
-            snippet: chunk.content.slice(0, 300),
-          }));
-          assessDbWrites.push(
-            supabase.from('transcript_citations').insert(citations).then(({ error: citErr }) => {
-              if (citErr) console.error('Citation write error:', citErr.message);
-            })
-          );
-        }
-        Promise.all(assessDbWrites).catch(err => console.error('Assessment DB write error:', err));
-      }
+      }).catch(err => console.error('Assessment error:', err));
 
-      // Step 3c: Generate examiner response with assessment context
       if (stream) {
         // onComplete callback: persist examiner transcript to DB after stream finishes
         const onStreamComplete = (fullText: string) => {
@@ -408,7 +408,7 @@ export async function POST(request: NextRequest) {
         };
 
         const readableStream = await generateExaminerTurnStreaming(
-          taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessment, onStreamComplete, respondRating, sessionConfig?.studyMode
+          taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessmentPromise, onStreamComplete, respondRating, sessionConfig?.studyMode
         );
 
         return new Response(readableStream, {
@@ -421,13 +421,16 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Non-streaming path: generate examiner turn with assessment context
-      const turn = await generateExaminerTurn(taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass as import('@/types/database').AircraftClass | undefined, rag, respondRating, sessionConfig?.studyMode, assessment);
+      // Non-streaming path: run both in parallel
+      const [assessment, turn] = await Promise.all([
+        assessmentPromise,
+        generateExaminerTurn(taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass as import('@/types/database').AircraftClass | undefined, rag, respondRating, sessionConfig?.studyMode),
+      ]);
 
-      // Log examiner LLM usage (non-blocking; assessment usage already logged above)
+      // Log examiner LLM usage (non-blocking; assessment usage already logged in the .then() above)
       logLlmUsage(user.id, turn.usage, tier, sessionId, { action: 'respond', call: 'generateExaminerTurn' });
 
-      // Persist examiner transcript (non-blocking; assessment DB writes already fired above)
+      // Persist examiner transcript (non-blocking)
       if (sessionId) {
         supabase.from('session_transcripts').insert({
           session_id: sessionId,
