@@ -108,6 +108,7 @@ export default function PracticePage() {
     aircraft_class: string;
     metadata: Record<string, unknown>;
   } | null>(null);
+  const [resumeVoiceToggle, setResumeVoiceToggle] = useState(true);
   // Track per-task assessment scores (ref avoids stale closures in fire-and-forget fetches)
   const taskScoresRef = useRef<Record<string, { score: 'satisfactory' | 'unsatisfactory' | 'partial'; attempts: number }>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -685,15 +686,12 @@ export default function PracticePage() {
     const metadata = session.metadata as {
       plannerState?: PlannerState;
       sessionConfig?: SessionConfigType;
-      taskData?: TaskData;
-      voiceEnabled?: boolean;
     };
     if (!metadata.plannerState || !metadata.sessionConfig) return;
 
-    // Restore voice preference from metadata (default to false)
-    const resumeVoice = metadata.voiceEnabled ?? false;
-    setVoiceEnabled(resumeVoice);
-    voiceEnabledRef.current = resumeVoice;
+    // Use the voice toggle from the resume card
+    setVoiceEnabled(resumeVoiceToggle);
+    voiceEnabledRef.current = resumeVoiceToggle;
 
     setSessionActive(true);
     setLoading(true);
@@ -727,16 +725,26 @@ export default function PracticePage() {
       const lastMessage = loadedMessages[loadedMessages.length - 1];
       const examinerAskedLast = lastMessage?.role === 'examiner';
 
-      if (examinerAskedLast && metadata.taskData) {
-        // Restore current state without advancing — the examiner's question is already in transcripts
+      if (examinerAskedLast) {
+        // Examiner's question is still pending — fetch current task from DB without advancing
         setMessages(loadedMessages);
-        setTaskData(metadata.taskData);
-        // Derive current element from plannerState
-        const currentQueue = metadata.plannerState.queue;
-        const currentCursor = metadata.plannerState.cursor;
-        if (currentQueue[currentCursor]) {
-          setCurrentElement(currentQueue[currentCursor]);
+
+        const res = await fetchWithRetry('/api/exam', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'resume-current',
+            sessionConfig: metadata.sessionConfig,
+            plannerState: metadata.plannerState,
+          }),
+        });
+
+        const data = await res.json();
+        if (res.ok && data.taskData) {
+          setTaskData(data.taskData);
+          if (data.elementCode) setCurrentElement(data.elementCode);
         }
+        // If resume-current fails, user can still see transcript and type answers
       } else {
         // Student answered last (or no transcripts) — need to advance planner for next question
         setMessages(loadedMessages);
@@ -761,7 +769,7 @@ export default function PracticePage() {
           if (data.elementCode) setCurrentElement(data.elementCode);
           if (data.plannerState) setPlannerState(data.plannerState);
           const examinerMsg = data.examinerMessage;
-          if (resumeVoice) {
+          if (resumeVoiceToggle) {
             setMessages((prev) => [...prev, { role: 'examiner', text: '' }]);
             pendingFullTextRef.current = examinerMsg;
             speakText(examinerMsg);
@@ -832,7 +840,16 @@ export default function PracticePage() {
                   {' '}&middot; {resumableSession.difficulty_preference}
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-1.5 text-xs text-gray-400 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={resumeVoiceToggle}
+                    onChange={(e) => setResumeVoiceToggle(e.target.checked)}
+                    className="rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 w-3.5 h-3.5"
+                  />
+                  Voice
+                </label>
                 <button
                   onClick={() => resumeSession(resumableSession)}
                   disabled={loading}

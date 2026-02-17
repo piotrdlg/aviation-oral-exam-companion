@@ -46,7 +46,7 @@ export async function enforceOneActiveExam(
   userId: string,
   examSessionId: string,
   tokenHash: string,
-  action: 'start' | 'respond' | 'next-task'
+  action: 'start' | 'respond' | 'next-task' | 'resume-current'
 ): Promise<EnforcementResult & { rejected?: boolean }> {
   // Upsert the current session's active_sessions row (device tracking)
   // The UNIQUE constraint is on (user_id, session_token_hash), so onConflict must match

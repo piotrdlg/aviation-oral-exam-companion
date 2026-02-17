@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { action, history, taskData, studentAnswer, coveredTaskIds, sessionId, stream, sessionConfig, plannerState: clientPlannerState } = body as {
-      action: 'start' | 'respond' | 'next-task';
+      action: 'start' | 'respond' | 'next-task' | 'resume-current';
       history?: ExamMessage[];
       taskData?: Awaited<ReturnType<typeof pickStartingTask>>;
       studentAnswer?: string;
@@ -495,6 +495,39 @@ export async function POST(request: NextRequest) {
         taskData,
         examinerMessage: turn.examinerMessage,
         assessment,
+      });
+    }
+
+    if (action === 'resume-current') {
+      // Return current element's task data without advancing the planner or calling LLM.
+      // Used by session resume when the examiner's last question is still pending.
+      if (!clientPlannerState || !sessionConfig) {
+        return NextResponse.json({ error: 'Missing plannerState or sessionConfig' }, { status: 400 });
+      }
+
+      const currentElementCode = clientPlannerState.queue[clientPlannerState.cursor];
+      if (!currentElementCode) {
+        return NextResponse.json({ examinerMessage: 'Session complete', sessionComplete: true });
+      }
+
+      // Derive task_id from element code (e.g., "PA.I.A.K1" → "PA.I.A")
+      const parts = currentElementCode.split('.');
+      const taskId = parts.slice(0, -1).join('.');
+
+      const { data: task } = await supabase
+        .from('acs_tasks')
+        .select('*')
+        .eq('id', taskId)
+        .single();
+
+      if (!task) {
+        return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+      }
+
+      return NextResponse.json({
+        taskId: task.id,
+        taskData: task,
+        elementCode: currentElementCode,
       });
     }
 
