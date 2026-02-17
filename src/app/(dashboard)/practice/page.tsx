@@ -319,6 +319,7 @@ export default function PracticePage() {
           history: messages,
           studentAnswer,
           sessionId,
+          sessionConfig,
           stream: true,
         }),
       });

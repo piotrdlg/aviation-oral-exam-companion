@@ -55,19 +55,20 @@ export { type ImageResult } from './rag-retrieval';
  * Falls back gracefully via getPromptContent() if no DB rows found.
  *
  * Specificity scoring:
- *   +1 if rating matches, +1 if study_mode matches
+ *   +1 if rating matches, +1 if study_mode matches, +1 if difficulty matches
  *   Ties broken by higher version number
- *   Rows with non-matching rating/study_mode (that aren't null) are excluded.
+ *   Rows with non-matching rating/study_mode/difficulty (that aren't null) are excluded.
  */
 export async function loadPromptFromDB(
   supabaseClient: SupabaseClient,
   promptKey: string,
   rating?: string,
-  studyMode?: string
+  studyMode?: string,
+  difficulty?: string
 ): Promise<{ content: string; versionId: string | null }> {
   const { data: candidates } = await supabaseClient
     .from('prompt_versions')
-    .select('id, content, rating, study_mode, version')
+    .select('id, content, rating, study_mode, difficulty, version')
     .eq('prompt_key', promptKey)
     .eq('status', 'published')
     .order('version', { ascending: false });
@@ -75,11 +76,15 @@ export async function loadPromptFromDB(
   const scored = (candidates ?? [])
     .filter(c =>
       (c.rating === rating || c.rating === null) &&
-      (c.study_mode === studyMode || c.study_mode === null)
+      (c.study_mode === studyMode || c.study_mode === null) &&
+      (c.difficulty === difficulty || c.difficulty === null)
     )
     .map(c => ({
       ...c,
-      specificity: (c.rating === rating ? 1 : 0) + (c.study_mode === studyMode ? 1 : 0),
+      specificity:
+        (c.rating === rating ? 1 : 0) +
+        (c.study_mode === studyMode ? 1 : 0) +
+        (c.difficulty === difficulty ? 1 : 0),
     }))
     .sort((a, b) => b.specificity - a.specificity || b.version - a.version);
 
@@ -160,6 +165,7 @@ export async function fetchRagContext(
 /**
  * Generate the next examiner turn given conversation history.
  * Accepts optional pre-fetched RAG to avoid duplicate searches.
+ * Loads the best-matching prompt from prompt_versions DB table.
  */
 export async function generateExaminerTurn(
   task: AcsTaskRow,
@@ -167,9 +173,15 @@ export async function generateExaminerTurn(
   difficulty?: import('@/types/database').Difficulty,
   aircraftClass?: AircraftClass,
   prefetchedRag?: { ragContext: string },
-  rating: Rating = 'private'
+  rating: Rating = 'private',
+  studyMode?: string
 ): Promise<ExamTurn> {
-  const systemPrompt = buildSystemPrompt(task, difficulty, aircraftClass, rating);
+  // Load the best-matching prompt from DB (specificity: rating + studyMode + difficulty)
+  const { content: dbPromptContent } = await loadPromptFromDB(
+    supabase, 'examiner_system', rating, studyMode, difficulty
+  );
+
+  const systemPrompt = buildSystemPrompt(task, difficulty, aircraftClass, rating, dbPromptContent);
 
   // Use pre-fetched RAG or fetch fresh
   let ragContext = prefetchedRag?.ragContext ?? '';
@@ -225,9 +237,15 @@ export async function generateExaminerTurnStreaming(
   prefetchedRag?: { ragContext: string; ragImages?: ImageResult[] },
   assessmentPromise?: Promise<AssessmentData>,
   onComplete?: (fullText: string) => void,
-  rating: Rating = 'private'
+  rating: Rating = 'private',
+  studyMode?: string
 ): Promise<ReadableStream> {
-  const systemPrompt = buildSystemPrompt(task, difficulty, aircraftClass, rating);
+  // Load the best-matching prompt from DB (specificity: rating + studyMode + difficulty)
+  const { content: dbPromptContent } = await loadPromptFromDB(
+    supabase, 'examiner_system', rating, studyMode, difficulty
+  );
+
+  const systemPrompt = buildSystemPrompt(task, difficulty, aircraftClass, rating, dbPromptContent);
 
   // Use pre-fetched RAG or fetch fresh
   let ragContext = prefetchedRag?.ragContext ?? '';

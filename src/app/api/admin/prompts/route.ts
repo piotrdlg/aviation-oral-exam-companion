@@ -50,11 +50,12 @@ export async function POST(request: NextRequest) {
     const { user, serviceSupabase } = await requireAdmin(request);
 
     const body = await request.json();
-    const { prompt_key, content, rating, study_mode, change_summary } = body as {
+    const { prompt_key, content, rating, study_mode, difficulty, change_summary } = body as {
       prompt_key: string;
       content: string;
       rating?: string | null;
       study_mode?: string | null;
+      difficulty?: string | null;
       change_summary?: string | null;
     };
 
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find the highest version number for this key/rating/study_mode combo
+    // Find the highest version number for this key/rating/study_mode/difficulty combo
     let versionQuery = serviceSupabase
       .from('prompt_versions')
       .select('version')
@@ -85,6 +86,12 @@ export async function POST(request: NextRequest) {
       versionQuery = versionQuery.is('study_mode', null);
     }
 
+    if (difficulty) {
+      versionQuery = versionQuery.eq('difficulty', difficulty);
+    } else {
+      versionQuery = versionQuery.is('difficulty', null);
+    }
+
     const { data: latestVersion } = await versionQuery;
 
     const nextVersion = latestVersion && latestVersion.length > 0
@@ -97,6 +104,7 @@ export async function POST(request: NextRequest) {
         prompt_key,
         rating: rating || null,
         study_mode: study_mode || null,
+        difficulty: difficulty || null,
         version: nextVersion,
         content,
         status: 'draft',
@@ -115,7 +123,7 @@ export async function POST(request: NextRequest) {
       'prompt.create_draft',
       'prompt_version',
       newPrompt.id,
-      { prompt_key, version: nextVersion, rating, study_mode },
+      { prompt_key, version: nextVersion, rating, study_mode, difficulty },
       null,
       request
     );

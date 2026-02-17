@@ -239,7 +239,7 @@ export async function POST(request: NextRequest) {
 
         const rating = sessionConfig.rating || 'private';
         const turn = await generateExaminerTurn(
-          plannerResult.task, [], plannerResult.difficulty, sessionConfig.aircraftClass, undefined, rating
+          plannerResult.task, [], plannerResult.difficulty, sessionConfig.aircraftClass, undefined, rating, sessionConfig.studyMode
         );
 
         // Log LLM usage (non-blocking)
@@ -351,6 +351,10 @@ export async function POST(request: NextRequest) {
       // Step 3: Run assessment + examiner generation IN PARALLEL (key optimization)
       // The examiner's next question depends on history, NOT on the assessment result.
       const respondRating = sessionConfig?.rating || 'private';
+      // Resolve difficulty for prompt selection: 'mixed' → undefined (use generic prompt)
+      const respondDifficulty = sessionConfig?.difficulty && sessionConfig.difficulty !== 'mixed'
+        ? sessionConfig.difficulty as import('@/types/database').Difficulty
+        : undefined;
       if (stream) {
         // Streaming path: start assessment in background, stream examiner immediately
         const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating);
@@ -370,7 +374,7 @@ export async function POST(request: NextRequest) {
         };
 
         const readableStream = await generateExaminerTurnStreaming(
-          taskData, updatedHistory, undefined, undefined, rag, assessmentPromise, onStreamComplete, respondRating
+          taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessmentPromise, onStreamComplete, respondRating, sessionConfig?.studyMode
         );
 
         // DB writes happen inside the stream (assessment sent as final SSE event)
@@ -422,7 +426,7 @@ export async function POST(request: NextRequest) {
       // Non-streaming path: run both in parallel, wait for both
       const [assessment, turn] = await Promise.all([
         assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating),
-        generateExaminerTurn(taskData, updatedHistory, undefined, undefined, rag, respondRating),
+        generateExaminerTurn(taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass as import('@/types/database').AircraftClass | undefined, rag, respondRating, sessionConfig?.studyMode),
       ]);
 
       // Log LLM usage for both calls (non-blocking)
@@ -486,6 +490,26 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'next-task') {
+      // Load conversation history from DB for session continuity.
+      // This allows the DPE to reference earlier discussion across task transitions
+      // ("earlier you mentioned X, and now...") — just like a real checkride.
+      let sessionHistory: ExamMessage[] = [];
+      if (sessionId) {
+        const { data: transcripts } = await supabase
+          .from('session_transcripts')
+          .select('role, text')
+          .eq('session_id', sessionId)
+          .order('exchange_number', { ascending: true })
+          .order('created_at', { ascending: true });
+
+        if (transcripts) {
+          sessionHistory = transcripts.map(t => ({
+            role: t.role as 'examiner' | 'student',
+            text: t.text as string,
+          }));
+        }
+      }
+
       // If planner state provided, advance via planner
       if (clientPlannerState && sessionConfig) {
         const plannerResult = await advancePlanner(clientPlannerState, sessionConfig);
@@ -498,7 +522,7 @@ export async function POST(request: NextRequest) {
 
         const nextTaskRating = sessionConfig.rating || 'private';
         const turn = await generateExaminerTurn(
-          plannerResult.task, [], plannerResult.difficulty, sessionConfig.aircraftClass, undefined, nextTaskRating
+          plannerResult.task, sessionHistory, plannerResult.difficulty, sessionConfig.aircraftClass, undefined, nextTaskRating, sessionConfig.studyMode
         );
 
         // Log LLM usage (non-blocking)
@@ -539,7 +563,7 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      const turn = await generateExaminerTurn(task, []);
+      const turn = await generateExaminerTurn(task, sessionHistory);
 
       // Log LLM usage (non-blocking)
       logLlmUsage(user.id, turn.usage, tier, sessionId, { action: 'next-task', call: 'generateExaminerTurn' });

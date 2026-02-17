@@ -356,6 +356,7 @@ export interface PromptVersion {
   prompt_key: string;
   rating: string | null;
   study_mode: string | null;
+  difficulty: string | null;
   version: number;
   content: string;
   status: PromptStatus;

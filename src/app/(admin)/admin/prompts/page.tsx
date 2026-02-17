@@ -10,6 +10,19 @@ const PROMPT_KEYS = [
   { value: 'rag_query', label: 'RAG Query Prompt' },
 ];
 
+const DIFFICULTY_OPTIONS = [
+  { value: '', label: 'All Difficulties' },
+  { value: 'easy', label: 'Easy' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'hard', label: 'Hard' },
+];
+
+const STUDY_MODE_OPTIONS = [
+  { value: '', label: 'All Modes' },
+  { value: 'linear', label: 'Linear' },
+  { value: 'cross_acs', label: 'Cross-ACS' },
+];
+
 const STATUS_COLORS: Record<PromptStatus, string> = {
   draft: 'bg-gray-700 text-gray-300',
   published: 'bg-green-900/30 text-green-400',
@@ -28,6 +41,10 @@ export default function PromptsPage() {
   const [publishing, setPublishing] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [isNewDraft, setIsNewDraft] = useState(false);
+  const [filterDifficulty, setFilterDifficulty] = useState('');
+  const [filterStudyMode, setFilterStudyMode] = useState('');
+  const [draftDifficulty, setDraftDifficulty] = useState('');
+  const [draftStudyMode, setDraftStudyMode] = useState('');
 
   const fetchVersions = useCallback(async () => {
     setLoading(true);
@@ -93,6 +110,8 @@ export default function PromptsPage() {
           prompt_key: selectedKey,
           content: editorContent,
           change_summary: changeSummary || null,
+          difficulty: draftDifficulty || null,
+          study_mode: draftStudyMode || null,
         }),
       });
       if (!res.ok) {
@@ -169,25 +188,55 @@ export default function PromptsPage() {
         </div>
       )}
 
-      {/* Prompt Key Selector */}
-      <div className="mb-6">
-        <label className="block text-xs text-gray-500 uppercase tracking-wide mb-2">
-          Prompt Key
-        </label>
-        <select
-          value={selectedKey}
-          onChange={(e) => {
-            setSelectedKey(e.target.value);
-            setIsNewDraft(false);
-          }}
-          className="px-4 py-2.5 bg-gray-900 border border-gray-800 rounded-lg text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full max-w-xs"
-        >
-          {PROMPT_KEYS.map((pk) => (
-            <option key={pk.value} value={pk.value}>
-              {pk.label}
-            </option>
-          ))}
-        </select>
+      {/* Prompt Key Selector + Filters */}
+      <div className="mb-6 flex flex-wrap gap-4">
+        <div>
+          <label className="block text-xs text-gray-500 uppercase tracking-wide mb-2">
+            Prompt Key
+          </label>
+          <select
+            value={selectedKey}
+            onChange={(e) => {
+              setSelectedKey(e.target.value);
+              setIsNewDraft(false);
+            }}
+            className="px-4 py-2.5 bg-gray-900 border border-gray-800 rounded-lg text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {PROMPT_KEYS.map((pk) => (
+              <option key={pk.value} value={pk.value}>
+                {pk.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 uppercase tracking-wide mb-2">
+            Difficulty
+          </label>
+          <select
+            value={filterDifficulty}
+            onChange={(e) => setFilterDifficulty(e.target.value)}
+            className="px-4 py-2.5 bg-gray-900 border border-gray-800 rounded-lg text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {DIFFICULTY_OPTIONS.map((d) => (
+              <option key={d.value} value={d.value}>{d.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 uppercase tracking-wide mb-2">
+            Study Mode
+          </label>
+          <select
+            value={filterStudyMode}
+            onChange={(e) => setFilterStudyMode(e.target.value)}
+            className="px-4 py-2.5 bg-gray-900 border border-gray-800 rounded-lg text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {STUDY_MODE_OPTIONS.map((m) => (
+              <option key={m.value} value={m.value}>{m.label}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {error && (
@@ -220,7 +269,13 @@ export default function PromptsPage() {
             </div>
           ) : (
             <div className="space-y-1.5">
-              {versions.map((v) => {
+              {versions
+                .filter((v) => {
+                  if (filterDifficulty && v.difficulty !== filterDifficulty) return false;
+                  if (filterStudyMode && v.study_mode !== filterStudyMode) return false;
+                  return true;
+                })
+                .map((v) => {
                 const isSelected = !isNewDraft && selectedVersion?.id === v.id;
                 return (
                   <button
@@ -237,6 +292,28 @@ export default function PromptsPage() {
                       <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[v.status]}`}>
                         {v.status}
                       </span>
+                    </div>
+                    <div className="flex gap-1 mt-1 flex-wrap">
+                      {v.difficulty && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-900/30 text-purple-400">
+                          {v.difficulty}
+                        </span>
+                      )}
+                      {v.study_mode && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-900/30 text-cyan-400">
+                          {v.study_mode}
+                        </span>
+                      )}
+                      {v.rating && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-900/30 text-amber-400">
+                          {v.rating}
+                        </span>
+                      )}
+                      {!v.difficulty && !v.study_mode && !v.rating && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-500">
+                          generic
+                        </span>
+                      )}
                     </div>
                     {v.change_summary && (
                       <p className="text-xs text-gray-500 mt-1 line-clamp-2">{v.change_summary}</p>
@@ -299,9 +376,36 @@ export default function PromptsPage() {
             placeholder="Enter prompt content..."
           />
 
-          {/* Change Summary + Save (only for new drafts) */}
+          {/* Change Summary + Dimensions + Save (only for new drafts) */}
           {isNewDraft && (
             <div className="mt-3 space-y-3">
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-500 mb-1">Difficulty</label>
+                  <select
+                    value={draftDifficulty}
+                    onChange={(e) => setDraftDifficulty(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-900 border border-gray-800 rounded-lg text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Any (generic)</option>
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-500 mb-1">Study Mode</label>
+                  <select
+                    value={draftStudyMode}
+                    onChange={(e) => setDraftStudyMode(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-900 border border-gray-800 rounded-lg text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Any (generic)</option>
+                    <option value="linear">Linear</option>
+                    <option value="cross_acs">Cross-ACS</option>
+                  </select>
+                </div>
+              </div>
               <input
                 type="text"
                 value={changeSummary}
