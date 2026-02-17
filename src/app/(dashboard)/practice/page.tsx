@@ -8,6 +8,20 @@ import type { VoiceTier } from '@/lib/voice/types';
 import { useVoiceProvider } from '@/hooks/useVoiceProvider';
 import { ExamImages } from '@/components/ui/ExamImages';
 
+/**
+ * Retry a fetch call once on transient infrastructure errors (405, 502, 503, 504).
+ * These status codes on known-valid endpoints indicate Vercel edge/routing glitches,
+ * not application errors.
+ */
+async function fetchWithRetry(input: RequestInfo, init?: RequestInit): Promise<Response> {
+  const res = await fetch(input, init);
+  if ([405, 502, 503, 504].includes(res.status)) {
+    await new Promise((r) => setTimeout(r, 500));
+    return fetch(input, init);
+  }
+  return res;
+}
+
 interface Source {
   doc_abbreviation: string;
   heading: string | null;
@@ -248,7 +262,7 @@ export default function PracticePage() {
         setSessionId(newSessionId);
       }
 
-      const res = await fetch('/api/exam', {
+      const res = await fetchWithRetry('/api/exam', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -310,7 +324,7 @@ export default function PracticePage() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/exam', {
+      const res = await fetchWithRetry('/api/exam', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
