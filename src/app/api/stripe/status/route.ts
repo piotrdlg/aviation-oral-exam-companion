@@ -18,13 +18,19 @@ export async function GET() {
 
     const { data: profile } = await serviceSupabase
       .from('user_profiles')
-      .select('tier, subscription_status, stripe_customer_id')
+      .select('tier, subscription_status, stripe_customer_id, cancel_at, cancel_at_period_end, current_period_end')
       .eq('user_id', user.id)
       .single();
 
     // If webhook already processed, return current state
     if (profile?.subscription_status === 'active' || profile?.subscription_status === 'trialing') {
-      return NextResponse.json({ tier: profile.tier, status: profile.subscription_status });
+      return NextResponse.json({
+        tier: profile.tier,
+        status: profile.subscription_status,
+        cancelAt: profile.cancel_at,
+        cancelAtPeriodEnd: profile.cancel_at_period_end,
+        currentPeriodEnd: profile.current_period_end,
+      });
     }
 
     // Webhook may not have fired yet — check Stripe directly

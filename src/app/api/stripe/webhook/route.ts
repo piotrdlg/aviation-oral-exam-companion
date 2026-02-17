@@ -65,6 +65,9 @@ export async function POST(request: NextRequest) {
       case 'customer.subscription.deleted':
         await handleSubscriptionDeleted(event.data.object as Stripe.Subscription, event.id);
         break;
+      case 'invoice.paid':
+        await handleInvoicePaid(event.data.object as Stripe.Invoice, event.id);
+        break;
       case 'invoice.payment_failed':
         await handlePaymentFailed(event.data.object as Stripe.Invoice, event.id);
         break;
@@ -124,6 +127,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, eventId
       stripe_product_id: subscription.items.data[0]?.price.product as string,
       stripe_subscription_item_id: subscription.items.data[0]?.id,
       cancel_at_period_end: subscription.cancel_at_period_end,
+      cancel_at: subscription.cancel_at
+        ? new Date(subscription.cancel_at * 1000).toISOString()
+        : null,
       trial_end: subscription.trial_end
         ? new Date(subscription.trial_end * 1000).toISOString()
         : null,
@@ -133,6 +139,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, eventId
       current_period_end: subscription.items.data[0]
         ? new Date(subscription.items.data[0].current_period_end * 1000).toISOString()
         : null,
+      latest_invoice_status: null,
       last_webhook_event_id: eventId,
       last_webhook_event_ts: new Date().toISOString(),
     })
@@ -154,6 +161,9 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription, even
       tier,
       subscription_status: subscription.status,
       cancel_at_period_end: subscription.cancel_at_period_end,
+      cancel_at: subscription.cancel_at
+        ? new Date(subscription.cancel_at * 1000).toISOString()
+        : null,
       stripe_price_id: subscription.items.data[0]?.price.id,
       current_period_start: subscription.items.data[0]
         ? new Date(subscription.items.data[0].current_period_start * 1000).toISOString()
@@ -179,10 +189,40 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription, even
       tier: 'ground_school',
       subscription_status: 'canceled',
       cancel_at_period_end: false,
+      cancel_at: null,
       stripe_subscription_id: null,
       stripe_price_id: null,
       stripe_product_id: null,
       stripe_subscription_item_id: null,
+      latest_invoice_status: null,
+      last_webhook_event_id: eventId,
+      last_webhook_event_ts: eventTs,
+    })
+    .eq('stripe_customer_id', customerId)
+    .or(`last_webhook_event_ts.is.null,last_webhook_event_ts.lt.${eventTs}`);
+}
+
+async function handleInvoicePaid(invoice: Stripe.Invoice, eventId: string) {
+  const customerId = invoice.customer as string;
+  const eventTs = new Date().toISOString();
+
+  // Confirm payment succeeded — clears any previous 'failed' invoice status
+  // and ensures tier is active even if subscription.updated arrives late
+  const subscriptionId = invoice.parent?.subscription_details?.subscription as string | null;
+  if (!subscriptionId) return; // one-off invoice, not subscription-related
+
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+  const tier = subscription.status === 'active' || subscription.status === 'trialing'
+    ? 'dpe_live'
+    : 'ground_school';
+
+  await serviceSupabase
+    .from('user_profiles')
+    .update({
+      tier,
+      subscription_status: subscription.status,
+      latest_invoice_status: 'paid',
       last_webhook_event_id: eventId,
       last_webhook_event_ts: eventTs,
     })
