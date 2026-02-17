@@ -357,7 +357,7 @@ export async function POST(request: NextRequest) {
         : undefined;
       if (stream) {
         // Streaming path: start assessment in background, stream examiner immediately
-        const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating);
+        const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty);
 
         // onComplete callback: persist examiner transcript to DB after stream finishes
         const onStreamComplete = (fullText: string) => {
@@ -425,7 +425,7 @@ export async function POST(request: NextRequest) {
 
       // Non-streaming path: run both in parallel, wait for both
       const [assessment, turn] = await Promise.all([
-        assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating),
+        assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty),
         generateExaminerTurn(taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass as import('@/types/database').AircraftClass | undefined, rag, respondRating, sessionConfig?.studyMode),
       ]);
 

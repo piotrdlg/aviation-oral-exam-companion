@@ -327,6 +327,8 @@ export async function generateExaminerTurnStreaming(
 /**
  * Assess the student's latest answer using Claude.
  * Returns score, feedback, and which ACS elements were addressed.
+ * Loads the best-matching assessment prompt from prompt_versions DB table,
+ * mirroring how examiner prompts are loaded with specificity scoring.
  * Accepts optional pre-fetched RAG to avoid duplicate searches.
  */
 export async function assessAnswer(
@@ -335,7 +337,9 @@ export async function assessAnswer(
   studentAnswer: string,
   prefetchedRag?: { ragContext: string; ragChunks: ChunkSearchResult[] },
   questionImages?: ImageResult[],
-  rating: Rating = 'private'
+  rating: Rating = 'private',
+  studyMode?: string,
+  difficulty?: string
 ): Promise<AssessmentData> {
   // Build complete element list for the assessment prompt
   const allElements: string[] = [];
@@ -380,17 +384,25 @@ export async function assessAnswer(
     ? `\n\nFAA SOURCE MATERIAL (use to validate the answer):\n${ragContext}`
     : '';
 
-  const startMs = Date.now();
-  const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-5-20250929',
-    max_tokens: 400,
-    system: `You are assessing a ${rating === 'commercial' ? 'commercial pilot' : rating === 'instrument' ? 'instrument rating' : rating === 'atp' ? 'airline transport pilot' : 'private pilot'} applicant's oral exam answer. Rate it against the ACS standards.
+  // Load the best-matching assessment prompt from DB (specificity: rating + studyMode + difficulty)
+  const { content: dbPromptContent } = await loadPromptFromDB(
+    supabase, 'assessment_system', rating, studyMode, difficulty
+  );
 
+  const ratingLabel = rating === 'commercial' ? 'Commercial Pilot'
+    : rating === 'instrument' ? 'Instrument Rating'
+    : rating === 'atp' ? 'Airline Transport Pilot'
+    : 'Private Pilot';
+
+  // Dynamic section always appended (task context + JSON schema)
+  const dynamicSection = `
+EXAM CONTEXT:
+Certificate: ${ratingLabel}
 ACS Task: ${task.id} - ${task.task}
 All elements for this task:
 ${elementList}${ragSection}
 
-Respond in JSON only with this schema:
+OUTPUT FORMAT — Respond in JSON only with this exact schema:
 {
   "score": "satisfactory" | "unsatisfactory" | "partial",
   "feedback": "brief note on the answer quality",
@@ -399,7 +411,13 @@ Respond in JSON only with this schema:
   "primary_element": "the ACS element code (e.g., PA.I.A.K1) most directly addressed by this answer, or null",
   "mentioned_elements": ["other element codes touched on in the answer"],
   "source_summary": "1-3 sentences summarizing the key FAA references that apply to this question. Cite specific regulation/document names and section numbers (e.g., '14 CFR 61.23 requires...'). If no FAA source material was provided, set to null."
-}`,
+}`;
+
+  const startMs = Date.now();
+  const response = await anthropic.messages.create({
+    model: 'claude-sonnet-4-5-20250929',
+    max_tokens: 400,
+    system: dbPromptContent + dynamicSection,
     messages: [
       {
         role: 'user',

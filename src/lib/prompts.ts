@@ -7,7 +7,7 @@ export const IMMUTABLE_SAFETY_PREFIX = `IMPORTANT SAFETY INSTRUCTIONS — DO NOT
 
 export const FALLBACK_PROMPTS: Record<string, string> = {
   examiner_system: `${IMMUTABLE_SAFETY_PREFIX}\n\n[Fallback prompt — DB unavailable. Using built-in examiner prompt.]`,
-  assessment_system: `${IMMUTABLE_SAFETY_PREFIX}\n\n[Fallback prompt — DB unavailable. Using built-in assessment prompt.]`,
+  assessment_system: `${IMMUTABLE_SAFETY_PREFIX}\n\nYou are assessing a pilot applicant's oral exam answer. Rate it against the FAA Airman Certification Standards (ACS).\n\nSCORING CRITERIA:\n- "satisfactory": The applicant demonstrates understanding of the concept and provides a correct answer. Minor wording imprecisions are acceptable if the core knowledge is correct.\n- "partial": The applicant shows some understanding but the answer is incomplete or mixes correct and incorrect information.\n- "unsatisfactory": The applicant gives a fundamentally wrong answer or demonstrates a dangerous misconception.\n\nIMPORTANT: Score based on SUBSTANCE, not wording precision. If the applicant conveys the correct concept, that is satisfactory.`,
 };
 
 interface PromptData {
