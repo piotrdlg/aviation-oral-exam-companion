@@ -143,15 +143,132 @@ export async function GET(
       }
     }
 
+    // Build user object matching frontend's UserDetail interface
+    const profile = profileResult.data;
+    const authUser = authUserResult.data?.user;
+    const user_detail = {
+      id: profile.user_id,
+      email: authUser?.email || 'unknown',
+      tier: profile.tier,
+      account_status: profile.account_status,
+      subscription_status: profile.subscription_status,
+      status_reason: profile.status_reason || null,
+      auth_method: profile.auth_method || null,
+      last_login_at: profile.last_login_at || null,
+      created_at: profile.created_at,
+      stripe_customer_id: profile.stripe_customer_id || null,
+    };
+
+    // Build sessions matching frontend's UserSession interface
+    const sessions = (sessionsResult.data || []).map((s) => ({
+      id: s.id,
+      rating: s.rating || 'private',
+      status: s.status,
+      exchange_count: s.exchange_count || 0,
+      started_at: s.started_at,
+      ended_at: s.ended_at || null,
+      study_mode: s.study_mode || 'linear',
+      acs_tasks_covered: [], // Not fetched in this query for performance
+    }));
+
+    // Build scores array matching frontend's UserScore interface
+    // We need ACS element metadata to populate task_id and area
+    const elementCodes = Object.keys(elementScoreMap);
+    let elementsMap: Record<string, { task_id: string; area: string }> = {};
+    if (elementCodes.length > 0) {
+      const { data: elements } = await serviceSupabase
+        .from('acs_elements')
+        .select('code, task_id')
+        .in('code', elementCodes);
+
+      if (elements) {
+        // We also need task area info
+        const taskIds = [...new Set(elements.map((e) => e.task_id as string))];
+        const { data: tasks } = await serviceSupabase
+          .from('acs_tasks')
+          .select('id, area')
+          .in('id', taskIds);
+
+        const taskAreaMap: Record<string, string> = {};
+        if (tasks) {
+          for (const t of tasks) {
+            taskAreaMap[t.id as string] = t.area as string;
+          }
+        }
+
+        for (const e of elements) {
+          elementsMap[e.code as string] = {
+            task_id: e.task_id as string,
+            area: taskAreaMap[e.task_id as string] || 'Unknown',
+          };
+        }
+      }
+    }
+
+    const scores = Object.entries(elementScoreMap).map(([code, data]) => ({
+      element_code: code,
+      task_id: elementsMap[code]?.task_id || '',
+      area: elementsMap[code]?.area || 'Unknown',
+      total_attempts: data.total_attempts,
+      satisfactory_count: data.satisfactory,
+      partial_count: data.partial,
+      unsatisfactory_count: data.unsatisfactory,
+      latest_score: data.latest_score,
+    }));
+
+    // Build usage array matching frontend's UsageEntry interface
+    // Group by date
+    const usageByDate: Record<string, { llm_requests: number; tts_requests: number; stt_sessions: number; total_tokens: number }> = {};
+    if (usageSummaryResult.data) {
+      for (const log of usageSummaryResult.data) {
+        const date = (log.created_at as string).slice(0, 10); // YYYY-MM-DD
+        if (!usageByDate[date]) {
+          usageByDate[date] = { llm_requests: 0, tts_requests: 0, stt_sessions: 0, total_tokens: 0 };
+        }
+        const eventType = log.event_type as string;
+        if (eventType === 'llm_request') {
+          usageByDate[date].llm_requests += 1;
+          usageByDate[date].total_tokens += (log.quantity as number) || 0;
+        } else if (eventType === 'tts_request') {
+          usageByDate[date].tts_requests += 1;
+        } else if (eventType === 'stt_session' || eventType === 'token_issued') {
+          usageByDate[date].stt_sessions += 1;
+        }
+      }
+    }
+
+    const usage = Object.entries(usageByDate)
+      .sort(([a], [b]) => b.localeCompare(a))
+      .map(([date, data]) => ({ date, ...data }));
+
+    // Build notes matching frontend's AdminNoteEntry interface
+    // Look up admin emails
+    const adminIds = [...new Set((adminNotesResult.data || []).map((n) => n.admin_user_id as string))];
+    let adminEmailMap: Record<string, string> = {};
+    if (adminIds.length > 0) {
+      const { data: authUsers } = await serviceSupabase.auth.admin.listUsers({ perPage: 100 });
+      if (authUsers?.users) {
+        for (const u of authUsers.users) {
+          if (adminIds.includes(u.id)) {
+            adminEmailMap[u.id] = u.email || 'unknown';
+          }
+        }
+      }
+    }
+
+    const notes = (adminNotesResult.data || []).map((n) => ({
+      id: n.id as string,
+      admin_email: adminEmailMap[n.admin_user_id as string] || (n.admin_user_id as string).slice(0, 8) + '...',
+      note: n.note as string,
+      created_at: n.created_at as string,
+    }));
+
     return NextResponse.json({
-      profile: profileResult.data,
-      email: authUserResult.data?.user?.email || null,
-      auth_created_at: authUserResult.data?.user?.created_at || null,
-      last_sign_in_at: authUserResult.data?.user?.last_sign_in_at || null,
-      sessions: sessionsResult.data || [],
-      element_scores: elementScoreMap,
-      usage_summary_30d: usageSummary,
-      admin_notes: adminNotesResult.data || [],
+      user: user_detail,
+      sessions,
+      scores,
+      usage,
+      notes,
     });
   } catch (error) {
     return handleAdminError(error);

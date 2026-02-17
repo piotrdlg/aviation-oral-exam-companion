@@ -11,25 +11,27 @@ export async function GET(request: NextRequest) {
   try {
     const { serviceSupabase } = await requireAdmin(request);
 
-    const { data: prompts, error } = await serviceSupabase
+    const { searchParams } = new URL(request.url);
+    const promptKey = searchParams.get('prompt_key');
+
+    let query = serviceSupabase
       .from('prompt_versions')
       .select('*')
-      .order('prompt_key', { ascending: true })
       .order('version', { ascending: false });
+
+    if (promptKey) {
+      query = query.eq('prompt_key', promptKey);
+    } else {
+      query = query.order('prompt_key', { ascending: true });
+    }
+
+    const { data: prompts, error } = await query;
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Group by prompt_key
-    const grouped: Record<string, typeof prompts> = {};
-    for (const prompt of prompts || []) {
-      const key = prompt.prompt_key as string;
-      if (!grouped[key]) grouped[key] = [];
-      grouped[key].push(prompt);
-    }
-
-    return NextResponse.json({ prompts: grouped });
+    return NextResponse.json({ versions: prompts || [] });
   } catch (error) {
     return handleAdminError(error);
   }

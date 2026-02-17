@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ config: config || [] });
+    return NextResponse.json({ configs: config || [] });
   } catch (error) {
     return handleAdminError(error);
   }
@@ -39,57 +39,59 @@ export async function POST(request: NextRequest) {
     const { user, serviceSupabase } = await requireAdmin(request);
 
     const body = await request.json();
-    const { key, value, reason } = body as {
-      key: string;
-      value: Record<string, unknown>;
-      reason?: string;
-    };
 
-    if (!key || value === undefined || value === null) {
+    // Support both single-key and batch updates
+    const updates: Array<{ key: string; value: Record<string, unknown> }> = body.updates
+      ? (body.updates as Array<{ key: string; value: Record<string, unknown> }>)
+      : body.key
+        ? [{ key: body.key as string, value: body.value as Record<string, unknown> }]
+        : [];
+
+    if (updates.length === 0) {
       return NextResponse.json(
-        { error: 'Missing required fields: key, value' },
+        { error: 'Missing required fields: key+value or updates array' },
         { status: 400 }
       );
     }
 
-    // Fetch current value for audit logging
-    const { data: currentConfig } = await serviceSupabase
-      .from('system_config')
-      .select('value')
-      .eq('key', key)
-      .single();
+    const reason = (body.reason as string) || null;
+    const now = new Date().toISOString();
 
-    if (!currentConfig) {
-      return NextResponse.json({ error: `Config key not found: ${key}` }, { status: 404 });
+    for (const { key, value } of updates) {
+      if (!key || value === undefined || value === null) continue;
+
+      // Fetch current value for audit logging
+      const { data: currentConfig } = await serviceSupabase
+        .from('system_config')
+        .select('value')
+        .eq('key', key)
+        .maybeSingle();
+
+      if (currentConfig) {
+        // Update existing
+        await serviceSupabase
+          .from('system_config')
+          .update({ value, updated_at: now, updated_by: user.id })
+          .eq('key', key);
+      } else {
+        // Insert new
+        await serviceSupabase
+          .from('system_config')
+          .insert({ key, value, updated_at: now, updated_by: user.id });
+      }
+
+      await logAdminAction(
+        user.id,
+        'config.update',
+        'system_config',
+        key,
+        { previous_value: currentConfig?.value ?? null, new_value: value },
+        reason,
+        request
+      );
     }
 
-    // Update the config entry — set updated_at explicitly (no DB trigger)
-    const { data: updated, error } = await serviceSupabase
-      .from('system_config')
-      .update({
-        value,
-        updated_at: new Date().toISOString(),
-        updated_by: user.id,
-      })
-      .eq('key', key)
-      .select()
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    await logAdminAction(
-      user.id,
-      'config.update',
-      'system_config',
-      key,
-      { previous_value: currentConfig.value, new_value: value },
-      reason || null,
-      request
-    );
-
-    return NextResponse.json({ config: updated });
+    return NextResponse.json({ ok: true });
   } catch (error) {
     return handleAdminError(error);
   }
