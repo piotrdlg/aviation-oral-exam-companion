@@ -1,19 +1,16 @@
-import type { TTSProvider, TTSResult, TTSOptions } from '../types';
+import type { TTSProvider, TTSResult, TTSOptions, DeepgramTTSConfig } from '../types';
 
 const DEEPGRAM_TTS_URL = 'https://api.deepgram.com/v1/speak';
 
-// Male American voice — deep, authoritative tone suitable for DPE persona
-// Override via DEEPGRAM_VOICE_MODEL env var
-const DEFAULT_MODEL = 'aura-2-orion-en';
-const DEFAULT_SAMPLE_RATE = 48000;
+const DEFAULTS: DeepgramTTSConfig = {
+  model: 'aura-2-orion-en',
+  sample_rate: 48000,
+  encoding: 'linear16',
+};
 
 /**
  * Deepgram Aura-2 TTS provider.
- * Uses REST API with streaming response for low-latency audio delivery.
- * Output: linear16 PCM at 48kHz, mono.
- *
- * Note: Aura-2 does not expose speed/pitch/emotion controls.
- * Prosody is handled contextually by the model based on text content.
+ * Config priority: system_config > env var > hardcoded default.
  */
 export class DeepgramTTSProvider implements TTSProvider {
   readonly name = 'deepgram';
@@ -25,12 +22,15 @@ export class DeepgramTTSProvider implements TTSProvider {
       throw new Error('DEEPGRAM_API_KEY environment variable is not set');
     }
 
-    const model = process.env.DEEPGRAM_VOICE_MODEL || DEFAULT_MODEL;
-    const sampleRate = options?.sampleRate || DEFAULT_SAMPLE_RATE;
+    const cfg = options?.config as Partial<DeepgramTTSConfig> | undefined;
+
+    const model = cfg?.model || process.env.DEEPGRAM_VOICE_MODEL || DEFAULTS.model;
+    const encoding = cfg?.encoding || DEFAULTS.encoding;
+    const sampleRate = cfg?.sample_rate || options?.sampleRate || DEFAULTS.sample_rate;
 
     const url = new URL(DEEPGRAM_TTS_URL);
     url.searchParams.set('model', model);
-    url.searchParams.set('encoding', 'linear16');
+    url.searchParams.set('encoding', encoding);
     url.searchParams.set('sample_rate', String(sampleRate));
     url.searchParams.set('container', 'none');
 
@@ -60,8 +60,8 @@ export class DeepgramTTSProvider implements TTSProvider {
 
     return {
       audio: response.body as ReadableStream<Uint8Array>,
-      contentType: 'audio/l16',
-      encoding: 'linear16',
+      contentType: encoding === 'mp3' ? 'audio/mpeg' : 'audio/l16',
+      encoding: encoding as 'linear16' | 'mp3',
       sampleRate,
       channels: 1,
       ttfbMs,

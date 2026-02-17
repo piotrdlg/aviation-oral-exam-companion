@@ -1,34 +1,20 @@
-import type { TTSProvider, TTSResult, TTSOptions } from '../types';
+import type { TTSProvider, TTSResult, TTSOptions, CartesiaTTSConfig } from '../types';
 
 const CARTESIA_TTS_URL = 'https://api.cartesia.ai/tts/bytes';
-const DEFAULT_MODEL = 'sonic-3';
-const DEFAULT_SAMPLE_RATE = 48000;
 
-// "Classy British Man" — deep, authoritative, professional male voice
-// Well-suited for DPE persona: composed, deliberate, confident
-// Override via CARTESIA_VOICE_ID env var
-const DEFAULT_VOICE_ID = 'a167e0f3-df7e-4d52-a9c3-f949145571bd';
-
-// DPE persona generation config — slightly slower pace, confident emotion
-const DPE_GENERATION_CONFIG = {
-  speed: 0.95,    // slightly deliberate pacing — examiner is never rushed
+const DEFAULTS: CartesiaTTSConfig = {
+  model: 'sonic-3',
+  voice_id: 'a167e0f3-df7e-4d52-a9c3-f949145571bd',
+  voice_name: 'Classy British Man',
+  speed: 0.95,
   volume: 1.0,
-  emotion: 'confident' as const,
+  emotion: 'confident',
+  sample_rate: 48000,
 };
 
 /**
  * Cartesia Sonic 3 TTS provider.
- * Uses REST bytes endpoint with streaming response.
- * Output: pcm_f32le at 48kHz, mono.
- *
- * Sonic 3 features used for DPE persona:
- * - generation_config.speed: 0.95 (deliberate, examiner-like pace)
- * - generation_config.emotion: "confident" (professional authority)
- * - SSML: <spell> for aviation abbreviations, <break> for natural pauses
- *
- * Override voice via CARTESIA_VOICE_ID env var.
- * Override speed via CARTESIA_SPEED env var (0.6-1.5).
- * Override emotion via CARTESIA_EMOTION env var.
+ * Config priority: system_config > env var > hardcoded default.
  */
 export class CartesiaTTSProvider implements TTSProvider {
   readonly name = 'cartesia';
@@ -40,13 +26,14 @@ export class CartesiaTTSProvider implements TTSProvider {
       throw new Error('CARTESIA_API_KEY environment variable is not set');
     }
 
-    const voiceId = process.env.CARTESIA_VOICE_ID || DEFAULT_VOICE_ID;
-    const sampleRate = options?.sampleRate || DEFAULT_SAMPLE_RATE;
+    const cfg = options?.config as Partial<CartesiaTTSConfig> | undefined;
 
-    const speed = process.env.CARTESIA_SPEED
-      ? parseFloat(process.env.CARTESIA_SPEED)
-      : DPE_GENERATION_CONFIG.speed;
-    const emotion = process.env.CARTESIA_EMOTION || DPE_GENERATION_CONFIG.emotion;
+    const model = cfg?.model || DEFAULTS.model;
+    const voiceId = cfg?.voice_id || process.env.CARTESIA_VOICE_ID || DEFAULTS.voice_id;
+    const speed = cfg?.speed ?? (process.env.CARTESIA_SPEED ? parseFloat(process.env.CARTESIA_SPEED) : DEFAULTS.speed);
+    const volume = cfg?.volume ?? DEFAULTS.volume;
+    const emotion = cfg?.emotion || process.env.CARTESIA_EMOTION || DEFAULTS.emotion;
+    const sampleRate = cfg?.sample_rate || options?.sampleRate || DEFAULTS.sample_rate;
 
     const start = Date.now();
 
@@ -59,7 +46,7 @@ export class CartesiaTTSProvider implements TTSProvider {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model_id: DEFAULT_MODEL,
+        model_id: model,
         transcript: text,
         voice: {
           mode: 'id',
@@ -72,7 +59,7 @@ export class CartesiaTTSProvider implements TTSProvider {
         },
         generation_config: {
           speed,
-          volume: DPE_GENERATION_CONFIG.volume,
+          volume,
           emotion,
         },
       }),

@@ -75,9 +75,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create provider for user's tier
+    // Create provider for user's tier, pass system_config TTS settings
     const provider = await createTTSProvider(tier);
-    const result = await provider.synthesize(truncated);
+    const ttsConfigKey = `tts.${provider.name}`;
+    const ttsConfig = config[ttsConfigKey] as Record<string, unknown> | undefined;
+    const result = await provider.synthesize(truncated, { config: ttsConfig });
 
     // Log usage (non-blocking)
     serviceSupabase
