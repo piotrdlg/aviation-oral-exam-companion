@@ -255,6 +255,17 @@ export async function POST(request: NextRequest) {
           });
         }
 
+        // Persist planner state + session config to metadata for resume (non-blocking)
+        if (sessionId) {
+          serviceSupabase
+            .from('exam_sessions')
+            .update({ metadata: { plannerState: plannerResult.plannerState, sessionConfig } })
+            .eq('id', sessionId)
+            .then(({ error: metaErr }) => {
+              if (metaErr) console.error('Planner state persist error:', metaErr.message);
+            });
+        }
+
         return NextResponse.json({
           taskId: plannerResult.task.id,
           taskData: plannerResult.task,
@@ -539,6 +550,17 @@ export async function POST(request: NextRequest) {
             role: 'examiner',
             text: turn.examinerMessage,
           });
+        }
+
+        // Persist updated planner state to metadata for resume (non-blocking)
+        if (sessionId) {
+          serviceSupabase
+            .from('exam_sessions')
+            .update({ metadata: { plannerState: plannerResult.plannerState, sessionConfig } })
+            .eq('id', sessionId)
+            .then(({ error: metaErr }) => {
+              if (metaErr) console.error('Planner state persist error:', metaErr.message);
+            });
         }
 
         return NextResponse.json({

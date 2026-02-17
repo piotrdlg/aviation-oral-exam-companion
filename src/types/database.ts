@@ -191,6 +191,7 @@ export interface ElementScore {
   area: string;
   element_type: ElementType;
   difficulty_default: Difficulty;
+  description: string;
   total_attempts: number;
   satisfactory_count: number;
   partial_count: number;

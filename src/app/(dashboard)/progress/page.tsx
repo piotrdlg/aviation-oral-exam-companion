@@ -55,9 +55,15 @@ export default function ProgressPage() {
   const [view, setView] = useState<'overview' | 'treemap'>('overview');
   const [selectedClass, setSelectedClass] = useState<AircraftClass>('ASEL');
   const [selectedRating, setSelectedRating] = useState<Rating>('private');
+  // Session-scoped treemap: null = "All Sessions (Lifetime)"
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  const [sessionScores, setSessionScores] = useState<ElementScore[]>([]);
+  const [sessionScoresLoading, setSessionScoresLoading] = useState(false);
 
   useEffect(() => {
     setLoading(true);
+    setSelectedSessionId(null);
+    setSessionScores([]);
     Promise.all([
       fetch('/api/session').then((res) => res.json()),
       fetch(`/api/session?action=element-scores&rating=${selectedRating}`).then((res) => res.json()).catch(() => ({ scores: [] })),
@@ -78,6 +84,27 @@ export default function ProgressPage() {
     [sessions, selectedRating]
   );
 
+  // Auto-select latest session when sessions load
+  useEffect(() => {
+    if (filteredSessions.length > 0 && selectedSessionId === null) {
+      setSelectedSessionId(filteredSessions[0].id);
+    }
+  }, [filteredSessions, selectedSessionId]);
+
+  // Fetch session-specific scores when selectedSessionId changes
+  useEffect(() => {
+    if (!selectedSessionId) {
+      setSessionScores([]);
+      return;
+    }
+    setSessionScoresLoading(true);
+    fetch(`/api/session?action=session-element-scores&sessionId=${selectedSessionId}`)
+      .then((res) => res.json())
+      .then((data) => setSessionScores(data.scores || []))
+      .catch(() => setSessionScores([]))
+      .finally(() => setSessionScoresLoading(false));
+  }, [selectedSessionId]);
+
   // Build set of task IDs applicable to the selected class
   const classTaskIds = useMemo(() => {
     const ids = new Set<string>();
@@ -89,11 +116,20 @@ export default function ProgressPage() {
     return ids;
   }, [tasks, selectedClass]);
 
-  // Filter element scores by class
+  // Filter element scores by class (lifetime)
   const filteredScores = useMemo(
     () => elementScores.filter((s) => classTaskIds.has(s.task_id)),
     [elementScores, classTaskIds]
   );
+
+  // Filter session-scoped scores by class
+  const filteredSessionScores = useMemo(
+    () => sessionScores.filter((s) => classTaskIds.has(s.task_id)),
+    [sessionScores, classTaskIds]
+  );
+
+  // Choose which scores to display in the treemap
+  const treemapScores = selectedSessionId ? filteredSessionScores : filteredScores;
 
   const totalSessions = filteredSessions.length;
   const completedSessions = filteredSessions.filter((s) => s.status === 'completed').length;
@@ -195,10 +231,35 @@ export default function ProgressPage() {
           {view === 'treemap' ? (
             /* Treemap + Weak Areas View */
             <div className="space-y-4">
-              <AcsCoverageTreemap scores={filteredScores} />
+              {/* Session selector */}
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-gray-400">Session:</label>
+                <select
+                  value={selectedSessionId || ''}
+                  onChange={(e) => setSelectedSessionId(e.target.value || null)}
+                  className="bg-gray-800 border border-gray-700 rounded-lg text-xs text-gray-300 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="">All Sessions (Lifetime)</option>
+                  {filteredSessions.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {new Date(s.started_at).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      })}
+                      {' '}({s.exchange_count || 0} exchanges{s.status !== 'completed' ? ` · ${s.status}` : ''})
+                    </option>
+                  ))}
+                </select>
+                {sessionScoresLoading && (
+                  <span className="text-xs text-gray-500">Loading...</span>
+                )}
+              </div>
+              <AcsCoverageTreemap scores={treemapScores} />
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <WeakAreas scores={filteredScores} />
-                <StudyRecommendations scores={filteredScores} />
+                <WeakAreas scores={treemapScores} />
+                <StudyRecommendations scores={treemapScores} />
               </div>
             </div>
           ) : (

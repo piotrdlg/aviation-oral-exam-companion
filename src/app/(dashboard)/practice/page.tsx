@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import SessionConfig, { type SessionConfigData } from './components/SessionConfig';
-import type { PlannerState, SessionConfig as SessionConfigType } from '@/types/database';
+import type { PlannerState, SessionConfig as SessionConfigType, Rating } from '@/types/database';
 import type { VoiceTier } from '@/lib/voice/types';
 import { useVoiceProvider } from '@/hooks/useVoiceProvider';
 import { ExamImages } from '@/components/ui/ExamImages';
@@ -97,6 +97,17 @@ export default function PracticePage() {
   const [reportSubmitting, setReportSubmitting] = useState(false);
   // Session paused notification toast (Task 30)
   const [pausedSessionToast, setPausedSessionToast] = useState(false);
+  // Resumable session (active/paused with planner state in metadata)
+  const [resumableSession, setResumableSession] = useState<{
+    id: string;
+    rating: Rating;
+    exchange_count: number;
+    started_at: string;
+    study_mode: string;
+    difficulty_preference: string;
+    aircraft_class: string;
+    metadata: Record<string, unknown>;
+  } | null>(null);
   // Track per-task assessment scores (ref avoids stale closures in fire-and-forget fetches)
   const taskScoresRef = useRef<Record<string, { score: 'satisfactory' | 'unsatisfactory' | 'partial'; attempts: number }>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -130,6 +141,22 @@ export default function PracticePage() {
         }
       })
       .catch(() => {}); // Fallback to checkride_prep
+  }, []);
+
+  // Check for a resumable session on mount
+  useEffect(() => {
+    fetch('/api/session?action=get-resumable')
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data?.session) {
+          const meta = data.session.metadata as Record<string, unknown> | null;
+          // Only show resume if planner state exists in metadata
+          if (meta?.plannerState && meta?.sessionConfig) {
+            setResumableSession(data.session);
+          }
+        }
+      })
+      .catch(() => {});
   }, []);
 
   // Post-checkout entitlement sync (Task 36)
@@ -217,6 +244,16 @@ export default function PracticePage() {
   }, [voice, flushReveal]);
 
   async function startSession(configData: SessionConfigData) {
+    // If there's a resumable session, mark it completed before starting fresh
+    if (resumableSession) {
+      fetch('/api/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update', sessionId: resumableSession.id, status: 'completed' }),
+      }).catch(() => {});
+      setResumableSession(null);
+    }
+
     setSessionActive(true);
     setLoading(true);
     setError(null);
@@ -497,6 +534,8 @@ export default function PracticePage() {
                 status: s.score,
                 attempts: s.attempts,
               })),
+              planner_state: plannerState,
+              session_config: sessionConfig,
             }),
           }).catch(() => {});
         }
@@ -570,6 +609,8 @@ export default function PracticePage() {
                 status: s.score,
                 attempts: s.attempts,
               })),
+              planner_state: plannerState,
+              session_config: sessionConfig,
             }),
           }).catch(() => {});
         }
@@ -627,6 +668,72 @@ export default function PracticePage() {
     taskScoresRef.current = {};
   }
 
+  async function resumeSession(session: NonNullable<typeof resumableSession>) {
+    const metadata = session.metadata as {
+      plannerState?: PlannerState;
+      sessionConfig?: SessionConfigType;
+    };
+    if (!metadata.plannerState || !metadata.sessionConfig) return;
+
+    setSessionActive(true);
+    setLoading(true);
+    setError(null);
+    setSessionId(session.id);
+    setSessionConfig(metadata.sessionConfig);
+    setPlannerState(metadata.plannerState);
+    setExchangeCount(session.exchange_count || 0);
+    setResumableSession(null);
+    taskScoresRef.current = {};
+
+    try {
+      // Mark session as active (in case it was paused)
+      await fetch('/api/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update', sessionId: session.id, status: 'active' }),
+      });
+
+      // Load conversation history from transcripts
+      const transcriptRes = await fetch(`/api/session?action=transcripts&sessionId=${session.id}`);
+      const transcriptData = await transcriptRes.json();
+
+      const loadedMessages: Message[] = (transcriptData.transcripts || []).map((t: { role: string; text: string; assessment?: Assessment }) => ({
+        role: t.role as 'examiner' | 'student',
+        text: t.text,
+        assessment: t.assessment || undefined,
+      }));
+      setMessages(loadedMessages);
+
+      // Advance planner to get next element + examiner question
+      const res = await fetchWithRetry('/api/exam', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'next-task',
+          sessionId: session.id,
+          sessionConfig: metadata.sessionConfig,
+          plannerState: metadata.plannerState,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to resume session');
+
+      if (data.sessionComplete) {
+        setMessages((prev) => [...prev, { role: 'examiner', text: data.examinerMessage }]);
+      } else {
+        setTaskData(data.taskData);
+        if (data.elementCode) setCurrentElement(data.elementCode);
+        if (data.plannerState) setPlannerState(data.plannerState);
+        setMessages((prev) => [...prev, { role: 'examiner', text: data.examinerMessage }]);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to resume session');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   if (!sessionActive) {
     return (
       <div className="max-w-2xl mx-auto">
@@ -661,6 +768,52 @@ export default function PracticePage() {
           flight instructor (CFI) or an actual DPE checkride. Always verify information against
           current FAA publications.
         </div>
+
+        {/* Resume previous session card */}
+        {resumableSession && (
+          <div className="bg-blue-900/20 border border-blue-800/50 rounded-xl p-4 mb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-medium text-blue-300">Continue Previous Session</h3>
+                <p className="text-xs text-gray-400 mt-1">
+                  {new Date(resumableSession.started_at).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                  })}
+                  {' '}&middot; {resumableSession.exchange_count || 0} exchanges
+                  {' '}&middot; {resumableSession.rating.toUpperCase()}
+                  {resumableSession.aircraft_class ? ` · ${resumableSession.aircraft_class}` : ''}
+                  {' '}&middot; {resumableSession.study_mode === 'linear' ? 'Linear' : resumableSession.study_mode === 'cross_acs' ? 'Cross-ACS' : 'Weak Areas'}
+                  {' '}&middot; {resumableSession.difficulty_preference}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => resumeSession(resumableSession)}
+                  disabled={loading}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  Continue
+                </button>
+                <button
+                  onClick={async () => {
+                    await fetch('/api/session', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ action: 'update', sessionId: resumableSession.id, status: 'completed' }),
+                    });
+                    setResumableSession(null);
+                  }}
+                  className="px-3 py-2 text-gray-400 hover:text-gray-300 text-sm transition-colors"
+                >
+                  Start New
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <SessionConfig onStart={startSession} loading={loading} />
 

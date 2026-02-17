@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { ResponsiveTreeMap } from '@nivo/treemap';
+import type { ComputedNode } from '@nivo/treemap';
 import type { ElementScore } from '@/types/database';
 
 interface Props {
@@ -15,6 +16,11 @@ interface TreeNode {
   value?: number;
   color?: string;
   elementCode?: string;
+  description?: string;
+  taskName?: string;
+  latestScore?: string | null;
+  totalAttempts?: number;
+  elementType?: string;
 }
 
 function getStatusColor(score: ElementScore): string {
@@ -62,10 +68,15 @@ function buildTreeData(scores: ElementScore[]): TreeNode {
         value: 1,
         color: getStatusColor(el),
         elementCode: el.element_code,
+        description: el.description,
+        taskName: `${area} > ${taskId.replace(/^(PA|CA|IR)\./, '')}`,
+        latestScore: el.latest_score,
+        totalAttempts: el.total_attempts,
+        elementType: el.element_type,
       }));
 
       taskChildren.push({
-        name: taskId.replace('PA.', ''),
+        name: taskId.replace(/^(PA|CA|IR)\./, ''),
         children: elementChildren,
       });
     }
@@ -80,6 +91,56 @@ function buildTreeData(scores: ElementScore[]): TreeNode {
     name: 'ACS',
     children,
   };
+}
+
+const SCORE_STYLES: Record<string, { label: string; bg: string; text: string }> = {
+  satisfactory: { label: 'Satisfactory', bg: 'bg-green-900/40', text: 'text-green-400' },
+  partial: { label: 'Partial', bg: 'bg-yellow-900/40', text: 'text-yellow-300' },
+  unsatisfactory: { label: 'Unsatisfactory', bg: 'bg-red-900/40', text: 'text-red-400' },
+};
+
+const TYPE_LABELS: Record<string, string> = {
+  knowledge: 'Knowledge',
+  risk: 'Risk Management',
+  skill: 'Skill',
+};
+
+function TreemapTooltip({ node }: { node: ComputedNode<TreeNode> }) {
+  const { data } = node;
+  if (!data.elementCode) return null;
+
+  const scoreStyle = data.latestScore ? SCORE_STYLES[data.latestScore] : null;
+
+  return (
+    <div className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 max-w-xs shadow-lg">
+      <div className="flex items-center gap-2 mb-1">
+        <span className="text-xs font-mono text-gray-400">{data.elementCode}</span>
+        {data.elementType && (
+          <span className="text-xs text-gray-500">{TYPE_LABELS[data.elementType] || data.elementType}</span>
+        )}
+      </div>
+      {data.taskName && (
+        <p className="text-xs text-gray-400 mb-1">{data.taskName}</p>
+      )}
+      {data.description && (
+        <p className="text-sm text-gray-200 mb-1.5">{data.description}</p>
+      )}
+      <div className="flex items-center gap-2">
+        {scoreStyle ? (
+          <span className={`text-xs px-1.5 py-0.5 rounded ${scoreStyle.bg} ${scoreStyle.text}`}>
+            {scoreStyle.label}
+          </span>
+        ) : (
+          <span className="text-xs text-gray-500">Not attempted</span>
+        )}
+        {(data.totalAttempts ?? 0) > 0 && (
+          <span className="text-xs text-gray-500">
+            {data.totalAttempts} attempt{data.totalAttempts === 1 ? '' : 's'}
+          </span>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function AcsCoverageTreemap({ scores, onElementClick }: Props) {
@@ -138,6 +199,7 @@ export default function AcsCoverageTreemap({ scores, onElementClick }: Props) {
           labelTextColor="rgba(255, 255, 255, 0.8)"
           parentLabelSize={14}
           parentLabelTextColor="rgba(255, 255, 255, 0.5)"
+          tooltip={TreemapTooltip}
           onClick={(node) => {
             const data = node.data as TreeNode;
             if (data.elementCode && onElementClick) {
