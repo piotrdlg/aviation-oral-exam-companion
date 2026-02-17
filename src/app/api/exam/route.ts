@@ -351,10 +351,8 @@ export async function POST(request: NextRequest) {
       // Step 3: Run assessment + examiner generation IN PARALLEL (key optimization)
       // The examiner's next question depends on history, NOT on the assessment result.
       const respondRating = sessionConfig?.rating || 'private';
-      // Resolve difficulty for prompt selection: 'mixed' → undefined (use generic prompt)
-      const respondDifficulty = sessionConfig?.difficulty && sessionConfig.difficulty !== 'mixed'
-        ? sessionConfig.difficulty as import('@/types/database').Difficulty
-        : undefined;
+      // Pass difficulty as-is (including 'mixed') for prompt selection
+      const respondDifficulty = sessionConfig?.difficulty || undefined;
       if (stream) {
         // Streaming path: start assessment in background, stream examiner immediately
         const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty);

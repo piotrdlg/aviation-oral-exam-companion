@@ -141,6 +141,7 @@ export function buildSystemPrompt(
     ? `\nDIFFICULTY LEVEL: ${targetDifficulty.toUpperCase()}
 ${targetDifficulty === 'easy' ? '- Ask straightforward recall/definition questions.' :
   targetDifficulty === 'medium' ? '- Ask application and scenario-based questions.' :
+  targetDifficulty === 'mixed' ? '- Vary difficulty naturally: mix recall, scenario-based, and challenging questions within the session.' :
   '- Ask complex edge cases, \"what if\" chains, and regulation nuances.'}`
     : '';
 

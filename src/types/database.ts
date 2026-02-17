@@ -11,9 +11,10 @@ export type AssessmentScore = 'satisfactory' | 'unsatisfactory' | 'partial';
 export type WeakAreaSeverity = 'critical' | 'moderate' | 'minor';
 export type Rating = 'private' | 'instrument' | 'commercial' | 'atp';
 export type ElementType = 'knowledge' | 'risk' | 'skill';
-export type Difficulty = 'easy' | 'medium' | 'hard';
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'mixed';
 export type StudyMode = 'linear' | 'cross_acs' | 'weak_areas';
-export type DifficultyPreference = Difficulty | 'mixed';
+/** @deprecated Use Difficulty directly — 'mixed' is now a first-class difficulty level */
+export type DifficultyPreference = Difficulty;
 export type DocumentType = 'handbook' | 'ac' | 'cfr' | 'aim' | 'other';
 export type TagType = 'attempt' | 'mention';
 export type AircraftClass = 'ASEL' | 'AMEL' | 'ASES' | 'AMES';

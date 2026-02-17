@@ -15,6 +15,7 @@ const DIFFICULTY_OPTIONS = [
   { value: 'easy', label: 'Easy' },
   { value: 'medium', label: 'Medium' },
   { value: 'hard', label: 'Hard' },
+  { value: 'mixed', label: 'Mixed' },
 ];
 
 const STUDY_MODE_OPTIONS = [
@@ -391,6 +392,7 @@ export default function PromptsPage() {
                     <option value="easy">Easy</option>
                     <option value="medium">Medium</option>
                     <option value="hard">Hard</option>
+                    <option value="mixed">Mixed</option>
                   </select>
                 </div>
                 <div className="flex-1">
