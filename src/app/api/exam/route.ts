@@ -542,7 +542,7 @@ export async function POST(request: NextRequest) {
           .select('role, text')
           .eq('session_id', sessionId)
           .order('exchange_number', { ascending: true })
-          .order('created_at', { ascending: true });
+          .order('timestamp', { ascending: true });
 
         if (transcripts) {
           sessionHistory = transcripts.map(t => ({

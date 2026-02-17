@@ -174,7 +174,7 @@ export async function GET(request: NextRequest) {
       .select('role, text, assessment')
       .eq('session_id', sessionId)
       .order('exchange_number')
-      .order('created_at');
+      .order('timestamp');
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
