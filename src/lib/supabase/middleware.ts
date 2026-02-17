@@ -63,9 +63,10 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // Redirect logged-in users away from auth pages
-  // Note: /signup removed — OTP login auto-creates accounts, no separate signup needed
-  const isAuthRoute = request.nextUrl.pathname === '/login';
+  // Redirect logged-in users away from auth pages to /practice
+  const isAuthRoute =
+    request.nextUrl.pathname === '/login' ||
+    request.nextUrl.pathname === '/signup';
 
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone();

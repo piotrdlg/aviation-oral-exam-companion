@@ -16,7 +16,7 @@ INSERT INTO system_config (key, value, description) VALUES
 
   ('tts.cartesia', '{
     "model": "sonic-3",
-    "voice_id": "a167e0f3-df7e-4d52-a9c3-f949145571bd",
+    "voice_id": "95856005-0332-41b0-935f-352e296aa0df",
     "voice_name": "Classy British Man",
     "speed": 0.95,
     "volume": 1.0,

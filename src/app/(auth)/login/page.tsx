@@ -2,10 +2,29 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import type { Provider } from '@supabase/supabase-js';
 
 type AuthStep = 'initial' | 'otp-sent' | 'verifying';
+
+/** Map URL error codes to user-friendly messages */
+function getErrorMessage(code: string | null, detail: string | null): string | null {
+  if (!code) return null;
+  switch (code) {
+    case 'oauth_error':
+      return detail || 'Sign-in with your provider failed. Please try again.';
+    case 'code_exchange_failed':
+      return 'Authentication failed. Please try signing in again.';
+    case 'verification_failed':
+      return 'Verification failed. The code may have expired — please request a new one.';
+    case 'no_auth_params':
+      return 'Something went wrong during sign-in. Please try again.';
+    case 'auth_callback_failed':
+      return 'Authentication failed. Please try again.';
+    default:
+      return 'An unexpected error occurred. Please try again.';
+  }
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -17,8 +36,28 @@ export default function LoginPage() {
   const [loadingVerify, setLoadingVerify] = useState(false);
   const [codeSentMessage, setCodeSentMessage] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Show callback errors from URL params
+  useEffect(() => {
+    const errorCode = searchParams.get('error');
+    const errorDetail = searchParams.get('message');
+    const msg = getErrorMessage(errorCode, errorDetail);
+    if (msg) {
+      setError(msg);
+      // Clean URL without triggering navigation
+      window.history.replaceState({}, '', '/login');
+    }
+  }, [searchParams]);
+
+  // Redirect if already authenticated (handles back-button after login)
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) router.replace('/practice');
+    });
+  }, [supabase, router]);
 
   // Focus first OTP input when step changes to otp-sent
   useEffect(() => {
@@ -205,7 +244,14 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4">
       <div className="w-full max-w-md p-8 bg-gray-900 rounded-xl border border-gray-800">
         <h1 className="text-2xl font-bold text-white mb-1">HeyDPE</h1>
-        <p className="text-gray-400 mb-8">Sign in to start practicing</p>
+        <p className="text-gray-400 mb-8">Sign in or create an account to start practicing</p>
+
+        {/* Error banner — shows callback failures and other errors */}
+        {error && step === 'initial' && (
+          <div className="mb-6 p-3 bg-red-950/50 border border-red-900/50 rounded-lg">
+            <p className="text-red-400 text-sm">{error}</p>
+          </div>
+        )}
 
         {/* OAuth buttons */}
         <div className="space-y-3">
@@ -253,8 +299,6 @@ export default function LoginPage() {
                 className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-
-            {error && <p className="text-red-400 text-sm">{error}</p>}
 
             <button
               type="submit"
@@ -334,7 +378,7 @@ export default function LoginPage() {
         )}
 
         <p className="mt-8 text-xs text-gray-600 text-center leading-relaxed">
-          By continuing, you agree to our terms of service. No password needed — we&apos;ll send you a one-time login code.
+          By continuing, you agree to our terms of service. No password needed — we&apos;ll send you a one-time login code, or sign in instantly with Google, Apple, or Microsoft.
         </p>
       </div>
     </div>
