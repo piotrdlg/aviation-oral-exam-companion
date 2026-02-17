@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const navItems = [
   { href: '/practice', label: 'Practice' },
@@ -19,6 +20,21 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    async function checkAdmin() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from('admin_users')
+        .select('user_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      setIsAdmin(!!data);
+    }
+    checkAdmin();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -48,6 +64,18 @@ export default function DashboardLayout({
                   {item.label}
                 </Link>
               ))}
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
+                    pathname.startsWith('/admin')
+                      ? 'bg-gray-800 text-white'
+                      : 'text-amber-400/80 hover:text-amber-300 hover:bg-gray-800/50'
+                  }`}
+                >
+                  Admin
+                </Link>
+              )}
             </div>
           </div>
           <button
