@@ -34,6 +34,10 @@ export function useDeepgramSTT(options: UseDeepgramSTTOptions = {}): UseDeepgram
   const streamRef = useRef<MediaStream | null>(null);
   const startTimeRef = useRef<number>(0);
   const sessionIdRef = useRef(options.sessionId);
+  // Track last finalized text to deduplicate Deepgram's duplicate is_final results.
+  // With interim_results + endpointing, Deepgram sends the same text twice:
+  // once as is_final:true and again as is_final:true + speech_final:true.
+  const lastFinalTextRef = useRef('');
 
   // Keep sessionId ref up to date
   useEffect(() => {
@@ -95,6 +99,7 @@ export function useDeepgramSTT(options: UseDeepgramSTTOptions = {}): UseDeepgram
       setError(null);
       setTranscript('');
       setInterimTranscript('');
+      lastFinalTextRef.current = '';
 
       // 1. Request microphone access
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -159,10 +164,12 @@ export function useDeepgramSTT(options: UseDeepgramSTTOptions = {}): UseDeepgram
             const transcriptText = alternative.transcript || '';
 
             if (data.is_final) {
-              if (transcriptText.trim()) {
+              const trimmed = transcriptText.trim();
+              if (trimmed && trimmed !== lastFinalTextRef.current) {
+                lastFinalTextRef.current = trimmed;
                 setTranscript(prev => {
                   const separator = prev ? ' ' : '';
-                  return prev + separator + transcriptText.trim();
+                  return prev + separator + trimmed;
                 });
               }
               setInterimTranscript('');
