@@ -75,7 +75,7 @@ export const TIER_FEATURES: Record<VoiceTier, TierFeatures> = {
   },
   dpe_live: {
     sttProvider: 'deepgram',
-    ttsProvider: 'cartesia',
+    ttsProvider: 'deepgram',
     supportsAllBrowsers: true,
     customVocabulary: true,
     maxSessionsPerMonth: Infinity,

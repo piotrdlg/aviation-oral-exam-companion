@@ -10,7 +10,7 @@ describe('getTTSProviderName', () => {
     expect(getTTSProviderName('checkride_prep')).toBe('deepgram');
   });
 
-  it('returns cartesia for dpe_live', () => {
-    expect(getTTSProviderName('dpe_live')).toBe('cartesia');
+  it('returns deepgram for dpe_live', () => {
+    expect(getTTSProviderName('dpe_live')).toBe('deepgram');
   });
 });
