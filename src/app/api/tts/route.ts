@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { text } = await request.json();
+    const { text, voice: voiceOverride } = await request.json();
     if (!text || typeof text !== 'string') {
       return NextResponse.json({ error: 'Missing text' }, { status: 400 });
     }
@@ -80,9 +80,18 @@ export async function POST(request: NextRequest) {
     const provider = await createTTSProvider(tier);
     const ttsConfigKey = `tts.${provider.name}`;
     const ttsConfig = config[ttsConfigKey] as Record<string, unknown> | undefined;
-    // Override with user's preferred voice if set (applies to Deepgram model selection)
-    const effectiveConfig = preferredVoice
-      ? { ...ttsConfig, model: preferredVoice }
+    // Voice priority: explicit override (preview) > user's saved preference > system default
+    // Validate override against admin-curated voice list
+    let activeVoice = preferredVoice;
+    if (voiceOverride && typeof voiceOverride === 'string') {
+      const voiceOptions = (config['voice.user_options'] as unknown as { model: string }[]) || [];
+      const validModels = voiceOptions.map((o) => o.model);
+      if (validModels.includes(voiceOverride)) {
+        activeVoice = voiceOverride;
+      }
+    }
+    const effectiveConfig = activeVoice
+      ? { ...ttsConfig, model: activeVoice }
       : ttsConfig;
     const result = await provider.synthesize(truncated, { config: effectiveConfig });
 

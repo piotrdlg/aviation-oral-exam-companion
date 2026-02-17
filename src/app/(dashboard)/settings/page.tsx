@@ -62,6 +62,8 @@ export default function SettingsPage() {
   const [tierLoading, setTierLoading] = useState(true);
   const [voiceSaving, setVoiceSaving] = useState(false);
   const [voiceMessage, setVoiceMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [previewingVoice, setPreviewingVoice] = useState<string | null>(null);
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Subscription state (Task 35)
   const [subInfo, setSubInfo] = useState<SubscriptionInfo | null>(null);
@@ -193,6 +195,66 @@ export default function SettingsPage() {
     }
   }
 
+  async function previewVoice(model: string) {
+    // Stop any currently playing preview
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+      previewAudioRef.current = null;
+    }
+
+    setPreviewingVoice(model);
+    try {
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: "Good morning. I'm your designated pilot examiner. Let's begin with the oral examination.",
+          voice: model,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || err.error || `HTTP ${res.status}`);
+      }
+
+      const encoding = res.headers.get('X-Audio-Encoding') || 'mp3';
+      const arrayBuffer = await res.arrayBuffer();
+
+      if (encoding === 'mp3') {
+        const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        previewAudioRef.current = audio;
+        audio.onended = () => { URL.revokeObjectURL(url); setPreviewingVoice(null); };
+        audio.onerror = () => { URL.revokeObjectURL(url); setPreviewingVoice(null); };
+        await audio.play();
+      } else {
+        // PCM: decode via AudioContext
+        const sampleRate = parseInt(res.headers.get('X-Audio-Sample-Rate') || '48000', 10);
+        const audioCtx = new AudioContext({ sampleRate });
+        let float32: Float32Array;
+        if (encoding === 'linear16') {
+          const int16 = new Int16Array(arrayBuffer);
+          float32 = new Float32Array(int16.length);
+          for (let i = 0; i < int16.length; i++) float32[i] = int16[i] / 32768;
+        } else {
+          float32 = new Float32Array(arrayBuffer);
+        }
+        const buffer = audioCtx.createBuffer(1, float32.length, sampleRate);
+        buffer.getChannelData(0).set(float32);
+        const source = audioCtx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioCtx.destination);
+        source.onended = () => { audioCtx.close(); setPreviewingVoice(null); };
+        source.start();
+      }
+    } catch (err) {
+      setVoiceMessage({ text: `Preview failed: ${err instanceof Error ? err.message : 'Unknown error'}`, type: 'error' });
+      setPreviewingVoice(null);
+    }
+  }
+
   // Load available audio input devices
   const loadDevices = useCallback(async () => {
     try {
@@ -227,6 +289,10 @@ export default function SettingsPage() {
         streamRef.current.getTracks().forEach((t) => t.stop());
       }
       cancelAnimationFrame(animRef.current);
+      if (previewAudioRef.current) {
+        previewAudioRef.current.pause();
+        previewAudioRef.current = null;
+      }
     };
   }, []);
 
@@ -656,29 +722,54 @@ export default function SettingsPage() {
               {tierInfo.voiceOptions.map((option) => {
                 const isActive = tierInfo.preferredVoice === option.model
                   || (!tierInfo.preferredVoice && option === tierInfo.voiceOptions[0]);
+                const isPreviewing = previewingVoice === option.model;
                 return (
-                  <button
+                  <div
                     key={option.model}
-                    onClick={() => switchVoice(option.model)}
-                    disabled={voiceSaving || isActive}
-                    className={`w-full text-left px-4 py-3 rounded-lg border transition-colors ${
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg border transition-colors ${
                       isActive
                         ? 'border-blue-500 bg-blue-950/40 ring-1 ring-blue-500/50'
-                        : 'border-gray-700 bg-gray-800 hover:border-gray-600 hover:bg-gray-750'
-                    } ${voiceSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        : 'border-gray-700 bg-gray-800'
+                    }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className={`text-sm font-medium ${isActive ? 'text-blue-400' : 'text-white'}`}>
-                        {option.label}
-                      </span>
-                      {isActive && (
-                        <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">
-                          Selected
-                        </span>
+                    <button
+                      onClick={() => isPreviewing ? (() => { previewAudioRef.current?.pause(); previewAudioRef.current = null; setPreviewingVoice(null); })() : previewVoice(option.model)}
+                      disabled={previewingVoice !== null && !isPreviewing}
+                      className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+                        isPreviewing
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+                      } disabled:opacity-40`}
+                      title={isPreviewing ? 'Stop preview' : 'Preview voice'}
+                    >
+                      {isPreviewing ? (
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                          <rect x="6" y="6" width="12" height="12" rx="1" />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
                       )}
-                    </div>
-                    <p className="text-xs text-gray-400 mt-1">Deepgram Aura-2 &middot; {option.model}</p>
-                  </button>
+                    </button>
+                    <button
+                      onClick={() => switchVoice(option.model)}
+                      disabled={voiceSaving || isActive}
+                      className="flex-1 text-left min-w-0"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className={`text-sm font-medium ${isActive ? 'text-blue-400' : 'text-white'}`}>
+                          {option.label}
+                        </span>
+                        {isActive && (
+                          <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">
+                            Selected
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-400 mt-1">Deepgram Aura-2 &middot; {option.model}</p>
+                    </button>
+                  </div>
                 );
               })}
             </div>
