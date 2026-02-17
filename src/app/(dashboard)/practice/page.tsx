@@ -330,6 +330,15 @@ export default function PracticePage() {
       }
       const examinerMsg = data.examinerMessage;
 
+      // Persist voiceEnabled to metadata for resume (non-blocking)
+      if (newSessionId) {
+        fetch('/api/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'update', sessionId: newSessionId, voice_enabled: configData.voiceEnabled }),
+        }).catch(() => {});
+      }
+
       if (configData.voiceEnabled) {
         // Voice ON: start with empty text, reveal when audio actually starts playing
         setMessages([{ role: 'examiner', text: '' }]);
@@ -536,6 +545,8 @@ export default function PracticePage() {
               })),
               planner_state: plannerState,
               session_config: sessionConfig,
+              task_data: taskData,
+              voice_enabled: voiceEnabled,
             }),
           }).catch(() => {});
         }
@@ -611,6 +622,8 @@ export default function PracticePage() {
               })),
               planner_state: plannerState,
               session_config: sessionConfig,
+              task_data: taskData,
+              voice_enabled: voiceEnabled,
             }),
           }).catch(() => {});
         }
@@ -672,8 +685,15 @@ export default function PracticePage() {
     const metadata = session.metadata as {
       plannerState?: PlannerState;
       sessionConfig?: SessionConfigType;
+      taskData?: TaskData;
+      voiceEnabled?: boolean;
     };
     if (!metadata.plannerState || !metadata.sessionConfig) return;
+
+    // Restore voice preference from metadata (default to false)
+    const resumeVoice = metadata.voiceEnabled ?? false;
+    setVoiceEnabled(resumeVoice);
+    voiceEnabledRef.current = resumeVoice;
 
     setSessionActive(true);
     setLoading(true);
@@ -702,30 +722,53 @@ export default function PracticePage() {
         text: t.text,
         assessment: t.assessment || undefined,
       }));
-      setMessages(loadedMessages);
 
-      // Advance planner to get next element + examiner question
-      const res = await fetchWithRetry('/api/exam', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'next-task',
-          sessionId: session.id,
-          sessionConfig: metadata.sessionConfig,
-          plannerState: metadata.plannerState,
-        }),
-      });
+      // Check if the last message is from the examiner (question pending, user hasn't answered)
+      const lastMessage = loadedMessages[loadedMessages.length - 1];
+      const examinerAskedLast = lastMessage?.role === 'examiner';
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to resume session');
-
-      if (data.sessionComplete) {
-        setMessages((prev) => [...prev, { role: 'examiner', text: data.examinerMessage }]);
+      if (examinerAskedLast && metadata.taskData) {
+        // Restore current state without advancing — the examiner's question is already in transcripts
+        setMessages(loadedMessages);
+        setTaskData(metadata.taskData);
+        // Derive current element from plannerState
+        const currentQueue = metadata.plannerState.queue;
+        const currentCursor = metadata.plannerState.cursor;
+        if (currentQueue[currentCursor]) {
+          setCurrentElement(currentQueue[currentCursor]);
+        }
       } else {
-        setTaskData(data.taskData);
-        if (data.elementCode) setCurrentElement(data.elementCode);
-        if (data.plannerState) setPlannerState(data.plannerState);
-        setMessages((prev) => [...prev, { role: 'examiner', text: data.examinerMessage }]);
+        // Student answered last (or no transcripts) — need to advance planner for next question
+        setMessages(loadedMessages);
+        const res = await fetchWithRetry('/api/exam', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'next-task',
+            sessionId: session.id,
+            sessionConfig: metadata.sessionConfig,
+            plannerState: metadata.plannerState,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to resume session');
+
+        if (data.sessionComplete) {
+          setMessages((prev) => [...prev, { role: 'examiner', text: data.examinerMessage }]);
+        } else {
+          setTaskData(data.taskData);
+          if (data.elementCode) setCurrentElement(data.elementCode);
+          if (data.plannerState) setPlannerState(data.plannerState);
+          const examinerMsg = data.examinerMessage;
+          if (resumeVoice) {
+            setMessages((prev) => [...prev, { role: 'examiner', text: '' }]);
+            pendingFullTextRef.current = examinerMsg;
+            speakText(examinerMsg);
+          } else {
+            setMessages((prev) => [...prev, { role: 'examiner', text: examinerMsg }]);
+          }
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to resume session');

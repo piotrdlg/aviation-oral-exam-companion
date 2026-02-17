@@ -255,11 +255,11 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        // Persist planner state + session config to metadata for resume (non-blocking)
+        // Persist planner state + session config + taskData to metadata for resume (non-blocking)
         if (sessionId) {
           serviceSupabase
             .from('exam_sessions')
-            .update({ metadata: { plannerState: plannerResult.plannerState, sessionConfig } })
+            .update({ metadata: { plannerState: plannerResult.plannerState, sessionConfig, taskData: plannerResult.task } })
             .eq('id', sessionId)
             .then(({ error: metaErr }) => {
               if (metaErr) console.error('Planner state persist error:', metaErr.message);
@@ -552,11 +552,11 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        // Persist updated planner state to metadata for resume (non-blocking)
+        // Persist updated planner state + taskData to metadata for resume (non-blocking)
         if (sessionId) {
           serviceSupabase
             .from('exam_sessions')
-            .update({ metadata: { plannerState: plannerResult.plannerState, sessionConfig } })
+            .update({ metadata: { plannerState: plannerResult.plannerState, sessionConfig, taskData: plannerResult.task } })
             .eq('id', sessionId)
             .then(({ error: metaErr }) => {
               if (metaErr) console.error('Planner state persist error:', metaErr.message);

@@ -36,15 +36,15 @@ export async function POST(request: NextRequest) {
   }
 
   if (action === 'update') {
-    const { sessionId, status, acs_tasks_covered, exchange_count, planner_state, session_config } = body;
+    const { sessionId, status, acs_tasks_covered, exchange_count, planner_state, session_config, task_data, voice_enabled } = body;
     const updateData: Record<string, unknown> = {};
     if (status) updateData.status = status;
     if (acs_tasks_covered) updateData.acs_tasks_covered = acs_tasks_covered;
     if (exchange_count !== undefined) updateData.exchange_count = exchange_count;
     if (status === 'completed') updateData.ended_at = new Date().toISOString();
 
-    // Persist planner state and session config in metadata for session resume
-    if (planner_state || session_config) {
+    // Persist planner state, session config, task data, and voice pref in metadata for session resume
+    if (planner_state || session_config || task_data || voice_enabled !== undefined) {
       const { data: existing } = await supabase
         .from('exam_sessions')
         .select('metadata')
@@ -57,6 +57,8 @@ export async function POST(request: NextRequest) {
         ...currentMetadata,
         ...(planner_state ? { plannerState: planner_state } : {}),
         ...(session_config ? { sessionConfig: session_config } : {}),
+        ...(task_data ? { taskData: task_data } : {}),
+        ...(voice_enabled !== undefined ? { voiceEnabled: voice_enabled } : {}),
       };
     }
 
