@@ -230,6 +230,6 @@ All endpoints return errors in this format:
 
 | Purpose | Model | Max Tokens | Notes |
 |---------|-------|-----------|-------|
-| Examiner persona | `claude-sonnet-4-5-20250929` | 500 | Generates questions and responses |
-| Answer assessment | `claude-sonnet-4-5-20250929` | 300 | Returns structured JSON score |
+| Examiner persona | `claude-sonnet-4-6` | 500 | Generates questions and responses |
+| Answer assessment | `claude-sonnet-4-6` | 300 | Returns structured JSON score |
 | Text-to-speech | `tts-1` (OpenAI) | N/A | Voice: `onyx`, format: MP3 |

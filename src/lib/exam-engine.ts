@@ -201,7 +201,7 @@ export async function generateExaminerTurn(
 
   const startMs = Date.now();
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-5-20250929',
+    model: 'claude-sonnet-4-6',
     max_tokens: 500,
     system: systemPrompt + ragSection,
     messages:
@@ -264,7 +264,7 @@ export async function generateExaminerTurnStreaming(
   }));
 
   const stream = await anthropic.messages.create({
-    model: 'claude-sonnet-4-5-20250929',
+    model: 'claude-sonnet-4-6',
     max_tokens: 500,
     system: systemPrompt + ragSection,
     stream: true,
@@ -415,7 +415,7 @@ OUTPUT FORMAT — Respond in JSON only with this exact schema:
 
   const startMs = Date.now();
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-5-20250929',
+    model: 'claude-sonnet-4-6',
     max_tokens: 400,
     system: dbPromptContent + dynamicSection,
     messages: [

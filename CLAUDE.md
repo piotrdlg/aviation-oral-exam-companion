@@ -23,7 +23,7 @@
 | Styling | Tailwind CSS v4 | Dark theme (gray-950 base) |
 | Database | Supabase (PostgreSQL) | pgvector, RLS, RPC functions |
 | Auth | Supabase Auth | Email/password, email confirmation |
-| AI Examiner | Claude Sonnet (`claude-sonnet-4-5-20250929`) | DPE persona + answer assessment |
+| AI Examiner | Claude Sonnet (`claude-sonnet-4-6`) | DPE persona + answer assessment |
 | TTS | OpenAI TTS (`tts-1`, voice: `onyx`) | Deep, authoritative DPE voice |
 | STT | Web Speech API (browser-native) | Chrome only, interim results |
 | Testing | Vitest | Unit tests for pure logic |

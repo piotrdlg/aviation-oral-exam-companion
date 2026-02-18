@@ -33,7 +33,7 @@ This document describes the complete technical architecture for a three-tier voi
 ### Tier 1: Ground School (Current Stack)
 
 **Tech Stack:**
-- LLM: Claude Sonnet 4.5 (`claude-sonnet-4-5-20250929`)
+- LLM: Claude Sonnet 4.6 (`claude-sonnet-4-6`)
 - TTS: OpenAI TTS (`tts-1`, voice `onyx`, MP3)
 - STT: Browser Web Speech API (Chrome-native)
 
@@ -55,7 +55,7 @@ This document describes the complete technical architecture for a three-tier voi
 ### Tier 2: Checkride Prep (Deepgram Upgrade)
 
 **Tech Stack:**
-- LLM: Claude Sonnet 4.5 (same as Tier 1)
+- LLM: Claude Sonnet 4.6 (same as Tier 1)
 - TTS: Deepgram Aura-2 (`aura-2-thalia-en`, REST streaming via server, linear16)
 - STT: Deepgram Nova-3 (client-side WebSocket via temporary token, interim results)
 
@@ -78,7 +78,7 @@ This document describes the complete technical architecture for a three-tier voi
 ### Tier 3: DPE Live (Cartesia + Deepgram)
 
 **Tech Stack:**
-- LLM: Claude Sonnet 4.5 (same)
+- LLM: Claude Sonnet 4.6 (same)
 - TTS: Cartesia Sonic-3 (server-side REST streaming, sub-90ms TTFB at origin, ~150ms with server hop)
 - STT: Deepgram Nova-3 (client-side WebSocket via temporary token, same as Tier 2)
 
