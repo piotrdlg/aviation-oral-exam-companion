@@ -344,12 +344,12 @@ export default function TTSConfigPage() {
   if (loading) {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-white mb-6">Voice / TTS Configuration</h1>
+        <h1 className="text-2xl font-bold text-c-text font-mono uppercase tracking-wider mb-6">Voice / TTS Configuration</h1>
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-gray-900 rounded-xl border border-gray-800 p-6 animate-pulse">
-              <div className="h-5 bg-gray-800 rounded w-48 mb-4" />
-              <div className="h-32 bg-gray-800 rounded" />
+            <div key={i} className="bezel rounded-lg border border-c-border p-6 animate-pulse">
+              <div className="h-5 bg-c-bezel rounded w-48 mb-4" />
+              <div className="h-32 bg-c-bezel rounded" />
             </div>
           ))}
         </div>
@@ -360,10 +360,10 @@ export default function TTSConfigPage() {
   if (error) {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-white mb-6">Voice / TTS Configuration</h1>
-        <div className="bg-red-900/20 border border-red-800/50 rounded-xl p-6 text-center">
+        <h1 className="text-2xl font-bold text-c-text font-mono uppercase tracking-wider mb-6">Voice / TTS Configuration</h1>
+        <div className="bg-c-red-dim/40 border border-red-800/50 rounded-lg p-6 text-center">
           <p className="text-red-300 mb-3">{error}</p>
-          <button onClick={fetchConfig} className="text-sm text-red-400 hover:text-red-300 underline">
+          <button onClick={fetchConfig} className="text-sm text-c-red hover:text-red-300 underline">
             Retry
           </button>
         </div>
@@ -374,14 +374,14 @@ export default function TTSConfigPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-white">Voice / TTS Configuration</h1>
+        <h1 className="text-2xl font-bold text-c-text font-mono uppercase tracking-wider">Voice / TTS Configuration</h1>
         <div className="flex items-center gap-3">
-          {saveSuccess && <span className="text-xs text-green-400">Saved successfully</span>}
-          {saveError && <span className="text-xs text-red-400">{saveError}</span>}
+          {saveSuccess && <span className="text-xs text-c-green">Saved successfully</span>}
+          {saveError && <span className="text-xs text-c-red">{saveError}</span>}
           <button
             onClick={saveAll}
             disabled={saving}
-            className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="px-4 py-2 text-sm rounded-lg bg-c-amber text-c-text font-mono uppercase hover:bg-c-amber/90 disabled:opacity-50 transition-colors"
           >
             {saving ? 'Saving...' : 'Save All Changes'}
           </button>
@@ -390,22 +390,22 @@ export default function TTSConfigPage() {
 
       <div className="space-y-6">
         {/* ─── User Voice Options (curated by admin) ─── */}
-        <section className="bg-gray-900 rounded-xl border border-blue-800/50 p-6">
+        <section className="bezel rounded-lg border border-c-amber/50 p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-sm font-medium text-blue-400 uppercase tracking-wide">
+              <h2 className="font-mono text-[10px] text-c-cyan uppercase tracking-wider">
                 User Voice Options
               </h2>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-xs text-c-dim mt-0.5">
                 Select up to 5 Deepgram voices that users can choose from in Settings. Minimum 1 required.
               </p>
             </div>
             <div className="flex items-center gap-3">
-              {voiceOptionsSaved && <span className="text-xs text-green-400">Saved</span>}
+              {voiceOptionsSaved && <span className="text-xs text-c-green">Saved</span>}
               <button
                 onClick={saveUserVoiceOptions}
                 disabled={voiceOptionsSaving || userVoiceOptions.length === 0}
-                className="px-3 py-1.5 text-xs rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                className="px-3 py-1.5 text-xs rounded-lg bg-c-amber text-c-text font-mono uppercase hover:bg-c-amber/90 disabled:opacity-50 transition-colors"
               >
                 {voiceOptionsSaving ? 'Saving...' : 'Save Voice Options'}
               </button>
@@ -421,11 +421,11 @@ export default function TTSConfigPage() {
                   onClick={() => toggleUserVoice(voice.value, voice.label)}
                   className={`text-left px-3 py-2 rounded-lg border text-xs transition-colors ${
                     isSelected
-                      ? 'border-blue-500 bg-blue-950/40 text-blue-300'
-                      : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
+                      ? 'border-c-amber bg-c-amber/10 text-c-amber'
+                      : 'border-c-border-hi bg-c-bezel text-c-muted hover:border-c-border-hi'
                   }`}
                 >
-                  <span className="mr-2">{isSelected ? '✓' : '○'}</span>
+                  <span className="mr-2">{isSelected ? '\u2713' : '\u25CB'}</span>
                   {voice.label}
                 </button>
               );
@@ -433,11 +433,11 @@ export default function TTSConfigPage() {
           </div>
 
           {userVoiceOptions.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-gray-800">
-              <p className="text-xs text-gray-500 mb-1">Currently curated ({userVoiceOptions.length}/5):</p>
+            <div className="mt-3 pt-3 border-t border-c-border">
+              <p className="text-xs text-c-dim mb-1">Currently curated ({userVoiceOptions.length}/5):</p>
               <div className="flex flex-wrap gap-1">
                 {userVoiceOptions.map((v) => (
-                  <span key={v.model} className="text-xs bg-blue-900/30 text-blue-300 px-2 py-0.5 rounded-full">
+                  <span key={v.model} className="text-xs bg-c-amber/20 text-c-amber px-2 py-0.5 rounded-full">
                     {v.label}
                   </span>
                 ))}
@@ -447,18 +447,18 @@ export default function TTSConfigPage() {
         </section>
 
         {/* ─── Tier 1: Ground School (OpenAI) ─── */}
-        <section className="bg-gray-900 rounded-xl border border-gray-800 p-6">
+        <section className="bezel rounded-lg border border-c-border p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide">
+              <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider">
                 Tier 1 — Ground School
               </h2>
-              <p className="text-xs text-gray-600 mt-0.5">OpenAI TTS</p>
+              <p className="text-xs text-c-dim mt-0.5">OpenAI TTS</p>
             </div>
             <button
               onClick={() => testVoice('openai')}
               disabled={testing !== null}
-              className="px-3 py-1.5 text-xs rounded-lg bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white disabled:opacity-50 transition-colors border border-gray-700"
+              className="px-3 py-1.5 text-xs rounded-lg bg-c-bezel text-c-text font-mono uppercase hover:bg-c-elevated hover:text-c-text disabled:opacity-50 transition-colors border border-c-border-hi"
             >
               {testing === 'openai' ? 'Playing...' : 'Test Voice'}
             </button>
@@ -488,18 +488,18 @@ export default function TTSConfigPage() {
         </section>
 
         {/* ─── Tier 2: Checkride Prep (Deepgram) ─── */}
-        <section className="bg-gray-900 rounded-xl border border-gray-800 p-6">
+        <section className="bezel rounded-lg border border-c-border p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide">
+              <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider">
                 Tier 2 — Checkride Prep
               </h2>
-              <p className="text-xs text-gray-600 mt-0.5">Deepgram Aura-2</p>
+              <p className="text-xs text-c-dim mt-0.5">Deepgram Aura-2</p>
             </div>
             <button
               onClick={() => testVoice('deepgram')}
               disabled={testing !== null}
-              className="px-3 py-1.5 text-xs rounded-lg bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white disabled:opacity-50 transition-colors border border-gray-700"
+              className="px-3 py-1.5 text-xs rounded-lg bg-c-bezel text-c-text font-mono uppercase hover:bg-c-elevated hover:text-c-text disabled:opacity-50 transition-colors border border-c-border-hi"
             >
               {testing === 'deepgram' ? 'Playing...' : 'Test Voice'}
             </button>
@@ -524,31 +524,31 @@ export default function TTSConfigPage() {
               onChange={(v) => updateDeepgram('sample_rate', Number(v))}
             />
           </div>
-          <p className="text-xs text-gray-600 mt-3">
+          <p className="text-xs text-c-dim mt-3">
             Deepgram Aura-2 does not support speed, pitch, or emotion controls. Prosody is handled automatically by the model.
           </p>
         </section>
 
         {/* ─── Tier 3: DPE Live (Cartesia) ─── */}
-        <section className="bg-gray-900 rounded-xl border border-gray-800 p-6">
+        <section className="bezel rounded-lg border border-c-border p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide">
+              <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider">
                 Tier 3 — DPE Live
               </h2>
-              <p className="text-xs text-gray-600 mt-0.5">Cartesia Sonic 3</p>
+              <p className="text-xs text-c-dim mt-0.5">Cartesia Sonic 3</p>
             </div>
             <button
               onClick={() => testVoice('cartesia')}
               disabled={testing !== null}
-              className="px-3 py-1.5 text-xs rounded-lg bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white disabled:opacity-50 transition-colors border border-gray-700"
+              className="px-3 py-1.5 text-xs rounded-lg bg-c-bezel text-c-text font-mono uppercase hover:bg-c-elevated hover:text-c-text disabled:opacity-50 transition-colors border border-c-border-hi"
             >
               {testing === 'cartesia' ? 'Playing...' : 'Test Voice'}
             </button>
           </div>
 
           <div className="mb-4">
-            <label className="block text-xs text-gray-500 mb-1.5">Voice</label>
+            <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-1.5">Voice</label>
             <select
               value={state.cartesia.voice_id}
               onChange={(e) => {
@@ -556,7 +556,7 @@ export default function TTSConfigPage() {
                 updateCartesia('voice_id', e.target.value);
                 if (voice) updateCartesia('voice_name', voice.label);
               }}
-              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+              className="w-full px-3 py-2 bg-c-bezel border border-c-border-hi rounded-lg text-sm text-c-text focus:outline-none focus:ring-2 focus:ring-c-amber appearance-none"
             >
               {Object.entries(
                 CARTESIA_VOICES.reduce<Record<string, typeof CARTESIA_VOICES>>((acc, v) => {
@@ -573,8 +573,8 @@ export default function TTSConfigPage() {
                 </optgroup>
               ))}
             </select>
-            <p className="text-xs text-gray-600 mt-1">
-              ID: <code className="text-gray-500">{state.cartesia.voice_id}</code>
+            <p className="text-xs text-c-dim mt-1">
+              ID: <code className="text-c-dim">{state.cartesia.voice_id}</code>
             </p>
           </div>
 
@@ -620,9 +620,9 @@ export default function TTSConfigPage() {
         </section>
 
         {/* ─── Test Phrase ─── */}
-        <section className="bg-gray-900/50 rounded-xl border border-gray-800/50 p-4">
-          <p className="text-xs text-gray-500 mb-1">Test phrase used by "Test Voice" buttons:</p>
-          <p className="text-sm text-gray-400 italic">&ldquo;{TEST_PHRASE}&rdquo;</p>
+        <section className="bg-c-panel/50 rounded-lg border border-c-border/50 p-4">
+          <p className="text-xs text-c-dim mb-1">Test phrase used by "Test Voice" buttons:</p>
+          <p className="text-sm text-c-muted italic">&ldquo;{TEST_PHRASE}&rdquo;</p>
         </section>
       </div>
     </div>
@@ -644,11 +644,11 @@ function SelectField({
 }) {
   return (
     <div>
-      <label className="block text-xs text-gray-500 mb-1.5">{label}</label>
+      <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-1.5">{label}</label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+        className="w-full px-3 py-2 bg-c-bezel border border-c-border-hi rounded-lg text-sm text-c-text focus:outline-none focus:ring-2 focus:ring-c-amber appearance-none"
       >
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>
@@ -677,7 +677,7 @@ function SliderField({
 }) {
   return (
     <div>
-      <label className="block text-xs text-gray-500 mb-1.5">{label}</label>
+      <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-1.5">{label}</label>
       <div className="flex items-center gap-3">
         <input
           type="range"
@@ -686,7 +686,7 @@ function SliderField({
           min={min}
           max={max}
           step={step}
-          className="flex-1 accent-blue-500"
+          className="flex-1 accent-c-amber"
         />
         <input
           type="number"
@@ -695,10 +695,10 @@ function SliderField({
           min={min}
           max={max}
           step={step}
-          className="w-20 px-2 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-20 px-2 py-1.5 bg-c-bezel border border-c-border-hi rounded-lg text-sm text-c-text text-center focus:outline-none focus:ring-2 focus:ring-c-amber"
         />
       </div>
-      <div className="flex justify-between text-xs text-gray-600 mt-0.5">
+      <div className="flex justify-between text-xs text-c-dim mt-0.5">
         <span>{min}</span>
         <span>{max}</span>
       </div>

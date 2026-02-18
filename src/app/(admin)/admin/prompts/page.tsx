@@ -25,9 +25,9 @@ const STUDY_MODE_OPTIONS = [
 ];
 
 const STATUS_COLORS: Record<PromptStatus, string> = {
-  draft: 'bg-gray-700 text-gray-300',
-  published: 'bg-green-900/30 text-green-400',
-  archived: 'bg-gray-800 text-gray-500',
+  draft: 'bg-c-elevated text-c-text',
+  published: 'bg-green-900/30 text-c-green',
+  archived: 'bg-c-bezel text-c-dim',
 };
 
 export default function PromptsPage() {
@@ -170,10 +170,10 @@ export default function PromptsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-white">Prompt Management</h1>
+        <h1 className="text-2xl font-bold text-c-text font-mono uppercase tracking-wider">Prompt Management</h1>
         <button
           onClick={startNewDraft}
-          className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 text-sm rounded-lg bg-c-amber text-c-text font-mono uppercase hover:bg-c-amber/90 transition-colors"
         >
           New Draft
         </button>
@@ -181,9 +181,9 @@ export default function PromptsPage() {
 
       {/* Action Error */}
       {actionError && (
-        <div className="bg-red-900/20 border border-red-800/50 rounded-lg p-3 mb-4 text-red-300 text-sm flex items-center justify-between">
+        <div className="bg-c-red-dim/40 border border-red-800/50 rounded-lg p-3 mb-4 text-red-300 text-sm flex items-center justify-between">
           <span>{actionError}</span>
-          <button onClick={() => setActionError(null)} className="text-red-400 hover:text-red-300 ml-3">
+          <button onClick={() => setActionError(null)} className="text-c-red hover:text-red-300 ml-3">
             &times;
           </button>
         </div>
@@ -192,7 +192,7 @@ export default function PromptsPage() {
       {/* Prompt Key Selector + Filters */}
       <div className="mb-6 flex flex-wrap gap-4">
         <div>
-          <label className="block text-xs text-gray-500 uppercase tracking-wide mb-2">
+          <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-2">
             Prompt Key
           </label>
           <select
@@ -201,7 +201,7 @@ export default function PromptsPage() {
               setSelectedKey(e.target.value);
               setIsNewDraft(false);
             }}
-            className="px-4 py-2.5 bg-gray-900 border border-gray-800 rounded-lg text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2.5 bg-c-panel border border-c-border rounded-lg text-sm text-c-text focus:outline-none focus:ring-2 focus:ring-c-amber"
           >
             {PROMPT_KEYS.map((pk) => (
               <option key={pk.value} value={pk.value}>
@@ -211,13 +211,13 @@ export default function PromptsPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-500 uppercase tracking-wide mb-2">
+          <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-2">
             Difficulty
           </label>
           <select
             value={filterDifficulty}
             onChange={(e) => setFilterDifficulty(e.target.value)}
-            className="px-4 py-2.5 bg-gray-900 border border-gray-800 rounded-lg text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2.5 bg-c-panel border border-c-border rounded-lg text-sm text-c-text focus:outline-none focus:ring-2 focus:ring-c-amber"
           >
             {DIFFICULTY_OPTIONS.map((d) => (
               <option key={d.value} value={d.value}>{d.label}</option>
@@ -225,13 +225,13 @@ export default function PromptsPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-500 uppercase tracking-wide mb-2">
+          <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-2">
             Study Mode
           </label>
           <select
             value={filterStudyMode}
             onChange={(e) => setFilterStudyMode(e.target.value)}
-            className="px-4 py-2.5 bg-gray-900 border border-gray-800 rounded-lg text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2.5 bg-c-panel border border-c-border rounded-lg text-sm text-c-text focus:outline-none focus:ring-2 focus:ring-c-amber"
           >
             {STUDY_MODE_OPTIONS.map((m) => (
               <option key={m.value} value={m.value}>{m.label}</option>
@@ -241,9 +241,9 @@ export default function PromptsPage() {
       </div>
 
       {error && (
-        <div className="bg-red-900/20 border border-red-800/50 rounded-xl p-4 mb-4">
+        <div className="bg-c-red-dim/40 border border-red-800/50 rounded-lg p-4 mb-4">
           <p className="text-red-300 text-sm">{error}</p>
-          <button onClick={fetchVersions} className="text-xs text-red-400 hover:text-red-300 underline mt-1">
+          <button onClick={fetchVersions} className="text-xs text-c-red hover:text-red-300 underline mt-1">
             Retry
           </button>
         </div>
@@ -252,21 +252,21 @@ export default function PromptsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Version List */}
         <div>
-          <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide mb-3">
+          <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-3">
             Versions
           </h2>
           {loading ? (
             <div className="space-y-2">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="bg-gray-900 rounded-lg border border-gray-800 p-3 animate-pulse">
-                  <div className="h-4 bg-gray-800 rounded w-20 mb-2" />
-                  <div className="h-3 bg-gray-800 rounded w-32" />
+                <div key={i} className="bezel rounded-lg border border-c-border p-3 animate-pulse">
+                  <div className="h-4 bg-c-bezel rounded w-20 mb-2" />
+                  <div className="h-3 bg-c-bezel rounded w-32" />
                 </div>
               ))}
             </div>
           ) : versions.length === 0 ? (
-            <div className="bg-gray-900 rounded-lg border border-gray-800 p-4 text-center">
-              <p className="text-gray-500 text-sm">No versions yet</p>
+            <div className="bezel rounded-lg border border-c-border p-4 text-center">
+              <p className="text-c-dim text-sm">No versions yet</p>
             </div>
           ) : (
             <div className="space-y-1.5">
@@ -284,12 +284,12 @@ export default function PromptsPage() {
                     onClick={() => selectVersion(v)}
                     className={`w-full text-left p-3 rounded-lg border transition-colors ${
                       isSelected
-                        ? 'bg-gray-800 border-blue-500/50'
-                        : 'bg-gray-900 border-gray-800 hover:bg-gray-800/50'
+                        ? 'bg-c-bezel border-c-amber/50'
+                        : 'bg-c-panel border-c-border hover:bg-c-bezel/50'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-300 font-medium">v{v.version}</span>
+                      <span className="text-sm text-c-text font-medium">v{v.version}</span>
                       <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[v.status]}`}>
                         {v.status}
                       </span>
@@ -306,20 +306,20 @@ export default function PromptsPage() {
                         </span>
                       )}
                       {v.rating && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-900/30 text-amber-400">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-900/30 text-c-amber">
                           {v.rating}
                         </span>
                       )}
                       {!v.difficulty && !v.study_mode && !v.rating && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-500">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-c-bezel text-c-dim">
                           generic
                         </span>
                       )}
                     </div>
                     {v.change_summary && (
-                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">{v.change_summary}</p>
+                      <p className="text-xs text-c-dim mt-1 line-clamp-2">{v.change_summary}</p>
                     )}
-                    <p className="text-xs text-gray-600 mt-1">
+                    <p className="text-xs text-c-dim mt-1">
                       {new Date(v.created_at).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
@@ -336,7 +336,7 @@ export default function PromptsPage() {
         {/* Editor */}
         <div className="lg:col-span-2">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide">
+            <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider">
               {isNewDraft
                 ? 'New Draft'
                 : selectedVersion
@@ -349,7 +349,7 @@ export default function PromptsPage() {
                 <button
                   onClick={() => publishVersion(selectedVersion.id)}
                   disabled={publishing}
-                  className="px-3 py-1.5 text-xs rounded-md bg-green-900/30 text-green-300 hover:bg-green-900/50 transition-colors disabled:opacity-50"
+                  className="px-3 py-1.5 text-xs rounded-md font-mono uppercase bg-green-900/30 text-green-300 hover:bg-green-900/50 transition-colors disabled:opacity-50"
                 >
                   {publishing ? 'Publishing...' : 'Publish'}
                 </button>
@@ -359,7 +359,7 @@ export default function PromptsPage() {
                 <button
                   onClick={() => rollbackVersion(selectedVersion.id)}
                   disabled={publishing}
-                  className="px-3 py-1.5 text-xs rounded-md bg-amber-900/30 text-amber-300 hover:bg-amber-900/50 transition-colors disabled:opacity-50"
+                  className="px-3 py-1.5 text-xs rounded-md font-mono uppercase bg-amber-900/30 text-amber-300 hover:bg-amber-900/50 transition-colors disabled:opacity-50"
                 >
                   {publishing ? 'Rolling back...' : 'Rollback'}
                 </button>
@@ -373,7 +373,7 @@ export default function PromptsPage() {
             onChange={(e) => setEditorContent(e.target.value)}
             disabled={!isNewDraft && selectedVersion?.status !== 'draft'}
             rows={20}
-            className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-sm text-gray-200 font-mono placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 resize-y"
+            className="w-full px-4 py-3 bg-c-panel border border-c-border rounded-lg text-sm text-c-text font-mono placeholder-c-dim focus:outline-none focus:ring-2 focus:ring-c-amber disabled:opacity-60 resize-y"
             placeholder="Enter prompt content..."
           />
 
@@ -382,11 +382,11 @@ export default function PromptsPage() {
             <div className="mt-3 space-y-3">
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="block text-xs text-gray-500 mb-1">Difficulty</label>
+                  <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-1">Difficulty</label>
                   <select
                     value={draftDifficulty}
                     onChange={(e) => setDraftDifficulty(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-900 border border-gray-800 rounded-lg text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-sm text-c-text focus:outline-none focus:ring-2 focus:ring-c-amber"
                   >
                     <option value="">Any (generic)</option>
                     <option value="easy">Easy</option>
@@ -396,11 +396,11 @@ export default function PromptsPage() {
                   </select>
                 </div>
                 <div className="flex-1">
-                  <label className="block text-xs text-gray-500 mb-1">Study Mode</label>
+                  <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-1">Study Mode</label>
                   <select
                     value={draftStudyMode}
                     onChange={(e) => setDraftStudyMode(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-900 border border-gray-800 rounded-lg text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-sm text-c-text focus:outline-none focus:ring-2 focus:ring-c-amber"
                   >
                     <option value="">Any (generic)</option>
                     <option value="linear">Linear</option>
@@ -413,13 +413,13 @@ export default function PromptsPage() {
                 value={changeSummary}
                 onChange={(e) => setChangeSummary(e.target.value)}
                 placeholder="What changed? (optional)"
-                className="w-full px-3 py-2 bg-gray-900 border border-gray-800 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-sm text-c-text placeholder-c-dim focus:outline-none focus:ring-2 focus:ring-c-amber"
               />
               <div className="flex justify-end">
                 <button
                   onClick={saveDraft}
                   disabled={saving || !editorContent.trim()}
-                  className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors"
+                  className="px-4 py-2 text-sm rounded-lg bg-c-amber text-c-text font-mono uppercase hover:bg-c-amber/90 disabled:opacity-50 disabled:hover:bg-c-amber transition-colors"
                 >
                   {saving ? 'Saving...' : 'Save as Draft'}
                 </button>
@@ -429,7 +429,7 @@ export default function PromptsPage() {
 
           {/* Version metadata */}
           {selectedVersion && !isNewDraft && (
-            <div className="mt-3 flex items-center gap-4 text-xs text-gray-600">
+            <div className="mt-3 flex items-center gap-4 text-xs text-c-dim">
               <span>Created: {new Date(selectedVersion.created_at).toLocaleString()}</span>
               {selectedVersion.published_at && (
                 <span>Published: {new Date(selectedVersion.published_at).toLocaleString()}</span>

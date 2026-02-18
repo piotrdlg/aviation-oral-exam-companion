@@ -32,12 +32,12 @@ export function ExamImages({
       {/* Header */}
       <button
         onClick={toggle}
-        className="flex w-full items-center gap-2 rounded-t-lg border border-gray-700 bg-gray-900 px-3 py-2 text-left text-sm font-medium text-gray-300 hover:bg-gray-800 transition-colors"
+        className="flex w-full items-center gap-2 rounded-t-lg border border-c-border-hi bg-c-panel px-3 py-2 text-left text-sm font-mono uppercase tracking-wider font-medium text-c-text hover:bg-c-bezel transition-colors"
         aria-expanded={expanded}
         disabled={!isCollapsible}
       >
         <svg
-          className={`h-4 w-4 text-gray-400 transition-transform ${expanded ? 'rotate-90' : ''}`}
+          className={`h-4 w-4 text-c-muted transition-transform ${expanded ? 'rotate-90' : ''}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -45,12 +45,12 @@ export function ExamImages({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
         <span>Reference Materials</span>
-        <span className="ml-auto text-xs text-gray-500">{images.length} image{images.length !== 1 ? 's' : ''}</span>
+        <span className="ml-auto font-mono text-[10px] text-c-dim uppercase tracking-wider">{images.length} image{images.length !== 1 ? 's' : ''}</span>
       </button>
 
       {/* Content */}
       {expanded && (
-        <div className="rounded-b-lg border border-t-0 border-gray-700 bg-gray-900/50 p-3">
+        <div className="rounded-b-lg border border-t-0 border-c-border-hi bg-c-panel/50 p-3">
           {/* Primary image */}
           <button
             onClick={() => setLightboxIndex(0)}
@@ -62,7 +62,7 @@ export function ExamImages({
               width={primary.width}
               height={primary.height}
               loading="lazy"
-              className="mx-auto max-h-96 max-w-full rounded-lg border border-gray-700 object-contain"
+              className="mx-auto max-h-96 max-w-full rounded-lg border border-c-border-hi object-contain"
             />
           </button>
           <ImageCaption image={primary} />
@@ -80,7 +80,7 @@ export function ExamImages({
                       src={`${img.public_url}?width=300&height=300&resize=contain`}
                       alt={img.caption || img.figure_label || 'Reference image'}
                       loading="lazy"
-                      className="h-32 w-full rounded-lg border border-gray-700 object-contain"
+                      className="h-32 w-full rounded-lg border border-c-border-hi object-contain"
                     />
                   </button>
                   <ImageCaption image={img} compact />
@@ -110,13 +110,13 @@ function ImageCaption({ image, compact }: { image: ImageResult; compact?: boolea
   return (
     <div className={`mt-1 ${compact ? 'text-xs' : 'text-sm'}`}>
       {label && (
-        <span className="font-medium text-gray-300">{label}</span>
+        <span className="font-medium text-c-text">{label}</span>
       )}
-      {label && image.caption && <span className="text-gray-500"> — </span>}
+      {label && image.caption && <span className="text-c-dim"> — </span>}
       {image.caption && (
-        <span className="text-gray-400">{compact ? image.caption.slice(0, 60) + (image.caption.length > 60 ? '...' : '') : image.caption}</span>
+        <span className="text-c-muted">{compact ? image.caption.slice(0, 60) + (image.caption.length > 60 ? '...' : '') : image.caption}</span>
       )}
-      <span className="ml-2 text-xs text-gray-500">({source})</span>
+      <span className="ml-2 font-mono text-[10px] text-c-dim uppercase tracking-wider">({source})</span>
     </div>
   );
 }

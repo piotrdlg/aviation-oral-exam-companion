@@ -58,8 +58,8 @@ export default function WeakAreas({ scores }: Props) {
 
   if (weakElements.length === 0) {
     return (
-      <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 text-center">
-        <p className="text-gray-500">
+      <div className="bezel rounded-lg border border-c-border p-6 text-center">
+        <p className="text-c-dim font-mono text-xs">
           {scores.some(s => s.total_attempts > 0)
             ? 'No weak areas identified. Great job!'
             : 'Complete a practice session to identify areas to improve.'}
@@ -81,15 +81,15 @@ export default function WeakAreas({ scores }: Props) {
   const moderate = weakElements.filter(w => w.severity === 'moderate').length;
 
   return (
-    <div className="bg-gray-900 rounded-xl border border-gray-800 p-4">
+    <div className="bezel rounded-lg border border-c-border p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-white">Weak Areas</h3>
-        <div className="flex gap-3 text-xs">
+        <h3 className="font-mono text-sm font-semibold text-c-amber uppercase tracking-wider">WEAK AREAS</h3>
+        <div className="flex gap-3 font-mono text-[10px]">
           {critical > 0 && (
-            <span className="text-red-400">{critical} critical</span>
+            <span className="text-c-red">{critical} CRITICAL</span>
           )}
           {moderate > 0 && (
-            <span className="text-yellow-400">{moderate} moderate</span>
+            <span className="text-c-amber">{moderate} MODERATE</span>
           )}
         </div>
       </div>
@@ -97,24 +97,24 @@ export default function WeakAreas({ scores }: Props) {
       <div className="space-y-3 max-h-96 overflow-y-auto">
         {Array.from(grouped.entries()).map(([area, elements]) => (
           <div key={area}>
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1.5">{area}</p>
+            <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-1.5">{area}</p>
             <div className="space-y-1">
               {elements.map((el) => (
                 <div
                   key={el.element_code}
                   className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm ${
                     el.severity === 'critical'
-                      ? 'bg-red-900/20 border border-red-800/30'
-                      : 'bg-yellow-900/20 border border-yellow-800/30'
+                      ? 'bg-c-red-dim/40 border border-c-red/20'
+                      : 'bg-c-amber-lo border border-c-amber/20'
                   }`}
                 >
                   <div className="flex-1">
-                    <span className="font-mono text-xs text-gray-500 mr-2">{el.element_code}</span>
-                    <span className={el.severity === 'critical' ? 'text-red-300' : 'text-yellow-300'}>
+                    <span className="font-mono text-[10px] text-c-dim mr-2">{el.element_code}</span>
+                    <span className={`font-mono text-xs uppercase ${el.severity === 'critical' ? 'text-c-red' : 'text-c-amber'}`}>
                       {el.latest_score}
                     </span>
                   </div>
-                  <span className="text-xs text-gray-500">
+                  <span className="font-mono text-[10px] text-c-dim">
                     {el.unsatisfactory_count}U / {el.partial_count}P / {el.total_attempts} total
                   </span>
                 </div>
@@ -124,8 +124,8 @@ export default function WeakAreas({ scores }: Props) {
         ))}
       </div>
 
-      <div className="mt-3 pt-3 border-t border-gray-800">
-        <p className="text-xs text-gray-500">
+      <div className="mt-3 pt-3 border-t border-c-border">
+        <p className="font-mono text-[10px] text-c-dim">
           Study recommendation: Focus on elements with critical status. Review the relevant FAA source material for each weak area.
         </p>
       </div>

@@ -43,22 +43,22 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-950">
-      <nav className="border-b border-gray-800 bg-gray-900">
+    <div className="min-h-screen bg-c-bg">
+      <nav className="border-b border-c-border bg-c-bg/80 backdrop-blur-lg">
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
           <div className="flex items-center gap-6">
-            <Link href="/practice" className="text-white font-semibold text-sm">
-              HeyDPE
+            <Link href="/practice" className="font-mono font-bold text-c-amber glow-a text-sm tracking-widest">
+              HEYDPE
             </Link>
             <div className="flex gap-1">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
+                  className={`px-3 py-1.5 rounded-md font-mono text-xs tracking-wide uppercase transition-colors ${
                     pathname === item.href
-                      ? 'bg-gray-800 text-white'
-                      : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                      ? 'text-c-amber'
+                      : 'text-c-muted hover:text-c-amber'
                   }`}
                 >
                   {item.label}
@@ -67,10 +67,10 @@ export default function DashboardLayout({
               {isAdmin && (
                 <Link
                   href="/admin"
-                  className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
+                  className={`px-3 py-1.5 rounded-md font-mono text-xs tracking-wide uppercase transition-colors ${
                     pathname.startsWith('/admin')
-                      ? 'bg-gray-800 text-white'
-                      : 'text-amber-400/80 hover:text-amber-300 hover:bg-gray-800/50'
+                      ? 'text-c-amber'
+                      : 'text-c-amber/80 hover:text-c-amber'
                   }`}
                 >
                   Admin
@@ -80,7 +80,7 @@ export default function DashboardLayout({
           </div>
           <button
             onClick={handleSignOut}
-            className="text-sm text-gray-400 hover:text-white transition-colors"
+            className="font-mono text-xs text-c-muted hover:text-c-amber tracking-wide uppercase transition-colors"
           >
             Sign Out
           </button>

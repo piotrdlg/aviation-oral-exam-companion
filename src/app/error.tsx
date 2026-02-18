@@ -8,17 +8,20 @@ export default function Error({
   reset: () => void;
 }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4">
-      <div className="max-w-md text-center">
-        <h2 className="text-xl font-bold text-white mb-2">Something went wrong</h2>
-        <p className="text-gray-400 mb-6 text-sm">
+    <div className="min-h-screen flex items-center justify-center bg-c-bg px-4">
+      <div className="bezel rounded-lg border border-c-border p-8 max-w-md text-center">
+        <p className="font-mono text-4xl text-c-red mb-4">&#9888;</p>
+        <h2 className="font-mono font-bold text-xl text-c-red uppercase tracking-wider mb-2">
+          SOMETHING WENT WRONG
+        </h2>
+        <p className="text-c-muted font-mono text-sm mb-6">
           {error.message || 'An unexpected error occurred.'}
         </p>
         <button
           onClick={reset}
-          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+          className="px-6 py-2.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-xs uppercase tracking-wide transition-colors"
         >
-          Try again
+          TRY AGAIN
         </button>
       </div>
     </div>

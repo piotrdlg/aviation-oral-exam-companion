@@ -31,15 +31,15 @@ function getErrorMessage(code: string | null, detail: string | null): string | n
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-950 px-4">
-        <div className="w-full max-w-md p-8 bg-gray-900 rounded-xl border border-gray-800 animate-pulse">
-          <div className="h-6 bg-gray-800 rounded w-20 mb-6 mx-auto" />
-          <div className="h-5 bg-gray-800 rounded w-48 mb-2 mx-auto" />
-          <div className="h-4 bg-gray-800 rounded w-64 mb-8 mx-auto" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-c-bg px-4">
+        <div className="w-full max-w-md p-8 bezel rounded-lg border border-c-border animate-pulse">
+          <div className="h-6 bg-c-panel rounded w-20 mb-6 mx-auto" />
+          <div className="h-5 bg-c-panel rounded w-48 mb-2 mx-auto" />
+          <div className="h-4 bg-c-panel rounded w-64 mb-8 mx-auto" />
           <div className="space-y-3">
-            <div className="h-11 bg-gray-800 rounded-xl" />
-            <div className="h-11 bg-gray-800 rounded-xl" />
-            <div className="h-11 bg-gray-800 rounded-xl" />
+            <div className="h-11 bg-c-panel rounded-lg" />
+            <div className="h-11 bg-c-panel rounded-lg" />
+            <div className="h-11 bg-c-panel rounded-lg" />
           </div>
         </div>
       </div>
@@ -246,27 +246,26 @@ function LoginForm() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-950 px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-c-bg px-4">
       {/* Brand link */}
-      <Link href="/" className="text-white font-semibold text-sm tracking-tight mb-8 hover:text-gray-300 transition-colors">
-        HeyDPE
+      <Link href="/" className="font-mono font-bold text-c-amber glow-a text-xl tracking-widest mb-8 hover:text-c-amber/80 transition-colors">
+        HEYDPE
       </Link>
 
       <div className="w-full max-w-md">
         {/* Auth card */}
-        <div className="p-8 bg-gray-900 rounded-xl border border-gray-800">
+        <div className="p-8 bezel rounded-lg border border-c-border">
           <div className="text-center mb-8">
-            <h1 className="text-xl font-semibold text-white mb-1">Sign in to HeyDPE</h1>
-            <p className="text-sm text-gray-400">Practice your checkride oral exam</p>
+            <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase mb-3">// AUTHENTICATION</p>
+            <h1 className="font-mono font-bold text-c-amber glow-a text-sm tracking-wider uppercase mb-1">SIGN IN TO HEYDPE</h1>
+            <p className="text-sm text-c-muted font-light">Practice your checkride oral exam</p>
           </div>
 
           {/* Error banner */}
           {error && step === 'initial' && (
-            <div className="mb-6 p-3 bg-red-950/50 border border-red-900/50 rounded-xl flex items-start gap-2.5">
-              <svg className="w-4 h-4 text-red-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-              </svg>
-              <p className="text-red-400 text-sm">{error}</p>
+            <div className="mb-6 p-3 bg-c-red-dim/40 border border-c-red/30 rounded-lg flex items-start gap-2.5">
+              <span className="text-c-red text-sm mt-0.5 shrink-0">&#9888;</span>
+              <p className="text-c-red text-sm">{error}</p>
             </div>
           )}
 
@@ -277,10 +276,10 @@ function LoginForm() {
                 key={provider}
                 onClick={() => handleOAuthLogin(provider)}
                 disabled={loadingOAuth !== null}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-gray-600 rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-c-bezel hover:bg-c-border border border-c-border hover:border-c-border-hi rounded-lg text-c-text font-mono text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loadingOAuth === provider ? <Spinner /> : icon}
-                {loadingOAuth === provider ? 'Redirecting...' : label}
+                <span className="uppercase tracking-wide">{loadingOAuth === provider ? 'Redirecting...' : label}</span>
               </button>
             ))}
           </div>
@@ -288,10 +287,10 @@ function LoginForm() {
           {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-800" />
+              <div className="w-full border-t border-c-border" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-gray-900 px-3 text-gray-500 uppercase tracking-wide">or</span>
+              <span className="bg-c-bezel px-3 text-c-dim font-mono uppercase tracking-wide">or</span>
             </div>
           </div>
 
@@ -299,8 +298,8 @@ function LoginForm() {
           {step === 'initial' && (
             <form onSubmit={handleSendOtp} className="space-y-3">
               <div>
-                <label htmlFor="email" className="block text-sm text-gray-300 mb-1.5">
-                  Email address
+                <label htmlFor="email" className="block font-mono text-[10px] text-c-muted uppercase tracking-wider mb-1.5">
+                  EMAIL ADDRESS
                 </label>
                 <input
                   id="email"
@@ -310,22 +309,22 @@ function LoginForm() {
                   required
                   autoComplete="email"
                   placeholder="you@example.com"
-                  className="w-full px-3.5 py-2.5 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  className="w-full px-3 py-2.5 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-xs focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loadingOtp}
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white rounded-xl font-medium text-sm transition-colors flex items-center justify-center gap-2"
+                className="w-full py-3 bg-c-amber hover:bg-c-amber/90 disabled:bg-c-amber/50 disabled:cursor-not-allowed text-c-bg rounded-lg font-mono font-semibold text-xs tracking-wider uppercase transition-colors flex items-center justify-center gap-2"
               >
                 {loadingOtp ? (
                   <>
                     <Spinner />
-                    Sending code...
+                    SENDING CODE...
                   </>
                 ) : (
-                  'Send Login Code'
+                  'SEND LOGIN CODE'
                 )}
               </button>
             </form>
@@ -336,16 +335,14 @@ function LoginForm() {
             <div className="space-y-4">
               {codeSentMessage && (
                 <div className="flex items-center gap-2 justify-center">
-                  <svg className="w-4 h-4 text-green-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                  </svg>
-                  <p className="text-green-400 text-sm">{codeSentMessage}</p>
+                  <span className="text-c-green text-sm shrink-0">&#10003;</span>
+                  <p className="text-c-green text-sm font-mono">{codeSentMessage}</p>
                 </div>
               )}
 
               <div>
-                <label className="block text-sm text-gray-300 mb-3 text-center">
-                  Enter the 6-digit code
+                <label className="block font-mono text-[10px] text-c-muted uppercase tracking-wider mb-3 text-center">
+                  ENTER THE 6-DIGIT CODE
                 </label>
                 <div className="flex justify-center gap-2" onPaste={handleOtpPaste}>
                   {otpDigits.map((digit, index) => (
@@ -359,29 +356,27 @@ function LoginForm() {
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(index, e)}
                       disabled={step === 'verifying'}
-                      className="w-11 h-12 text-center text-lg font-mono bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 transition-colors"
+                      className="w-11 h-12 text-center text-lg font-mono bg-c-panel border border-c-border rounded-lg text-c-amber focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber disabled:opacity-50 transition-colors"
                       aria-label={`Digit ${index + 1}`}
                     />
                   ))}
                 </div>
               </div>
 
-              <p className="text-gray-600 text-xs text-center">Code expires in 10 minutes</p>
+              <p className="text-c-dim text-xs text-center font-mono">Code expires in 10 minutes</p>
 
               {/* OTP error */}
               {error && (
                 <div className="flex items-center gap-2 justify-center">
-                  <svg className="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-                  </svg>
-                  <p className="text-red-400 text-sm">{error}</p>
+                  <span className="text-c-red text-sm shrink-0">&#9888;</span>
+                  <p className="text-c-red text-sm font-mono">{error}</p>
                 </div>
               )}
 
               {step === 'verifying' && (
-                <div className="flex items-center justify-center gap-2 text-gray-400 text-sm">
+                <div className="flex items-center justify-center gap-2 text-c-muted text-sm font-mono">
                   <Spinner />
-                  Verifying...
+                  VERIFYING...
                 </div>
               )}
 
@@ -389,16 +384,16 @@ function LoginForm() {
                 <button
                   onClick={() => handleVerifyOtp()}
                   disabled={otpDigits.join('').length !== 6}
-                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white rounded-xl font-medium text-sm transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-c-amber hover:bg-c-amber/90 disabled:bg-c-amber/50 disabled:cursor-not-allowed text-c-bg rounded-lg font-mono font-semibold text-xs tracking-wider uppercase transition-colors flex items-center justify-center gap-2"
                 >
-                  Verify Code
+                  VERIFY CODE
                 </button>
               )}
 
               <button
                 onClick={handleResendCode}
                 disabled={step === 'verifying'}
-                className="w-full text-sm text-gray-400 hover:text-white transition-colors disabled:opacity-50"
+                className="w-full text-sm text-c-muted hover:text-c-amber font-mono transition-colors disabled:opacity-50"
               >
                 Use a different email or resend code
               </button>
@@ -408,23 +403,21 @@ function LoginForm() {
 
         {/* "Why no password?" explainer */}
         <details className="mt-4 group">
-          <summary className="text-xs text-gray-600 hover:text-gray-400 cursor-pointer transition-colors flex items-center justify-center gap-1">
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
-            </svg>
-            Why no password?
+          <summary className="text-xs text-c-dim hover:text-c-muted cursor-pointer transition-colors flex items-center justify-center gap-1 font-mono">
+            <span className="text-sm">?</span>
+            WHY NO PASSWORD?
           </summary>
-          <div className="mt-2 p-3 bg-gray-900 border border-gray-800 rounded-xl text-xs text-gray-400 leading-relaxed">
+          <div className="mt-2 p-3 bezel rounded-lg border border-c-border text-xs text-c-muted leading-relaxed">
             Passwordless login is more secure — no passwords to leak, reuse, or forget. Sign in with your Google, Apple, or Microsoft account for one-tap access, or use a one-time email code. Your account is tied to your email, not a password you have to remember.
           </div>
         </details>
 
         {/* Trust + legal */}
-        <p className="mt-6 text-xs text-gray-600 text-center leading-relaxed max-w-sm mx-auto">
+        <p className="mt-6 text-xs text-c-dim text-center leading-relaxed max-w-sm mx-auto font-mono">
           By continuing, you agree to our{' '}
-          <Link href="/terms" className="text-gray-400 hover:text-gray-300 underline underline-offset-2 transition-colors">Terms of Service</Link>
+          <Link href="/terms" className="text-c-amber hover:text-c-amber/80 underline underline-offset-2 transition-colors">Terms of Service</Link>
           {' '}and{' '}
-          <Link href="/privacy" className="text-gray-400 hover:text-gray-300 underline underline-offset-2 transition-colors">Privacy Policy</Link>.
+          <Link href="/privacy" className="text-c-amber hover:text-c-amber/80 underline underline-offset-2 transition-colors">Privacy Policy</Link>.
         </p>
       </div>
     </div>

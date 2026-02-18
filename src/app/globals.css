@@ -1,6 +1,158 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: 'IBM Plex Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* COCKPIT Background Scale */
+  --color-c-bg: #080c12;
+  --color-c-panel: #0d1117;
+  --color-c-bezel: #161b22;
+  --color-c-elevated: #1a2028;
+  --color-c-border: #1c2333;
+  --color-c-border-hi: #2a3040;
+
+  /* COCKPIT Amber */
+  --color-c-amber: #f5a623;
+  --color-c-amber-dim: #8b6914;
+  --color-c-amber-lo: #3d2e0a;
+
+  /* COCKPIT Green */
+  --color-c-green: #00ff41;
+  --color-c-green-dim: #0a5c1a;
+  --color-c-green-lo: #0a2e10;
+
+  /* COCKPIT Cyan */
+  --color-c-cyan: #00d4ff;
+  --color-c-cyan-dim: #0a4a5c;
+  --color-c-cyan-lo: #082a35;
+
+  /* COCKPIT Red */
+  --color-c-red: #ff3b30;
+  --color-c-red-dim: #5c1a16;
+
+  /* COCKPIT Text */
+  --color-c-text: #c9d1d9;
+  --color-c-muted: #6b7280;
+  --color-c-dim: #4a5060;
 }
+
+/* ============================================
+   COCKPIT DESIGN SYSTEM — Custom CSS Classes
+   ============================================ */
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: #080c12;
+  color: #c9d1d9;
+}
+
+/* Scanline overlay */
+.scanline::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 212, 255, 0.012) 2px,
+    rgba(0, 212, 255, 0.012) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* CRT text glow */
+.glow-a { text-shadow: 0 0 10px rgba(245,166,35,0.4), 0 0 30px rgba(245,166,35,0.1); }
+.glow-g { text-shadow: 0 0 10px rgba(0,255,65,0.4), 0 0 30px rgba(0,255,65,0.1); }
+.glow-c { text-shadow: 0 0 10px rgba(0,212,255,0.4), 0 0 30px rgba(0,212,255,0.1); }
+
+/* Bezel card */
+.bezel {
+  background: linear-gradient(135deg, #161b22 0%, #0d1117 50%, #161b22 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 4px 20px rgba(0,0,0,0.5);
+}
+
+/* Instrument frame */
+.iframe {
+  border: 1px solid #1c2333;
+  box-shadow: inset 0 0 8px rgba(0,0,0,0.5), 0 2px 12px rgba(0,0,0,0.3);
+  background: linear-gradient(180deg, #0d1117 0%, #0a0e14 100%);
+}
+
+/* Gauge ring */
+.gauge {
+  background: conic-gradient(from 220deg, var(--gc) 0%, var(--gc) var(--gp), #1c2333 var(--gp), #1c2333 100%);
+}
+
+/* Progress bars */
+.prog-a { background: linear-gradient(90deg, #8b6914, #f5a623); }
+.prog-g { background: linear-gradient(90deg, #0a5c1a, #00ff41); }
+.prog-c { background: linear-gradient(90deg, #0a4a5c, #00d4ff); }
+.prog-r { background: linear-gradient(90deg, #5c1a16, #ff3b30); }
+
+/* Noise texture */
+.noise {
+  position: relative;
+}
+.noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Flicker animation */
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.97; }
+  75% { opacity: 0.99; }
+}
+.flicker { animation: flicker 4s infinite; }
+
+/* Instrument pulse */
+@keyframes ipulse {
+  0%, 100% { box-shadow: 0 0 15px rgba(0,212,255,0.08); }
+  50% { box-shadow: 0 0 25px rgba(0,212,255,0.18); }
+}
+.ipulse { animation: ipulse 3s ease-in-out infinite; }
+
+/* Staggered reveal */
+@keyframes su {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.s1 { animation: su .6s ease-out .1s both; }
+.s2 { animation: su .6s ease-out .2s both; }
+.s3 { animation: su .6s ease-out .3s both; }
+.s4 { animation: su .6s ease-out .4s both; }
+.s5 { animation: su .6s ease-out .5s both; }
+.s6 { animation: su .6s ease-out .6s both; }
+
+/* Status blink */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.blink { animation: blink 1.5s ease-in-out infinite; }
+
+/* Mic level bar */
+@keyframes mic-pulse {
+  0%, 100% { width: 30%; }
+  25% { width: 65%; }
+  50% { width: 45%; }
+  75% { width: 80%; }
+}
+.mic-bar { animation: mic-pulse 1.2s ease-in-out infinite; }
+
+/* Focus glow for textareas */
+.fb-textarea:focus {
+  box-shadow: 0 0 0 1px #f5a623, 0 0 15px rgba(245,166,35,0.1);
+}
+
+/* Task picker styles */
+.task-area:hover { background: rgba(0,212,255,0.03); }
+.task-item:hover { background: rgba(0,212,255,0.05); }

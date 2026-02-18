@@ -90,11 +90,11 @@ export default function AdminShell({
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex">
+    <div className="min-h-screen bg-c-bg flex">
       {/* Sidebar */}
-      <aside className="w-56 flex-shrink-0 border-r border-gray-800 bg-gray-900 flex flex-col">
-        <div className="h-14 flex items-center px-4 border-b border-gray-800">
-          <Link href="/admin" className="text-white font-semibold text-sm tracking-wide">
+      <aside className="w-56 flex-shrink-0 border-r border-c-border bg-c-panel flex flex-col">
+        <div className="h-14 flex items-center px-4 border-b border-c-border">
+          <Link href="/admin" className="text-c-text font-mono font-semibold text-sm tracking-wider uppercase">
             HeyDPE Admin
           </Link>
         </div>
@@ -110,10 +110,10 @@ export default function AdminShell({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors ${
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-mono transition-colors ${
                   isActive
-                    ? 'bg-gray-800 text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                    ? 'bg-c-bezel text-c-text'
+                    : 'text-c-muted hover:text-c-text hover:bg-c-bezel/50'
                 }`}
               >
                 <item.icon className="w-4 h-4 flex-shrink-0" />
@@ -123,14 +123,14 @@ export default function AdminShell({
           })}
         </nav>
 
-        <div className="border-t border-gray-800 p-3">
+        <div className="border-t border-c-border p-3">
           <div className="flex items-center justify-between">
             <div className="min-w-0">
-              <p className="text-xs text-gray-400 truncate">{email}</p>
+              <p className="text-xs text-c-muted truncate">{email}</p>
             </div>
             <button
               onClick={handleSignOut}
-              className="text-xs text-gray-500 hover:text-white transition-colors flex-shrink-0 ml-2"
+              className="text-xs text-c-dim hover:text-c-text transition-colors flex-shrink-0 ml-2"
               title="Sign Out"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">

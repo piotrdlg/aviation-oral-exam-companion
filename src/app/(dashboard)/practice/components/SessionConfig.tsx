@@ -116,48 +116,48 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
   }, [selectedTasks]);
 
   return (
-    <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-      <h2 className="text-lg font-medium text-white mb-4">New Session</h2>
+    <div className="bezel rounded-lg border border-c-border p-6">
+      <h2 className="font-mono font-semibold text-sm text-c-amber mb-5 tracking-wider uppercase">NEW SESSION</h2>
       <div className="space-y-5">
         {/* Rating & Class (read-only from Settings) */}
-        <div className="flex items-center justify-between px-4 py-3 bg-gray-800 rounded-lg border border-gray-700">
+        <div className="flex items-center justify-between px-4 py-3 bg-c-panel rounded-lg border border-c-border">
           {prefsLoading ? (
-            <span className="text-sm text-gray-500">Loading preferences...</span>
+            <span className="font-mono text-xs text-c-dim">LOADING PREFERENCES...</span>
           ) : (
-            <span className="text-sm text-white">
-              <span className="font-medium">{RATING_LABELS[rating] || rating}</span>
-              <span className="text-gray-500 mx-2">&middot;</span>
-              <span className="font-medium">{rating === 'instrument' ? 'Airplane' : aircraftClass}</span>
+            <span className="font-mono text-xs">
+              <span className="text-c-green font-semibold glow-g">{(RATING_LABELS[rating] || rating).toUpperCase()}</span>
+              <span className="text-c-muted mx-2">&middot;</span>
+              <span className="text-c-cyan font-semibold">{rating === 'instrument' ? 'AIRPLANE' : aircraftClass}</span>
             </span>
           )}
           <Link
             href="/settings"
-            className="text-xs text-blue-400 hover:text-blue-300 transition-colors whitespace-nowrap ml-3"
+            className="font-mono text-[10px] text-c-amber hover:text-c-amber/80 transition-colors whitespace-nowrap ml-3 uppercase tracking-wider"
           >
-            Change in Settings &rarr;
+            CHANGE IN SETTINGS &rarr;
           </Link>
         </div>
 
         {/* Study Mode */}
         <div>
-          <label className="block text-sm text-gray-300 mb-2">Study Mode</label>
+          <label className="block font-mono text-[10px] text-c-muted mb-2 tracking-wider uppercase">STUDY MODE</label>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { value: 'linear' as const, label: 'Linear', desc: 'One area at a time' },
-              { value: 'cross_acs' as const, label: 'Cross-ACS', desc: 'Random across all areas' },
-              { value: 'weak_areas' as const, label: 'Weak Areas', desc: 'Focus on your gaps' },
+              { value: 'linear' as const, label: 'LINEAR', desc: 'One area at a time' },
+              { value: 'cross_acs' as const, label: 'CROSS-ACS', desc: 'Random across all areas' },
+              { value: 'weak_areas' as const, label: 'WEAK AREAS', desc: 'Focus on your gaps' },
             ].map((mode) => (
               <button
                 key={mode.value}
                 onClick={() => setStudyMode(mode.value)}
                 className={`p-3 rounded-lg border text-left transition-colors ${
                   studyMode === mode.value
-                    ? 'border-blue-500 bg-blue-500/10 text-blue-400'
-                    : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
+                    ? 'border-c-amber/50 bg-c-amber-lo/50'
+                    : 'border-c-border bg-c-bezel hover:border-c-border-hi'
                 }`}
               >
-                <p className="text-sm font-medium">{mode.label}</p>
-                <p className="text-xs mt-1 opacity-70">{mode.desc}</p>
+                <p className={`font-mono text-xs ${studyMode === mode.value ? 'font-semibold text-c-amber' : 'font-medium text-c-muted'}`}>{mode.label}</p>
+                <p className="text-[10px] text-c-muted mt-1">{mode.desc}</p>
               </button>
             ))}
           </div>
@@ -165,21 +165,21 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
 
         {/* Difficulty */}
         <div>
-          <label className="block text-sm text-gray-300 mb-2">Difficulty</label>
+          <label className="block font-mono text-[10px] text-c-muted mb-2 tracking-wider uppercase">DIFFICULTY</label>
           <div className="flex gap-2">
             {[
-              { value: 'mixed' as const, label: 'Mixed' },
-              { value: 'easy' as const, label: 'Easy' },
-              { value: 'medium' as const, label: 'Medium' },
-              { value: 'hard' as const, label: 'Hard' },
+              { value: 'mixed' as const, label: 'MIXED' },
+              { value: 'easy' as const, label: 'EASY' },
+              { value: 'medium' as const, label: 'MEDIUM' },
+              { value: 'hard' as const, label: 'HARD' },
             ].map((d) => (
               <button
                 key={d.value}
                 onClick={() => setDifficulty(d.value)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded-lg font-mono text-xs transition-colors ${
                   difficulty === d.value
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-800 text-gray-400 border border-gray-700 hover:border-gray-600'
+                    ? 'bg-c-amber text-c-bg font-semibold'
+                    : 'bg-c-bezel text-c-muted border border-c-border font-medium hover:border-c-border-hi'
                 }`}
               >
                 {d.label}
@@ -192,23 +192,23 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
         <div>
           <button
             onClick={() => setShowTaskPicker(!showTaskPicker)}
-            className="text-sm text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+            className="font-mono text-xs text-c-cyan hover:text-c-cyan/80 transition-colors flex items-center gap-1"
           >
-            <span className="text-xs">{showTaskPicker ? '▼' : '▶'}</span>
-            Customize tasks...
+            <span className="text-[10px]">{showTaskPicker ? '\u25BC' : '\u25B6'}</span>
+            CUSTOMIZE TASKS...
             {selectedTasks.length > 0 && (
-              <span className="text-xs text-gray-500 ml-1">
+              <span className="text-[10px] text-c-dim ml-1">
                 ({selectedTasks.length} of {filteredTasks.length} selected)
               </span>
             )}
           </button>
 
           {showTaskPicker && (
-            <div className="mt-2 max-h-64 overflow-y-auto border border-gray-800 rounded-lg">
+            <div className="mt-3 max-h-64 overflow-y-auto border border-c-border rounded-lg bg-c-panel">
               {tasksLoading ? (
-                <p className="p-3 text-sm text-gray-500">Loading tasks...</p>
+                <p className="p-3 font-mono text-xs text-c-dim">LOADING TASKS...</p>
               ) : areaGroups.length === 0 ? (
-                <p className="p-3 text-sm text-gray-500">No tasks found.</p>
+                <p className="p-3 font-mono text-xs text-c-dim">NO TASKS FOUND.</p>
               ) : (
                 areaGroups.map((group) => {
                   const areaTaskIds = group.tasks.map((t) => t.id);
@@ -216,26 +216,26 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
                   const someSelected = areaTaskIds.some((id) => selectedTasks.includes(id));
 
                   return (
-                    <div key={group.areaId} className="border-b border-gray-800 last:border-b-0">
+                    <div key={group.areaId} className="border-b border-c-border last:border-b-0">
                       {/* Area header */}
                       <button
                         onClick={() => toggleArea(group.areaId)}
-                        className={`w-full px-3 py-2 flex items-center gap-2 text-left text-sm font-medium transition-colors hover:bg-gray-800/50 ${
-                          allSelected ? 'text-blue-300' : someSelected ? 'text-blue-400/70' : 'text-gray-300'
+                        className={`w-full px-3 py-2 flex items-center gap-2 text-left text-xs font-medium transition-colors hover:bg-c-elevated ${
+                          allSelected ? 'text-c-cyan' : someSelected ? 'text-c-cyan/70' : 'text-c-text'
                         }`}
                       >
                         <span className={`w-3 h-3 rounded-sm border flex items-center justify-center text-[8px] ${
                           allSelected
-                            ? 'bg-blue-500 border-blue-500 text-white'
+                            ? 'bg-c-cyan border-c-cyan text-c-bg'
                             : someSelected
-                            ? 'bg-blue-500/30 border-blue-500/50 text-blue-300'
-                            : 'border-gray-600'
+                            ? 'bg-c-cyan/30 border-c-cyan/50 text-c-cyan'
+                            : 'border-c-border'
                         }`}>
-                          {allSelected ? '✓' : someSelected ? '–' : ''}
+                          {allSelected ? '\u2713' : someSelected ? '\u2013' : ''}
                         </span>
-                        <span className="font-mono text-xs opacity-50">{group.areaId}</span>
+                        <span className="font-mono text-[10px] text-c-dim">{group.areaId}</span>
                         {group.areaName}
-                        <span className="ml-auto text-xs text-gray-600">{group.tasks.length}</span>
+                        <span className="ml-auto text-[10px] text-c-dim">{group.tasks.length}</span>
                       </button>
 
                       {/* Individual tasks */}
@@ -244,13 +244,13 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
                           <button
                             key={task.id}
                             onClick={() => toggleTask(task.id)}
-                            className={`w-full px-2 py-1 text-left text-xs transition-colors rounded hover:bg-gray-800/50 ${
+                            className={`w-full px-2 py-1 text-left text-[11px] transition-colors rounded hover:bg-c-elevated ${
                               selectedTasks.includes(task.id)
-                                ? 'text-blue-300'
-                                : 'text-gray-500'
+                                ? 'text-c-cyan'
+                                : 'text-c-dim hover:text-c-cyan'
                             }`}
                           >
-                            <span className="font-mono opacity-50 mr-1.5">{task.id.replace(/^(PA|CA|IR)\./, '')}</span>
+                            <span className="font-mono text-c-dim/50 mr-1.5">{task.id.replace(/^(PA|CA|IR)\./, '')}</span>
                             {task.task}
                           </button>
                         ))}
@@ -263,27 +263,28 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
           )}
 
           {showTaskPicker && selectedTasks.length === 0 && (
-            <p className="text-xs text-gray-600 mt-1">All tasks for {aircraftClass} will be included if none selected</p>
+            <p className="text-[10px] text-c-dim font-mono mt-1.5">All tasks for {aircraftClass} will be included if none selected</p>
           )}
           {showTaskPicker && selectedTasks.length > 0 && (
             <button
               onClick={() => setSelectedTasks([])}
-              className="text-xs text-gray-500 hover:text-gray-400 mt-1 transition-colors"
+              className="text-[10px] text-c-muted hover:text-c-text font-mono mt-1 transition-colors"
             >
-              Clear selection
+              CLEAR SELECTION
             </button>
           )}
         </div>
 
         {/* Voice Toggle */}
-        <label className="flex items-center gap-3 cursor-pointer">
+        <label className="flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-lg border border-c-border hover:border-c-border-hi bg-c-panel transition-colors">
           <input
             type="checkbox"
             checked={voiceEnabled}
             onChange={(e) => setVoiceEnabled(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500"
+            className="w-4 h-4 rounded border-c-border bg-c-bezel text-c-green focus:ring-c-green"
           />
-          <span className="text-sm text-gray-300">Enable voice mode (mic + speaker)</span>
+          <span className="font-mono text-xs text-c-text uppercase">ENABLE VOICE MODE</span>
+          <span className="text-[10px] text-c-dim font-mono">(MIC + SPEAKER)</span>
         </label>
 
         {/* Start Button */}
@@ -298,9 +299,9 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
             voiceEnabled,
           })}
           disabled={loading || prefsLoading}
-          className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
+          className="w-full py-3.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg rounded-lg font-mono font-bold text-sm tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
         >
-          {loading ? 'Starting...' : 'Start Practice Exam'}
+          {loading ? 'STARTING...' : 'START PRACTICE EXAM'}
         </button>
       </div>
     </div>

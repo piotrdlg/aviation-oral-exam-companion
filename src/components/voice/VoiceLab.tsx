@@ -474,10 +474,10 @@ export default function VoiceLab() {
 
   const statusBadge = (r: TestResult) => {
     const colors = {
-      idle: 'bg-gray-700 text-gray-400',
-      running: 'bg-yellow-900/50 text-yellow-400 animate-pulse',
-      pass: 'bg-green-900/50 text-green-400',
-      fail: 'bg-red-900/50 text-red-400',
+      idle: 'bg-c-elevated text-c-muted',
+      running: 'bg-c-amber-lo text-c-amber animate-pulse',
+      pass: 'bg-c-green-lo text-c-green',
+      fail: 'bg-c-red-dim/40 text-c-red',
     };
     const labels = { idle: 'Not Run', running: 'Running...', pass: 'PASS', fail: 'FAIL' };
     return (
@@ -489,100 +489,100 @@ export default function VoiceLab() {
   };
 
   return (
-    <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-      <h2 className="text-lg font-medium text-white mb-1">Voice Pipeline Lab</h2>
-      <p className="text-sm text-gray-400 mb-5">
+    <div className="bezel rounded-lg border border-c-border p-6">
+      <h2 className="text-lg font-mono uppercase tracking-wider font-medium text-c-text mb-1">Voice Pipeline Lab</h2>
+      <p className="text-sm text-c-muted mb-5">
         Test each component of the voice pipeline independently. Run tests top-to-bottom.
       </p>
 
       <div className="space-y-4">
         {/* Test 1: AudioWorklet */}
-        <div className="border border-gray-800 rounded-lg p-4">
+        <div className="border border-c-border rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="text-sm font-medium text-white">1. AudioWorklet Health</h3>
-              <p className="text-xs text-gray-500">Load module, config ACK, test tone playback</p>
+              <h3 className="text-sm font-mono uppercase tracking-wider font-medium text-c-text">1. AudioWorklet Health</h3>
+              <p className="font-mono text-[10px] text-c-dim uppercase tracking-wider">Load module, config ACK, test tone playback</p>
             </div>
             {statusBadge(workletTest)}
           </div>
           {workletTest.detail && (
-            <p className={`text-xs mb-2 ${workletTest.status === 'fail' ? 'text-red-300' : 'text-gray-400'}`}>
+            <p className={`text-xs mb-2 ${workletTest.status === 'fail' ? 'text-c-red' : 'text-c-muted'}`}>
               {workletTest.detail}
             </p>
           )}
           <button
             onClick={testWorklet}
             disabled={workletTest.status === 'running'}
-            className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white text-xs rounded font-medium transition-colors"
+            className="px-3 py-1.5 bg-c-elevated hover:bg-c-border-hi disabled:opacity-50 text-c-text text-xs rounded font-mono uppercase font-medium transition-colors"
           >
             Run Test
           </button>
         </div>
 
         {/* Test 2: TTS via AudioWorklet */}
-        <div className="border border-gray-800 rounded-lg p-4">
+        <div className="border border-c-border rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="text-sm font-medium text-white">2. TTS via AudioWorklet (Strategy A)</h3>
-              <p className="text-xs text-gray-500">Streaming PCM playback — lowest latency</p>
+              <h3 className="text-sm font-mono uppercase tracking-wider font-medium text-c-text">2. TTS via AudioWorklet (Strategy A)</h3>
+              <p className="font-mono text-[10px] text-c-dim uppercase tracking-wider">Streaming PCM playback — lowest latency</p>
             </div>
             {statusBadge(ttsWorkletTest)}
           </div>
           {ttsWorkletTest.detail && (
-            <p className={`text-xs mb-2 ${ttsWorkletTest.status === 'fail' ? 'text-red-300' : 'text-gray-400'}`}>
+            <p className={`text-xs mb-2 ${ttsWorkletTest.status === 'fail' ? 'text-c-red' : 'text-c-muted'}`}>
               {ttsWorkletTest.detail}
             </p>
           )}
           <button
             onClick={testTtsWorklet}
             disabled={ttsWorkletTest.status === 'running'}
-            className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white text-xs rounded font-medium transition-colors"
+            className="px-3 py-1.5 bg-c-elevated hover:bg-c-border-hi disabled:opacity-50 text-c-text text-xs rounded font-mono uppercase font-medium transition-colors"
           >
             Run Test
           </button>
         </div>
 
         {/* Test 3: TTS via Buffer */}
-        <div className="border border-gray-800 rounded-lg p-4">
+        <div className="border border-c-border rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="text-sm font-medium text-white">3. TTS via Buffer Playback (Strategy B)</h3>
-              <p className="text-xs text-gray-500">Buffer entire response, then play — reliable fallback</p>
+              <h3 className="text-sm font-mono uppercase tracking-wider font-medium text-c-text">3. TTS via Buffer Playback (Strategy B)</h3>
+              <p className="font-mono text-[10px] text-c-dim uppercase tracking-wider">Buffer entire response, then play — reliable fallback</p>
             </div>
             {statusBadge(ttsBufferTest)}
           </div>
           {ttsBufferTest.detail && (
-            <p className={`text-xs mb-2 ${ttsBufferTest.status === 'fail' ? 'text-red-300' : 'text-gray-400'}`}>
+            <p className={`text-xs mb-2 ${ttsBufferTest.status === 'fail' ? 'text-c-red' : 'text-c-muted'}`}>
               {ttsBufferTest.detail}
             </p>
           )}
           <button
             onClick={testTtsBuffer}
             disabled={ttsBufferTest.status === 'running'}
-            className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white text-xs rounded font-medium transition-colors"
+            className="px-3 py-1.5 bg-c-elevated hover:bg-c-border-hi disabled:opacity-50 text-c-text text-xs rounded font-mono uppercase font-medium transition-colors"
           >
             Run Test
           </button>
         </div>
 
         {/* Test 4: STT Auth */}
-        <div className="border border-gray-800 rounded-lg p-4">
+        <div className="border border-c-border rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="text-sm font-medium text-white">4. Deepgram STT Connection</h3>
-              <p className="text-xs text-gray-500">Token fetch + WebSocket auth handshake</p>
+              <h3 className="text-sm font-mono uppercase tracking-wider font-medium text-c-text">4. Deepgram STT Connection</h3>
+              <p className="font-mono text-[10px] text-c-dim uppercase tracking-wider">Token fetch + WebSocket auth handshake</p>
             </div>
             {statusBadge(sttTest)}
           </div>
           {sttTest.detail && (
-            <p className={`text-xs mb-2 ${sttTest.status === 'fail' ? 'text-red-300' : 'text-gray-400'}`}>
+            <p className={`text-xs mb-2 ${sttTest.status === 'fail' ? 'text-c-red' : 'text-c-muted'}`}>
               {sttTest.detail}
             </p>
           )}
           <button
             onClick={testStt}
             disabled={sttTest.status === 'running'}
-            className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white text-xs rounded font-medium transition-colors"
+            className="px-3 py-1.5 bg-c-elevated hover:bg-c-border-hi disabled:opacity-50 text-c-text text-xs rounded font-mono uppercase font-medium transition-colors"
           >
             Run Test
           </button>
@@ -590,15 +590,15 @@ export default function VoiceLab() {
       </div>
 
       {/* System Info + Copy */}
-      <div className="mt-5 pt-4 border-t border-gray-800">
+      <div className="mt-5 pt-4 border-t border-c-border">
         <button
           onClick={collectSysInfo}
-          className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded font-medium transition-colors"
+          className="px-3 py-1.5 bg-c-elevated hover:bg-c-border-hi text-c-text text-xs rounded font-mono uppercase font-medium transition-colors"
         >
           Copy Diagnostics to Clipboard
         </button>
         {sysInfo && (
-          <pre className="mt-3 p-3 bg-gray-950 rounded text-xs text-gray-400 overflow-x-auto max-h-40 overflow-y-auto">
+          <pre className="mt-3 p-3 bg-c-bg rounded text-xs text-c-muted overflow-x-auto max-h-40 overflow-y-auto">
             {sysInfo}
           </pre>
         )}

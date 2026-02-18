@@ -187,12 +187,12 @@ export default function ConfigPage() {
   if (loading) {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-white mb-6">System Configuration</h1>
+        <h1 className="text-2xl font-bold text-c-text font-mono uppercase tracking-wider mb-6">System Configuration</h1>
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-gray-900 rounded-xl border border-gray-800 p-6 animate-pulse">
-              <div className="h-5 bg-gray-800 rounded w-40 mb-4" />
-              <div className="h-10 bg-gray-800 rounded" />
+            <div key={i} className="bezel rounded-lg border border-c-border p-6 animate-pulse">
+              <div className="h-5 bg-c-bezel rounded w-40 mb-4" />
+              <div className="h-10 bg-c-bezel rounded" />
             </div>
           ))}
         </div>
@@ -203,10 +203,10 @@ export default function ConfigPage() {
   if (error) {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-white mb-6">System Configuration</h1>
-        <div className="bg-red-900/20 border border-red-800/50 rounded-xl p-6 text-center">
+        <h1 className="text-2xl font-bold text-c-text font-mono uppercase tracking-wider mb-6">System Configuration</h1>
+        <div className="bg-c-red-dim/40 border border-red-800/50 rounded-lg p-6 text-center">
           <p className="text-red-300 mb-3">{error}</p>
-          <button onClick={fetchConfig} className="text-sm text-red-400 hover:text-red-300 underline">
+          <button onClick={fetchConfig} className="text-sm text-c-red hover:text-red-300 underline">
             Retry
           </button>
         </div>
@@ -217,18 +217,18 @@ export default function ConfigPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-white">System Configuration</h1>
+        <h1 className="text-2xl font-bold text-c-text font-mono uppercase tracking-wider">System Configuration</h1>
         <div className="flex items-center gap-3">
           {saveSuccess && (
-            <span className="text-xs text-green-400">Saved successfully</span>
+            <span className="text-xs text-c-green">Saved successfully</span>
           )}
           {saveError && (
-            <span className="text-xs text-red-400">{saveError}</span>
+            <span className="text-xs text-c-red">{saveError}</span>
           )}
           <button
             onClick={saveAll}
             disabled={saving}
-            className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="px-4 py-2 text-sm rounded-lg bg-c-amber text-c-text font-mono uppercase hover:bg-c-amber/90 disabled:opacity-50 transition-colors"
           >
             {saving ? 'Saving...' : 'Save All Changes'}
           </button>
@@ -237,8 +237,8 @@ export default function ConfigPage() {
 
       <div className="space-y-6">
         {/* Kill Switches — Providers */}
-        <section className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-          <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide mb-4">
+        <section className="bezel rounded-lg border border-c-border p-6">
+          <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-4">
             Provider Kill Switches
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -255,8 +255,8 @@ export default function ConfigPage() {
         </section>
 
         {/* Kill Switches — Tiers */}
-        <section className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-          <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide mb-4">
+        <section className="bezel rounded-lg border border-c-border p-6">
+          <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-4">
             Tier Kill Switches
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -273,8 +273,8 @@ export default function ConfigPage() {
         </section>
 
         {/* Maintenance Mode */}
-        <section className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-          <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide mb-4">
+        <section className="bezel rounded-lg border border-c-border p-6">
+          <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-4">
             Maintenance Mode
           </h2>
           <div className="flex items-start gap-6">
@@ -286,7 +286,7 @@ export default function ConfigPage() {
               />
             </div>
             <div className="flex-1">
-              <label className="block text-xs text-gray-500 mb-1.5">
+              <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-1.5">
                 User-facing message
               </label>
               <input
@@ -294,7 +294,7 @@ export default function ConfigPage() {
                 value={localState.maintenanceMode.message}
                 onChange={(e) => setMaintenanceMessage(e.target.value)}
                 placeholder="We'll be back shortly..."
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-c-bezel border border-c-border-hi rounded-lg text-sm text-c-text placeholder-c-dim focus:outline-none focus:ring-2 focus:ring-c-amber"
               />
             </div>
           </div>
@@ -308,8 +308,8 @@ export default function ConfigPage() {
         </section>
 
         {/* Hard Caps */}
-        <section className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-          <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide mb-4">
+        <section className="bezel rounded-lg border border-c-border p-6">
+          <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-4">
             Per-User Daily Hard Caps
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -362,18 +362,18 @@ function KillSwitchCard({
       className={`rounded-lg border p-4 transition-colors ${
         enabled
           ? 'bg-red-900/10 border-red-800/40'
-          : 'bg-gray-800/30 border-gray-800'
+          : 'bg-c-bezel/30 border-c-border'
       }`}
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-200">{label}</p>
-          <p className="text-xs text-gray-500 mt-0.5">{description}</p>
+          <p className="text-sm font-medium text-c-text">{label}</p>
+          <p className="text-xs text-c-dim mt-0.5">{description}</p>
         </div>
         <ToggleSwitch enabled={enabled} onToggle={onToggle} label={label} danger />
       </div>
       {enabled && (
-        <p className="text-xs text-red-400 mt-2">
+        <p className="text-xs text-c-red mt-2">
           KILLED -- Service is disabled
         </p>
       )}
@@ -398,12 +398,12 @@ function ToggleSwitch({
       aria-checked={enabled}
       aria-label={label}
       onClick={onToggle}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 ${
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-c-panel ${
         enabled
           ? danger
-            ? 'bg-red-600 focus:ring-red-500'
-            : 'bg-blue-600 focus:ring-blue-500'
-          : 'bg-gray-700 focus:ring-gray-500'
+            ? 'bg-c-red focus:ring-c-red'
+            : 'bg-c-amber focus:ring-c-amber'
+          : 'bg-c-elevated focus:ring-c-dim'
       }`}
     >
       <span
@@ -432,7 +432,7 @@ function HardCapInput({
 }) {
   return (
     <div>
-      <label className="block text-xs text-gray-500 mb-1.5">{label}</label>
+      <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-1.5">{label}</label>
       <input
         type="number"
         value={value}
@@ -440,7 +440,7 @@ function HardCapInput({
         min={min}
         max={max}
         step={step}
-        className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full px-3 py-2 bg-c-bezel border border-c-border-hi rounded-lg text-sm text-c-text focus:outline-none focus:ring-2 focus:ring-c-amber"
       />
       <input
         type="range"
@@ -449,9 +449,9 @@ function HardCapInput({
         min={min}
         max={max}
         step={step}
-        className="w-full mt-2 accent-blue-500"
+        className="w-full mt-2 accent-c-amber"
       />
-      <div className="flex justify-between text-xs text-gray-600 mt-0.5">
+      <div className="flex justify-between text-xs text-c-dim mt-0.5">
         <span>{min.toLocaleString()}</span>
         <span>{value.toLocaleString()}</span>
         <span>{max.toLocaleString()}</span>

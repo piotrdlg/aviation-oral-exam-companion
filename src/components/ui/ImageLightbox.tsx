@@ -45,7 +45,7 @@ export function ImageLightbox({ images, initialIndex, onClose }: ImageLightboxPr
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -54,7 +54,7 @@ export function ImageLightbox({ images, initialIndex, onClose }: ImageLightboxPr
       {/* Close button */}
       <button
         onClick={onClose}
-        className="absolute right-4 top-4 z-10 rounded-full bg-gray-800/80 p-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+        className="absolute right-4 top-4 z-10 rounded-full bg-c-bezel/80 p-2 text-c-text hover:bg-c-elevated hover:text-c-text transition-colors"
         aria-label="Close lightbox"
       >
         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -67,7 +67,7 @@ export function ImageLightbox({ images, initialIndex, onClose }: ImageLightboxPr
         <>
           <button
             onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-gray-800/80 p-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-c-bezel/80 p-2 text-c-text hover:bg-c-elevated hover:text-c-text transition-colors"
             aria-label="Previous image"
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -76,7 +76,7 @@ export function ImageLightbox({ images, initialIndex, onClose }: ImageLightboxPr
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); handleNext(); }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-gray-800/80 p-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-c-bezel/80 p-2 text-c-text hover:bg-c-elevated hover:text-c-text transition-colors"
             aria-label="Next image"
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -98,14 +98,14 @@ export function ImageLightbox({ images, initialIndex, onClose }: ImageLightboxPr
         />
         <div className="mt-3 text-center">
           {label && (
-            <div className="text-sm font-medium text-gray-200">{label}</div>
+            <div className="text-sm font-medium text-c-text">{label}</div>
           )}
           {image.caption && (
-            <div className="mt-1 max-w-xl text-sm text-gray-400">{image.caption}</div>
+            <div className="mt-1 max-w-xl text-sm text-c-muted">{image.caption}</div>
           )}
-          <div className="mt-1 text-xs text-gray-500">{source}</div>
+          <div className="mt-1 font-mono text-[10px] text-c-dim uppercase tracking-wider">{source}</div>
           {images.length > 1 && (
-            <div className="mt-1 text-xs text-gray-600">{index + 1} / {images.length}</div>
+            <div className="mt-1 font-mono text-[10px] text-c-dim uppercase tracking-wider">{index + 1} / {images.length}</div>
           )}
         </div>
       </div>

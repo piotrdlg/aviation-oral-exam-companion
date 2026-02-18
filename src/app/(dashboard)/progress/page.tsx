@@ -24,8 +24,8 @@ const RATING_LABELS: Record<Rating, string> = {
 const AcsCoverageTreemap = dynamic(() => import('./components/AcsCoverageTreemap'), {
   ssr: false,
   loading: () => (
-    <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 flex items-center justify-center" style={{ height: 460 }}>
-      <p className="text-gray-500">Loading treemap...</p>
+    <div className="bezel rounded-lg border border-c-border p-6 flex items-center justify-center" style={{ height: 460 }}>
+      <p className="text-c-dim font-mono text-xs">LOADING TREEMAP...</p>
     </div>
   ),
 });
@@ -206,8 +206,10 @@ export default function ProgressPage() {
 
   // Readiness tier
   const readinessTier = readinessScore >= 80 ? 'ready' : readinessScore >= 50 ? 'progressing' : readinessScore >= 20 ? 'building' : 'starting';
-  const readinessColor = readinessTier === 'ready' ? 'text-green-400' : readinessTier === 'progressing' ? 'text-blue-400' : readinessTier === 'building' ? 'text-yellow-400' : 'text-gray-400';
-  const readinessBg = readinessTier === 'ready' ? 'from-green-500/20' : readinessTier === 'progressing' ? 'from-blue-500/20' : readinessTier === 'building' ? 'from-yellow-500/20' : 'from-gray-500/10';
+  const readinessColor = readinessTier === 'ready' ? 'text-c-green' : readinessTier === 'progressing' ? 'text-c-cyan' : readinessTier === 'building' ? 'text-c-amber' : 'text-c-muted';
+  const readinessBg = readinessTier === 'ready' ? 'bg-c-green-lo' : readinessTier === 'progressing' ? 'bg-c-cyan-lo' : readinessTier === 'building' ? 'bg-c-amber-lo' : 'bg-c-bezel';
+  const readinessGlow = readinessTier === 'ready' ? 'glow-g' : readinessTier === 'progressing' ? 'glow-c' : readinessTier === 'building' ? 'glow-a' : '';
+  const readinessProgClass = readinessTier === 'ready' ? 'prog-g' : readinessTier === 'progressing' ? 'prog-c' : readinessTier === 'building' ? 'prog-a' : 'prog-a';
 
   // Weak elements count (for achievements)
   const weakCount = useMemo(() => {
@@ -234,23 +236,23 @@ export default function ProgressPage() {
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="mb-2">
-        <h1 className="text-2xl font-bold text-white">Your Progress</h1>
-        <p className="text-sm text-gray-400 mt-1">
+        <h1 className="font-mono font-bold text-xl text-c-amber glow-a tracking-wider uppercase">PROGRESS</h1>
+        <p className="text-sm text-c-muted mt-1">
           {RATING_LABELS[selectedRating]}{selectedRating !== 'instrument' ? ` (${selectedClass})` : ' — Airplane'} checkride preparation
         </p>
       </div>
 
       {/* Sticky tabs */}
-      <div className="sticky top-0 z-10 bg-gray-950 pb-4 pt-2 -mx-1 px-1">
+      <div className="sticky top-0 z-10 bg-c-bg pb-4 pt-2 -mx-1 px-1">
         <div className="flex flex-wrap items-center gap-2">
           {/* Rating selector */}
-          <div className="flex gap-0.5 bg-gray-800 rounded-lg p-0.5">
+          <div className="flex gap-0.5 bg-c-bezel rounded-lg p-0.5">
             {RATING_OPTIONS.map((r) => (
               <button
                 key={r.value}
                 onClick={() => setSelectedRating(r.value)}
-                className={`px-2.5 py-1.5 text-xs rounded-md transition-colors ${
-                  selectedRating === r.value ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-gray-300'
+                className={`px-2.5 py-1.5 text-xs rounded-md font-mono transition-colors ${
+                  selectedRating === r.value ? 'bg-c-amber text-c-bg font-semibold' : 'text-c-muted hover:text-c-text'
                 }`}
               >
                 {r.label}
@@ -259,13 +261,13 @@ export default function ProgressPage() {
           </div>
           {/* Class selector (not applicable for instrument rating) */}
           {selectedRating !== 'instrument' && (
-            <div className="flex gap-0.5 bg-gray-800 rounded-lg p-0.5">
+            <div className="flex gap-0.5 bg-c-bezel rounded-lg p-0.5">
               {CLASS_OPTIONS.map((cls) => (
                 <button
                   key={cls.value}
                   onClick={() => setSelectedClass(cls.value)}
-                  className={`px-2.5 py-1.5 text-xs rounded-md transition-colors ${
-                    selectedClass === cls.value ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-gray-300'
+                  className={`px-2.5 py-1.5 text-xs rounded-md font-mono transition-colors ${
+                    selectedClass === cls.value ? 'bg-c-amber text-c-bg font-semibold' : 'text-c-muted hover:text-c-text'
                   }`}
                 >
                   {cls.label}
@@ -274,22 +276,22 @@ export default function ProgressPage() {
             </div>
           )}
           {/* View toggle */}
-          <div className="flex gap-0.5 bg-gray-800 rounded-lg p-0.5 ml-auto">
+          <div className="flex gap-0.5 bg-c-bezel rounded-lg p-0.5 ml-auto">
             <button
               onClick={() => setView('overview')}
-              className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
-                view === 'overview' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-300'
+              className={`px-3 py-1.5 text-xs rounded-md font-mono transition-colors ${
+                view === 'overview' ? 'bg-c-elevated text-c-text font-semibold' : 'text-c-muted hover:text-c-text'
               }`}
             >
-              Overview
+              OVERVIEW
             </button>
             <button
               onClick={() => setView('treemap')}
-              className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
-                view === 'treemap' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-300'
+              className={`px-3 py-1.5 text-xs rounded-md font-mono transition-colors ${
+                view === 'treemap' ? 'bg-c-elevated text-c-text font-semibold' : 'text-c-muted hover:text-c-text'
               }`}
             >
-              ACS Map
+              ACS MAP
             </button>
           </div>
         </div>
@@ -299,72 +301,66 @@ export default function ProgressPage() {
         <div className="space-y-3">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-gray-900 rounded-xl border border-gray-800 p-4 animate-pulse">
-                <div className="h-6 w-12 bg-gray-800 rounded mx-auto mb-2" />
-                <div className="h-3 w-16 bg-gray-800 rounded mx-auto" />
+              <div key={i} className="bezel rounded-lg border border-c-border p-4 animate-pulse">
+                <div className="h-6 w-12 bg-c-bezel rounded mx-auto mb-2" />
+                <div className="h-3 w-16 bg-c-bezel rounded mx-auto" />
               </div>
             ))}
           </div>
-          <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 flex items-center justify-center min-h-[200px]">
-            <p className="text-gray-500">Loading your progress...</p>
+          <div className="bezel rounded-lg border border-c-border p-6 flex items-center justify-center min-h-[200px]">
+            <p className="text-c-dim font-mono text-xs">LOADING YOUR PROGRESS...</p>
           </div>
         </div>
       ) : filteredSessions.length === 0 && elementScores.length === 0 ? (
         /* Empty state with CTA */
-        <div className="bg-gray-900 rounded-xl border border-gray-800 p-8 text-center">
+        <div className="bezel rounded-lg border border-c-border p-8 text-center">
           <div className="text-4xl mb-3 opacity-50">
-            <svg className="w-12 h-12 mx-auto text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
+            <span className="text-c-muted text-3xl">&#9636;</span>
           </div>
-          <h2 className="text-lg font-medium text-white mb-2">No progress data yet</h2>
-          <p className="text-sm text-gray-400 mb-5 max-w-sm mx-auto">
+          <h2 className="font-mono font-semibold text-sm text-c-text uppercase mb-2">NO PROGRESS DATA YET</h2>
+          <p className="text-sm text-c-muted mb-5 max-w-sm mx-auto">
             Complete your first practice session to start tracking your {RATING_LABELS[selectedRating]} checkride readiness.
           </p>
           <Link
             href="/practice"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-c-amber hover:bg-c-amber/90 text-c-bg text-xs font-mono font-semibold rounded-lg tracking-wide transition-colors shadow-lg shadow-c-amber/20 uppercase"
           >
-            Start Practicing
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
+            START PRACTICING
+            <span>&#9654;</span>
           </Link>
         </div>
       ) : (
         <>
           {/* Readiness Score + Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
-            {/* Readiness Score — spans 1 col on mobile, 1 col on desktop */}
-            <div className={`col-span-2 md:col-span-1 bg-gradient-to-br ${readinessBg} to-gray-900 rounded-xl border border-gray-800 p-4 text-center`}>
-              <p className={`text-3xl font-bold ${readinessColor}`}>{readinessScore}</p>
-              <p className="text-xs text-gray-400 mt-0.5">Readiness</p>
-              <div className="mt-2 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+            {/* Readiness Score */}
+            <div className={`col-span-2 md:col-span-1 ${readinessBg} rounded-lg border border-c-border p-4 text-center`}>
+              <p className={`text-3xl font-mono font-bold ${readinessColor} ${readinessGlow}`}>{readinessScore}</p>
+              <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider mt-0.5">READINESS</p>
+              <div className="mt-2 h-1.5 bg-c-border rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    readinessTier === 'ready' ? 'bg-green-500' : readinessTier === 'progressing' ? 'bg-blue-500' : readinessTier === 'building' ? 'bg-yellow-500' : 'bg-gray-600'
-                  }`}
+                  className={`h-full rounded-full transition-all duration-500 ${readinessProgClass}`}
                   style={{ width: `${readinessScore}%` }}
                 />
               </div>
             </div>
-            <div className="bg-gray-900 rounded-xl border border-gray-800 p-3 text-center">
-              <p className="text-xl font-bold text-white">{totalSessions}</p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                Sessions{completedSessions < totalSessions ? ` (${completedSessions} done)` : ''}
+            <div className="bezel rounded-lg border border-c-border p-3 text-center">
+              <p className="text-xl font-mono font-semibold text-c-text">{totalSessions}</p>
+              <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider mt-0.5">
+                SESSIONS{completedSessions < totalSessions ? ` (${completedSessions} DONE)` : ''}
               </p>
             </div>
-            <div className="bg-gray-900 rounded-xl border border-gray-800 p-3 text-center">
-              <p className="text-xl font-bold text-white">{totalExchanges}</p>
-              <p className="text-xs text-gray-400 mt-0.5">Exchanges</p>
+            <div className="bezel rounded-lg border border-c-border p-3 text-center">
+              <p className="text-xl font-mono font-semibold text-c-text">{totalExchanges}</p>
+              <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider mt-0.5">EXCHANGES</p>
             </div>
-            <div className="bg-gray-900 rounded-xl border border-gray-800 p-3 text-center">
-              <p className="text-xl font-bold text-white">{coveragePct}%</p>
-              <p className="text-xs text-gray-400 mt-0.5">Coverage</p>
+            <div className="bezel rounded-lg border border-c-border p-3 text-center">
+              <p className="text-xl font-mono font-semibold text-c-text">{coveragePct}%</p>
+              <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider mt-0.5">COVERAGE</p>
             </div>
-            <div className="bg-gray-900 rounded-xl border border-gray-800 p-3 text-center">
-              <p className="text-xl font-bold text-white">{attemptedElements}</p>
-              <p className="text-xs text-gray-400 mt-0.5">Elements</p>
+            <div className="bezel rounded-lg border border-c-border p-3 text-center">
+              <p className="text-xl font-mono font-semibold text-c-text">{attemptedElements}</p>
+              <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider mt-0.5">ELEMENTS</p>
             </div>
           </div>
 
@@ -376,18 +372,18 @@ export default function ProgressPage() {
                   <span
                     key={a.id}
                     title={a.label}
-                    className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-800 border border-gray-700 rounded-full text-xs text-gray-300"
+                    className="shrink-0 inline-flex items-center gap-1.5 font-mono text-[10px] bg-c-bezel text-c-muted px-2.5 py-1 rounded-full border border-c-border"
                   >
-                    <span className="text-blue-400 font-bold text-[10px]">{a.icon}</span>
+                    <span className="text-c-amber font-bold text-[10px]">{a.icon}</span>
                     {a.label}
                   </span>
                 ))}
                 {nextAchievement && (
                   <span
                     title={`Next: ${nextAchievement.label}`}
-                    className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-900 border border-gray-800 border-dashed rounded-full text-xs text-gray-500"
+                    className="shrink-0 inline-flex items-center gap-1.5 font-mono text-[10px] bg-c-panel text-c-dim px-2.5 py-1 rounded-full border border-c-border border-dashed"
                   >
-                    <span className="text-gray-600 font-bold text-[10px]">{nextAchievement.icon}</span>
+                    <span className="text-c-dim font-bold text-[10px]">{nextAchievement.icon}</span>
                     {nextAchievement.label}
                   </span>
                 )}
@@ -400,20 +396,16 @@ export default function ProgressPage() {
             <div className="mb-4">
               <Link
                 href="/practice?mode=weak_areas"
-                className="flex items-center justify-between w-full px-4 py-3 bg-red-900/15 hover:bg-red-900/25 border border-red-800/30 rounded-xl transition-colors group"
+                className="flex items-center justify-between w-full px-4 py-3 bg-c-red-dim/40 hover:bg-c-red-dim/60 border border-c-red/20 rounded-lg transition-colors group"
               >
                 <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                  </svg>
+                  <span className="text-c-red text-lg">&#9888;</span>
                   <div>
-                    <p className="text-sm font-medium text-red-300">{weakCount} weak element{weakCount !== 1 ? 's' : ''} need attention</p>
-                    <p className="text-xs text-gray-400">Practice focused on your gaps</p>
+                    <p className="text-sm font-mono font-medium text-c-red">{weakCount} WEAK ELEMENT{weakCount !== 1 ? 'S' : ''} NEED ATTENTION</p>
+                    <p className="text-xs text-c-muted">Practice focused on your gaps</p>
                   </div>
                 </div>
-                <svg className="w-5 h-5 text-gray-500 group-hover:text-red-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
+                <span className="text-c-dim group-hover:text-c-red transition-colors">&#9654;</span>
               </Link>
             </div>
           )}
@@ -423,11 +415,11 @@ export default function ProgressPage() {
             <div className="space-y-4">
               {/* Session selector */}
               <div className="flex items-center gap-2">
-                <label className="text-xs text-gray-400">Session:</label>
+                <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider">SESSION:</label>
                 <select
                   value={selectedSessionId || ''}
                   onChange={(e) => setSelectedSessionId(e.target.value || null)}
-                  className="bg-gray-800 border border-gray-700 rounded-lg text-xs text-gray-300 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="bg-c-panel border border-c-border rounded-lg text-xs text-c-text font-mono px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber"
                 >
                   <option value="">All Sessions (Lifetime)</option>
                   {filteredSessions.map((s) => (
@@ -443,7 +435,7 @@ export default function ProgressPage() {
                   ))}
                 </select>
                 {sessionScoresLoading && (
-                  <span className="text-xs text-gray-500">Loading...</span>
+                  <span className="font-mono text-[10px] text-c-dim">LOADING...</span>
                 )}
               </div>
               <AcsCoverageTreemap scores={treemapScores} />
@@ -456,20 +448,20 @@ export default function ProgressPage() {
             /* Overview View — Sessions + Weak Areas */
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
-                <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide mb-3">Recent Sessions</h2>
+                <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-3">RECENT SESSIONS</h2>
                 <div className="space-y-2">
                   {filteredSessions.length === 0 ? (
-                    <div className="bg-gray-900 rounded-xl border border-gray-800 p-4 text-center">
-                      <p className="text-sm text-gray-500">No {RATING_LABELS[selectedRating]} sessions yet</p>
+                    <div className="bezel rounded-lg border border-c-border p-4 text-center">
+                      <p className="text-sm text-c-dim font-mono">No {RATING_LABELS[selectedRating]} sessions yet</p>
                     </div>
                   ) : (
                     filteredSessions.slice(0, 10).map((session) => (
                       <div
                         key={session.id}
-                        className="bg-gray-900 rounded-xl border border-gray-800 p-3 flex items-center justify-between"
+                        className="iframe rounded-lg p-3 flex items-center justify-between"
                       >
                         <div>
-                          <p className="text-sm text-white">
+                          <p className="text-sm font-mono text-c-text">
                             {new Date(session.started_at).toLocaleDateString('en-US', {
                               month: 'short',
                               day: 'numeric',
@@ -478,7 +470,7 @@ export default function ProgressPage() {
                               minute: '2-digit',
                             })}
                           </p>
-                          <p className="text-xs text-gray-500 mt-0.5">
+                          <p className="font-mono text-[10px] text-c-dim mt-0.5">
                             {session.exchange_count || 0} exchanges
                             {session.acs_tasks_covered?.length
                               ? ` / ${session.acs_tasks_covered.length} tasks`
@@ -487,12 +479,12 @@ export default function ProgressPage() {
                           </p>
                         </div>
                         <span
-                          className={`text-xs px-2 py-1 rounded-full ${
+                          className={`font-mono text-[10px] px-2 py-0.5 rounded border uppercase ${
                             session.status === 'completed'
-                              ? 'bg-green-900/30 text-green-400'
+                              ? 'bg-c-green-lo text-c-green border-c-green/20'
                               : session.status === 'active'
-                              ? 'bg-blue-900/30 text-blue-400'
-                              : 'bg-yellow-900/30 text-yellow-400'
+                              ? 'bg-c-cyan-lo text-c-cyan border-c-cyan/20'
+                              : 'bg-c-amber-lo text-c-amber border-c-amber/20'
                           }`}
                         >
                           {session.status}
@@ -505,11 +497,11 @@ export default function ProgressPage() {
 
               <div className="space-y-4">
                 <div>
-                  <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide mb-3">Weak Areas</h2>
+                  <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-3">WEAK AREAS</h2>
                   <WeakAreas scores={filteredScores} />
                 </div>
                 <div>
-                  <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide mb-3">Study Plan</h2>
+                  <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-3">STUDY PLAN</h2>
                   <StudyRecommendations scores={filteredScores} />
                 </div>
               </div>

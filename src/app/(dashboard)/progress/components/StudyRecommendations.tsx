@@ -73,8 +73,8 @@ export default function StudyRecommendations({ scores }: Props) {
 
   if (recs.length === 0) {
     return (
-      <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 text-center">
-        <p className="text-gray-500">
+      <div className="bezel rounded-lg border border-c-border p-6 text-center">
+        <p className="text-c-dim font-mono text-xs">
           {scores.some((s) => s.total_attempts > 0)
             ? 'No study recommendations — all areas are looking good!'
             : 'Complete a practice session to get study recommendations.'}
@@ -84,30 +84,30 @@ export default function StudyRecommendations({ scores }: Props) {
   }
 
   return (
-    <div className="bg-gray-900 rounded-xl border border-gray-800 p-4">
-      <h3 className="text-sm font-medium text-white mb-3">Study Recommendations</h3>
+    <div className="bezel rounded-lg border border-c-border p-4">
+      <h3 className="font-mono text-sm font-semibold text-c-amber uppercase tracking-wider mb-3">STUDY RECOMMENDATIONS</h3>
       <div className="space-y-3 max-h-80 overflow-y-auto">
         {recs.slice(0, 8).map((rec) => (
           <div
             key={rec.taskId}
             className={`p-3 rounded-lg border ${
               rec.severity === 'critical'
-                ? 'bg-red-900/10 border-red-800/30'
-                : 'bg-yellow-900/10 border-yellow-800/30'
+                ? 'bg-c-red-dim/40 border-c-red/20'
+                : 'bg-c-amber-lo border-c-amber/20'
             }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <p className="text-sm font-medium text-white">{rec.area}</p>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${
+              <p className="font-mono text-xs font-semibold text-c-text uppercase">{rec.area}</p>
+              <span className={`font-mono text-[10px] px-2 py-0.5 rounded border ${
                 rec.severity === 'critical'
-                  ? 'bg-red-900/30 text-red-400'
-                  : 'bg-yellow-900/30 text-yellow-400'
+                  ? 'bg-c-red-dim/40 text-c-red border-c-red/20'
+                  : 'bg-c-amber-lo text-c-amber border-c-amber/20'
               }`}>
-                {rec.elementCodes.length} weak element{rec.elementCodes.length !== 1 ? 's' : ''}
+                {rec.elementCodes.length} WEAK ELEMENT{rec.elementCodes.length !== 1 ? 'S' : ''}
               </span>
             </div>
-            <p className="text-xs text-gray-400 mb-1">{rec.suggestion}</p>
-            <p className="text-xs text-blue-400">{rec.sourceHint}</p>
+            <p className="text-xs text-c-muted mb-1">{rec.suggestion}</p>
+            <p className="font-mono text-[10px] text-c-cyan">{rec.sourceHint}</p>
           </div>
         ))}
       </div>

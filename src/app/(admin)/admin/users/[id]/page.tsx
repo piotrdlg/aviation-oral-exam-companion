@@ -79,15 +79,15 @@ const TIER_LABELS: Record<VoiceTier, string> = {
 };
 
 const TIER_COLORS: Record<VoiceTier, string> = {
-  ground_school: 'bg-gray-700 text-gray-300',
-  checkride_prep: 'bg-blue-900/40 text-blue-300',
+  ground_school: 'bg-c-elevated text-c-text',
+  checkride_prep: 'bg-c-cyan/20 text-c-cyan',
   dpe_live: 'bg-purple-900/40 text-purple-300',
 };
 
 const STATUS_COLORS: Record<AccountStatus, string> = {
-  active: 'bg-green-900/30 text-green-400',
-  suspended: 'bg-yellow-900/30 text-yellow-400',
-  banned: 'bg-red-900/30 text-red-400',
+  active: 'bg-green-900/30 text-c-green',
+  suspended: 'bg-yellow-900/30 text-c-amber',
+  banned: 'bg-red-900/30 text-c-red',
 };
 
 export default function UserDetailPage({
@@ -176,15 +176,15 @@ export default function UserDetailPage({
     return (
       <div>
         <div className="flex items-center gap-2 mb-6">
-          <Link href="/admin/users" className="text-gray-500 hover:text-gray-300 text-sm">
+          <Link href="/admin/users" className="text-c-dim hover:text-c-text text-sm">
             Users
           </Link>
-          <span className="text-gray-600">/</span>
-          <span className="text-gray-400 text-sm">Loading...</span>
+          <span className="text-c-dim">/</span>
+          <span className="text-c-muted text-sm">Loading...</span>
         </div>
-        <div className="bg-gray-900 rounded-xl border border-gray-800 p-8 animate-pulse">
-          <div className="h-6 bg-gray-800 rounded w-48 mb-4" />
-          <div className="h-4 bg-gray-800 rounded w-32" />
+        <div className="bezel rounded-lg border border-c-border p-8 animate-pulse">
+          <div className="h-6 bg-c-bezel rounded w-48 mb-4" />
+          <div className="h-4 bg-c-bezel rounded w-32" />
         </div>
       </div>
     );
@@ -194,15 +194,15 @@ export default function UserDetailPage({
     return (
       <div>
         <div className="flex items-center gap-2 mb-6">
-          <Link href="/admin/users" className="text-gray-500 hover:text-gray-300 text-sm">
+          <Link href="/admin/users" className="text-c-dim hover:text-c-text text-sm">
             Users
           </Link>
-          <span className="text-gray-600">/</span>
-          <span className="text-gray-400 text-sm">Error</span>
+          <span className="text-c-dim">/</span>
+          <span className="text-c-muted text-sm">Error</span>
         </div>
-        <div className="bg-red-900/20 border border-red-800/50 rounded-xl p-6 text-center">
+        <div className="bg-c-red-dim/40 border border-red-800/50 rounded-lg p-6 text-center">
           <p className="text-red-300 mb-3">{error || 'User not found'}</p>
-          <button onClick={fetchUser} className="text-sm text-red-400 hover:text-red-300 underline">
+          <button onClick={fetchUser} className="text-sm text-c-red hover:text-red-300 underline">
             Retry
           </button>
         </div>
@@ -216,17 +216,17 @@ export default function UserDetailPage({
     <div>
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 mb-6">
-        <Link href="/admin/users" className="text-gray-500 hover:text-gray-300 text-sm">
+        <Link href="/admin/users" className="text-c-dim hover:text-c-text text-sm">
           Users
         </Link>
-        <span className="text-gray-600">/</span>
-        <span className="text-gray-300 text-sm">{user.email}</span>
+        <span className="text-c-dim">/</span>
+        <span className="text-c-text text-sm">{user.email}</span>
       </div>
 
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">{user.email}</h1>
+          <h1 className="text-2xl font-bold text-c-text font-mono uppercase tracking-wider">{user.email}</h1>
           <div className="flex items-center gap-2 mt-2">
             <span className={`text-xs px-2 py-0.5 rounded-full ${TIER_COLORS[user.tier]}`}>
               {TIER_LABELS[user.tier]}
@@ -235,13 +235,13 @@ export default function UserDetailPage({
               {user.account_status}
             </span>
             {user.subscription_status && user.subscription_status !== 'none' && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-gray-800 text-gray-300">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-c-bezel text-c-text">
                 Sub: {user.subscription_status}
               </span>
             )}
           </div>
           {user.status_reason && (
-            <p className="text-xs text-gray-500 mt-1">Reason: {user.status_reason}</p>
+            <p className="text-xs text-c-dim mt-1">Reason: {user.status_reason}</p>
           )}
         </div>
 
@@ -252,14 +252,14 @@ export default function UserDetailPage({
               <button
                 onClick={() => performAction('suspend')}
                 disabled={actionLoading}
-                className="px-3 py-1.5 text-xs rounded-md bg-yellow-900/30 text-yellow-300 hover:bg-yellow-900/50 transition-colors disabled:opacity-50"
+                className="px-3 py-1.5 text-xs rounded-md bg-yellow-900/30 text-c-amber hover:bg-yellow-900/50 font-mono uppercase transition-colors disabled:opacity-50"
               >
                 Suspend
               </button>
               <button
                 onClick={() => performAction('ban')}
                 disabled={actionLoading}
-                className="px-3 py-1.5 text-xs rounded-md bg-red-900/30 text-red-300 hover:bg-red-900/50 transition-colors disabled:opacity-50"
+                className="px-3 py-1.5 text-xs rounded-md bg-red-900/30 text-c-red hover:bg-red-900/50 font-mono uppercase transition-colors disabled:opacity-50"
               >
                 Ban
               </button>
@@ -270,14 +270,14 @@ export default function UserDetailPage({
               <button
                 onClick={() => performAction('activate')}
                 disabled={actionLoading}
-                className="px-3 py-1.5 text-xs rounded-md bg-green-900/30 text-green-300 hover:bg-green-900/50 transition-colors disabled:opacity-50"
+                className="px-3 py-1.5 text-xs rounded-md bg-green-900/30 text-c-green hover:bg-green-900/50 font-mono uppercase transition-colors disabled:opacity-50"
               >
                 Activate
               </button>
               <button
                 onClick={() => performAction('ban')}
                 disabled={actionLoading}
-                className="px-3 py-1.5 text-xs rounded-md bg-red-900/30 text-red-300 hover:bg-red-900/50 transition-colors disabled:opacity-50"
+                className="px-3 py-1.5 text-xs rounded-md bg-red-900/30 text-c-red hover:bg-red-900/50 font-mono uppercase transition-colors disabled:opacity-50"
               >
                 Ban
               </button>
@@ -287,7 +287,7 @@ export default function UserDetailPage({
             <button
               onClick={() => performAction('activate')}
               disabled={actionLoading}
-              className="px-3 py-1.5 text-xs rounded-md bg-green-900/30 text-green-300 hover:bg-green-900/50 transition-colors disabled:opacity-50"
+              className="px-3 py-1.5 text-xs rounded-md bg-green-900/30 text-c-green hover:bg-green-900/50 font-mono uppercase transition-colors disabled:opacity-50"
             >
               Activate
             </button>
@@ -302,30 +302,30 @@ export default function UserDetailPage({
 
       {/* Action error */}
       {actionError && (
-        <div className="bg-red-900/20 border border-red-800/50 rounded-lg p-3 mb-4 text-red-300 text-sm flex items-center justify-between">
+        <div className="bg-c-red-dim/40 border border-red-800/50 rounded-lg p-3 mb-4 text-red-300 text-sm flex items-center justify-between">
           <span>{actionError}</span>
-          <button onClick={() => setActionError(null)} className="text-red-400 hover:text-red-300 ml-3">
+          <button onClick={() => setActionError(null)} className="text-c-red hover:text-red-300 ml-3">
             &times;
           </button>
         </div>
       )}
 
       {/* Tabs */}
-      <div className="border-b border-gray-800 mb-6">
+      <div className="border-b border-c-border mb-6">
         <div className="flex gap-0">
           {TABS.map((tab) => (
             <button
               key={tab.value}
               onClick={() => setActiveTab(tab.value)}
-              className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              className={`px-4 py-2.5 text-sm font-mono uppercase border-b-2 transition-colors ${
                 activeTab === tab.value
-                  ? 'border-blue-500 text-white'
-                  : 'border-transparent text-gray-500 hover:text-gray-300'
+                  ? 'border-c-amber text-c-text'
+                  : 'border-transparent text-c-dim hover:text-c-text'
               }`}
             >
               {tab.label}
               {tab.value === 'notes' && notes.length > 0 && (
-                <span className="ml-1.5 text-xs bg-gray-800 px-1.5 py-0.5 rounded-full">
+                <span className="ml-1.5 text-xs bg-c-bezel px-1.5 py-0.5 rounded-full">
                   {notes.length}
                 </span>
               )}
@@ -370,7 +370,7 @@ function TierDropdown({
       value={currentTier}
       disabled={disabled}
       onChange={(e) => onChange(e.target.value as VoiceTier)}
-      className="px-3 py-1.5 text-xs rounded-md bg-gray-800 text-gray-300 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+      className="px-3 py-1.5 text-xs rounded-md bg-c-bezel text-c-text border border-c-border-hi focus:outline-none focus:ring-2 focus:ring-c-amber font-mono uppercase disabled:opacity-50"
     >
       <option value="ground_school">Ground School</option>
       <option value="checkride_prep">Checkride Prep</option>
@@ -403,8 +403,8 @@ function OverviewTab({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Account Info */}
-      <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
-        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wide mb-4">
+      <div className="bezel rounded-lg border border-c-border p-5">
+        <h3 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-4">
           Account Info
         </h3>
         <dl className="space-y-3">
@@ -440,8 +440,8 @@ function OverviewTab({
       </div>
 
       {/* Quick Stats */}
-      <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
-        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wide mb-4">
+      <div className="bezel rounded-lg border border-c-border p-5">
+        <h3 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-4">
           Quick Stats
         </h3>
         <div className="grid grid-cols-2 gap-4">
@@ -460,27 +460,27 @@ function OverviewTab({
 function SessionsTab({ sessions }: { sessions: UserSession[] }) {
   if (sessions.length === 0) {
     return (
-      <div className="bg-gray-900 rounded-xl border border-gray-800 p-8 text-center">
-        <p className="text-gray-500">No sessions found for this user</p>
+      <div className="bezel rounded-lg border border-c-border p-8 text-center">
+        <p className="text-c-dim">No sessions found for this user</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
+    <div className="bezel rounded-lg border border-c-border overflow-hidden">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-gray-800 text-left">
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Date</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Rating</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Mode</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Exchanges</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Tasks</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Duration</th>
+          <tr className="border-b border-c-border text-left">
+            <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Date</th>
+            <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Rating</th>
+            <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Mode</th>
+            <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Exchanges</th>
+            <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Tasks</th>
+            <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Status</th>
+            <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Duration</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-800">
+        <tbody className="divide-y divide-c-border">
           {sessions.map((session) => {
             const duration =
               session.ended_at && session.started_at
@@ -490,8 +490,8 @@ function SessionsTab({ sessions }: { sessions: UserSession[] }) {
                   )
                 : null;
             return (
-              <tr key={session.id} className="hover:bg-gray-800/50 transition-colors">
-                <td className="px-4 py-3 text-gray-300 text-xs">
+              <tr key={session.id} className="hover:bg-c-bezel/50 transition-colors">
+                <td className="px-4 py-3 text-c-text text-xs">
                   {new Date(session.started_at).toLocaleString('en-US', {
                     month: 'short',
                     day: 'numeric',
@@ -500,17 +500,17 @@ function SessionsTab({ sessions }: { sessions: UserSession[] }) {
                   })}
                 </td>
                 <td className="px-4 py-3">
-                  <span className="text-xs px-1.5 py-0.5 rounded bg-gray-800 text-gray-300 uppercase">
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-c-bezel text-c-text uppercase font-mono">
                     {session.rating}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-gray-400 text-xs">{session.study_mode}</td>
-                <td className="px-4 py-3 text-gray-300">{session.exchange_count}</td>
-                <td className="px-4 py-3 text-gray-300">{session.acs_tasks_covered?.length || 0}</td>
+                <td className="px-4 py-3 text-c-muted text-xs">{session.study_mode}</td>
+                <td className="px-4 py-3 text-c-text">{session.exchange_count}</td>
+                <td className="px-4 py-3 text-c-text">{session.acs_tasks_covered?.length || 0}</td>
                 <td className="px-4 py-3">
                   <SessionStatusBadge status={session.status} />
                 </td>
-                <td className="px-4 py-3 text-gray-500 text-xs">
+                <td className="px-4 py-3 text-c-dim text-xs">
                   {duration !== null ? `${duration} min` : '--'}
                 </td>
               </tr>
@@ -525,8 +525,8 @@ function SessionsTab({ sessions }: { sessions: UserSession[] }) {
 function ScoresTab({ scores }: { scores: UserScore[] }) {
   if (scores.length === 0) {
     return (
-      <div className="bg-gray-900 rounded-xl border border-gray-800 p-8 text-center">
-        <p className="text-gray-500">No element scores recorded yet</p>
+      <div className="bezel rounded-lg border border-c-border p-8 text-center">
+        <p className="text-c-dim">No element scores recorded yet</p>
       </div>
     );
   }
@@ -542,34 +542,34 @@ function ScoresTab({ scores }: { scores: UserScore[] }) {
   return (
     <div className="space-y-4">
       {Array.from(areas.entries()).map(([area, areaScores]) => (
-        <div key={area} className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-800 bg-gray-800/30">
-            <h3 className="text-sm font-medium text-gray-300">{area}</h3>
+        <div key={area} className="bezel rounded-lg border border-c-border overflow-hidden">
+          <div className="px-4 py-3 border-b border-c-border bg-c-bezel/30">
+            <h3 className="text-sm font-medium text-c-text font-mono uppercase tracking-wider">{area}</h3>
           </div>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-800 text-left">
-                <th className="px-4 py-2 text-xs font-medium text-gray-500">Element</th>
-                <th className="px-4 py-2 text-xs font-medium text-gray-500">Attempts</th>
-                <th className="px-4 py-2 text-xs font-medium text-gray-500">Sat</th>
-                <th className="px-4 py-2 text-xs font-medium text-gray-500">Partial</th>
-                <th className="px-4 py-2 text-xs font-medium text-gray-500">Unsat</th>
-                <th className="px-4 py-2 text-xs font-medium text-gray-500">Latest</th>
+              <tr className="border-b border-c-border text-left">
+                <th className="px-4 py-2 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Element</th>
+                <th className="px-4 py-2 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Attempts</th>
+                <th className="px-4 py-2 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Sat</th>
+                <th className="px-4 py-2 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Partial</th>
+                <th className="px-4 py-2 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Unsat</th>
+                <th className="px-4 py-2 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Latest</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800/50">
+            <tbody className="divide-y divide-c-border/50">
               {areaScores
                 .filter((s) => s.total_attempts > 0)
                 .sort((a, b) => a.element_code.localeCompare(b.element_code))
                 .map((score) => (
                   <tr key={score.element_code}>
-                    <td className="px-4 py-2 text-gray-300 font-mono text-xs">
+                    <td className="px-4 py-2 text-c-text font-mono text-xs">
                       {score.element_code}
                     </td>
-                    <td className="px-4 py-2 text-gray-400">{score.total_attempts}</td>
-                    <td className="px-4 py-2 text-green-400">{score.satisfactory_count}</td>
-                    <td className="px-4 py-2 text-yellow-400">{score.partial_count}</td>
-                    <td className="px-4 py-2 text-red-400">{score.unsatisfactory_count}</td>
+                    <td className="px-4 py-2 text-c-muted">{score.total_attempts}</td>
+                    <td className="px-4 py-2 text-c-green">{score.satisfactory_count}</td>
+                    <td className="px-4 py-2 text-c-amber">{score.partial_count}</td>
+                    <td className="px-4 py-2 text-c-red">{score.unsatisfactory_count}</td>
                     <td className="px-4 py-2">
                       <ScoreBadge score={score.latest_score} />
                     </td>
@@ -586,32 +586,32 @@ function ScoresTab({ scores }: { scores: UserScore[] }) {
 function UsageTab({ usage }: { usage: UsageEntry[] }) {
   if (usage.length === 0) {
     return (
-      <div className="bg-gray-900 rounded-xl border border-gray-800 p-8 text-center">
-        <p className="text-gray-500">No usage data available</p>
+      <div className="bezel rounded-lg border border-c-border p-8 text-center">
+        <p className="text-c-dim">No usage data available</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
+    <div className="bezel rounded-lg border border-c-border overflow-hidden">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-gray-800 text-left">
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Date</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">LLM Requests</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">TTS Requests</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">STT Sessions</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Total Tokens</th>
+          <tr className="border-b border-c-border text-left">
+            <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Date</th>
+            <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">LLM Requests</th>
+            <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">TTS Requests</th>
+            <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">STT Sessions</th>
+            <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Total Tokens</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-800">
+        <tbody className="divide-y divide-c-border">
           {usage.map((entry) => (
-            <tr key={entry.date} className="hover:bg-gray-800/50 transition-colors">
-              <td className="px-4 py-3 text-gray-300 text-xs">{entry.date}</td>
-              <td className="px-4 py-3 text-gray-300">{entry.llm_requests.toLocaleString()}</td>
-              <td className="px-4 py-3 text-gray-300">{entry.tts_requests.toLocaleString()}</td>
-              <td className="px-4 py-3 text-gray-300">{entry.stt_sessions.toLocaleString()}</td>
-              <td className="px-4 py-3 text-gray-300">{entry.total_tokens.toLocaleString()}</td>
+            <tr key={entry.date} className="hover:bg-c-bezel/50 transition-colors">
+              <td className="px-4 py-3 text-c-text text-xs">{entry.date}</td>
+              <td className="px-4 py-3 text-c-text">{entry.llm_requests.toLocaleString()}</td>
+              <td className="px-4 py-3 text-c-text">{entry.tts_requests.toLocaleString()}</td>
+              <td className="px-4 py-3 text-c-text">{entry.stt_sessions.toLocaleString()}</td>
+              <td className="px-4 py-3 text-c-text">{entry.total_tokens.toLocaleString()}</td>
             </tr>
           ))}
         </tbody>
@@ -636,20 +636,20 @@ function NotesTab({
   return (
     <div className="space-y-4">
       {/* Add Note Form */}
-      <div className="bg-gray-900 rounded-xl border border-gray-800 p-4">
-        <h3 className="text-sm font-medium text-gray-400 mb-3">Add Note</h3>
+      <div className="bezel rounded-lg border border-c-border p-4">
+        <h3 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-3">Add Note</h3>
         <textarea
           value={noteText}
           onChange={(e) => setNoteText(e.target.value)}
           placeholder="Write an admin note about this user..."
           rows={3}
-          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          className="w-full px-3 py-2 bg-c-bezel border border-c-border-hi rounded-lg text-sm text-c-text placeholder-c-dim focus:outline-none focus:ring-2 focus:ring-c-amber resize-none"
         />
         <div className="flex justify-end mt-2">
           <button
             onClick={onSubmit}
             disabled={!noteText.trim() || submitting}
-            className="px-4 py-1.5 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors"
+            className="px-4 py-1.5 text-sm rounded-md bg-c-amber text-c-text hover:bg-c-amber/90 font-mono uppercase disabled:opacity-50 disabled:hover:bg-c-amber transition-colors"
           >
             {submitting ? 'Saving...' : 'Save Note'}
           </button>
@@ -658,16 +658,16 @@ function NotesTab({
 
       {/* Notes List */}
       {notes.length === 0 ? (
-        <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 text-center">
-          <p className="text-gray-500 text-sm">No admin notes yet</p>
+        <div className="bezel rounded-lg border border-c-border p-6 text-center">
+          <p className="text-c-dim text-sm">No admin notes yet</p>
         </div>
       ) : (
         <div className="space-y-2">
           {notes.map((note) => (
-            <div key={note.id} className="bg-gray-900 rounded-xl border border-gray-800 p-4">
+            <div key={note.id} className="bezel rounded-lg border border-c-border p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-gray-400">{note.admin_email}</span>
-                <span className="text-xs text-gray-600">
+                <span className="text-xs text-c-muted">{note.admin_email}</span>
+                <span className="text-xs text-c-dim">
                   {new Date(note.created_at).toLocaleString('en-US', {
                     month: 'short',
                     day: 'numeric',
@@ -677,7 +677,7 @@ function NotesTab({
                   })}
                 </span>
               </div>
-              <p className="text-sm text-gray-300 whitespace-pre-wrap">{note.note}</p>
+              <p className="text-sm text-c-text whitespace-pre-wrap">{note.note}</p>
             </div>
           ))}
         </div>
@@ -691,46 +691,46 @@ function NotesTab({
 function InfoRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div className="flex justify-between items-center">
-      <dt className="text-xs text-gray-500">{label}</dt>
-      <dd className={`text-sm text-gray-300 ${mono ? 'font-mono text-xs' : ''}`}>{value}</dd>
+      <dt className="font-mono text-[10px] text-c-dim uppercase tracking-wider">{label}</dt>
+      <dd className={`text-sm text-c-text ${mono ? 'font-mono text-xs' : ''}`}>{value}</dd>
     </div>
   );
 }
 
 function StatBox({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-gray-800/50 rounded-lg p-3 text-center">
-      <p className="text-lg font-bold text-white">{value}</p>
-      <p className="text-xs text-gray-500">{label}</p>
+    <div className="bg-c-bezel/50 rounded-lg p-3 text-center">
+      <p className="text-lg font-bold text-c-text">{value}</p>
+      <p className="font-mono text-[10px] text-c-dim uppercase tracking-wider">{label}</p>
     </div>
   );
 }
 
 function SessionStatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    active: 'bg-green-900/30 text-green-400',
-    completed: 'bg-blue-900/30 text-blue-400',
-    paused: 'bg-yellow-900/30 text-yellow-400',
-    abandoned: 'bg-gray-800 text-gray-400',
-    errored: 'bg-red-900/30 text-red-400',
+    active: 'bg-green-900/30 text-c-green',
+    completed: 'bg-c-cyan/20 text-c-cyan',
+    paused: 'bg-yellow-900/30 text-c-amber',
+    abandoned: 'bg-c-bezel text-c-muted',
+    errored: 'bg-red-900/30 text-c-red',
   };
 
   return (
-    <span className={`text-xs px-2 py-0.5 rounded-full ${styles[status] || 'bg-gray-800 text-gray-400'}`}>
+    <span className={`text-xs px-2 py-0.5 rounded-full ${styles[status] || 'bg-c-bezel text-c-muted'}`}>
       {status}
     </span>
   );
 }
 
 function ScoreBadge({ score }: { score: string | null }) {
-  if (!score) return <span className="text-xs text-gray-600">--</span>;
+  if (!score) return <span className="text-xs text-c-dim">--</span>;
   const styles: Record<string, string> = {
-    satisfactory: 'bg-green-900/30 text-green-400',
-    partial: 'bg-yellow-900/30 text-yellow-400',
-    unsatisfactory: 'bg-red-900/30 text-red-400',
+    satisfactory: 'bg-green-900/30 text-c-green',
+    partial: 'bg-yellow-900/30 text-c-amber',
+    unsatisfactory: 'bg-red-900/30 text-c-red',
   };
   return (
-    <span className={`text-xs px-2 py-0.5 rounded-full ${styles[score] || 'bg-gray-800 text-gray-400'}`}>
+    <span className={`text-xs px-2 py-0.5 rounded-full ${styles[score] || 'bg-c-bezel text-c-muted'}`}>
       {score}
     </span>
   );

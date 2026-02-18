@@ -948,15 +948,15 @@ export default function PracticePage() {
       <div className="max-w-2xl mx-auto">
         {/* Banners */}
         {checkoutSuccess && (
-          <div className="bg-green-900/30 border border-green-800/50 rounded-lg p-3 mb-4 text-green-300 text-sm flex items-center justify-between">
+          <div className="bg-c-green-lo border border-c-green/20 rounded-lg p-3 mb-4 text-c-green text-sm flex items-center justify-between">
             <span>Welcome to HeyDPE! Your subscription is active. Enjoy unlimited practice sessions.</span>
-            <button onClick={() => setCheckoutSuccess(false)} className="text-green-400 hover:text-green-300 ml-3 shrink-0">&times;</button>
+            <button onClick={() => setCheckoutSuccess(false)} className="text-c-green hover:text-c-green/80 ml-3 shrink-0">&times;</button>
           </div>
         )}
         {quotaWarning && (
-          <div className="bg-amber-900/20 border border-amber-800/50 rounded-lg p-3 mb-4 text-amber-200 text-sm flex items-center justify-between">
-            <span>{quotaWarning} <a href="/pricing" className="underline hover:text-amber-100">Upgrade</a> for unlimited access.</span>
-            <button onClick={() => setQuotaWarning(null)} className="text-amber-400 hover:text-amber-300 ml-3 shrink-0">&times;</button>
+          <div className="bg-c-amber-lo border border-c-amber/20 rounded-lg p-3 mb-4 text-c-amber text-sm flex items-center justify-between">
+            <span>{quotaWarning} <a href="/pricing" className="underline hover:text-c-amber/80">Upgrade</a> for unlimited access.</span>
+            <button onClick={() => setQuotaWarning(null)} className="text-c-amber hover:text-c-amber/80 ml-3 shrink-0">&times;</button>
           </div>
         )}
 
@@ -989,37 +989,35 @@ export default function PracticePage() {
         ) : (onboardingCompleted === null || (onboardingCompleted === false && practiceStats === null)) ? (
           /* ──────── LOADING: don't show config until we know if onboarding is needed ──────── */
           <div className="space-y-4 animate-pulse">
-            <div className="h-8 w-32 bg-gray-800 rounded-lg" />
-            <div className="h-48 bg-gray-800/50 rounded-xl" />
-            <div className="h-12 bg-gray-800/50 rounded-lg" />
+            <div className="h-8 w-32 bg-c-bezel rounded-lg" />
+            <div className="h-48 bg-c-bezel/50 rounded-lg" />
+            <div className="h-12 bg-c-bezel/50 rounded-lg" />
           </div>
         ) : (
           /* ──────── RETURNING USER / NORMAL VIEW ──────── */
           <>
             {/* Header with progress indicators */}
             <div className="flex items-center justify-between mb-5">
-              <h1 className="text-2xl font-bold text-white">Practice</h1>
+              <h1 className="font-mono font-bold text-xl text-c-amber glow-a tracking-wider uppercase">PRACTICE</h1>
               {practiceStats && (
                 <div className="flex items-center gap-3">
                   {coveragePct > 0 && (
-                    <span className="flex items-center gap-1.5 text-xs text-gray-400">
-                      <svg className="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
-                      </svg>
-                      <span className="text-white font-medium">{coveragePct}%</span> ACS
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-full border border-c-cyan/40 flex items-center justify-center gauge" style={{ '--gc': '#00d4ff', '--gp': `${coveragePct}%` } as React.CSSProperties}>
+                        <div className="w-7 h-7 rounded-full bg-c-panel flex items-center justify-center">
+                          <span className="font-mono font-bold text-c-cyan text-[10px]">{coveragePct}%</span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] text-c-muted font-mono uppercase">ACS</span>
+                    </div>
                   )}
                   {streak > 0 && (
-                    <span className="flex items-center gap-1 text-xs text-amber-400 bg-amber-900/20 px-2 py-0.5 rounded-full">
-                      <svg className="w-3 h-3" viewBox="0 0 16 16" fill="currentColor">
-                        <path d="M8 1c.2 0 .4.1.5.2C10.3 3 12 5.5 12 8c0 2.2-1.8 4-4 4S4 10.2 4 8c0-1.4.5-2.7 1.2-3.8.1-.2.3-.2.5-.2.3 0 .5.2.5.5 0 .1 0 .2-.1.3C5.5 5.9 5 7 5 8c0 1.7 1.3 3 3 3s3-1.3 3-3c0-2-1.3-4-2.8-5.5C8.1 2.4 8 2.2 8 2c0-.6.4-1 1-1z" />
-                      </svg>
-                      {streak}d
+                    <span className="flex items-center gap-1 text-[10px] font-mono text-c-amber bg-c-amber-lo px-2 py-1 rounded border border-c-amber/20">
+                      &#9670; {streak}d
                     </span>
                   )}
                   {ratingSessions.length > 0 && (
-                    <span className="text-xs text-gray-600">{ratingSessions.length} sessions</span>
+                    <span className="text-[10px] text-c-muted font-mono uppercase">{ratingSessions.length} SESSIONS</span>
                   )}
                 </div>
               )}
@@ -1031,16 +1029,14 @@ export default function PracticePage() {
                 <button
                   onClick={startQuickSession}
                   disabled={loading}
-                  className="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-600 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                  className="px-4 py-2.5 bg-c-bezel hover:bg-c-border border border-c-border hover:border-c-amber/30 text-c-text rounded-lg font-mono text-xs font-medium transition-colors disabled:opacity-50 flex items-center gap-2 uppercase"
                 >
-                  <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
-                  </svg>
-                  Quick 5 — Weak Areas
+                  <span className="text-c-amber">&#9889;</span>
+                  QUICK 5 &mdash; WEAK AREAS
                 </button>
                 {suggestedFocus && (
-                  <p className="text-xs text-gray-500">
-                    Suggested: <span className="text-gray-400">{suggestedFocus}</span>
+                  <p className="text-[10px] text-c-muted font-mono">
+                    Suggested: <span className="text-c-text">{suggestedFocus}</span>
                   </p>
                 )}
               </div>
@@ -1048,37 +1044,40 @@ export default function PracticePage() {
 
             {/* Resume previous session card */}
             {resumableSession && (
-              <div className="bg-blue-900/20 border border-blue-800/50 rounded-xl p-4 mb-4">
+              <div className="iframe rounded-lg p-4 mb-5 border-l-2 border-c-cyan">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm font-medium text-blue-300">Continue Previous Session</h3>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-1.5 h-1.5 rounded-full bg-c-cyan blink"></div>
+                      <h3 className="font-mono text-xs font-semibold text-c-cyan glow-c uppercase">CONTINUE PREVIOUS SESSION</h3>
+                    </div>
+                    <p className="text-[10px] text-c-muted font-mono mt-1">
                       {new Date(resumableSession.started_at).toLocaleDateString('en-US', {
                         month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
                       })}
                       {' '}&middot; {resumableSession.exchange_count || 0} exchanges
                       {' '}&middot; {resumableSession.rating.toUpperCase()}
-                      {resumableSession.aircraft_class ? ` · ${resumableSession.aircraft_class}` : ''}
+                      {resumableSession.aircraft_class ? ` \u00B7 ${resumableSession.aircraft_class}` : ''}
                       {' '}&middot; {resumableSession.study_mode === 'linear' ? 'Linear' : resumableSession.study_mode === 'cross_acs' ? 'Cross-ACS' : 'Weak Areas'}
                       {' '}&middot; {resumableSession.difficulty_preference}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <label className="flex items-center gap-1.5 text-xs text-gray-400 cursor-pointer">
+                    <label className="flex items-center gap-1.5 text-[10px] text-c-muted font-mono cursor-pointer select-none uppercase">
                       <input
                         type="checkbox"
                         checked={resumeVoiceToggle}
                         onChange={(e) => setResumeVoiceToggle(e.target.checked)}
-                        className="rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 w-3.5 h-3.5"
+                        className="rounded border-c-border bg-c-bezel text-c-cyan focus:ring-c-cyan w-3.5 h-3.5"
                       />
-                      Voice
+                      VOICE
                     </label>
                     <button
                       onClick={() => resumeSession(resumableSession)}
                       disabled={loading}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                      className="px-4 py-2 bg-c-cyan hover:bg-c-cyan/90 text-c-bg rounded-lg font-mono text-xs font-semibold transition-colors disabled:opacity-50 uppercase"
                     >
-                      Continue
+                      CONTINUE
                     </button>
                     <button
                       onClick={async () => {
@@ -1089,9 +1088,9 @@ export default function PracticePage() {
                         });
                         setResumableSession(null);
                       }}
-                      className="px-3 py-2 text-gray-400 hover:text-gray-300 text-sm transition-colors"
+                      className="px-3 py-2 text-c-muted hover:text-c-text font-mono text-xs transition-colors border border-c-border rounded-lg hover:border-c-border-hi uppercase"
                     >
-                      Start New
+                      START NEW
                     </button>
                   </div>
                 </div>
@@ -1108,34 +1107,34 @@ export default function PracticePage() {
             />
 
             {/* Disclaimer — always visible but low visual weight */}
-            <p className="text-amber-200/50 text-xs leading-relaxed mt-4">
-              For study purposes only. Not a substitute for CFI instruction or an actual DPE checkride.
-              Always verify information against current FAA publications.
+            <p className="text-c-amber/25 text-[10px] font-mono leading-relaxed mt-4 text-center uppercase">
+              FOR STUDY PURPOSES ONLY. NOT A SUBSTITUTE FOR CFI INSTRUCTION OR AN ACTUAL DPE CHECKRIDE.
+              ALWAYS VERIFY INFORMATION AGAINST CURRENT FAA PUBLICATIONS.
             </p>
           </>
         )}
 
         {/* Quota exceeded modal (Task 34) */}
         {showQuotaModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-            <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md mx-4 shadow-2xl">
-              <h2 className="text-xl font-bold text-white mb-2">Session Limit Reached</h2>
-              <p className="text-gray-400 text-sm mb-6">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
+            <div className="bezel rounded-lg border border-c-border p-6 max-w-md mx-4 shadow-2xl">
+              <h2 className="font-mono font-bold text-xl text-c-amber glow-a mb-2 tracking-wider uppercase">SESSION LIMIT REACHED</h2>
+              <p className="text-c-muted text-sm mb-6">
                 You&apos;ve reached your monthly session limit. Upgrade your plan to continue practicing
                 for your checkride.
               </p>
               <div className="flex gap-3">
                 <a
                   href="/pricing"
-                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm text-center transition-colors"
+                  className="flex-1 py-2.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm text-center transition-colors uppercase tracking-wider"
                 >
-                  View Plans
+                  VIEW PLANS
                 </a>
                 <button
                   onClick={() => setShowQuotaModal(false)}
-                  className="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition-colors"
+                  className="px-4 py-2.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-mono text-sm transition-colors border border-c-border uppercase"
                 >
-                  Dismiss
+                  DISMISS
                 </button>
               </div>
             </div>
@@ -1151,22 +1150,22 @@ export default function PracticePage() {
       <div className="flex items-center justify-between mb-3 px-1">
         <div className="flex items-center gap-3 min-w-0">
           {taskData && (
-            <p className="text-xs text-gray-500 truncate">
-              {taskData.area} <span className="text-gray-700">/</span> {taskData.task}
+            <p className="text-xs text-c-muted truncate font-mono">
+              {taskData.area} <span className="text-c-dim">/</span> {taskData.task}
               {currentElement && (
-                <span className="ml-1.5 font-mono text-gray-600">[{currentElement}]</span>
+                <span className="ml-1.5 font-mono text-c-dim">[{currentElement}]</span>
               )}
             </p>
           )}
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          <span className="text-xs text-gray-600 tabular-nums">
+          <span className="text-[10px] text-c-dim font-mono tabular-nums uppercase">
             {exchangeCount} Q&amp;A
           </span>
           {voiceEnabled && (
-            <span className="flex items-center gap-1 text-xs text-green-500">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              Voice
+            <span className="flex items-center gap-1 text-[10px] font-mono text-c-green uppercase">
+              <span className="w-1.5 h-1.5 rounded-full bg-c-green blink" />
+              VOICE
             </span>
           )}
           <button
@@ -1174,32 +1173,32 @@ export default function PracticePage() {
               if (exchangeCount > 0 && !confirm('End this session? Your progress will be saved.')) return;
               endSession();
             }}
-            className="text-xs text-gray-500 hover:text-red-400 transition-colors underline-offset-2 hover:underline"
+            className="text-[10px] font-mono text-c-muted hover:text-c-red transition-colors underline-offset-2 hover:underline uppercase"
           >
-            End Session
+            END SESSION
           </button>
         </div>
       </div>
 
       {/* Error banner with recovery options */}
       {(error || voice.error) && (
-        <div className="bg-red-900/30 border border-red-800 rounded-lg p-3 mb-3 text-sm">
+        <div className="bg-c-red-dim/40 border border-c-red/20 rounded-lg p-3 mb-3 text-sm">
           <div className="flex items-start gap-2">
-            <svg className="w-4 h-4 text-red-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <svg className="w-4 h-4 text-c-red mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
             </svg>
             <div className="flex-1">
-              <p className="text-red-300">{error || voice.error}</p>
+              <p className="text-c-red">{error || voice.error}</p>
               {voice.error && !error && (
-                <p className="text-xs text-gray-500 mt-1">Voice mode disabled. Continuing in text-only mode.</p>
+                <p className="text-xs text-c-muted mt-1">Voice mode disabled. Continuing in text-only mode.</p>
               )}
               {showErrorRecovery && lastFailedAnswer && (
                 <div className="flex gap-2 mt-2">
                   <button
                     onClick={retryLastAnswer}
-                    className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors"
+                    className="px-3 py-1.5 text-xs bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors font-mono uppercase"
                   >
-                    Retry
+                    RETRY
                   </button>
                   <button
                     onClick={() => {
@@ -1208,21 +1207,21 @@ export default function PracticePage() {
                       setShowErrorRecovery(false);
                       setError(null);
                     }}
-                    className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors"
+                    className="px-3 py-1.5 text-xs bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors font-mono uppercase"
                   >
-                    Text-only
+                    TEXT-ONLY
                   </button>
                   <button
                     onClick={() => { endSession(); setShowErrorRecovery(false); setError(null); }}
-                    className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors"
+                    className="px-3 py-1.5 text-xs bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors font-mono uppercase"
                   >
-                    End Session
+                    END SESSION
                   </button>
                 </div>
               )}
             </div>
             {!showErrorRecovery && (
-              <button onClick={() => { setError(null); }} className="text-red-400 hover:text-red-300 shrink-0">
+              <button onClick={() => { setError(null); }} className="text-c-red hover:text-c-red/80 shrink-0">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                 </svg>
@@ -1232,22 +1231,24 @@ export default function PracticePage() {
         </div>
       )}
 
-      <div className="flex-1 bg-gray-900 rounded-xl border border-gray-800 p-4 overflow-y-auto mb-3 space-y-4 relative" ref={chatContainerRef} onScroll={handleChatScroll}>
+      <div className="flex-1 bezel rounded-lg border border-c-border p-4 overflow-y-auto mb-3 space-y-4 relative" ref={chatContainerRef} onScroll={handleChatScroll}>
         {messages.map((msg, i) => (
           <div
             key={i}
             className={`flex ${msg.role === 'student' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+              className={`max-w-[80%] rounded-lg px-4 py-3 ${
                 msg.role === 'examiner'
-                  ? 'bg-gray-800 text-gray-100'
-                  : 'bg-blue-600 text-white'
+                  ? 'bg-c-bezel border-l-2 border-c-amber/50'
+                  : 'bg-c-cyan-lo/40 border-r-2 border-c-cyan/50'
               }`}
             >
               <div className="flex items-center justify-between mb-1">
-                <p className="text-[10px] font-medium uppercase tracking-wide opacity-50">
-                  {msg.role === 'examiner' ? 'DPE Examiner' : 'You'}
+                <p className={`text-[10px] font-mono uppercase tracking-wide ${
+                  msg.role === 'examiner' ? 'text-c-amber' : 'text-c-cyan'
+                }`}>
+                  {msg.role === 'examiner' ? 'DPE EXAMINER' : 'APPLICANT'}
                 </p>
                 {/* Report button on examiner messages (Task 26) */}
                 {msg.role === 'examiner' && msg.text && (
@@ -1257,7 +1258,7 @@ export default function PracticePage() {
                       setReportErrorType('factual');
                       setReportComment('');
                     }}
-                    className="text-gray-600 hover:text-amber-400 transition-colors ml-2"
+                    className="text-c-dim hover:text-c-amber transition-colors ml-2"
                     title="Report inaccurate answer"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -1266,7 +1267,7 @@ export default function PracticePage() {
                   </button>
                 )}
               </div>
-              <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+              <p className="text-sm text-c-text leading-relaxed whitespace-pre-wrap">{msg.text}</p>
 
               {/* Reference images (feature-flagged) */}
               {msg.images && msg.images.length > 0 && (
@@ -1275,31 +1276,31 @@ export default function PracticePage() {
 
               {/* Assessment badge */}
               {msg.assessment && (
-                <div className="mt-2 pt-2 border-t border-white/10">
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                <div className="mt-2 pt-2 border-t border-c-border">
+                  <span className={`font-mono text-[10px] px-2 py-0.5 rounded border uppercase ${
                     msg.assessment.score === 'satisfactory'
-                      ? 'bg-green-900/40 text-green-400'
+                      ? 'bg-c-green-lo/40 text-c-green border-c-green/20'
                       : msg.assessment.score === 'unsatisfactory'
-                      ? 'bg-red-900/40 text-red-400'
-                      : 'bg-yellow-900/40 text-yellow-400'
+                      ? 'bg-c-red-dim/40 text-c-red border-c-red/20'
+                      : 'bg-c-amber-lo text-c-amber border-c-amber/20'
                   }`}>
-                    {msg.assessment.score}
+                    {msg.assessment.score.toUpperCase()}
                   </span>
                   {msg.assessment.feedback && (
-                    <p className="text-xs opacity-70 mt-1">{msg.assessment.feedback}</p>
+                    <p className="text-xs text-c-muted mt-1">{msg.assessment.feedback}</p>
                   )}
                 </div>
               )}
 
               {/* FAA source summary (LLM-synthesized) + deduplicated document references */}
               {(msg.assessment?.source_summary || (msg.sources && msg.sources.length > 0)) && (
-                <details className="mt-2 pt-2 border-t border-white/10">
-                  <summary className="text-xs text-blue-300 cursor-pointer hover:text-blue-200">
-                    FAA References
+                <details className="mt-2 pt-2 border-t border-c-border">
+                  <summary className="text-xs text-c-cyan cursor-pointer hover:text-c-cyan/80 font-mono uppercase">
+                    FAA REFERENCES
                   </summary>
                   <div className="mt-1.5">
                     {msg.assessment?.source_summary && (
-                      <p className="text-xs text-gray-300 leading-relaxed mb-1.5">{msg.assessment.source_summary}</p>
+                      <p className="text-xs text-c-text leading-relaxed mb-1.5">{msg.assessment.source_summary}</p>
                     )}
                     {msg.sources && msg.sources.length > 0 && (() => {
                       // Deduplicate sources by abbreviation + heading
@@ -1323,15 +1324,15 @@ export default function PracticePage() {
                           {unique.map((src, j) => {
                             const link = FAA_LINKS[src.doc_abbreviation.toLowerCase()];
                             const label = src.doc_abbreviation.toUpperCase()
-                              + (src.heading ? ` — ${src.heading}` : '')
+                              + (src.heading ? ` \u2014 ${src.heading}` : '')
                               + (src.page_start ? ` (p.${src.page_start})` : '');
                             return link ? (
                               <a key={j} href={link} target="_blank" rel="noopener noreferrer"
-                                className="text-xs bg-black/20 rounded px-1.5 py-0.5 text-blue-300 hover:text-blue-200 hover:bg-black/30 transition-colors">
-                                {label} ↗
+                                className="text-[10px] font-mono bg-c-panel rounded px-1.5 py-0.5 text-c-cyan hover:text-c-cyan/80 hover:bg-c-elevated transition-colors border border-c-border">
+                                {label} &#8599;
                               </a>
                             ) : (
-                              <span key={j} className="text-xs bg-black/20 rounded px-1.5 py-0.5 text-blue-200/70">
+                              <span key={j} className="text-[10px] font-mono bg-c-panel rounded px-1.5 py-0.5 text-c-muted border border-c-border">
                                 {label}
                               </span>
                             );
@@ -1348,12 +1349,12 @@ export default function PracticePage() {
 
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-gray-800 rounded-xl px-4 py-3">
-              <p className="text-xs font-medium mb-1 text-gray-500">DPE Examiner</p>
+            <div className="bg-c-bezel rounded-lg px-4 py-3 border-l-2 border-c-amber/50">
+              <p className="text-[10px] font-mono mb-1 text-c-amber uppercase">DPE EXAMINER</p>
               <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="w-2 h-2 bg-c-muted rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 bg-c-muted rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 bg-c-muted rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
           </div>
@@ -1365,10 +1366,10 @@ export default function PracticePage() {
         {showScrollFab && (
           <button
             onClick={scrollToBottom}
-            className="sticky bottom-2 left-1/2 -translate-x-1/2 w-8 h-8 bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded-full flex items-center justify-center shadow-lg transition-colors z-10"
+            className="sticky bottom-2 left-1/2 -translate-x-1/2 w-8 h-8 bg-c-bezel hover:bg-c-border border border-c-border rounded-full flex items-center justify-center shadow-lg transition-colors z-10"
             aria-label="Scroll to bottom"
           >
-            <svg className="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <svg className="w-4 h-4 text-c-text" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" />
             </svg>
           </button>
@@ -1392,12 +1393,12 @@ export default function PracticePage() {
               }
             }}
             disabled={loading}
-            className={`px-4 py-3 rounded-xl font-medium transition-all ${
+            className={`px-4 py-3 rounded-lg font-mono font-medium transition-all uppercase ${
               voice.isListening
-                ? 'bg-red-600 hover:bg-red-700 text-white ring-2 ring-red-400/50 ring-offset-2 ring-offset-gray-950 animate-pulse'
+                ? 'bg-c-red hover:bg-c-red/90 text-c-bg ring-2 ring-c-red/50 ring-offset-2 ring-offset-c-bg animate-pulse'
                 : voice.isSpeaking
-                ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 border border-dashed border-gray-500'
-                : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+                ? 'bg-c-bezel hover:bg-c-border text-c-text border border-dashed border-c-muted'
+                : 'bg-c-bezel hover:bg-c-border text-c-text'
             } disabled:opacity-50`}
             title={voice.isListening ? 'Stop recording' : voice.isSpeaking ? 'Interrupt & start speaking' : 'Start recording'}
           >
@@ -1434,20 +1435,20 @@ export default function PracticePage() {
             }}
             placeholder={voice.isListening ? 'Listening...' : 'Type your answer... (Enter to send)'}
             disabled={loading}
-            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 resize-none text-sm"
+            className="w-full px-4 py-3 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-xs placeholder-c-dim focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber disabled:opacity-50 resize-none transition-colors"
           />
           <button
             onClick={() => sendAnswer("I don't know the answer to this question.")}
             disabled={loading}
-            className="self-start text-xs text-gray-500 hover:text-gray-300 transition-colors disabled:opacity-50 px-1"
+            className="self-start text-[10px] text-c-muted hover:text-c-text transition-colors disabled:opacity-50 px-1 font-mono uppercase"
           >
-            I don&apos;t know
+            I DON&apos;T KNOW
           </button>
         </div>
         <button
           onClick={() => sendAnswer()}
           disabled={loading || !input.trim()}
-          className="px-5 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 text-white rounded-xl font-medium transition-colors self-start"
+          className="px-5 py-3 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 disabled:hover:bg-c-amber text-c-bg rounded-lg font-mono font-medium transition-colors self-start uppercase"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
@@ -1457,25 +1458,25 @@ export default function PracticePage() {
 
       {/* Quota exceeded modal during active session (Task 34) */}
       {showQuotaModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md mx-4 shadow-2xl">
-            <h2 className="text-xl font-bold text-white mb-2">Session Limit Reached</h2>
-            <p className="text-gray-400 text-sm mb-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
+          <div className="bezel rounded-lg border border-c-border p-6 max-w-md mx-4 shadow-2xl">
+            <h2 className="font-mono font-bold text-xl text-c-amber glow-a mb-2 tracking-wider uppercase">SESSION LIMIT REACHED</h2>
+            <p className="text-c-muted text-sm mb-6">
               You&apos;ve reached your monthly session limit. Upgrade your plan to continue practicing
               for your checkride.
             </p>
             <div className="flex gap-3">
               <a
                 href="/pricing"
-                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm text-center transition-colors"
+                className="flex-1 py-2.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm text-center transition-colors uppercase tracking-wider"
               >
-                View Plans
+                VIEW PLANS
               </a>
               <button
                 onClick={() => setShowQuotaModal(false)}
-                className="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition-colors"
+                className="px-4 py-2.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-mono text-sm transition-colors border border-c-border uppercase"
               >
-                Dismiss
+                DISMISS
               </button>
             </div>
           </div>
@@ -1484,12 +1485,12 @@ export default function PracticePage() {
 
       {/* Session paused toast (Task 30) */}
       {pausedSessionToast && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-amber-900/90 border border-amber-700 rounded-lg px-4 py-3 shadow-lg flex items-center gap-3 max-w-md">
-          <svg className="w-5 h-5 text-amber-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-c-amber-lo border border-c-amber/20 rounded-lg px-4 py-3 shadow-lg flex items-center gap-3 max-w-md">
+          <svg className="w-5 h-5 text-c-amber flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
           </svg>
-          <p className="text-sm text-amber-200">Your exam on another device has been paused. Your progress is saved.</p>
-          <button onClick={() => setPausedSessionToast(false)} className="text-amber-400 hover:text-amber-300 flex-shrink-0">
+          <p className="text-sm text-c-amber">Your exam on another device has been paused. Your progress is saved.</p>
+          <button onClick={() => setPausedSessionToast(false)} className="text-c-amber hover:text-c-amber/80 flex-shrink-0">
             &times;
           </button>
         </div>
@@ -1497,38 +1498,38 @@ export default function PracticePage() {
 
       {/* Report inaccurate answer modal (Task 26) */}
       {reportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md mx-4 shadow-2xl">
-            <h3 className="text-lg font-bold text-white mb-1">Report Inaccurate Answer</h3>
-            <p className="text-xs text-gray-500 mb-4">Exchange #{Math.ceil((reportModal.exchangeIndex + 1) / 2)}</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
+          <div className="bezel rounded-lg border border-c-border p-6 max-w-md mx-4 shadow-2xl">
+            <h3 className="font-mono font-bold text-lg text-c-amber glow-a mb-1 tracking-wider uppercase">REPORT INACCURATE ANSWER</h3>
+            <p className="text-[10px] text-c-muted font-mono mb-4 uppercase">EXCHANGE #{Math.ceil((reportModal.exchangeIndex + 1) / 2)}</p>
 
             <div className="mb-4">
-              <label className="block text-sm text-gray-300 mb-2">Error type</label>
+              <label className="block font-mono text-[10px] text-c-muted mb-2 tracking-wider uppercase">ERROR TYPE</label>
               <div className="flex gap-2">
                 {(['factual', 'scoring', 'safety'] as const).map((type) => (
                   <button
                     key={type}
                     onClick={() => setReportErrorType(type)}
-                    className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${
+                    className={`px-3 py-1.5 font-mono text-xs rounded-lg border transition-colors uppercase ${
                       reportErrorType === type
-                        ? 'border-blue-500 bg-blue-950/40 text-blue-400'
-                        : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
+                        ? 'border-c-amber/50 bg-c-amber-lo/50 text-c-amber font-semibold'
+                        : 'border-c-border bg-c-bezel text-c-muted hover:border-c-border-hi'
                     }`}
                   >
-                    {type === 'factual' ? 'Factual Error' : type === 'scoring' ? 'Scoring Error' : 'Safety Concern'}
+                    {type === 'factual' ? 'FACTUAL ERROR' : type === 'scoring' ? 'SCORING ERROR' : 'SAFETY CONCERN'}
                   </button>
                 ))}
               </div>
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm text-gray-300 mb-1.5">What was incorrect?</label>
+              <label className="block font-mono text-[10px] text-c-muted mb-1.5 tracking-wider uppercase">WHAT WAS INCORRECT?</label>
               <textarea
                 value={reportComment}
                 onChange={(e) => setReportComment(e.target.value)}
                 placeholder="Describe the issue..."
                 rows={3}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                className="w-full px-3 py-2.5 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-xs placeholder-c-dim focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber resize-none transition-colors"
               />
             </div>
 
@@ -1536,9 +1537,9 @@ export default function PracticePage() {
               <button
                 onClick={() => setReportModal(null)}
                 disabled={reportSubmitting}
-                className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
+                className="px-4 py-2 font-mono text-xs text-c-muted hover:text-c-text transition-colors uppercase"
               >
-                Cancel
+                CANCEL
               </button>
               <button
                 onClick={async () => {
@@ -1571,9 +1572,9 @@ export default function PracticePage() {
                   }
                 }}
                 disabled={reportSubmitting || !reportComment.trim()}
-                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
+                className="px-4 py-2 font-mono text-xs bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg rounded-lg font-semibold transition-colors uppercase tracking-wider"
               >
-                {reportSubmitting ? 'Submitting...' : 'Submit Report'}
+                {reportSubmitting ? 'SUBMITTING...' : 'SUBMIT REPORT'}
               </button>
             </div>
           </div>

@@ -38,11 +38,11 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4">
-      <div className="w-full max-w-sm p-8 bg-gray-900 rounded-xl border border-gray-800">
+    <div className="min-h-screen flex items-center justify-center bg-c-bg px-4">
+      <div className="w-full max-w-sm p-8 bezel rounded-lg border border-c-border">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-white mb-1">Admin Access</h1>
-          <p className="text-gray-500 text-sm">HeyDPE Administration Panel</p>
+          <h1 className="text-2xl font-bold text-c-text font-mono uppercase tracking-wider mb-1">Admin Access</h1>
+          <p className="text-c-dim text-sm">HeyDPE Administration Panel</p>
         </div>
 
         {error && (
@@ -54,7 +54,7 @@ export default function AdminLoginPage() {
         <button
           onClick={handleGoogleSignIn}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-gray-600 rounded-lg text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-c-bezel hover:bg-c-elevated border border-c-border-hi hover:border-c-border-hi rounded-lg text-c-text text-sm font-mono font-medium uppercase transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
             <svg
@@ -93,7 +93,7 @@ export default function AdminLoginPage() {
           {loading ? 'Redirecting...' : 'Sign in with Google'}
         </button>
 
-        <p className="mt-6 text-xs text-gray-600 text-center leading-relaxed">
+        <p className="mt-6 text-xs text-c-dim text-center leading-relaxed">
           Only authorized admin accounts can access the admin panel.
           Contact the project owner if you need access.
         </p>

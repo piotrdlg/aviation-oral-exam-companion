@@ -24,8 +24,8 @@ interface UsersResponse {
 }
 
 const TIER_COLORS: Record<VoiceTier, string> = {
-  ground_school: 'bg-gray-700 text-gray-300',
-  checkride_prep: 'bg-blue-900/40 text-blue-300',
+  ground_school: 'bg-c-elevated text-c-text',
+  checkride_prep: 'bg-c-cyan/20 text-c-cyan',
   dpe_live: 'bg-purple-900/40 text-purple-300',
 };
 
@@ -36,9 +36,9 @@ const TIER_LABELS: Record<VoiceTier, string> = {
 };
 
 const STATUS_COLORS: Record<AccountStatus, string> = {
-  active: 'bg-green-900/30 text-green-400',
-  suspended: 'bg-yellow-900/30 text-yellow-400',
-  banned: 'bg-red-900/30 text-red-400',
+  active: 'bg-green-900/30 text-c-green',
+  suspended: 'bg-yellow-900/30 text-c-amber',
+  banned: 'bg-red-900/30 text-c-red',
 };
 
 const PAGE_SIZE = 25;
@@ -95,9 +95,9 @@ export default function UsersPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Users</h1>
+          <h1 className="text-2xl font-bold text-c-text font-mono uppercase tracking-wider">Users</h1>
           {data && (
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-c-dim mt-1">
               {data.total.toLocaleString()} total user{data.total !== 1 ? 's' : ''}
             </p>
           )}
@@ -112,7 +112,7 @@ export default function UsersPage() {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search by email..."
-            className="w-full px-3 py-2 bg-gray-900 border border-gray-800 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-sm text-c-text placeholder-c-dim focus:outline-none focus:ring-2 focus:ring-c-amber"
           />
         </form>
 
@@ -122,7 +122,7 @@ export default function UsersPage() {
             setTierFilter(e.target.value as VoiceTier | 'all');
             setPage(1);
           }}
-          className="px-3 py-2 bg-gray-900 border border-gray-800 rounded-lg text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-3 py-2 bg-c-panel border border-c-border rounded-lg text-sm text-c-text focus:outline-none focus:ring-2 focus:ring-c-amber"
         >
           <option value="all">All Tiers</option>
           <option value="ground_school">Ground School</option>
@@ -136,7 +136,7 @@ export default function UsersPage() {
             setStatusFilter(e.target.value as AccountStatus | 'all');
             setPage(1);
           }}
-          className="px-3 py-2 bg-gray-900 border border-gray-800 rounded-lg text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-3 py-2 bg-c-panel border border-c-border rounded-lg text-sm text-c-text focus:outline-none focus:ring-2 focus:ring-c-amber"
         >
           <option value="all">All Statuses</option>
           <option value="active">Active</option>
@@ -153,7 +153,7 @@ export default function UsersPage() {
               setStatusFilter('all');
               setPage(1);
             }}
-            className="text-xs text-gray-400 hover:text-white transition-colors"
+            className="text-xs text-c-muted hover:text-c-text font-mono uppercase transition-colors"
           >
             Clear filters
           </button>
@@ -162,50 +162,50 @@ export default function UsersPage() {
 
       {/* Error */}
       {error && (
-        <div className="bg-red-900/20 border border-red-800/50 rounded-xl p-4 mb-4">
+        <div className="bg-c-red-dim/40 border border-red-800/50 rounded-lg p-4 mb-4">
           <p className="text-red-300 text-sm">{error}</p>
-          <button onClick={fetchUsers} className="text-xs text-red-400 hover:text-red-300 underline mt-1">
+          <button onClick={fetchUsers} className="text-xs text-c-red hover:text-red-300 underline mt-1">
             Retry
           </button>
         </div>
       )}
 
       {/* Table */}
-      <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
+      <div className="bezel rounded-lg border border-c-border overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-800 text-left">
-              <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Email</th>
-              <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Tier</th>
-              <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
-              <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Sessions</th>
-              <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Exchanges</th>
-              <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Last Login</th>
-              <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Joined</th>
+            <tr className="border-b border-c-border text-left">
+              <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Email</th>
+              <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Tier</th>
+              <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Status</th>
+              <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Sessions</th>
+              <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Exchanges</th>
+              <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Last Login</th>
+              <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Joined</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-800">
+          <tbody className="divide-y divide-c-border">
             {loading ? (
               [...Array(5)].map((_, i) => (
                 <tr key={i}>
                   <td colSpan={7} className="px-4 py-3">
-                    <div className="h-5 bg-gray-800 rounded animate-pulse" />
+                    <div className="h-5 bg-c-bezel rounded animate-pulse" />
                   </td>
                 </tr>
               ))
             ) : !data || data.users.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
+                <td colSpan={7} className="px-4 py-12 text-center text-c-dim">
                   {search ? `No users matching "${search}"` : 'No users found'}
                 </td>
               </tr>
             ) : (
               data.users.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-800/50 transition-colors">
+                <tr key={user.id} className="hover:bg-c-bezel/50 transition-colors">
                   <td className="px-4 py-3">
                     <Link
                       href={`/admin/users/${user.id}`}
-                      className="text-blue-400 hover:text-blue-300 truncate max-w-[200px] block"
+                      className="text-c-cyan hover:text-c-cyan/80 truncate max-w-[200px] block"
                     >
                       {user.email}
                     </Link>
@@ -220,14 +220,14 @@ export default function UsersPage() {
                       {user.account_status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-300">{user.session_count}</td>
-                  <td className="px-4 py-3 text-gray-300">{user.total_exchanges}</td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">
+                  <td className="px-4 py-3 text-c-text">{user.session_count}</td>
+                  <td className="px-4 py-3 text-c-text">{user.total_exchanges}</td>
+                  <td className="px-4 py-3 text-c-dim text-xs">
                     {user.last_login_at
                       ? formatDate(user.last_login_at)
                       : 'Never'}
                   </td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">
+                  <td className="px-4 py-3 text-c-dim text-xs">
                     {formatDate(user.created_at)}
                   </td>
                 </tr>
@@ -240,21 +240,21 @@ export default function UsersPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-4">
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-c-dim">
             Page {page} of {totalPages}
           </p>
           <div className="flex gap-1">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="px-3 py-1.5 text-xs rounded-md bg-gray-800 text-gray-300 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1.5 text-xs rounded-md bg-c-bezel text-c-text font-mono uppercase hover:bg-c-elevated disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               Previous
             </button>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="px-3 py-1.5 text-xs rounded-md bg-gray-800 text-gray-300 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1.5 text-xs rounded-md bg-c-bezel text-c-text font-mono uppercase hover:bg-c-elevated disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               Next
             </button>
