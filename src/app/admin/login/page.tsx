@@ -41,20 +41,22 @@ export default function AdminLoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-c-bg px-4">
       <div className="w-full max-w-sm p-8 bezel rounded-lg border border-c-border">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-c-text font-mono uppercase tracking-wider mb-1">Admin Access</h1>
-          <p className="text-c-dim text-sm">HeyDPE Administration Panel</p>
+          <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase mb-3">// ADMIN ACCESS</p>
+          <h1 className="font-mono font-bold text-c-amber glow-a text-sm tracking-wider uppercase mb-2">ADMIN PANEL</h1>
+          <p className="font-mono text-[10px] text-c-dim uppercase tracking-wider">HeyDPE Administration</p>
         </div>
 
         {error && (
-          <div className="bg-red-900/30 border border-red-800 rounded-lg p-3 mb-6 text-red-300 text-sm">
-            {error}
+          <div className="bg-c-red-dim/40 border border-c-red/30 rounded-lg p-3 mb-6 flex items-start gap-2.5">
+            <span className="text-c-red text-sm mt-0.5 shrink-0">&#9888;</span>
+            <p className="text-c-red text-sm font-mono">{error}</p>
           </div>
         )}
 
         <button
           onClick={handleGoogleSignIn}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-c-bezel hover:bg-c-elevated border border-c-border-hi hover:border-c-border-hi rounded-lg text-c-text text-sm font-mono font-medium uppercase transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-c-bezel hover:bg-c-border border border-c-border hover:border-c-border-hi rounded-lg text-c-text font-mono text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
             <svg
@@ -90,11 +92,11 @@ export default function AdminLoginPage() {
               />
             </svg>
           )}
-          {loading ? 'Redirecting...' : 'Sign in with Google'}
+          <span className="uppercase tracking-wide">{loading ? 'REDIRECTING...' : 'SIGN IN WITH GOOGLE'}</span>
         </button>
 
-        <p className="mt-6 text-xs text-c-dim text-center leading-relaxed">
-          Only authorized admin accounts can access the admin panel.
+        <p className="mt-6 font-mono text-[10px] text-c-dim text-center leading-relaxed uppercase tracking-wider">
+          Only authorized admin accounts can access this panel.
           Contact the project owner if you need access.
         </p>
       </div>

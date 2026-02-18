@@ -25,9 +25,9 @@ const STUDY_MODE_OPTIONS = [
 ];
 
 const STATUS_COLORS: Record<PromptStatus, string> = {
-  draft: 'bg-c-elevated text-c-text',
-  published: 'bg-green-900/30 text-c-green',
-  archived: 'bg-c-bezel text-c-dim',
+  draft: 'font-mono text-[10px] bg-c-amber-lo text-c-amber px-2 py-0.5 rounded border border-c-amber/20',
+  published: 'font-mono text-[10px] bg-c-green-lo text-c-green px-2 py-0.5 rounded border border-c-green/20',
+  archived: 'font-mono text-[10px] bg-c-bezel text-c-dim px-2 py-0.5 rounded border border-c-border',
 };
 
 export default function PromptsPage() {
@@ -170,20 +170,23 @@ export default function PromptsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-c-text font-mono uppercase tracking-wider">Prompt Management</h1>
+        <div>
+          <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase mb-2">// PROMPT MANAGEMENT</p>
+          <h1 className="text-2xl font-bold text-c-amber font-mono uppercase tracking-wider glow-a">PROMPT MANAGEMENT</h1>
+        </div>
         <button
           onClick={startNewDraft}
-          className="px-4 py-2 text-sm rounded-lg bg-c-amber text-c-text font-mono uppercase hover:bg-c-amber/90 transition-colors"
+          className="px-5 py-2.5 text-xs rounded-lg bg-c-amber text-c-bg font-mono font-semibold uppercase tracking-wide hover:bg-c-amber/90 transition-colors"
         >
-          New Draft
+          NEW DRAFT
         </button>
       </div>
 
       {/* Action Error */}
       {actionError && (
-        <div className="bg-c-red-dim/40 border border-red-800/50 rounded-lg p-3 mb-4 text-red-300 text-sm flex items-center justify-between">
-          <span>{actionError}</span>
-          <button onClick={() => setActionError(null)} className="text-c-red hover:text-red-300 ml-3">
+        <div className="iframe rounded-lg p-3 mb-4 border-l-2 border-c-red text-sm flex items-center justify-between">
+          <span className="text-c-red">{actionError}</span>
+          <button onClick={() => setActionError(null)} className="text-c-red hover:text-c-text ml-3 transition-colors">
             &times;
           </button>
         </div>
@@ -193,7 +196,7 @@ export default function PromptsPage() {
       <div className="mb-6 flex flex-wrap gap-4">
         <div>
           <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-2">
-            Prompt Key
+            PROMPT KEY
           </label>
           <select
             value={selectedKey}
@@ -201,7 +204,7 @@ export default function PromptsPage() {
               setSelectedKey(e.target.value);
               setIsNewDraft(false);
             }}
-            className="px-4 py-2.5 bg-c-panel border border-c-border rounded-lg text-sm text-c-text focus:outline-none focus:ring-2 focus:ring-c-amber"
+            className="px-3 py-2 bg-c-panel border border-c-border rounded-lg font-mono text-xs text-c-text focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber transition-colors"
           >
             {PROMPT_KEYS.map((pk) => (
               <option key={pk.value} value={pk.value}>
@@ -212,12 +215,12 @@ export default function PromptsPage() {
         </div>
         <div>
           <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-2">
-            Difficulty
+            DIFFICULTY
           </label>
           <select
             value={filterDifficulty}
             onChange={(e) => setFilterDifficulty(e.target.value)}
-            className="px-4 py-2.5 bg-c-panel border border-c-border rounded-lg text-sm text-c-text focus:outline-none focus:ring-2 focus:ring-c-amber"
+            className="px-3 py-2 bg-c-panel border border-c-border rounded-lg font-mono text-xs text-c-text focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber transition-colors"
           >
             {DIFFICULTY_OPTIONS.map((d) => (
               <option key={d.value} value={d.value}>{d.label}</option>
@@ -226,12 +229,12 @@ export default function PromptsPage() {
         </div>
         <div>
           <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-2">
-            Study Mode
+            STUDY MODE
           </label>
           <select
             value={filterStudyMode}
             onChange={(e) => setFilterStudyMode(e.target.value)}
-            className="px-4 py-2.5 bg-c-panel border border-c-border rounded-lg text-sm text-c-text focus:outline-none focus:ring-2 focus:ring-c-amber"
+            className="px-3 py-2 bg-c-panel border border-c-border rounded-lg font-mono text-xs text-c-text focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber transition-colors"
           >
             {STUDY_MODE_OPTIONS.map((m) => (
               <option key={m.value} value={m.value}>{m.label}</option>
@@ -241,10 +244,10 @@ export default function PromptsPage() {
       </div>
 
       {error && (
-        <div className="bg-c-red-dim/40 border border-red-800/50 rounded-lg p-4 mb-4">
-          <p className="text-red-300 text-sm">{error}</p>
-          <button onClick={fetchVersions} className="text-xs text-c-red hover:text-red-300 underline mt-1">
-            Retry
+        <div className="iframe rounded-lg p-4 mb-4 border-l-2 border-c-red">
+          <p className="text-c-red text-sm">{error}</p>
+          <button onClick={fetchVersions} className="font-mono text-xs text-c-red hover:text-c-text underline mt-1 transition-colors">
+            RETRY
           </button>
         </div>
       )}
@@ -253,20 +256,20 @@ export default function PromptsPage() {
         {/* Version List */}
         <div>
           <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-3">
-            Versions
+            VERSIONS
           </h2>
           {loading ? (
             <div className="space-y-2">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="bezel rounded-lg border border-c-border p-3 animate-pulse">
+                <div key={i} className="iframe rounded-lg p-3 animate-pulse">
                   <div className="h-4 bg-c-bezel rounded w-20 mb-2" />
                   <div className="h-3 bg-c-bezel rounded w-32" />
                 </div>
               ))}
             </div>
           ) : versions.length === 0 ? (
-            <div className="bezel rounded-lg border border-c-border p-4 text-center">
-              <p className="text-c-dim text-sm">No versions yet</p>
+            <div className="iframe rounded-lg p-4 text-center">
+              <p className="text-c-dim text-sm font-mono">NO VERSIONS YET</p>
             </div>
           ) : (
             <div className="space-y-1.5">
@@ -282,44 +285,44 @@ export default function PromptsPage() {
                   <button
                     key={v.id}
                     onClick={() => selectVersion(v)}
-                    className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                    className={`w-full text-left iframe rounded-lg p-3 transition-colors ${
                       isSelected
-                        ? 'bg-c-bezel border-c-amber/50'
-                        : 'bg-c-panel border-c-border hover:bg-c-bezel/50'
+                        ? 'border-l-2 border-c-amber ring-1 ring-c-amber/20'
+                        : 'hover:border-c-border-hi'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-c-text font-medium">v{v.version}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[v.status]}`}>
-                        {v.status}
+                      <span className="font-mono text-xs font-semibold text-c-text uppercase">V{v.version}</span>
+                      <span className={STATUS_COLORS[v.status]}>
+                        {v.status.toUpperCase()}
                       </span>
                     </div>
-                    <div className="flex gap-1 mt-1 flex-wrap">
+                    <div className="flex gap-1 mt-1.5 flex-wrap">
                       {v.difficulty && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-900/30 text-purple-400">
-                          {v.difficulty}
+                        <span className="font-mono text-[10px] bg-c-cyan-lo text-c-cyan px-2 py-0.5 rounded border border-c-cyan/20">
+                          {v.difficulty.toUpperCase()}
                         </span>
                       )}
                       {v.study_mode && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-900/30 text-cyan-400">
-                          {v.study_mode}
+                        <span className="font-mono text-[10px] bg-c-cyan-lo text-c-cyan px-2 py-0.5 rounded border border-c-cyan/20">
+                          {v.study_mode.toUpperCase()}
                         </span>
                       )}
                       {v.rating && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-900/30 text-c-amber">
-                          {v.rating}
+                        <span className="font-mono text-[10px] bg-c-amber-lo text-c-amber px-2 py-0.5 rounded border border-c-amber/20">
+                          {v.rating.toUpperCase()}
                         </span>
                       )}
                       {!v.difficulty && !v.study_mode && !v.rating && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-c-bezel text-c-dim">
-                          generic
+                        <span className="font-mono text-[10px] bg-c-bezel text-c-dim px-2 py-0.5 rounded border border-c-border">
+                          GENERIC
                         </span>
                       )}
                     </div>
                     {v.change_summary && (
                       <p className="text-xs text-c-dim mt-1 line-clamp-2">{v.change_summary}</p>
                     )}
-                    <p className="text-xs text-c-dim mt-1">
+                    <p className="font-mono text-[10px] text-c-dim mt-1">
                       {new Date(v.created_at).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
@@ -338,10 +341,10 @@ export default function PromptsPage() {
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider">
               {isNewDraft
-                ? 'New Draft'
+                ? 'NEW DRAFT'
                 : selectedVersion
-                ? `Version ${selectedVersion.version} (${selectedVersion.status})`
-                : 'Select a version'}
+                ? `VERSION ${selectedVersion.version} (${selectedVersion.status.toUpperCase()})`
+                : 'SELECT A VERSION'}
             </h2>
             <div className="flex items-center gap-2">
               {/* Publish button — only for draft versions */}
@@ -349,9 +352,9 @@ export default function PromptsPage() {
                 <button
                   onClick={() => publishVersion(selectedVersion.id)}
                   disabled={publishing}
-                  className="px-3 py-1.5 text-xs rounded-md font-mono uppercase bg-green-900/30 text-green-300 hover:bg-green-900/50 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 text-xs rounded-lg font-mono font-semibold uppercase tracking-wide bg-c-amber hover:bg-c-amber/90 text-c-bg transition-colors disabled:opacity-50"
                 >
-                  {publishing ? 'Publishing...' : 'Publish'}
+                  {publishing ? 'PUBLISHING...' : 'PUBLISH'}
                 </button>
               )}
               {/* Rollback button — only for the currently published version */}
@@ -359,9 +362,9 @@ export default function PromptsPage() {
                 <button
                   onClick={() => rollbackVersion(selectedVersion.id)}
                   disabled={publishing}
-                  className="px-3 py-1.5 text-xs rounded-md font-mono uppercase bg-amber-900/30 text-amber-300 hover:bg-amber-900/50 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 text-xs rounded-lg font-mono font-semibold uppercase tracking-wide bg-c-red/80 hover:bg-c-red text-c-text transition-colors disabled:opacity-50"
                 >
-                  {publishing ? 'Rolling back...' : 'Rollback'}
+                  {publishing ? 'ROLLING BACK...' : 'ROLLBACK'}
                 </button>
               )}
             </div>
@@ -373,7 +376,7 @@ export default function PromptsPage() {
             onChange={(e) => setEditorContent(e.target.value)}
             disabled={!isNewDraft && selectedVersion?.status !== 'draft'}
             rows={20}
-            className="w-full px-4 py-3 bg-c-panel border border-c-border rounded-lg text-sm text-c-text font-mono placeholder-c-dim focus:outline-none focus:ring-2 focus:ring-c-amber disabled:opacity-60 resize-y"
+            className="fb-textarea w-full px-3 py-2.5 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-xs focus:outline-none focus:border-c-amber placeholder-c-dim disabled:opacity-60 resize-y transition-colors"
             placeholder="Enter prompt content..."
           />
 
@@ -382,11 +385,11 @@ export default function PromptsPage() {
             <div className="mt-3 space-y-3">
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-1">Difficulty</label>
+                  <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-1">DIFFICULTY</label>
                   <select
                     value={draftDifficulty}
                     onChange={(e) => setDraftDifficulty(e.target.value)}
-                    className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-sm text-c-text focus:outline-none focus:ring-2 focus:ring-c-amber"
+                    className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg font-mono text-xs text-c-text focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber transition-colors"
                   >
                     <option value="">Any (generic)</option>
                     <option value="easy">Easy</option>
@@ -396,11 +399,11 @@ export default function PromptsPage() {
                   </select>
                 </div>
                 <div className="flex-1">
-                  <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-1">Study Mode</label>
+                  <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-1">STUDY MODE</label>
                   <select
                     value={draftStudyMode}
                     onChange={(e) => setDraftStudyMode(e.target.value)}
-                    className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-sm text-c-text focus:outline-none focus:ring-2 focus:ring-c-amber"
+                    className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg font-mono text-xs text-c-text focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber transition-colors"
                   >
                     <option value="">Any (generic)</option>
                     <option value="linear">Linear</option>
@@ -413,15 +416,15 @@ export default function PromptsPage() {
                 value={changeSummary}
                 onChange={(e) => setChangeSummary(e.target.value)}
                 placeholder="What changed? (optional)"
-                className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-sm text-c-text placeholder-c-dim focus:outline-none focus:ring-2 focus:ring-c-amber"
+                className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg font-mono text-xs text-c-text placeholder-c-dim focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber transition-colors"
               />
               <div className="flex justify-end">
                 <button
                   onClick={saveDraft}
                   disabled={saving || !editorContent.trim()}
-                  className="px-4 py-2 text-sm rounded-lg bg-c-amber text-c-text font-mono uppercase hover:bg-c-amber/90 disabled:opacity-50 disabled:hover:bg-c-amber transition-colors"
+                  className="px-5 py-2.5 text-xs rounded-lg bg-c-amber text-c-bg font-mono font-semibold uppercase tracking-wide hover:bg-c-amber/90 disabled:opacity-50 disabled:hover:bg-c-amber transition-colors"
                 >
-                  {saving ? 'Saving...' : 'Save as Draft'}
+                  {saving ? 'SAVING...' : 'SAVE AS DRAFT'}
                 </button>
               </div>
             </div>
@@ -429,12 +432,12 @@ export default function PromptsPage() {
 
           {/* Version metadata */}
           {selectedVersion && !isNewDraft && (
-            <div className="mt-3 flex items-center gap-4 text-xs text-c-dim">
-              <span>Created: {new Date(selectedVersion.created_at).toLocaleString()}</span>
+            <div className="mt-3 iframe rounded-lg p-3 flex items-center gap-4">
+              <span className="font-mono text-[10px] text-c-dim uppercase">Created: {new Date(selectedVersion.created_at).toLocaleString()}</span>
               {selectedVersion.published_at && (
-                <span>Published: {new Date(selectedVersion.published_at).toLocaleString()}</span>
+                <span className="font-mono text-[10px] text-c-dim uppercase">Published: {new Date(selectedVersion.published_at).toLocaleString()}</span>
               )}
-              <span className="font-mono">{editorContent.length.toLocaleString()} chars</span>
+              <span className="font-mono text-[10px] text-c-muted">{editorContent.length.toLocaleString()} CHARS</span>
             </div>
           )}
         </div>

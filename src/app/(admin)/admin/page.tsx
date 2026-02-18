@@ -108,9 +108,9 @@ export default function AdminDashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-c-text font-mono uppercase tracking-wider">Dashboard</h1>
+          <h1 className="text-2xl font-bold text-c-amber font-mono uppercase tracking-wider glow-a">DASHBOARD</h1>
           {lastRefreshed && !loading && (
-            <p className="text-xs text-c-dim mt-0.5">
+            <p className="font-mono text-[10px] text-c-dim mt-1 uppercase">
               Updated {lastRefreshed.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
             </p>
           )}
@@ -118,91 +118,94 @@ export default function AdminDashboardPage() {
         <button
           onClick={fetchDashboard}
           disabled={loading}
-          className="flex items-center gap-2 px-3 py-1.5 bg-c-bezel hover:bg-c-elevated border border-c-border-hi rounded-lg text-sm text-c-text font-mono uppercase transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-c-bezel hover:bg-c-elevated border border-c-border hover:border-c-border-hi rounded-lg text-xs text-c-text font-mono uppercase tracking-wide transition-colors disabled:opacity-50"
         >
-          <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          {loading ? 'Refreshing...' : 'Refresh'}
+          <span className={loading ? 'animate-spin inline-block' : ''}>&#8634;</span>
+          {loading ? 'REFRESHING...' : 'REFRESH'}
         </button>
       </div>
 
       {/* Error state */}
       {error && (
-        <div className="bg-c-red-dim/40 border border-red-800/50 rounded-lg p-5 mb-6">
+        <div className="bezel rounded-lg border border-c-red/30 border-l-2 p-5 mb-6">
           <div className="flex items-start gap-3">
-            <svg className="w-5 h-5 text-c-red mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
+            <span className="text-c-red text-lg flex-shrink-0">&#9888;</span>
             <div>
-              <p className="text-sm text-red-300 font-medium">Failed to load dashboard</p>
-              <p className="text-xs text-c-red/70 mt-0.5">{error}</p>
+              <p className="font-mono text-xs text-c-red uppercase tracking-wider">FAILED TO LOAD DASHBOARD</p>
+              <p className="text-xs text-c-muted mt-1">{error}</p>
               <button
                 onClick={fetchDashboard}
-                className="mt-2 text-xs text-c-red hover:text-red-300 underline transition-colors"
+                className="mt-2 font-mono text-[10px] text-c-red hover:text-c-amber uppercase tracking-wider transition-colors"
               >
-                Retry
+                &#8634; RETRY
               </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Section: Metrics */}
+      <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase mb-3">// METRICS</p>
+
       {/* 1. Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard
           label="Total Users"
           value={stats?.totalUsers.toLocaleString() ?? '0'}
           detail={stats ? `${stats.dau} DAU / ${stats.wau} WAU / ${stats.mau} MAU` : 'Loading...'}
-          color="text-c-cyan"
+          color="cyan"
           loading={loading && !stats}
         />
         <StatCard
           label="Active Sessions"
           value={stats?.activeSessions.toString() ?? '0'}
           detail={stats ? `${stats.sessionsToday} today / ${stats.sessionsThisWeek} this week` : 'Loading...'}
-          color="text-c-green"
+          color="green"
           loading={loading && !stats}
+          live
         />
         <StatCard
           label="7d Avg Exchanges"
           value={stats?.avgExchanges7d.toFixed(1) ?? '0'}
           detail={stats ? `${stats.avgDurationMin7d.toFixed(1)} min avg duration` : 'Loading...'}
-          color="text-purple-400"
+          color="amber"
           loading={loading && !stats}
         />
         <StatCard
           label="Est. Daily Cost"
           value={`$${estimatedDailyCost.toFixed(2)}`}
           detail={stats ? `$${totalWeeklyCost.toFixed(2)} / 7 days` : 'Loading...'}
-          color="text-c-amber"
+          color="amber"
           loading={loading && !stats}
         />
       </div>
 
+      {/* Section: Alerts */}
+      <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase mb-3">// ALERTS</p>
+
       {/* 2. Anomaly Alerts */}
       {stats && stats.anomalyUsers.length > 0 && (
-        <div className="mb-6">
-          <div className="bg-amber-900/10 border border-amber-700/40 rounded-lg p-4">
+        <div className="mb-8">
+          <div className="bezel rounded-lg border border-c-border border-l-2 border-l-c-amber p-4">
             <div className="flex items-center gap-2 mb-3">
-              <svg className="w-5 h-5 text-c-amber" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
-              <h2 className="text-sm font-mono font-medium text-amber-300 uppercase tracking-wider">
-                {stats.anomalyUsers.length} Anomal{stats.anomalyUsers.length === 1 ? 'y' : 'ies'} Detected
+              <span className="text-c-amber text-sm">&#9888;</span>
+              <h2 className="font-mono text-xs font-semibold text-c-amber uppercase tracking-wider">
+                {stats.anomalyUsers.length} ANOMAL{stats.anomalyUsers.length === 1 ? 'Y' : 'IES'} DETECTED
               </h2>
-              <span className="text-xs text-amber-500/70">High usage (&gt;5x avg, 7d)</span>
+              <span className="font-mono text-[10px] bg-c-amber-lo text-c-amber px-2 py-0.5 rounded border border-c-amber/20">
+                HIGH USAGE &gt;5X AVG, 7D
+              </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {stats.anomalyUsers.map((user) => (
                 <Link
                   key={user.id}
                   href={`/admin/users/${user.id}`}
-                  className="flex items-center justify-between px-3 py-2 bg-amber-900/15 hover:bg-amber-900/30 rounded-lg transition-colors group"
+                  className="flex items-center justify-between px-3 py-2 iframe rounded-lg border-l-2 border-l-c-amber transition-colors hover:bg-c-elevated/50 group"
                 >
-                  <span className="text-sm text-amber-200 truncate mr-2">{user.email}</span>
-                  <span className="text-xs text-amber-400/70 flex-shrink-0 group-hover:text-amber-300">
-                    {user.request_count} req
+                  <span className="font-mono text-xs text-c-text truncate mr-2">{user.email}</span>
+                  <span className="font-mono text-[10px] bg-c-red-dim/40 text-c-red px-1.5 rounded-full flex-shrink-0 group-hover:bg-c-red-dim/60">
+                    {user.request_count} REQ
                   </span>
                 </Link>
               ))}
@@ -211,32 +214,30 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* No anomalies — subtle confirmation */}
+      {/* No anomalies */}
       {stats && stats.anomalyUsers.length === 0 && (
-        <div className="mb-6 flex items-center gap-2 px-3 py-2 bg-green-900/10 border border-green-800/20 rounded-lg">
-          <svg className="w-4 h-4 text-c-green" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-          <span className="text-xs text-c-green/80">No usage anomalies detected</span>
+        <div className="mb-8 flex items-center gap-2 px-3 py-2 iframe rounded-lg border-l-2 border-l-c-green">
+          <span className="text-c-green text-sm glow-g">&#10003;</span>
+          <span className="font-mono text-[10px] text-c-green uppercase tracking-wider">No usage anomalies detected</span>
         </div>
       )}
 
+      {/* Section: Active Sessions */}
+      <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase mb-3">// ACTIVE SESSIONS</p>
+
       {/* 3. Recent Sessions Table */}
-      <div className="mb-6">
-        <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-3">
-          Recent Sessions
-        </h2>
+      <div className="mb-8">
         <div className="bezel rounded-lg border border-c-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-c-border text-left">
-                  <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">User</th>
-                  <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Rating</th>
-                  <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider text-right">Exchanges</th>
-                  <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Status</th>
-                  <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Duration</th>
-                  <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider text-right">Started</th>
+                  <th className="px-4 py-3 font-mono text-[10px] text-c-muted uppercase tracking-wider font-normal">User</th>
+                  <th className="px-4 py-3 font-mono text-[10px] text-c-muted uppercase tracking-wider font-normal">Rating</th>
+                  <th className="px-4 py-3 font-mono text-[10px] text-c-muted uppercase tracking-wider font-normal text-right">Exchanges</th>
+                  <th className="px-4 py-3 font-mono text-[10px] text-c-muted uppercase tracking-wider font-normal">Status</th>
+                  <th className="px-4 py-3 font-mono text-[10px] text-c-muted uppercase tracking-wider font-normal">Duration</th>
+                  <th className="px-4 py-3 font-mono text-[10px] text-c-muted uppercase tracking-wider font-normal text-right">Started</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-c-border">
@@ -250,7 +251,7 @@ export default function AdminDashboardPage() {
                   ))
                 ) : !stats || stats.recentSessions.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-c-dim text-sm">
+                    <td colSpan={6} className="px-4 py-8 text-center text-c-dim font-mono text-xs uppercase">
                       No data
                     </td>
                   </tr>
@@ -260,17 +261,17 @@ export default function AdminDashboardPage() {
                       ? Math.round((new Date(session.ended_at).getTime() - new Date(session.started_at).getTime()) / 60000)
                       : null;
                     return (
-                      <tr key={session.id} className="hover:bg-c-bezel/50 transition-colors">
+                      <tr key={session.id} className="hover:bg-c-elevated/50 transition-colors">
                         <td className="px-4 py-3">
                           {session.user_id ? (
                             <Link
                               href={`/admin/users/${session.user_id}`}
-                              className="text-c-text hover:text-c-cyan truncate max-w-[180px] block transition-colors"
+                              className="font-mono text-xs text-c-text hover:text-c-cyan truncate max-w-[180px] block transition-colors"
                             >
                               {session.user_email || 'Unknown'}
                             </Link>
                           ) : (
-                            <span className="text-c-text truncate max-w-[180px] block">
+                            <span className="font-mono text-xs text-c-text truncate max-w-[180px] block">
                               {session.user_email || 'Unknown'}
                             </span>
                           )}
@@ -278,16 +279,16 @@ export default function AdminDashboardPage() {
                         <td className="px-4 py-3">
                           <RatingBadge rating={session.rating} />
                         </td>
-                        <td className="px-4 py-3 text-c-text text-right tabular-nums">
+                        <td className="px-4 py-3 font-mono text-xs text-c-text text-right tabular-nums">
                           {session.exchange_count}
                         </td>
                         <td className="px-4 py-3">
                           <SessionStatusBadge status={session.status} />
                         </td>
-                        <td className="px-4 py-3 text-c-dim text-xs tabular-nums">
+                        <td className="px-4 py-3 font-mono text-[10px] text-c-dim tabular-nums">
                           {durationMin !== null ? `${durationMin}m` : '\u2014'}
                         </td>
-                        <td className="px-4 py-3 text-c-dim text-xs text-right">
+                        <td className="px-4 py-3 font-mono text-[10px] text-c-dim text-right">
                           {formatRelativeTime(session.started_at)}
                         </td>
                       </tr>
@@ -300,11 +301,11 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
+      {/* Section: Costs */}
+      <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase mb-3">// COSTS</p>
+
       {/* 4. Cost Breakdown */}
       <div>
-        <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-3">
-          7-Day Cost Breakdown
-        </h2>
         <div className="bezel rounded-lg border border-c-border overflow-hidden">
           {loading && !stats ? (
             <div className="p-4 space-y-3 animate-pulse">
@@ -314,17 +315,17 @@ export default function AdminDashboardPage() {
             </div>
           ) : !stats || stats.costBreakdown.length === 0 ? (
             <div className="p-6 text-center">
-              <p className="text-sm text-c-dim">No data</p>
+              <p className="font-mono text-xs text-c-dim uppercase">No data</p>
             </div>
           ) : (
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-c-border text-left">
-                  <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider">Provider</th>
-                  <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider text-right">Requests</th>
-                  <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider text-right">Avg Latency</th>
-                  <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider text-right">Errors</th>
-                  <th className="px-4 py-3 font-mono text-[10px] font-medium text-c-dim uppercase tracking-wider text-right">Est. Cost</th>
+                  <th className="px-4 py-3 font-mono text-[10px] text-c-muted uppercase tracking-wider font-normal">Provider</th>
+                  <th className="px-4 py-3 font-mono text-[10px] text-c-muted uppercase tracking-wider font-normal text-right">Requests</th>
+                  <th className="px-4 py-3 font-mono text-[10px] text-c-muted uppercase tracking-wider font-normal text-right">Avg Latency</th>
+                  <th className="px-4 py-3 font-mono text-[10px] text-c-muted uppercase tracking-wider font-normal text-right">Errors</th>
+                  <th className="px-4 py-3 font-mono text-[10px] text-c-muted uppercase tracking-wider font-normal text-right">Est. Cost</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-c-border">
@@ -333,30 +334,35 @@ export default function AdminDashboardPage() {
                   .map(([provider, data]) => {
                     const avgLat = data.entries > 0 ? data.avgLatency / data.entries : 0;
                     const errorRate = data.requests > 0 ? (data.errors / data.requests) * 100 : 0;
+                    const costPct = totalWeeklyCost > 0 ? (data.cost / totalWeeklyCost) * 100 : 0;
                     return (
-                      <tr key={provider} className="hover:bg-c-bezel/50 transition-colors">
+                      <tr key={provider} className="hover:bg-c-elevated/50 transition-colors">
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <ProviderDot provider={provider} />
-                            <span className="text-c-text capitalize font-medium">{provider}</span>
+                            <span className="font-mono text-xs text-c-text uppercase font-medium">{provider}</span>
+                          </div>
+                          {/* Cost proportion bar */}
+                          <div className="mt-1.5 h-1.5 w-full bg-c-border rounded-full overflow-hidden">
+                            <div className="h-full rounded-full prog-a" style={{ width: `${costPct}%` }} />
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-c-text text-right tabular-nums">
+                        <td className="px-4 py-3 font-mono text-xs text-c-text text-right tabular-nums">
                           {data.requests.toLocaleString()}
                         </td>
-                        <td className="px-4 py-3 text-c-muted text-right tabular-nums text-xs">
+                        <td className="px-4 py-3 font-mono text-[10px] text-c-muted text-right tabular-nums">
                           {avgLat > 0 ? `${Math.round(avgLat)}ms` : '\u2014'}
                         </td>
                         <td className="px-4 py-3 text-right tabular-nums">
                           {data.errors > 0 ? (
-                            <span className="text-c-red text-xs">
+                            <span className="font-mono text-[10px] bg-c-red-dim/40 text-c-red px-2 py-0.5 rounded border border-c-red/20">
                               {data.errors} ({errorRate.toFixed(1)}%)
                             </span>
                           ) : (
-                            <span className="text-c-dim text-xs">0</span>
+                            <span className="font-mono text-[10px] text-c-dim">0</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-c-amber text-right tabular-nums font-medium">
+                        <td className="px-4 py-3 font-mono text-xs text-c-amber text-right tabular-nums font-medium">
                           ${data.cost.toFixed(2)}
                         </td>
                       </tr>
@@ -364,21 +370,21 @@ export default function AdminDashboardPage() {
                   })}
                 {/* Total row */}
                 <tr className="bg-c-bezel/30">
-                  <td className="px-4 py-3 text-c-muted font-medium">Total</td>
-                  <td className="px-4 py-3 text-c-text text-right tabular-nums font-medium">
+                  <td className="px-4 py-3 font-mono text-xs text-c-muted uppercase font-medium">Total</td>
+                  <td className="px-4 py-3 font-mono text-xs text-c-text text-right tabular-nums font-medium">
                     {Object.values(providerCosts).reduce((s, p) => s + p.requests, 0).toLocaleString()}
                   </td>
                   <td className="px-4 py-3" />
                   <td className="px-4 py-3 text-right tabular-nums">
                     {Object.values(providerCosts).reduce((s, p) => s + p.errors, 0) > 0 ? (
-                      <span className="text-c-red text-xs font-medium">
+                      <span className="font-mono text-[10px] text-c-red font-medium">
                         {Object.values(providerCosts).reduce((s, p) => s + p.errors, 0)}
                       </span>
                     ) : (
-                      <span className="text-c-dim text-xs">0</span>
+                      <span className="font-mono text-[10px] text-c-dim">0</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-amber-300 text-right tabular-nums font-bold">
+                  <td className="px-4 py-3 font-mono text-sm text-c-amber text-right tabular-nums font-bold glow-a">
                     ${totalWeeklyCost.toFixed(2)}
                   </td>
                 </tr>
@@ -387,7 +393,7 @@ export default function AdminDashboardPage() {
           )}
         </div>
         {stats && stats.costBreakdown.length > 0 && (
-          <p className="text-xs text-c-dim mt-2">
+          <p className="font-mono text-[10px] text-c-dim mt-2">
             Cost estimates based on average per-request rates. Actual costs may vary.
           </p>
         )}
@@ -396,13 +402,21 @@ export default function AdminDashboardPage() {
   );
 }
 
-function StatCard({ label, value, detail, color, loading }: {
+function StatCard({ label, value, detail, color, loading, live }: {
   label: string;
   value: string;
   detail: string;
   color: string;
   loading: boolean;
+  live?: boolean;
 }) {
+  const colorMap: Record<string, { text: string; glow: string; prog: string }> = {
+    cyan: { text: 'text-c-cyan', glow: 'glow-c', prog: 'prog-c' },
+    green: { text: 'text-c-green', glow: 'glow-g', prog: 'prog-g' },
+    amber: { text: 'text-c-amber', glow: 'glow-a', prog: 'prog-a' },
+  };
+  const c = colorMap[color] || colorMap.amber;
+
   if (loading) {
     return (
       <div className="bezel rounded-lg border border-c-border p-5 animate-pulse">
@@ -414,20 +428,22 @@ function StatCard({ label, value, detail, color, loading }: {
   }
 
   return (
-    <div className="bezel rounded-lg border border-c-border p-5">
+    <div className={`bezel rounded-lg border border-c-border p-5${live ? ' ipulse' : ''}`}>
       <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-1">{label}</p>
-      <p className={`text-2xl font-bold tabular-nums ${color}`}>{value}</p>
-      <p className="text-xs text-c-dim mt-1">{detail}</p>
+      <div className="iframe rounded-lg p-3 mb-2">
+        <p className={`text-2xl font-bold font-mono tabular-nums ${c.text} ${c.glow}`}>{value}</p>
+      </div>
+      <p className="font-mono text-[10px] text-c-dim mt-1">{detail}</p>
     </div>
   );
 }
 
 function RatingBadge({ rating }: { rating: string }) {
   const styles: Record<string, string> = {
-    private: 'bg-c-cyan/20 text-c-cyan',
-    commercial: 'bg-purple-900/30 text-purple-400',
-    instrument: 'bg-cyan-900/30 text-cyan-400',
-    atp: 'bg-amber-900/30 text-c-amber',
+    private: 'bg-c-cyan-lo text-c-cyan border-c-cyan/20',
+    commercial: 'bg-c-amber-lo text-c-amber border-c-amber/20',
+    instrument: 'bg-c-green-lo text-c-green border-c-green/20',
+    atp: 'bg-c-amber-lo text-c-amber border-c-amber/20',
   };
 
   const labels: Record<string, string> = {
@@ -438,7 +454,7 @@ function RatingBadge({ rating }: { rating: string }) {
   };
 
   return (
-    <span className={`text-xs px-1.5 py-0.5 rounded ${styles[rating] || 'bg-c-bezel text-c-muted'} uppercase font-medium`}>
+    <span className={`font-mono text-[10px] px-2 py-0.5 rounded border ${styles[rating] || 'bg-c-bezel text-c-muted border-c-border'} uppercase`}>
       {labels[rating] || rating}
     </span>
   );
@@ -446,15 +462,15 @@ function RatingBadge({ rating }: { rating: string }) {
 
 function SessionStatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    active: 'bg-green-900/30 text-c-green',
-    completed: 'bg-c-cyan/20 text-c-cyan',
-    paused: 'bg-yellow-900/30 text-c-amber',
-    abandoned: 'bg-c-bezel text-c-muted',
-    errored: 'bg-red-900/30 text-c-red',
+    active: 'bg-c-green-lo text-c-green border-c-green/20',
+    completed: 'bg-c-cyan-lo text-c-cyan border-c-cyan/20',
+    paused: 'bg-c-amber-lo text-c-amber border-c-amber/20',
+    abandoned: 'bg-c-bezel text-c-muted border-c-border',
+    errored: 'bg-c-red-dim/40 text-c-red border-c-red/20',
   };
 
   return (
-    <span className={`text-xs px-2 py-0.5 rounded-full ${styles[status] || 'bg-c-bezel text-c-muted'}`}>
+    <span className={`font-mono text-[10px] px-2 py-0.5 rounded border ${styles[status] || 'bg-c-bezel text-c-muted border-c-border'} uppercase`}>
       {status}
     </span>
   );
@@ -462,10 +478,10 @@ function SessionStatusBadge({ status }: { status: string }) {
 
 function ProviderDot({ provider }: { provider: string }) {
   const colors: Record<string, string> = {
-    anthropic: 'bg-orange-400',
+    anthropic: 'bg-c-amber',
     openai: 'bg-c-green',
     deepgram: 'bg-c-cyan',
-    cartesia: 'bg-purple-400',
+    cartesia: 'bg-c-red',
   };
 
   return (

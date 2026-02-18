@@ -187,7 +187,8 @@ export default function ConfigPage() {
   if (loading) {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-c-text font-mono uppercase tracking-wider mb-6">System Configuration</h1>
+        <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase mb-2">// SYSTEM CONFIGURATION</p>
+        <h1 className="text-2xl font-bold text-c-amber font-mono uppercase tracking-wider glow-a mb-6">SYSTEM CONFIGURATION</h1>
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="bezel rounded-lg border border-c-border p-6 animate-pulse">
@@ -203,11 +204,12 @@ export default function ConfigPage() {
   if (error) {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-c-text font-mono uppercase tracking-wider mb-6">System Configuration</h1>
-        <div className="bg-c-red-dim/40 border border-red-800/50 rounded-lg p-6 text-center">
-          <p className="text-red-300 mb-3">{error}</p>
-          <button onClick={fetchConfig} className="text-sm text-c-red hover:text-red-300 underline">
-            Retry
+        <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase mb-2">// SYSTEM CONFIGURATION</p>
+        <h1 className="text-2xl font-bold text-c-amber font-mono uppercase tracking-wider glow-a mb-6">SYSTEM CONFIGURATION</h1>
+        <div className="bg-c-red-dim/40 border border-c-red/20 rounded-lg p-6 text-center">
+          <p className="text-c-red font-mono text-sm mb-3">{error}</p>
+          <button onClick={fetchConfig} className="font-mono text-[10px] text-c-red hover:text-c-red/80 underline transition-colors">
+            RETRY
           </button>
         </div>
       </div>
@@ -217,20 +219,23 @@ export default function ConfigPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-c-text font-mono uppercase tracking-wider">System Configuration</h1>
+        <div>
+          <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase mb-2">// SYSTEM CONFIGURATION</p>
+          <h1 className="text-2xl font-bold text-c-amber font-mono uppercase tracking-wider glow-a">SYSTEM CONFIGURATION</h1>
+        </div>
         <div className="flex items-center gap-3">
           {saveSuccess && (
-            <span className="text-xs text-c-green">Saved successfully</span>
+            <span className="text-c-green glow-g font-mono text-[10px] uppercase tracking-wider">&#10003; SAVED SUCCESSFULLY</span>
           )}
           {saveError && (
-            <span className="text-xs text-c-red">{saveError}</span>
+            <span className="text-c-red font-mono text-[10px]">{saveError}</span>
           )}
           <button
             onClick={saveAll}
             disabled={saving}
-            className="px-4 py-2 text-sm rounded-lg bg-c-amber text-c-text font-mono uppercase hover:bg-c-amber/90 disabled:opacity-50 transition-colors"
+            className="px-5 py-2.5 text-xs rounded-lg bg-c-amber hover:bg-c-amber/90 text-c-bg font-mono font-semibold uppercase tracking-wide disabled:opacity-50 transition-colors"
           >
-            {saving ? 'Saving...' : 'Save All Changes'}
+            {saving ? 'SAVING...' : 'SAVE ALL CHANGES'}
           </button>
         </div>
       </div>
@@ -238,8 +243,9 @@ export default function ConfigPage() {
       <div className="space-y-6">
         {/* Kill Switches — Providers */}
         <section className="bezel rounded-lg border border-c-border p-6">
-          <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-4">
-            Provider Kill Switches
+          <p className="font-mono text-xs text-c-red tracking-[0.3em] uppercase mb-1">// KILL SWITCHES</p>
+          <h2 className="font-mono text-sm font-semibold text-c-amber uppercase tracking-wider mb-4">
+            PROVIDER KILL SWITCHES
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {KILL_SWITCH_GROUPS.providers.map((ks) => (
@@ -256,8 +262,9 @@ export default function ConfigPage() {
 
         {/* Kill Switches — Tiers */}
         <section className="bezel rounded-lg border border-c-border p-6">
-          <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-4">
-            Tier Kill Switches
+          <p className="font-mono text-xs text-c-red tracking-[0.3em] uppercase mb-1">// KILL SWITCHES</p>
+          <h2 className="font-mono text-sm font-semibold text-c-amber uppercase tracking-wider mb-4">
+            TIER KILL SWITCHES
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {KILL_SWITCH_GROUPS.tiers.map((ks) => (
@@ -273,9 +280,12 @@ export default function ConfigPage() {
         </section>
 
         {/* Maintenance Mode */}
-        <section className="bezel rounded-lg border border-c-border p-6">
-          <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-4">
-            Maintenance Mode
+        <section className={`bezel rounded-lg border border-c-border p-6 ${
+          localState.maintenanceMode.enabled ? 'border-l-2 border-l-c-amber bg-c-amber-lo/20' : ''
+        }`}>
+          <p className="font-mono text-xs text-c-amber tracking-[0.3em] uppercase mb-1">// MAINTENANCE</p>
+          <h2 className="font-mono text-sm font-semibold text-c-amber uppercase tracking-wider mb-4">
+            MAINTENANCE MODE
           </h2>
           <div className="flex items-start gap-6">
             <div className="flex-shrink-0">
@@ -287,21 +297,21 @@ export default function ConfigPage() {
             </div>
             <div className="flex-1">
               <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-1.5">
-                User-facing message
+                USER-FACING MESSAGE
               </label>
               <input
                 type="text"
                 value={localState.maintenanceMode.message}
                 onChange={(e) => setMaintenanceMessage(e.target.value)}
                 placeholder="We'll be back shortly..."
-                className="w-full px-3 py-2 bg-c-bezel border border-c-border-hi rounded-lg text-sm text-c-text placeholder-c-dim focus:outline-none focus:ring-2 focus:ring-c-amber"
+                className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-xs focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
               />
             </div>
           </div>
           {localState.maintenanceMode.enabled && (
-            <div className="mt-3 bg-amber-900/10 border border-amber-800/30 rounded-lg p-3">
-              <p className="text-xs text-amber-300">
-                Maintenance mode is ACTIVE. Users will see the maintenance page instead of the app.
+            <div className="mt-3 iframe rounded-lg p-3 border-l-2 border-c-amber">
+              <p className="text-c-amber font-mono text-xs">
+                &#9888; MAINTENANCE MODE IS ACTIVE — Users will see the maintenance page instead of the app.
               </p>
             </div>
           )}
@@ -309,8 +319,9 @@ export default function ConfigPage() {
 
         {/* Hard Caps */}
         <section className="bezel rounded-lg border border-c-border p-6">
-          <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-4">
-            Per-User Daily Hard Caps
+          <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase mb-1">// HARD CAPS</p>
+          <h2 className="font-mono text-sm font-semibold text-c-amber uppercase tracking-wider mb-4">
+            PER-USER DAILY HARD CAPS
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <HardCapInput
@@ -361,20 +372,31 @@ function KillSwitchCard({
     <div
       className={`rounded-lg border p-4 transition-colors ${
         enabled
-          ? 'bg-red-900/10 border-red-800/40'
-          : 'bg-c-bezel/30 border-c-border'
+          ? 'border-l-2 border-c-red bg-c-red-dim/20'
+          : 'border-l-2 border-c-green bg-c-green-lo/20'
       }`}
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-c-text">{label}</p>
-          <p className="text-xs text-c-dim mt-0.5">{description}</p>
+          <p className="font-mono text-xs font-semibold text-c-text uppercase tracking-wider">{label}</p>
+          <p className="font-mono text-[10px] text-c-dim mt-0.5">{description}</p>
         </div>
         <ToggleSwitch enabled={enabled} onToggle={onToggle} label={label} danger />
       </div>
+      <div className="mt-2">
+        {enabled ? (
+          <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-c-red-dim/40 text-c-red border border-c-red/20">
+            KILLED
+          </span>
+        ) : (
+          <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-c-green-lo text-c-green border border-c-green/20">
+            ACTIVE
+          </span>
+        )}
+      </div>
       {enabled && (
-        <p className="text-xs text-c-red mt-2">
-          KILLED -- Service is disabled
+        <p className="text-c-red glow-a font-mono text-[10px] mt-1.5 uppercase tracking-wider">
+          &#9888; SERVICE DISABLED
         </p>
       )}
     </div>
@@ -407,7 +429,7 @@ function ToggleSwitch({
       }`}
     >
       <span
-        className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${
+        className={`inline-block h-4 w-4 rounded-full bg-c-text transition-transform ${
           enabled ? 'translate-x-6' : 'translate-x-1'
         }`}
       />
@@ -430,9 +452,16 @@ function HardCapInput({
   max: number;
   step: number;
 }) {
+  const pct = Math.min(((value - min) / (max - min)) * 100, 100);
+  const progClass = pct >= 90 ? 'prog-r' : pct >= 70 ? 'prog-a' : 'prog-g';
+
   return (
-    <div>
-      <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-1.5">{label}</label>
+    <div className="iframe rounded-lg p-4">
+      <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-2">{label}</label>
+      <p className="font-mono font-bold text-c-amber glow-a text-lg mb-3">{value.toLocaleString()}</p>
+      <div className="h-1.5 w-full bg-c-border rounded-full overflow-hidden mb-3">
+        <div className={`h-full rounded-full ${progClass}`} style={{ width: `${pct}%` }} />
+      </div>
       <input
         type="number"
         value={value}
@@ -440,7 +469,7 @@ function HardCapInput({
         min={min}
         max={max}
         step={step}
-        className="w-full px-3 py-2 bg-c-bezel border border-c-border-hi rounded-lg text-sm text-c-text focus:outline-none focus:ring-2 focus:ring-c-amber"
+        className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-xs focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber transition-colors"
       />
       <input
         type="range"
@@ -451,9 +480,9 @@ function HardCapInput({
         step={step}
         className="w-full mt-2 accent-c-amber"
       />
-      <div className="flex justify-between text-xs text-c-dim mt-0.5">
+      <div className="flex justify-between font-mono text-[10px] text-c-dim mt-0.5">
         <span>{min.toLocaleString()}</span>
-        <span>{value.toLocaleString()}</span>
+        <span className="text-c-muted">{value.toLocaleString()}</span>
         <span>{max.toLocaleString()}</span>
       </div>
     </div>
