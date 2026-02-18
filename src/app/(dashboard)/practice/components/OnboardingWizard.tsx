@@ -16,6 +16,7 @@ interface Props {
     homeAirport: string;
     voiceEnabled: boolean;
     theme: Theme;
+    displayName: string;
   }) => void;
   onSkip: () => void;
   loading?: boolean;
@@ -80,6 +81,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
   const [homeAirport, setHomeAirport] = useState('');
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [selectedTheme, setSelectedTheme] = useState<Theme>(defaultTheme || 'cockpit');
+  const [displayName, setDisplayName] = useState('');
   const [saving, setSaving] = useState(false);
 
   const showClassPicker = rating === 'private' || rating === 'commercial';
@@ -96,6 +98,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
           aircraftType: aircraftType.trim() || null,
           homeAirport: homeAirport.trim() || null,
           preferredTheme: selectedTheme,
+          displayName: displayName.trim() || null,
           onboardingCompleted: true,
         }),
       });
@@ -109,6 +112,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
       homeAirport: homeAirport.trim(),
       voiceEnabled,
       theme: selectedTheme,
+      displayName: displayName.trim(),
     });
     setSaving(false);
   }
@@ -128,7 +132,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
       <div className="max-w-lg w-full mx-4">
         {/* Progress dots */}
         <div className="flex justify-center gap-2 mb-6">
-          {[1, 2, 3, 4].map((s) => (
+          {[1, 2, 3, 4, 5].map((s) => (
             <div
               key={s}
               className={`w-2.5 h-2.5 rounded-full transition-colors ${
@@ -274,8 +278,39 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
           </div>
         )}
 
-        {/* Step 3: Theme selection */}
+        {/* Step 3: Display name */}
         {step === 3 && (
+          <div className="bezel rounded-lg border border-c-border p-8">
+            <h2 className="font-mono font-bold text-xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
+              WHAT SHOULD WE CALL YOU?
+            </h2>
+            <p className="text-sm text-c-muted text-center mb-6">
+              Your examiner will address you by name during sessions
+            </p>
+            <input
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="e.g., Mike, Sarah, Captain Smith"
+              maxLength={50}
+              className="w-full px-4 py-3 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm placeholder-c-dim focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber transition-colors text-center"
+              autoFocus
+            />
+            <p className="text-[10px] text-c-dim mt-2 text-center font-mono">Optional — you can always change this in Settings</p>
+            <div className="flex items-center gap-3 mt-6">
+              <button onClick={() => setStep(2)} className="font-mono text-xs text-c-muted hover:text-c-text transition-colors uppercase">&larr; BACK</button>
+              <button
+                onClick={() => setStep(4)}
+                className="flex-1 py-3 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
+              >
+                {displayName.trim() ? 'NEXT' : 'SKIP'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 4: Theme selection */}
+        {step === 4 && (
           <div className="bezel rounded-lg border border-c-border p-8">
             <h2 className="font-mono font-bold text-xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
               CUSTOMIZE YOUR COCKPIT
@@ -309,13 +344,13 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
 
             <div className="flex items-center gap-3">
               <button
-                onClick={() => setStep(2)}
+                onClick={() => setStep(3)}
                 className="font-mono text-xs text-c-muted hover:text-c-text transition-colors uppercase"
               >
                 &larr; BACK
               </button>
               <button
-                onClick={() => setStep(4)}
+                onClick={() => setStep(5)}
                 className="flex-1 py-3 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
               >
                 NEXT
@@ -324,8 +359,8 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
           </div>
         )}
 
-        {/* Step 4: Confirmation */}
-        {step === 4 && (
+        {/* Step 5: Confirmation */}
+        {step === 5 && (
           <div className="bezel rounded-lg border border-c-border p-8">
             <h2 className="font-mono font-bold text-xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
               READY TO START?
@@ -374,7 +409,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
 
             <div className="flex items-center gap-3">
               <button
-                onClick={() => setStep(3)}
+                onClick={() => setStep(4)}
                 className="font-mono text-xs text-c-muted hover:text-c-text transition-colors uppercase"
               >
                 &larr; BACK

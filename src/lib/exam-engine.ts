@@ -96,6 +96,23 @@ export async function loadPromptFromDB(
 }
 
 /**
+ * Load persona personality fragment from prompt_versions.
+ * Returns raw content (no safety prefix) — appended to an already-prefixed prompt.
+ * Returns empty string if no persona prompt exists (backwards compatible).
+ */
+async function loadPersonaFragment(personaId: string): Promise<string> {
+  const { data } = await supabase
+    .from('prompt_versions')
+    .select('content')
+    .eq('prompt_key', `persona_${personaId}`)
+    .eq('status', 'published')
+    .order('version', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data?.content ? `\n\n${data.content}` : '';
+}
+
+/**
  * Pick a random ACS task for the oral exam, optionally excluding already-covered tasks.
  * Filters by aircraft class when provided.
  */
@@ -174,7 +191,9 @@ export async function generateExaminerTurn(
   aircraftClass?: AircraftClass,
   prefetchedRag?: { ragContext: string },
   rating: Rating = 'private',
-  studyMode?: string
+  studyMode?: string,
+  personaId?: string,
+  studentName?: string
 ): Promise<ExamTurn> {
   // Load the best-matching prompt from DB (specificity: rating + studyMode + difficulty)
   const { content: dbPromptContent } = await loadPromptFromDB(
@@ -182,6 +201,12 @@ export async function generateExaminerTurn(
   );
 
   const systemPrompt = buildSystemPrompt(task, difficulty, aircraftClass, rating, dbPromptContent);
+
+  // Persona personality + student name injection
+  const personaFragment = personaId ? await loadPersonaFragment(personaId) : '';
+  const nameInstruction = studentName
+    ? `\n\nADDRESS THE STUDENT: Address the student as "${studentName}" naturally in conversation. Use their name occasionally, not in every sentence.`
+    : '';
 
   // Use pre-fetched RAG or fetch fresh
   let ragContext = prefetchedRag?.ragContext ?? '';
@@ -203,7 +228,7 @@ export async function generateExaminerTurn(
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 500,
-    system: systemPrompt + ragSection,
+    system: systemPrompt + personaFragment + nameInstruction + ragSection,
     messages:
       messages.length === 0
         ? [{ role: 'user', content: 'Begin the oral examination.' }]
@@ -238,7 +263,9 @@ export async function generateExaminerTurnStreaming(
   assessmentPromise?: Promise<AssessmentData>,
   onComplete?: (fullText: string) => void,
   rating: Rating = 'private',
-  studyMode?: string
+  studyMode?: string,
+  personaId?: string,
+  studentName?: string
 ): Promise<ReadableStream> {
   // Load the best-matching prompt from DB (specificity: rating + studyMode + difficulty)
   const { content: dbPromptContent } = await loadPromptFromDB(
@@ -246,6 +273,12 @@ export async function generateExaminerTurnStreaming(
   );
 
   const systemPrompt = buildSystemPrompt(task, difficulty, aircraftClass, rating, dbPromptContent);
+
+  // Persona personality + student name injection
+  const personaFragment = personaId ? await loadPersonaFragment(personaId) : '';
+  const nameInstruction = studentName
+    ? `\n\nADDRESS THE STUDENT: Address the student as "${studentName}" naturally in conversation. Use their name occasionally, not in every sentence.`
+    : '';
 
   // Use pre-fetched RAG or fetch fresh
   let ragContext = prefetchedRag?.ragContext ?? '';
@@ -266,7 +299,7 @@ export async function generateExaminerTurnStreaming(
   const stream = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 500,
-    system: systemPrompt + ragSection,
+    system: systemPrompt + personaFragment + nameInstruction + ragSection,
     stream: true,
     messages:
       messages.length === 0

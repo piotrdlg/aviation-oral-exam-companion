@@ -8,6 +8,10 @@ const PROMPT_KEYS = [
   { value: 'assessment_system', label: 'Assessment System Prompt' },
   { value: 'planner_system', label: 'Planner System Prompt' },
   { value: 'rag_query', label: 'RAG Query Prompt' },
+  { value: 'persona_bob_mitchell', label: 'Persona: Bob Mitchell' },
+  { value: 'persona_jim_hayes', label: 'Persona: Jim Hayes' },
+  { value: 'persona_karen_sullivan', label: 'Persona: Karen Sullivan' },
+  { value: 'persona_maria_torres', label: 'Persona: Maria Torres' },
 ];
 
 const DIFFICULTY_OPTIONS = [

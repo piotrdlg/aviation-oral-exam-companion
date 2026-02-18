@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import type { VoiceTier, TierFeatures } from '@/lib/voice/types';
 import type { Rating, AircraftClass } from '@/types/database';
 import { THEMES, setTheme } from '@/lib/theme';
+import { DEFAULT_AVATARS } from '@/lib/avatar-options';
 
 type TestStatus = 'idle' | 'running' | 'pass' | 'fail';
 
@@ -24,6 +25,8 @@ interface VoiceOption {
   label: string;
   desc?: string;
   gender?: string;
+  persona_id?: string;
+  image?: string;
 }
 
 interface TierInfo {
@@ -41,6 +44,8 @@ interface TierInfo {
   homeAirport: string | null;
   preferredTheme: string;
   voiceOptions: VoiceOption[];
+  displayName: string | null;
+  avatarUrl: string | null;
 }
 
 interface SubscriptionInfo {
@@ -133,6 +138,8 @@ export default function SettingsPage() {
             homeAirport: data.homeAirport || null,
             preferredTheme: data.preferredTheme || 'cockpit',
             voiceOptions: data.voiceOptions || [],
+            displayName: data.displayName || null,
+            avatarUrl: data.avatarUrl || null,
           });
         }
       })
@@ -215,7 +222,7 @@ export default function SettingsPage() {
     }
   }
 
-  async function savePracticeDefault(field: 'preferredRating' | 'preferredAircraftClass' | 'aircraftType' | 'homeAirport' | 'preferredTheme', value: string) {
+  async function savePracticeDefault(field: 'preferredRating' | 'preferredAircraftClass' | 'aircraftType' | 'homeAirport' | 'preferredTheme' | 'displayName' | 'avatarUrl', value: string) {
     setDefaultsSaving(true);
     setDefaultsMessage(null);
     try {
@@ -232,6 +239,8 @@ export default function SettingsPage() {
         if (field === 'preferredAircraftClass') return { ...prev, preferredAircraftClass: value as AircraftClass };
         if (field === 'aircraftType') return { ...prev, aircraftType: value || null };
         if (field === 'homeAirport') return { ...prev, homeAirport: value || null };
+        if (field === 'displayName') return { ...prev, displayName: value || null };
+        if (field === 'avatarUrl') return { ...prev, avatarUrl: value || null };
         return prev;
       });
       setDefaultsMessage({ text: 'Preference saved', type: 'success' });
@@ -240,6 +249,23 @@ export default function SettingsPage() {
       setDefaultsMessage({ text: err instanceof Error ? err.message : 'Failed to save', type: 'error' });
     } finally {
       setDefaultsSaving(false);
+    }
+  }
+
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('avatar', file);
+    try {
+      const res = await fetch('/api/user/avatar', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload failed');
+      setTierInfo((prev) => prev ? { ...prev, avatarUrl: data.avatarUrl } : null);
+      setDefaultsMessage({ text: 'Avatar updated', type: 'success' });
+      setTimeout(() => setDefaultsMessage(null), 2000);
+    } catch (err) {
+      setDefaultsMessage({ text: err instanceof Error ? err.message : 'Upload failed', type: 'error' });
     }
   }
 
@@ -646,7 +672,69 @@ export default function SettingsPage() {
         <p className="font-mono text-xs text-c-muted mt-1">Manage your account, subscription, and preferences.</p>
       </div>
 
-      {/* 1. Account Info */}
+      {/* 1. Profile */}
+      <div className="bezel rounded-lg border border-c-border p-6">
+        <h2 className="font-mono font-semibold text-sm text-c-amber mb-1 tracking-wider uppercase">PROFILE</h2>
+        <p className="font-mono text-[10px] text-c-muted mb-5">
+          Your name and avatar appear during exam sessions.
+        </p>
+
+        {/* Avatar */}
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-c-border bg-c-bezel flex-shrink-0">
+            {tierInfo?.avatarUrl ? (
+              <img src={tierInfo.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-c-muted text-2xl font-mono">
+                {tierInfo?.displayName?.[0]?.toUpperCase() || '?'}
+              </div>
+            )}
+          </div>
+          <div>
+            <input type="file" id="avatar-upload" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleAvatarUpload} />
+            <label htmlFor="avatar-upload" className="cursor-pointer inline-block px-3 py-1.5 rounded font-mono text-[10px] font-medium bg-c-bezel border border-c-border text-c-muted hover:bg-c-border hover:text-c-text transition-colors uppercase">
+              UPLOAD PHOTO
+            </label>
+            <p className="font-mono text-[10px] text-c-dim mt-1">Max 2MB. JPG, PNG, or WebP.</p>
+          </div>
+        </div>
+
+        {/* Default avatar options */}
+        <div className="mb-4">
+          <label className="block font-mono text-[10px] text-c-muted mb-2 uppercase tracking-wider">OR CHOOSE AN AVATAR</label>
+          <div className="flex gap-2">
+            {DEFAULT_AVATARS.map((av) => (
+              <button
+                key={av.id}
+                onClick={() => savePracticeDefault('avatarUrl', av.url)}
+                className={`w-10 h-10 rounded-full overflow-hidden border-2 transition-colors ${
+                  tierInfo?.avatarUrl === av.url ? 'border-c-amber' : 'border-c-border hover:border-c-border-hi'
+                }`}
+              >
+                <img src={av.url} alt={av.label} className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Display name */}
+        <div>
+          <label className="block font-mono text-[10px] text-c-muted mb-1.5 uppercase tracking-wider">DISPLAY NAME</label>
+          <input
+            type="text"
+            defaultValue={tierInfo?.displayName || ''}
+            onBlur={(e) => {
+              const val = e.target.value.trim();
+              savePracticeDefault('displayName', val);
+            }}
+            placeholder="How should the examiner address you?"
+            maxLength={50}
+            className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-xs focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
+          />
+        </div>
+      </div>
+
+      {/* 2. Account Info */}
       <div className="bezel rounded-lg border border-c-border p-6">
         <h2 className="font-mono font-semibold text-sm text-c-amber mb-4 tracking-wider uppercase">ACCOUNT</h2>
         <div className="text-xs mb-5 font-mono">
@@ -939,11 +1027,18 @@ export default function SettingsPage() {
                     }`}
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <span className={`font-mono text-xs font-semibold uppercase ${isActive ? 'text-c-amber' : 'font-medium text-c-text'}`}>
-                          {option.label}
-                        </span>
-                        {option.desc && <p className="font-mono text-[10px] text-c-dim mt-0.5">{option.desc}</p>}
+                      <div className="flex items-start gap-3">
+                        {option.image && (
+                          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-c-border flex-shrink-0 bg-c-bezel">
+                            <img src={option.image} alt={option.label} className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        <div>
+                          <span className={`font-mono text-xs font-semibold uppercase ${isActive ? 'text-c-amber' : 'font-medium text-c-text'}`}>
+                            {option.label}
+                          </span>
+                          {option.desc && <p className="font-mono text-[10px] text-c-dim mt-0.5">{option.desc}</p>}
+                        </div>
                       </div>
                       {isActive && (
                         <span className="font-mono text-[10px] bg-c-amber-lo text-c-amber px-2 py-0.5 rounded border border-c-amber/20 uppercase">

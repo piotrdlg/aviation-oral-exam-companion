@@ -246,6 +246,16 @@ export type VoiceTier = 'ground_school' | 'checkride_prep' | 'dpe_live';
 
 export type AccountStatus = 'active' | 'suspended' | 'banned';
 export type Theme = 'cockpit' | 'glass' | 'radar' | 'neon';
+
+export interface PersonaConfig {
+  persona_id: string;
+  model: string;
+  label: string;
+  desc: string;
+  gender: string;
+  image: string;
+}
+
 export type SubscriptionStatus = 'active' | 'past_due' | 'canceled' | 'trialing' | 'incomplete' | 'none';
 export type AuthMethod = 'email_otp' | 'google' | 'apple' | 'microsoft' | 'password';
 
@@ -260,6 +270,8 @@ export interface UserProfile {
   home_airport: string | null;
   onboarding_completed: boolean;
   preferred_theme: Theme;
+  display_name: string | null;
+  avatar_url: string | null;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   stripe_price_id: string | null;

@@ -190,6 +190,25 @@ export async function POST(request: NextRequest) {
       plannerState?: PlannerState;
     };
 
+    // Load user profile for persona personality + student name
+    const { data: examUserProfile } = await serviceSupabase
+      .from('user_profiles')
+      .select('display_name, preferred_voice')
+      .eq('user_id', user.id)
+      .single();
+
+    let personaId: string | undefined;
+    if (examUserProfile?.preferred_voice) {
+      const { data: voiceConfig } = await serviceSupabase
+        .from('system_config')
+        .select('value')
+        .eq('key', 'voice.user_options')
+        .maybeSingle();
+      const personas = ((voiceConfig?.value || []) as Array<{ persona_id: string; model: string }>);
+      personaId = personas.find(p => p.model === examUserProfile.preferred_voice)?.persona_id;
+    }
+    const studentName = examUserProfile?.display_name || undefined;
+
     // Session enforcement: ensure only one active exam per user
     let enforcementPausedSessionId: string | undefined;
     if (sessionId) {
@@ -239,7 +258,7 @@ export async function POST(request: NextRequest) {
 
         const rating = sessionConfig.rating || 'private';
         const turn = await generateExaminerTurn(
-          plannerResult.task, [], plannerResult.difficulty, sessionConfig.aircraftClass, undefined, rating, sessionConfig.studyMode
+          plannerResult.task, [], plannerResult.difficulty, sessionConfig.aircraftClass, undefined, rating, sessionConfig.studyMode, personaId, studentName
         );
 
         // Log LLM usage (non-blocking)
@@ -288,7 +307,7 @@ export async function POST(request: NextRequest) {
 
       // Support streaming for start
       if (stream) {
-        const readableStream = await generateExaminerTurnStreaming(task, []);
+        const readableStream = await generateExaminerTurnStreaming(task, [], undefined, undefined, undefined, undefined, undefined, undefined, undefined, personaId, studentName);
 
         return new Response(readableStream, {
           headers: {
@@ -301,7 +320,7 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      const turn = await generateExaminerTurn(task, []);
+      const turn = await generateExaminerTurn(task, [], undefined, undefined, undefined, undefined, undefined, personaId, studentName);
 
       // Log LLM usage (non-blocking)
       logLlmUsage(user.id, turn.usage, tier, sessionId, { action: 'start', call: 'generateExaminerTurn' });
@@ -383,7 +402,7 @@ export async function POST(request: NextRequest) {
         };
 
         const readableStream = await generateExaminerTurnStreaming(
-          taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessmentPromise, onStreamComplete, respondRating, sessionConfig?.studyMode
+          taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessmentPromise, onStreamComplete, respondRating, sessionConfig?.studyMode, personaId, studentName
         );
 
         // DB writes happen inside the stream (assessment sent as final SSE event)
@@ -435,7 +454,7 @@ export async function POST(request: NextRequest) {
       // Non-streaming path: run both in parallel, wait for both
       const [assessment, turn] = await Promise.all([
         assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty),
-        generateExaminerTurn(taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass as import('@/types/database').AircraftClass | undefined, rag, respondRating, sessionConfig?.studyMode),
+        generateExaminerTurn(taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass as import('@/types/database').AircraftClass | undefined, rag, respondRating, sessionConfig?.studyMode, personaId, studentName),
       ]);
 
       // Log LLM usage for both calls (non-blocking)
@@ -564,7 +583,7 @@ export async function POST(request: NextRequest) {
 
         const nextTaskRating = sessionConfig.rating || 'private';
         const turn = await generateExaminerTurn(
-          plannerResult.task, sessionHistory, plannerResult.difficulty, sessionConfig.aircraftClass, undefined, nextTaskRating, sessionConfig.studyMode
+          plannerResult.task, sessionHistory, plannerResult.difficulty, sessionConfig.aircraftClass, undefined, nextTaskRating, sessionConfig.studyMode, personaId, studentName
         );
 
         // Log LLM usage (non-blocking)
@@ -616,7 +635,7 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      const turn = await generateExaminerTurn(task, sessionHistory);
+      const turn = await generateExaminerTurn(task, sessionHistory, undefined, undefined, undefined, undefined, undefined, personaId, studentName);
 
       // Log LLM usage (non-blocking)
       logLlmUsage(user.id, turn.usage, tier, sessionId, { action: 'next-task', call: 'generateExaminerTurn' });

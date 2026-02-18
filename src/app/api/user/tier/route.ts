@@ -21,7 +21,7 @@ export async function GET() {
     const [profileResult, voiceOptionsResult] = await Promise.all([
       serviceSupabase
         .from('user_profiles')
-        .select('tier, preferred_voice, preferred_rating, preferred_aircraft_class, aircraft_type, home_airport, onboarding_completed, preferred_theme, subscription_status, cancel_at_period_end, current_period_end')
+        .select('tier, preferred_voice, preferred_rating, preferred_aircraft_class, aircraft_type, home_airport, onboarding_completed, preferred_theme, subscription_status, cancel_at_period_end, current_period_end, display_name, avatar_url')
         .eq('user_id', user.id)
         .single(),
       serviceSupabase
@@ -81,6 +81,8 @@ export async function GET() {
       homeAirport: profile?.home_airport || null,
       onboardingCompleted: profile?.onboarding_completed ?? false,
       preferredTheme: profile?.preferred_theme || 'cockpit',
+      displayName: profile?.display_name || null,
+      avatarUrl: profile?.avatar_url || null,
       voiceOptions: voiceOptionsResult.data?.value || [],
     });
   } catch (error) {
@@ -105,7 +107,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { preferredVoice, preferredRating, preferredAircraftClass, aircraftType, homeAirport, onboardingCompleted, preferredTheme } = body;
+    const { preferredVoice, preferredRating, preferredAircraftClass, aircraftType, homeAirport, onboardingCompleted, preferredTheme, displayName, avatarUrl } = body;
 
     const updateFields: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
@@ -175,6 +177,22 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid theme' }, { status: 400 });
       }
       updateFields.preferred_theme = preferredTheme || 'cockpit';
+    }
+
+    // Validate display name if provided
+    if (displayName !== undefined) {
+      if (displayName && typeof displayName === 'string' && displayName.length > 50) {
+        return NextResponse.json({ error: 'Display name too long (max 50 chars)' }, { status: 400 });
+      }
+      updateFields.display_name = typeof displayName === 'string' ? displayName.trim() : null;
+    }
+
+    // Validate avatar URL if provided
+    if (avatarUrl !== undefined) {
+      if (avatarUrl && typeof avatarUrl === 'string' && avatarUrl.length > 500) {
+        return NextResponse.json({ error: 'Avatar URL too long' }, { status: 400 });
+      }
+      updateFields.avatar_url = avatarUrl || null;
     }
 
     const { error: updateError } = await serviceSupabase

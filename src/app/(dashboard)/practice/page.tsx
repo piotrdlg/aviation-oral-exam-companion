@@ -109,6 +109,10 @@ export default function PracticePage() {
   const [lastFailedAnswer, setLastFailedAnswer] = useState<string | null>(null);
   // Scroll-to-bottom FAB visibility
   const [showScrollFab, setShowScrollFab] = useState(false);
+  // Avatars + names in message bubbles (Task 18)
+  const [userName, setUserName] = useState<string | null>(null);
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
+  const [activePersona, setActivePersona] = useState<{ label: string; image: string } | null>(null);
   // Resumable session (active/paused with planner state in metadata)
   const [resumableSession, setResumableSession] = useState<{
     id: string;
@@ -148,6 +152,17 @@ export default function PracticePage() {
           setTheme(data.preferredTheme);
         }
         setPrefsLoaded(true);
+        // Populate avatar + persona for message bubbles (Task 18)
+        if (data?.displayName) setUserName(data.displayName);
+        if (data?.avatarUrl) setUserAvatar(data.avatarUrl);
+        // Resolve active persona from voice options
+        if (data?.voiceOptions) {
+          const selectedVoice = data.preferredVoice;
+          const persona = data.voiceOptions.find((v: { model: string }) => v.model === selectedVoice) || data.voiceOptions[0];
+          if (persona?.label && persona?.image) {
+            setActivePersona({ label: persona.label, image: persona.image });
+          }
+        }
         // Check if usage is at 80% or above for proactive warning (Task 34)
         if (data?.usage && data?.features) {
           const sessionPct = data.features.maxSessionsPerMonth !== Infinity
@@ -975,6 +990,7 @@ export default function PracticePage() {
             onComplete={(config) => {
               setPreferredRating(config.rating);
               setPreferredAircraftClass(config.aircraftClass);
+              if (config.displayName) setUserName(config.displayName);
               setOnboardingCompleted(true);
               setShowWizard(false);
               startSession({
@@ -1250,12 +1266,25 @@ export default function PracticePage() {
                   : 'bg-c-cyan-lo/40 border-r-2 border-c-cyan/50'
               }`}
             >
-              <div className="flex items-center justify-between mb-1">
-                <p className={`text-[10px] font-mono uppercase tracking-wide ${
-                  msg.role === 'examiner' ? 'text-c-amber' : 'text-c-cyan'
-                }`}>
-                  {msg.role === 'examiner' ? 'DPE EXAMINER' : 'APPLICANT'}
-                </p>
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full overflow-hidden border border-c-border/50 bg-c-bezel flex-shrink-0">
+                    {msg.role === 'examiner' && activePersona?.image ? (
+                      <img src={activePersona.image} alt="" className="w-full h-full object-cover" />
+                    ) : msg.role === 'student' && userAvatar ? (
+                      <img src={userAvatar} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-[8px] font-mono text-c-muted uppercase">
+                        {msg.role === 'examiner' ? 'DPE' : (userName?.[0]?.toUpperCase() || '?')}
+                      </div>
+                    )}
+                  </div>
+                  <p className={`text-[10px] font-mono uppercase tracking-wide ${
+                    msg.role === 'examiner' ? 'text-c-amber' : 'text-c-cyan'
+                  }`}>
+                    {msg.role === 'examiner' ? (activePersona?.label || 'DPE EXAMINER') : (userName || 'APPLICANT')}
+                  </p>
+                </div>
                 {/* Report button on examiner messages (Task 26) */}
                 {msg.role === 'examiner' && msg.text && (
                   <button
