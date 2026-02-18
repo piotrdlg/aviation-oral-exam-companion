@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import type { AircraftClass, Rating } from '@/types/database';
 
 export interface SessionConfigData {
@@ -13,11 +14,12 @@ export interface SessionConfigData {
   voiceEnabled: boolean;
 }
 
-const RATING_OPTIONS: { value: Rating; label: string; desc: string }[] = [
-  { value: 'private', label: 'Private Pilot', desc: 'PPL — FAA-S-ACS-6C' },
-  { value: 'commercial', label: 'Commercial', desc: 'CPL — FAA-S-ACS-7B' },
-  { value: 'instrument', label: 'Instrument', desc: 'IR — FAA-S-ACS-8C' },
-];
+const RATING_LABELS: Record<string, string> = {
+  private: 'Private Pilot',
+  commercial: 'Commercial',
+  instrument: 'Instrument',
+  atp: 'ATP',
+};
 
 interface AcsTaskItem {
   id: string;
@@ -32,31 +34,29 @@ interface AreaGroup {
   tasks: AcsTaskItem[];
 }
 
-const CLASS_OPTIONS: { value: AircraftClass; label: string; desc: string }[] = [
-  { value: 'ASEL', label: 'ASEL', desc: 'Single-Engine Land' },
-  { value: 'AMEL', label: 'AMEL', desc: 'Multi-Engine Land' },
-  { value: 'ASES', label: 'ASES', desc: 'Single-Engine Sea' },
-  { value: 'AMES', label: 'AMES', desc: 'Multi-Engine Sea' },
-];
-
 interface Props {
   onStart: (config: SessionConfigData) => void;
   loading?: boolean;
+  preferredRating?: Rating;
+  preferredAircraftClass?: AircraftClass;
+  prefsLoaded?: boolean;
 }
 
-export default function SessionConfig({ onStart, loading }: Props) {
-  const [rating, setRating] = useState<Rating>('private');
+export default function SessionConfig({ onStart, loading, preferredRating, preferredAircraftClass, prefsLoaded }: Props) {
+  const rating = preferredRating || 'private';
+  const aircraftClass = preferredAircraftClass || 'ASEL';
+  const prefsLoading = prefsLoaded === undefined ? false : !prefsLoaded;
   const [studyMode, setStudyMode] = useState<SessionConfigData['studyMode']>('linear');
   const [difficulty, setDifficulty] = useState<SessionConfigData['difficulty']>('mixed');
-  const [aircraftClass, setAircraftClass] = useState<AircraftClass>('ASEL');
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [showTaskPicker, setShowTaskPicker] = useState(false);
   const [allTasks, setAllTasks] = useState<AcsTaskItem[]>([]);
   const [tasksLoading, setTasksLoading] = useState(false);
 
-  // Fetch tasks from DB when rating changes
+  // Fetch tasks from DB when rating changes (wait for prefs to load)
   useEffect(() => {
+    if (prefsLoading) return;
     setTasksLoading(true);
     setSelectedTasks([]);
     fetch(`/api/exam?action=list-tasks&rating=${rating}`)
@@ -64,7 +64,7 @@ export default function SessionConfig({ onStart, loading }: Props) {
       .then((data) => setAllTasks(data.tasks || []))
       .catch(() => {})
       .finally(() => setTasksLoading(false));
-  }, [rating]);
+  }, [rating, prefsLoading]);
 
   // Filter tasks by aircraft class
   const filteredTasks = useMemo(
@@ -82,21 +82,13 @@ export default function SessionConfig({ onStart, loading }: Props) {
     }
     const groups: AreaGroup[] = [];
     for (const [areaName, tasks] of map) {
-      // Extract area ID from task ID (e.g., "PA.I.A" -> "I")
       const areaId = tasks[0]?.id.split('.')[1] || '';
       groups.push({ areaId, areaName, tasks });
     }
-    // Sort by area Roman numeral position
     const romanOrder = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
     groups.sort((a, b) => romanOrder.indexOf(a.areaId) - romanOrder.indexOf(b.areaId));
     return groups;
   }, [filteredTasks]);
-
-  // Clear task selection when aircraft class changes
-  function handleClassChange(cls: AircraftClass) {
-    setAircraftClass(cls);
-    setSelectedTasks([]);
-  }
 
   function toggleTask(taskId: string) {
     setSelectedTasks((prev) =>
@@ -127,46 +119,23 @@ export default function SessionConfig({ onStart, loading }: Props) {
     <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
       <h2 className="text-lg font-medium text-white mb-4">New Session</h2>
       <div className="space-y-5">
-        {/* Certificate Rating */}
-        <div>
-          <label className="block text-sm text-gray-300 mb-2">Certificate Rating</label>
-          <div className="grid grid-cols-3 gap-2">
-            {RATING_OPTIONS.map((r) => (
-              <button
-                key={r.value}
-                onClick={() => setRating(r.value)}
-                className={`p-3 rounded-lg border text-center transition-colors ${
-                  rating === r.value
-                    ? 'border-blue-500 bg-blue-500/10 text-blue-400'
-                    : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
-                }`}
-              >
-                <p className="text-sm font-medium">{r.label}</p>
-                <p className="text-[10px] mt-0.5 opacity-70">{r.desc}</p>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Aircraft Class */}
-        <div>
-          <label className="block text-sm text-gray-300 mb-2">Aircraft Class</label>
-          <div className="grid grid-cols-4 gap-2">
-            {CLASS_OPTIONS.map((cls) => (
-              <button
-                key={cls.value}
-                onClick={() => handleClassChange(cls.value)}
-                className={`p-2.5 rounded-lg border text-center transition-colors ${
-                  aircraftClass === cls.value
-                    ? 'border-blue-500 bg-blue-500/10 text-blue-400'
-                    : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
-                }`}
-              >
-                <p className="text-sm font-bold">{cls.label}</p>
-                <p className="text-[10px] mt-0.5 opacity-70">{cls.desc}</p>
-              </button>
-            ))}
-          </div>
+        {/* Rating & Class (read-only from Settings) */}
+        <div className="flex items-center justify-between px-4 py-3 bg-gray-800 rounded-lg border border-gray-700">
+          {prefsLoading ? (
+            <span className="text-sm text-gray-500">Loading preferences...</span>
+          ) : (
+            <span className="text-sm text-white">
+              <span className="font-medium">{RATING_LABELS[rating] || rating}</span>
+              <span className="text-gray-500 mx-2">&middot;</span>
+              <span className="font-medium">{aircraftClass}</span>
+            </span>
+          )}
+          <Link
+            href="/settings"
+            className="text-xs text-blue-400 hover:text-blue-300 transition-colors whitespace-nowrap ml-3"
+          >
+            Change in Settings &rarr;
+          </Link>
         </div>
 
         {/* Study Mode */}
@@ -328,7 +297,7 @@ export default function SessionConfig({ onStart, loading }: Props) {
             selectedTasks,
             voiceEnabled,
           })}
-          disabled={loading}
+          disabled={loading || prefsLoading}
           className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
         >
           {loading ? 'Starting...' : 'Start Practice Exam'}

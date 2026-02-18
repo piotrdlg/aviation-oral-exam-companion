@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import SessionConfig, { type SessionConfigData } from './components/SessionConfig';
-import type { PlannerState, SessionConfig as SessionConfigType, Rating } from '@/types/database';
+import type { PlannerState, SessionConfig as SessionConfigType, Rating, AircraftClass } from '@/types/database';
 import type { VoiceTier } from '@/lib/voice/types';
 import { useVoiceProvider } from '@/hooks/useVoiceProvider';
 import { ExamImages } from '@/components/ui/ExamImages';
@@ -85,6 +85,9 @@ export default function PracticePage() {
   const [plannerState, setPlannerState] = useState<PlannerState | null>(null);
   const [sessionConfig, setSessionConfig] = useState<SessionConfigType | null>(null);
   const [tier, setTier] = useState<VoiceTier>('checkride_prep');
+  const [preferredRating, setPreferredRating] = useState<Rating>('private');
+  const [preferredAircraftClass, setPreferredAircraftClass] = useState<AircraftClass>('ASEL');
+  const [prefsLoaded, setPrefsLoaded] = useState(false);
   // Upgrade prompt states (Task 34)
   const [showQuotaModal, setShowQuotaModal] = useState(false);
   const [quotaWarning, setQuotaWarning] = useState<string | null>(null);
@@ -121,12 +124,15 @@ export default function PracticePage() {
   // Unified voice provider hook (handles STT + TTS for all tiers)
   const voice = useVoiceProvider({ tier, sessionId: sessionId || undefined });
 
-  // Fetch user's tier on mount + check quota usage for proactive warning
+  // Fetch user's tier + practice preferences on mount + check quota usage
   useEffect(() => {
     fetch('/api/user/tier')
       .then((res) => res.ok ? res.json() : null)
       .then((data) => {
         if (data?.tier) setTier(data.tier);
+        if (data?.preferredRating) setPreferredRating(data.preferredRating);
+        if (data?.preferredAircraftClass) setPreferredAircraftClass(data.preferredAircraftClass);
+        setPrefsLoaded(true);
         // Check if usage is at 80% or above for proactive warning (Task 34)
         if (data?.usage && data?.features) {
           const sessionPct = data.features.maxSessionsPerMonth !== Infinity
@@ -141,7 +147,7 @@ export default function PracticePage() {
           }
         }
       })
-      .catch(() => {}); // Fallback to checkride_prep
+      .catch(() => { setPrefsLoaded(true); }); // Fallback to defaults
   }, []);
 
   // Check for a resumable session on mount
@@ -875,7 +881,13 @@ export default function PracticePage() {
           </div>
         )}
 
-        <SessionConfig onStart={startSession} loading={loading} />
+        <SessionConfig
+          onStart={startSession}
+          loading={loading}
+          preferredRating={preferredRating}
+          preferredAircraftClass={preferredAircraftClass}
+          prefsLoaded={prefsLoaded}
+        />
 
         {/* Quota exceeded modal (Task 34) */}
         {showQuotaModal && (

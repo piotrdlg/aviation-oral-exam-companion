@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { VoiceTier, TierFeatures } from '@/lib/voice/types';
-import VoiceLab from './components/VoiceLab';
+import type { Rating, AircraftClass } from '@/types/database';
 
 type TestStatus = 'idle' | 'running' | 'pass' | 'fail';
 
@@ -32,6 +32,8 @@ interface TierInfo {
     sttSecondsThisMonth: number;
   };
   preferredVoice: string | null;
+  preferredRating: Rating;
+  preferredAircraftClass: AircraftClass;
   voiceOptions: VoiceOption[];
 }
 
@@ -64,6 +66,10 @@ export default function SettingsPage() {
   const [voiceMessage, setVoiceMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [previewingVoice, setPreviewingVoice] = useState<string | null>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Practice defaults state
+  const [defaultsSaving, setDefaultsSaving] = useState(false);
+  const [defaultsMessage, setDefaultsMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   // Subscription state (Task 35)
   const [subInfo, setSubInfo] = useState<SubscriptionInfo | null>(null);
@@ -113,6 +119,8 @@ export default function SettingsPage() {
             features: data.features,
             usage: data.usage,
             preferredVoice: data.preferredVoice || null,
+            preferredRating: data.preferredRating || 'private',
+            preferredAircraftClass: data.preferredAircraftClass || 'ASEL',
             voiceOptions: data.voiceOptions || [],
           });
         }
@@ -185,13 +193,37 @@ export default function SettingsPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to update voice');
-      setTierInfo((prev) => prev ? { ...prev, preferredVoice: data.preferredVoice } : null);
+      setTierInfo((prev) => prev ? { ...prev, preferredVoice: model } : null);
       const label = tierInfo?.voiceOptions.find((v) => v.model === model)?.label || model;
       setVoiceMessage({ text: `Voice changed to ${label}`, type: 'success' });
     } catch (err) {
       setVoiceMessage({ text: err instanceof Error ? err.message : 'Failed to update voice', type: 'error' });
     } finally {
       setVoiceSaving(false);
+    }
+  }
+
+  async function savePracticeDefault(field: 'preferredRating' | 'preferredAircraftClass', value: string) {
+    setDefaultsSaving(true);
+    setDefaultsMessage(null);
+    try {
+      const res = await fetch('/api/user/tier', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [field]: value }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update');
+      setTierInfo((prev) => prev ? {
+        ...prev,
+        ...(field === 'preferredRating' ? { preferredRating: value as Rating } : { preferredAircraftClass: value as AircraftClass }),
+      } : null);
+      setDefaultsMessage({ text: 'Preference saved', type: 'success' });
+      setTimeout(() => setDefaultsMessage(null), 2000);
+    } catch (err) {
+      setDefaultsMessage({ text: err instanceof Error ? err.message : 'Failed to save', type: 'error' });
+    } finally {
+      setDefaultsSaving(false);
     }
   }
 
@@ -604,6 +636,76 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* Practice Defaults */}
+      <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
+        <h2 className="text-lg font-medium text-white mb-1">Practice Defaults</h2>
+        <p className="text-sm text-gray-400 mb-5">
+          Set your default certificate rating and aircraft class for practice sessions.
+        </p>
+
+        {tierLoading ? (
+          <div className="text-sm text-gray-500">Loading preferences...</div>
+        ) : (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm text-gray-300 mb-2">Certificate Rating</label>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { value: 'private', label: 'Private Pilot' },
+                  { value: 'commercial', label: 'Commercial' },
+                  { value: 'instrument', label: 'Instrument' },
+                ] as const).map((r) => (
+                  <button
+                    key={r.value}
+                    onClick={() => savePracticeDefault('preferredRating', r.value)}
+                    disabled={defaultsSaving || tierInfo?.preferredRating === r.value}
+                    className={`p-2.5 rounded-lg border text-center text-sm font-medium transition-colors ${
+                      tierInfo?.preferredRating === r.value
+                        ? 'border-blue-500 bg-blue-500/10 text-blue-400'
+                        : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
+                    } disabled:opacity-70`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm text-gray-300 mb-2">Aircraft Class</label>
+              <div className="grid grid-cols-4 gap-2">
+                {([
+                  { value: 'ASEL', label: 'ASEL', desc: 'Single-Engine Land' },
+                  { value: 'AMEL', label: 'AMEL', desc: 'Multi-Engine Land' },
+                  { value: 'ASES', label: 'ASES', desc: 'Single-Engine Sea' },
+                  { value: 'AMES', label: 'AMES', desc: 'Multi-Engine Sea' },
+                ] as const).map((cls) => (
+                  <button
+                    key={cls.value}
+                    onClick={() => savePracticeDefault('preferredAircraftClass', cls.value)}
+                    disabled={defaultsSaving || tierInfo?.preferredAircraftClass === cls.value}
+                    className={`p-2 rounded-lg border text-center transition-colors ${
+                      tierInfo?.preferredAircraftClass === cls.value
+                        ? 'border-blue-500 bg-blue-500/10 text-blue-400'
+                        : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
+                    } disabled:opacity-70`}
+                  >
+                    <p className="text-sm font-bold">{cls.label}</p>
+                    <p className="text-[10px] mt-0.5 opacity-70">{cls.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {defaultsMessage && (
+              <p className={`text-sm ${defaultsMessage.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                {defaultsMessage.text}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Usage Dashboard (Task 35) */}
       <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
         <h2 className="text-lg font-medium text-white mb-1">Plan &amp; Usage</h2>
@@ -856,8 +958,6 @@ export default function SettingsPage() {
           Check chrome://settings/content/microphone if recognition fails.
         </p>
       </div>
-
-      <VoiceLab />
 
       {/* Active Sessions (Task 32) */}
       <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">

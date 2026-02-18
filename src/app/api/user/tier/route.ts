@@ -21,7 +21,7 @@ export async function GET() {
     const [profileResult, voiceOptionsResult] = await Promise.all([
       serviceSupabase
         .from('user_profiles')
-        .select('tier, preferred_voice, subscription_status, cancel_at_period_end, current_period_end')
+        .select('tier, preferred_voice, preferred_rating, preferred_aircraft_class, subscription_status, cancel_at_period_end, current_period_end')
         .eq('user_id', user.id)
         .single(),
       serviceSupabase
@@ -75,6 +75,8 @@ export async function GET() {
         sttSecondsThisMonth: sttSeconds,
       },
       preferredVoice: profile?.preferred_voice || null,
+      preferredRating: profile?.preferred_rating || 'private',
+      preferredAircraftClass: profile?.preferred_aircraft_class || 'ASEL',
       voiceOptions: voiceOptionsResult.data?.value || [],
     });
   } catch (error) {
@@ -83,9 +85,12 @@ export async function GET() {
   }
 }
 
+const VALID_RATINGS = ['private', 'commercial', 'instrument', 'atp'] as const;
+const VALID_CLASSES = ['ASEL', 'AMEL', 'ASES', 'AMES'] as const;
+
 /**
- * POST /api/user/tier — Update user's preferred voice.
- * Validates voice is in the admin-curated list from system_config.
+ * POST /api/user/tier — Update user preferences (voice, rating, aircraft class).
+ * Validates voice against admin-curated list; rating/class against enum.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -95,41 +100,62 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { preferredVoice } = await request.json();
+    const body = await request.json();
+    const { preferredVoice, preferredRating, preferredAircraftClass } = body;
 
-    // Validate the voice is in the admin-curated list
-    const { data: configRow } = await serviceSupabase
-      .from('system_config')
-      .select('value')
-      .eq('key', 'voice.user_options')
-      .maybeSingle();
+    const updateFields: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
 
-    const options = (configRow?.value || []) as { model: string }[];
-    const validModels = options.map((o) => o.model);
+    // Validate voice if provided
+    if (preferredVoice !== undefined) {
+      const { data: configRow } = await serviceSupabase
+        .from('system_config')
+        .select('value')
+        .eq('key', 'voice.user_options')
+        .maybeSingle();
 
-    if (preferredVoice && !validModels.includes(preferredVoice)) {
-      return NextResponse.json(
-        { error: 'Invalid voice option' },
-        { status: 400 }
-      );
+      const options = (configRow?.value || []) as { model: string }[];
+      const validModels = options.map((o) => o.model);
+
+      if (preferredVoice && !validModels.includes(preferredVoice)) {
+        return NextResponse.json(
+          { error: 'Invalid voice option' },
+          { status: 400 }
+        );
+      }
+      updateFields.preferred_voice = preferredVoice || null;
+    }
+
+    // Validate rating if provided
+    if (preferredRating !== undefined) {
+      if (preferredRating && !(VALID_RATINGS as readonly string[]).includes(preferredRating)) {
+        return NextResponse.json({ error: 'Invalid rating' }, { status: 400 });
+      }
+      updateFields.preferred_rating = preferredRating || 'private';
+    }
+
+    // Validate aircraft class if provided
+    if (preferredAircraftClass !== undefined) {
+      if (preferredAircraftClass && !(VALID_CLASSES as readonly string[]).includes(preferredAircraftClass)) {
+        return NextResponse.json({ error: 'Invalid aircraft class' }, { status: 400 });
+      }
+      updateFields.preferred_aircraft_class = preferredAircraftClass || 'ASEL';
     }
 
     const { error: updateError } = await serviceSupabase
       .from('user_profiles')
-      .update({
-        preferred_voice: preferredVoice || null,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateFields)
       .eq('user_id', user.id);
 
     if (updateError) {
-      console.error('Voice preference update error:', updateError);
-      return NextResponse.json({ error: 'Failed to update voice preference' }, { status: 500 });
+      console.error('Preference update error:', updateError);
+      return NextResponse.json({ error: 'Failed to update preferences' }, { status: 500 });
     }
 
-    return NextResponse.json({ ok: true, preferredVoice: preferredVoice || null });
+    return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error('Voice preference update error:', error);
+    console.error('Preference update error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
