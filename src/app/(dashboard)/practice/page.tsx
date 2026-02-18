@@ -986,7 +986,7 @@ export default function PracticePage() {
               setShowWizard(false);
             }}
           />
-        ) : onboardingCompleted === null ? (
+        ) : (onboardingCompleted === null || (onboardingCompleted === false && practiceStats === null)) ? (
           /* ──────── LOADING: don't show config until we know if onboarding is needed ──────── */
           <div className="space-y-4 animate-pulse">
             <div className="h-8 w-32 bg-gray-800 rounded-lg" />
