@@ -35,11 +35,13 @@ export async function initPlanner(
   const prefix = RATING_PREFIX[config.rating] || 'PA.';
 
   // Load ACS elements filtered by rating prefix
+  // Order by code (e.g. PA.I.A.K1) for correct task-sequential ordering in linear mode.
+  // order_index is per-task so it interleaves elements from different tasks.
   const elementQuery = supabase
     .from('acs_elements')
     .select('*')
     .like('code', `${prefix}%`)
-    .order('order_index');
+    .order('code');
 
   const { data: elements, error: elErr } = await elementQuery;
 
@@ -105,7 +107,7 @@ export async function advancePlanner(
       .from('acs_elements')
       .select('*')
       .like('code', `${prefix}%`)
-      .order('order_index');
+      .order('code');
     elements = (data || []) as AcsElementDB[];
   }
 

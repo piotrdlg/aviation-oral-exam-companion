@@ -333,11 +333,16 @@ describe('buildElementQueue', () => {
     expect(differed).toBe(true);
   });
 
-  it('returns empty queue when all filtered out', () => {
+  it('falls back to all elements when difficulty filter would empty queue', () => {
     const config: SessionConfig = { ...defaultConfig, difficulty: 'easy', selectedAreas: ['I'] };
-    // Area I elements are all 'medium' by default, so easy filter empties it
+    // Area I elements are all 'medium' by default, so easy filter matches none;
+    // fallback skips difficulty filter and returns all K/R elements
     const queue = buildElementQueue(elements, config);
-    expect(queue).toHaveLength(0);
+    expect(queue.length).toBeGreaterThan(0);
+    // All should be Area I elements (PA.I.*)
+    for (const code of queue) {
+      expect(code.split('.')[1]).toBe('I');
+    }
   });
 });
 

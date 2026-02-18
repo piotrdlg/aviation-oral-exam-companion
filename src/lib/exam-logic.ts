@@ -234,9 +234,12 @@ export function buildElementQueue(
     });
   }
 
-  // Filter by difficulty
+  // Filter by difficulty (with fallback: if filtering removes all elements, skip filter)
   if (config.difficulty !== 'mixed') {
-    filtered = filtered.filter((el) => el.difficulty_default === config.difficulty);
+    const diffFiltered = filtered.filter((el) => el.difficulty_default === config.difficulty);
+    if (diffFiltered.length > 0) {
+      filtered = diffFiltered;
+    }
   }
 
   // Filter to oral-exam-relevant areas only (K and R elements, not S)
