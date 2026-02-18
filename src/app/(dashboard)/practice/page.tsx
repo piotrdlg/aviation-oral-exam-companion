@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import SessionConfig, { type SessionConfigData } from './components/SessionConfig';
+import OnboardingWizard from './components/OnboardingWizard';
 import type { PlannerState, SessionConfig as SessionConfigType, Rating, AircraftClass } from '@/types/database';
 import type { VoiceTier } from '@/lib/voice/types';
 import { useVoiceProvider } from '@/hooks/useVoiceProvider';
@@ -88,6 +89,8 @@ export default function PracticePage() {
   const [preferredRating, setPreferredRating] = useState<Rating>('private');
   const [preferredAircraftClass, setPreferredAircraftClass] = useState<AircraftClass>('ASEL');
   const [prefsLoaded, setPrefsLoaded] = useState(false);
+  const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
+  const [showWizard, setShowWizard] = useState(false);
   // Upgrade prompt states (Task 34)
   const [showQuotaModal, setShowQuotaModal] = useState(false);
   const [quotaWarning, setQuotaWarning] = useState<string | null>(null);
@@ -138,6 +141,7 @@ export default function PracticePage() {
         if (data?.tier) setTier(data.tier);
         if (data?.preferredRating) setPreferredRating(data.preferredRating);
         if (data?.preferredAircraftClass) setPreferredAircraftClass(data.preferredAircraftClass);
+        if (data?.onboardingCompleted !== undefined) setOnboardingCompleted(data.onboardingCompleted);
         setPrefsLoaded(true);
         // Check if usage is at 80% or above for proactive warning (Task 34)
         if (data?.usage && data?.features) {
@@ -153,7 +157,7 @@ export default function PracticePage() {
           }
         }
       })
-      .catch(() => { setPrefsLoaded(true); }); // Fallback to defaults
+      .catch(() => { setPrefsLoaded(true); setOnboardingCompleted(true); }); // Fallback to defaults
   }, []);
 
   // Check for a resumable session on mount
@@ -206,6 +210,17 @@ export default function PracticePage() {
       })
       .catch(() => {});
   }, [prefsLoaded, preferredRating]);
+
+  // Sticky onboarding gate: once we determine the user needs onboarding, set showWizard = true.
+  // This is NOT derived — it can only be dismissed by user interaction (complete or skip).
+  useEffect(() => {
+    if (onboardingCompleted === false && practiceStats !== null) {
+      const sessions = (practiceStats.sessions || []).filter((s: PracticeSession) => s.rating === preferredRating);
+      if (sessions.length === 0) {
+        setShowWizard(true);
+      }
+    }
+  }, [onboardingCompleted, practiceStats, preferredRating]);
 
   // Derived stats
   const ratingSessions = useMemo(
@@ -914,7 +929,6 @@ export default function PracticePage() {
     }
   }
 
-  const isFirstVisit = practiceStats !== null && ratingSessions.length === 0;
   const ratingLabel = preferredRating === 'commercial' ? 'Commercial Pilot' : preferredRating === 'instrument' ? 'Instrument Rating' : preferredRating === 'atp' ? 'ATP' : 'Private Pilot';
 
   function startQuickSession() {
@@ -946,60 +960,41 @@ export default function PracticePage() {
           </div>
         )}
 
-        {isFirstVisit ? (
-          /* ──────── FIRST VISIT ONBOARDING ──────── */
-          <div>
-            <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold text-white mb-2">Welcome to HeyDPE</h1>
-              <p className="text-gray-400">Practice your {ratingLabel} oral exam with an AI DPE examiner</p>
-            </div>
-
-            {/* 3-step onboarding */}
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              {[
-                { step: '1', title: 'Choose your focus', desc: 'Pick a study mode and difficulty' },
-                { step: '2', title: 'Answer questions', desc: 'Voice or text — your choice' },
-                { step: '3', title: 'Get instant feedback', desc: 'Scored against FAA ACS standards' },
-              ].map((s) => (
-                <div key={s.step} className="text-center">
-                  <div className="w-9 h-9 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center mx-auto mb-2">
-                    <span className="text-blue-400 text-sm font-bold">{s.step}</span>
-                  </div>
-                  <p className="text-sm font-medium text-gray-200">{s.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{s.desc}</p>
-                </div>
-              ))}
-            </div>
-
-            <button
-              onClick={startQuickSession}
-              disabled={loading}
-              className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl font-medium transition-colors mb-3 text-base"
-            >
-              {loading ? 'Starting...' : 'Start Your First Session'}
-            </button>
-
-            <details className="group">
-              <summary className="text-xs text-gray-500 hover:text-gray-400 cursor-pointer transition-colors text-center py-2">
-                Customize session settings
-              </summary>
-              <div className="mt-3">
-                <SessionConfig
-                  onStart={startSession}
-                  loading={loading}
-                  preferredRating={preferredRating}
-                  preferredAircraftClass={preferredAircraftClass}
-                  prefsLoaded={prefsLoaded}
-                />
-              </div>
-            </details>
-
-            <p className="text-amber-200/60 text-xs leading-relaxed mt-6 text-center">
-              For study purposes only. Not a substitute for CFI instruction or an actual checkride.
-            </p>
+        {/* ──────── ONBOARDING WIZARD (full-screen, blocks everything) ──────── */}
+        {showWizard ? (
+          <OnboardingWizard
+            defaultRating={preferredRating}
+            defaultAircraftClass={preferredAircraftClass}
+            loading={loading}
+            onComplete={(config) => {
+              setPreferredRating(config.rating);
+              setPreferredAircraftClass(config.aircraftClass);
+              setOnboardingCompleted(true);
+              setShowWizard(false);
+              startSession({
+                rating: config.rating,
+                aircraftClass: config.aircraftClass,
+                studyMode: 'weak_areas',
+                difficulty: 'mixed',
+                selectedAreas: [],
+                selectedTasks: [],
+                voiceEnabled: config.voiceEnabled,
+              });
+            }}
+            onSkip={() => {
+              setOnboardingCompleted(true);
+              setShowWizard(false);
+            }}
+          />
+        ) : onboardingCompleted === null ? (
+          /* ──────── LOADING: don't show config until we know if onboarding is needed ──────── */
+          <div className="space-y-4 animate-pulse">
+            <div className="h-8 w-32 bg-gray-800 rounded-lg" />
+            <div className="h-48 bg-gray-800/50 rounded-xl" />
+            <div className="h-12 bg-gray-800/50 rounded-lg" />
           </div>
         ) : (
-          /* ──────── RETURNING USER ──────── */
+          /* ──────── RETURNING USER / NORMAL VIEW ──────── */
           <>
             {/* Header with progress indicators */}
             <div className="flex items-center justify-between mb-5">

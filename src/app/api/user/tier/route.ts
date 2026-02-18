@@ -21,7 +21,7 @@ export async function GET() {
     const [profileResult, voiceOptionsResult] = await Promise.all([
       serviceSupabase
         .from('user_profiles')
-        .select('tier, preferred_voice, preferred_rating, preferred_aircraft_class, subscription_status, cancel_at_period_end, current_period_end')
+        .select('tier, preferred_voice, preferred_rating, preferred_aircraft_class, aircraft_type, home_airport, onboarding_completed, subscription_status, cancel_at_period_end, current_period_end')
         .eq('user_id', user.id)
         .single(),
       serviceSupabase
@@ -77,6 +77,9 @@ export async function GET() {
       preferredVoice: profile?.preferred_voice || null,
       preferredRating: profile?.preferred_rating || 'private',
       preferredAircraftClass: profile?.preferred_aircraft_class || 'ASEL',
+      aircraftType: profile?.aircraft_type || null,
+      homeAirport: profile?.home_airport || null,
+      onboardingCompleted: profile?.onboarding_completed ?? false,
       voiceOptions: voiceOptionsResult.data?.value || [],
     });
   } catch (error) {
@@ -101,7 +104,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { preferredVoice, preferredRating, preferredAircraftClass } = body;
+    const { preferredVoice, preferredRating, preferredAircraftClass, aircraftType, homeAirport, onboardingCompleted } = body;
 
     const updateFields: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
@@ -141,6 +144,27 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid aircraft class' }, { status: 400 });
       }
       updateFields.preferred_aircraft_class = preferredAircraftClass || 'ASEL';
+    }
+
+    // Validate aircraft type if provided (freeform text, max 100 chars)
+    if (aircraftType !== undefined) {
+      if (aircraftType && typeof aircraftType === 'string' && aircraftType.length > 100) {
+        return NextResponse.json({ error: 'Aircraft type too long' }, { status: 400 });
+      }
+      updateFields.aircraft_type = aircraftType || null;
+    }
+
+    // Validate home airport if provided (freeform text, max 10 chars)
+    if (homeAirport !== undefined) {
+      if (homeAirport && typeof homeAirport === 'string' && homeAirport.length > 10) {
+        return NextResponse.json({ error: 'Home airport too long' }, { status: 400 });
+      }
+      updateFields.home_airport = homeAirport ? String(homeAirport).toUpperCase().trim() : null;
+    }
+
+    // Mark onboarding as completed
+    if (onboardingCompleted !== undefined) {
+      updateFields.onboarding_completed = !!onboardingCompleted;
     }
 
     const { error: updateError } = await serviceSupabase

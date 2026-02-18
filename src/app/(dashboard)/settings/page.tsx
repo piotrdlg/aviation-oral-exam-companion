@@ -34,6 +34,8 @@ interface TierInfo {
   preferredVoice: string | null;
   preferredRating: Rating;
   preferredAircraftClass: AircraftClass;
+  aircraftType: string | null;
+  homeAirport: string | null;
   voiceOptions: VoiceOption[];
 }
 
@@ -123,6 +125,8 @@ export default function SettingsPage() {
             preferredVoice: data.preferredVoice || null,
             preferredRating: data.preferredRating || 'private',
             preferredAircraftClass: data.preferredAircraftClass || 'ASEL',
+            aircraftType: data.aircraftType || null,
+            homeAirport: data.homeAirport || null,
             voiceOptions: data.voiceOptions || [],
           });
         }
@@ -206,21 +210,25 @@ export default function SettingsPage() {
     }
   }
 
-  async function savePracticeDefault(field: 'preferredRating' | 'preferredAircraftClass', value: string) {
+  async function savePracticeDefault(field: 'preferredRating' | 'preferredAircraftClass' | 'aircraftType' | 'homeAirport', value: string) {
     setDefaultsSaving(true);
     setDefaultsMessage(null);
     try {
       const res = await fetch('/api/user/tier', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ [field]: value }),
+        body: JSON.stringify({ [field]: value || null }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to update');
-      setTierInfo((prev) => prev ? {
-        ...prev,
-        ...(field === 'preferredRating' ? { preferredRating: value as Rating } : { preferredAircraftClass: value as AircraftClass }),
-      } : null);
+      setTierInfo((prev) => {
+        if (!prev) return null;
+        if (field === 'preferredRating') return { ...prev, preferredRating: value as Rating };
+        if (field === 'preferredAircraftClass') return { ...prev, preferredAircraftClass: value as AircraftClass };
+        if (field === 'aircraftType') return { ...prev, aircraftType: value || null };
+        if (field === 'homeAirport') return { ...prev, homeAirport: value || null };
+        return prev;
+      });
       setDefaultsMessage({ text: 'Preference saved', type: 'success' });
       setTimeout(() => setDefaultsMessage(null), 2000);
     } catch (err) {
@@ -699,6 +707,40 @@ export default function SettingsPage() {
               ) : (
                 <p className="text-xs text-gray-500">Instrument Rating — Airplane</p>
               )}
+              <div>
+                <label className="block text-xs text-gray-400 mb-1.5">Aircraft Type</label>
+                <input
+                  type="text"
+                  value={tierInfo?.aircraftType || ''}
+                  onChange={(e) => setTierInfo(prev => prev ? { ...prev, aircraftType: e.target.value } : null)}
+                  onBlur={(e) => {
+                    const val = e.target.value.trim();
+                    if (val !== (tierInfo?.aircraftType || '')) {
+                      savePracticeDefault('aircraftType', val);
+                    }
+                  }}
+                  placeholder="e.g., Cessna 172"
+                  maxLength={100}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1.5">Home Airport</label>
+                <input
+                  type="text"
+                  value={tierInfo?.homeAirport || ''}
+                  onChange={(e) => setTierInfo(prev => prev ? { ...prev, homeAirport: e.target.value.toUpperCase() } : null)}
+                  onBlur={(e) => {
+                    const val = e.target.value.trim().toUpperCase();
+                    if (val !== (tierInfo?.homeAirport || '')) {
+                      savePracticeDefault('homeAirport', val);
+                    }
+                  }}
+                  placeholder="e.g., KJAX"
+                  maxLength={10}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
               {defaultsMessage && (
                 <p className={`text-xs ${defaultsMessage.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
                   {defaultsMessage.text}

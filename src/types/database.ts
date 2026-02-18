@@ -255,6 +255,9 @@ export interface UserProfile {
   preferred_voice: string | null;
   preferred_rating: Rating | null;
   preferred_aircraft_class: AircraftClass | null;
+  aircraft_type: string | null;
+  home_airport: string | null;
+  onboarding_completed: boolean;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   stripe_price_id: string | null;
