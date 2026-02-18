@@ -65,7 +65,7 @@ export default function Home() {
             </div>
             <div>
               <p className="text-2xl font-bold text-white">3</p>
-              <p className="text-xs text-gray-500 mt-1">Certificate Ratings</p>
+              <p className="text-xs text-gray-500 mt-1">Certificates &amp; Ratings</p>
             </div>
             <div>
               <p className="text-2xl font-bold text-white">6</p>

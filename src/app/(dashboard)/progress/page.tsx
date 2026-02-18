@@ -236,7 +236,7 @@ export default function ProgressPage() {
       <div className="mb-2">
         <h1 className="text-2xl font-bold text-white">Your Progress</h1>
         <p className="text-sm text-gray-400 mt-1">
-          {RATING_LABELS[selectedRating]} ({selectedClass}) checkride preparation
+          {RATING_LABELS[selectedRating]}{selectedRating !== 'instrument' ? ` (${selectedClass})` : ' — Airplane'} checkride preparation
         </p>
       </div>
 
@@ -257,20 +257,22 @@ export default function ProgressPage() {
               </button>
             ))}
           </div>
-          {/* Class selector */}
-          <div className="flex gap-0.5 bg-gray-800 rounded-lg p-0.5">
-            {CLASS_OPTIONS.map((cls) => (
-              <button
-                key={cls.value}
-                onClick={() => setSelectedClass(cls.value)}
-                className={`px-2.5 py-1.5 text-xs rounded-md transition-colors ${
-                  selectedClass === cls.value ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-gray-300'
-                }`}
-              >
-                {cls.label}
-              </button>
-            ))}
-          </div>
+          {/* Class selector (not applicable for instrument rating) */}
+          {selectedRating !== 'instrument' && (
+            <div className="flex gap-0.5 bg-gray-800 rounded-lg p-0.5">
+              {CLASS_OPTIONS.map((cls) => (
+                <button
+                  key={cls.value}
+                  onClick={() => setSelectedClass(cls.value)}
+                  className={`px-2.5 py-1.5 text-xs rounded-md transition-colors ${
+                    selectedClass === cls.value ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-gray-300'
+                  }`}
+                >
+                  {cls.label}
+                </button>
+              ))}
+            </div>
+          )}
           {/* View toggle */}
           <div className="flex gap-0.5 bg-gray-800 rounded-lg p-0.5 ml-auto">
             <button

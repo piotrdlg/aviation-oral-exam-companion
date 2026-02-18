@@ -649,7 +649,7 @@ export default function SettingsPage() {
           ) : (
             <div className="space-y-3">
               <div>
-                <label className="block text-xs text-gray-400 mb-1.5">Certificate Rating</label>
+                <label className="block text-xs text-gray-400 mb-1.5">Certificate / Rating</label>
                 <div className="flex gap-2">
                   {([
                     { value: 'private', label: 'Private Pilot' },
@@ -671,30 +671,34 @@ export default function SettingsPage() {
                   ))}
                 </div>
               </div>
-              <div>
-                <label className="block text-xs text-gray-400 mb-1.5">Aircraft Class</label>
-                <div className="flex gap-2">
-                  {([
-                    { value: 'ASEL', label: 'ASEL' },
-                    { value: 'AMEL', label: 'AMEL' },
-                    { value: 'ASES', label: 'ASES' },
-                    { value: 'AMES', label: 'AMES' },
-                  ] as const).map((cls) => (
-                    <button
-                      key={cls.value}
-                      onClick={() => savePracticeDefault('preferredAircraftClass', cls.value)}
-                      disabled={defaultsSaving || tierInfo?.preferredAircraftClass === cls.value}
-                      className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
-                        tierInfo?.preferredAircraftClass === cls.value
-                          ? 'border-blue-500 bg-blue-500/10 text-blue-400'
-                          : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
-                      } disabled:opacity-70`}
-                    >
-                      {cls.label}
-                    </button>
-                  ))}
+              {tierInfo?.preferredRating !== 'instrument' ? (
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1.5">Aircraft Class</label>
+                  <div className="flex gap-2">
+                    {([
+                      { value: 'ASEL', label: 'ASEL' },
+                      { value: 'AMEL', label: 'AMEL' },
+                      { value: 'ASES', label: 'ASES' },
+                      { value: 'AMES', label: 'AMES' },
+                    ] as const).map((cls) => (
+                      <button
+                        key={cls.value}
+                        onClick={() => savePracticeDefault('preferredAircraftClass', cls.value)}
+                        disabled={defaultsSaving || tierInfo?.preferredAircraftClass === cls.value}
+                        className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                          tierInfo?.preferredAircraftClass === cls.value
+                            ? 'border-blue-500 bg-blue-500/10 text-blue-400'
+                            : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
+                        } disabled:opacity-70`}
+                      >
+                        {cls.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <p className="text-xs text-gray-500">Instrument Rating — Airplane</p>
+              )}
               {defaultsMessage && (
                 <p className={`text-xs ${defaultsMessage.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
                   {defaultsMessage.text}

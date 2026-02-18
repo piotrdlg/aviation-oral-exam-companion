@@ -127,7 +127,7 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
             <span className="text-sm text-white">
               <span className="font-medium">{RATING_LABELS[rating] || rating}</span>
               <span className="text-gray-500 mx-2">&middot;</span>
-              <span className="font-medium">{aircraftClass}</span>
+              <span className="font-medium">{rating === 'instrument' ? 'Airplane' : aircraftClass}</span>
             </span>
           )}
           <Link
