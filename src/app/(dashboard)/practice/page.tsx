@@ -974,9 +974,9 @@ export default function PracticePage() {
               startSession({
                 rating: config.rating,
                 aircraftClass: config.aircraftClass,
-                studyMode: 'weak_areas',
-                difficulty: 'mixed',
-                selectedAreas: [],
+                studyMode: 'linear',
+                difficulty: 'easy',
+                selectedAreas: ['I'],
                 selectedTasks: [],
                 voiceEnabled: config.voiceEnabled,
               });

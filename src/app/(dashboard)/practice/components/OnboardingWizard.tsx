@@ -326,7 +326,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
                 disabled={saving || loading}
                 className="flex-1 py-3.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl font-semibold transition-colors text-base"
               >
-                {saving || loading ? 'Starting...' : 'Start Your Exam'}
+                {saving || loading ? 'Starting...' : 'Start Your First Exam'}
               </button>
             </div>
           </div>
