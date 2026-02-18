@@ -143,8 +143,8 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
           <label className="block font-mono text-[10px] text-c-muted mb-2 tracking-wider uppercase">STUDY MODE</label>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { value: 'linear' as const, label: 'LINEAR', desc: 'One area at a time' },
-              { value: 'cross_acs' as const, label: 'CROSS-ACS', desc: 'Random across all areas' },
+              { value: 'linear' as const, label: 'AREA BY AREA', desc: 'One area at a time' },
+              { value: 'cross_acs' as const, label: 'ACROSS ACS', desc: 'Random across all areas' },
               { value: 'weak_areas' as const, label: 'WEAK AREAS', desc: 'Focus on your gaps' },
             ].map((mode) => (
               <button

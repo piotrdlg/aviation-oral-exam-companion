@@ -1064,7 +1064,7 @@ export default function PracticePage() {
                       {' '}&middot; {resumableSession.exchange_count || 0} exchanges
                       {' '}&middot; {resumableSession.rating.toUpperCase()}
                       {resumableSession.aircraft_class ? ` \u00B7 ${resumableSession.aircraft_class}` : ''}
-                      {' '}&middot; {resumableSession.study_mode === 'linear' ? 'Linear' : resumableSession.study_mode === 'cross_acs' ? 'Cross-ACS' : 'Weak Areas'}
+                      {' '}&middot; {resumableSession.study_mode === 'linear' ? 'Area by Area' : resumableSession.study_mode === 'cross_acs' ? 'Across ACS' : 'Weak Areas'}
                       {' '}&middot; {resumableSession.difficulty_preference}
                     </p>
                   </div>

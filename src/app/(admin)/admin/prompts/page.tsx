@@ -20,8 +20,8 @@ const DIFFICULTY_OPTIONS = [
 
 const STUDY_MODE_OPTIONS = [
   { value: '', label: 'All Modes' },
-  { value: 'linear', label: 'Linear' },
-  { value: 'cross_acs', label: 'Cross-ACS' },
+  { value: 'linear', label: 'Area by Area' },
+  { value: 'cross_acs', label: 'Across ACS' },
 ];
 
 const STATUS_COLORS: Record<PromptStatus, string> = {
@@ -406,8 +406,8 @@ export default function PromptsPage() {
                     className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg font-mono text-xs text-c-text focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber transition-colors"
                   >
                     <option value="">Any (generic)</option>
-                    <option value="linear">Linear</option>
-                    <option value="cross_acs">Cross-ACS</option>
+                    <option value="linear">Area by Area</option>
+                    <option value="cross_acs">Across ACS</option>
                   </select>
                 </div>
               </div>

@@ -174,6 +174,8 @@ const DEFAULTS: TTSState = {
 interface UserVoiceOption {
   model: string;
   label: string;
+  desc?: string;
+  gender?: string;
 }
 
 // ─── Page ────────────────────────────────────────────────────────────────────
@@ -444,7 +446,7 @@ export default function TTSConfigPage() {
               <div className="flex flex-wrap gap-1.5">
                 {userVoiceOptions.map((v) => (
                   <span key={v.model} className="font-mono text-[10px] bg-c-amber-lo text-c-amber px-2 py-0.5 rounded border border-c-amber/20">
-                    {v.label}
+                    {v.label} <span className="text-c-dim">({v.model})</span>
                   </span>
                 ))}
               </div>

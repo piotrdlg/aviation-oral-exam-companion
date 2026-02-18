@@ -22,6 +22,8 @@ interface AudioDevice {
 interface VoiceOption {
   model: string;
   label: string;
+  desc?: string;
+  gender?: string;
 }
 
 interface TierInfo {
@@ -941,7 +943,7 @@ export default function SettingsPage() {
                         <span className={`font-mono text-xs font-semibold uppercase ${isActive ? 'text-c-amber' : 'font-medium text-c-text'}`}>
                           {option.label}
                         </span>
-                        <p className="font-mono text-[10px] text-c-dim mt-0.5">{option.model}</p>
+                        {option.desc && <p className="font-mono text-[10px] text-c-dim mt-0.5">{option.desc}</p>}
                       </div>
                       {isActive && (
                         <span className="font-mono text-[10px] bg-c-amber-lo text-c-amber px-2 py-0.5 rounded border border-c-amber/20 uppercase">
