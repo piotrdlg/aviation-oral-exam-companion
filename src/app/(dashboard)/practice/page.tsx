@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import SessionConfig, { type SessionConfigData } from './components/SessionConfig';
 import type { PlannerState, SessionConfig as SessionConfigType, Rating, AircraftClass } from '@/types/database';
@@ -171,6 +171,91 @@ export default function PracticePage() {
       })
       .catch(() => {});
   }, []);
+
+  // Fetch practice stats for progress indicators
+  interface PracticeSession {
+    started_at: string;
+    rating: string;
+    acs_tasks_covered: { task_id: string; status: string }[];
+  }
+  interface TaskMeta { id: string; area: string; }
+  const [practiceStats, setPracticeStats] = useState<{
+    sessions: PracticeSession[];
+    totalTasks: number;
+    areaNames: Record<string, string>;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!prefsLoaded) return;
+    Promise.all([
+      fetch('/api/session').then((r) => r.json()),
+      fetch(`/api/exam?action=list-tasks&rating=${preferredRating}`).then((r) => r.json()),
+    ])
+      .then(([sessionData, taskData]) => {
+        const tasks: TaskMeta[] = taskData.tasks || [];
+        const areaNames: Record<string, string> = {};
+        for (const t of tasks) {
+          const areaKey = t.id.split('.').slice(0, 2).join('.');
+          if (!areaNames[areaKey]) areaNames[areaKey] = t.area;
+        }
+        setPracticeStats({
+          sessions: sessionData.sessions || [],
+          totalTasks: tasks.length,
+          areaNames,
+        });
+      })
+      .catch(() => {});
+  }, [prefsLoaded, preferredRating]);
+
+  // Derived stats
+  const ratingSessions = useMemo(
+    () => (practiceStats?.sessions || []).filter((s) => s.rating === preferredRating),
+    [practiceStats, preferredRating]
+  );
+
+  const coveragePct = useMemo(() => {
+    if (!practiceStats?.totalTasks) return 0;
+    const covered = new Set(ratingSessions.flatMap((s) => (s.acs_tasks_covered || []).map((t) => t.task_id)));
+    return Math.round((covered.size / practiceStats.totalTasks) * 100);
+  }, [ratingSessions, practiceStats]);
+
+  const streak = useMemo(() => {
+    if (ratingSessions.length === 0) return 0;
+    const uniqueDates = [...new Set(ratingSessions.map((s) => new Date(s.started_at).toDateString()))]
+      .map((d) => new Date(d))
+      .sort((a, b) => b.getTime() - a.getTime());
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const daysSinceLast = Math.floor((now.getTime() - uniqueDates[0].getTime()) / 86400000);
+    if (daysSinceLast > 1) return 0;
+    let count = 1;
+    for (let i = 1; i < uniqueDates.length; i++) {
+      const gap = Math.floor((uniqueDates[i - 1].getTime() - uniqueDates[i].getTime()) / 86400000);
+      if (gap === 1) count++;
+      else break;
+    }
+    return count;
+  }, [ratingSessions]);
+
+  const suggestedFocus = useMemo(() => {
+    const areaStats: Record<string, { unsat: number; total: number }> = {};
+    for (const s of ratingSessions) {
+      for (const t of s.acs_tasks_covered || []) {
+        const key = t.task_id.split('.').slice(0, 2).join('.');
+        if (!areaStats[key]) areaStats[key] = { unsat: 0, total: 0 };
+        areaStats[key].total++;
+        if (t.status === 'unsatisfactory') areaStats[key].unsat++;
+      }
+    }
+    let worst = '';
+    let worstRate = 0;
+    for (const [key, stats] of Object.entries(areaStats)) {
+      if (stats.total < 2) continue;
+      const rate = stats.unsat / stats.total;
+      if (rate > worstRate) { worstRate = rate; worst = key; }
+    }
+    return worst ? practiceStats?.areaNames[worst] || '' : '';
+  }, [ratingSessions, practiceStats]);
 
   // Post-checkout entitlement sync (Task 36)
   useEffect(() => {
@@ -829,103 +914,211 @@ export default function PracticePage() {
     }
   }
 
+  const isFirstVisit = practiceStats !== null && ratingSessions.length === 0;
+  const ratingLabel = preferredRating === 'commercial' ? 'Commercial Pilot' : preferredRating === 'instrument' ? 'Instrument Rating' : preferredRating === 'atp' ? 'ATP' : 'Private Pilot';
+
+  function startQuickSession() {
+    startSession({
+      rating: preferredRating,
+      aircraftClass: preferredAircraftClass,
+      studyMode: 'weak_areas',
+      difficulty: 'mixed',
+      selectedAreas: [],
+      selectedTasks: [],
+      voiceEnabled: false,
+    });
+  }
+
   if (!sessionActive) {
     return (
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold text-white mb-2">Practice Session</h1>
-        <p className="text-gray-400 mb-6">
-          Start an oral exam practice session. The AI examiner will ask you questions
-          based on the FAA {preferredRating === 'commercial' ? 'Commercial Pilot' : preferredRating === 'instrument' ? 'Instrument Rating' : preferredRating === 'atp' ? 'ATP' : 'Private Pilot'} ACS.
-        </p>
-
-        {/* Post-checkout success banner (Task 36) */}
+        {/* Banners */}
         {checkoutSuccess && (
-          <div className="bg-green-900/30 border border-green-800/50 rounded-lg p-3 mb-6 text-green-300 text-sm flex items-center justify-between">
+          <div className="bg-green-900/30 border border-green-800/50 rounded-lg p-3 mb-4 text-green-300 text-sm flex items-center justify-between">
             <span>Welcome to HeyDPE! Your subscription is active. Enjoy unlimited practice sessions.</span>
-            <button onClick={() => setCheckoutSuccess(false)} className="text-green-400 hover:text-green-300 ml-3 shrink-0">
-              &times;
-            </button>
+            <button onClick={() => setCheckoutSuccess(false)} className="text-green-400 hover:text-green-300 ml-3 shrink-0">&times;</button>
           </div>
         )}
-
-        {/* Proactive quota warning banner (Task 34) */}
         {quotaWarning && (
-          <div className="bg-amber-900/20 border border-amber-800/50 rounded-lg p-3 mb-6 text-amber-200 text-sm flex items-center justify-between">
+          <div className="bg-amber-900/20 border border-amber-800/50 rounded-lg p-3 mb-4 text-amber-200 text-sm flex items-center justify-between">
             <span>{quotaWarning} <a href="/pricing" className="underline hover:text-amber-100">Upgrade</a> for unlimited access.</span>
-            <button onClick={() => setQuotaWarning(null)} className="text-amber-400 hover:text-amber-300 ml-3 shrink-0">
-              &times;
-            </button>
+            <button onClick={() => setQuotaWarning(null)} className="text-amber-400 hover:text-amber-300 ml-3 shrink-0">&times;</button>
           </div>
         )}
 
-        <div className="bg-amber-900/20 border border-amber-800/50 rounded-lg p-3 mb-6 text-amber-200 text-xs leading-relaxed">
-          For study purposes only. This is not a substitute for instruction from a certificated
-          flight instructor (CFI) or an actual DPE checkride. Always verify information against
-          current FAA publications.
-        </div>
-
-        {/* Resume previous session card */}
-        {resumableSession && (
-          <div className="bg-blue-900/20 border border-blue-800/50 rounded-xl p-4 mb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium text-blue-300">Continue Previous Session</h3>
-                <p className="text-xs text-gray-400 mt-1">
-                  {new Date(resumableSession.started_at).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    hour: 'numeric',
-                    minute: '2-digit',
-                  })}
-                  {' '}&middot; {resumableSession.exchange_count || 0} exchanges
-                  {' '}&middot; {resumableSession.rating.toUpperCase()}
-                  {resumableSession.aircraft_class ? ` · ${resumableSession.aircraft_class}` : ''}
-                  {' '}&middot; {resumableSession.study_mode === 'linear' ? 'Linear' : resumableSession.study_mode === 'cross_acs' ? 'Cross-ACS' : 'Weak Areas'}
-                  {' '}&middot; {resumableSession.difficulty_preference}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <label className="flex items-center gap-1.5 text-xs text-gray-400 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={resumeVoiceToggle}
-                    onChange={(e) => setResumeVoiceToggle(e.target.checked)}
-                    className="rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 w-3.5 h-3.5"
-                  />
-                  Voice
-                </label>
-                <button
-                  onClick={() => resumeSession(resumableSession)}
-                  disabled={loading}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-                >
-                  Continue
-                </button>
-                <button
-                  onClick={async () => {
-                    await fetch('/api/session', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ action: 'update', sessionId: resumableSession.id, status: 'completed' }),
-                    });
-                    setResumableSession(null);
-                  }}
-                  className="px-3 py-2 text-gray-400 hover:text-gray-300 text-sm transition-colors"
-                >
-                  Start New
-                </button>
-              </div>
+        {isFirstVisit ? (
+          /* ──────── FIRST VISIT ONBOARDING ──────── */
+          <div>
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-bold text-white mb-2">Welcome to HeyDPE</h1>
+              <p className="text-gray-400">Practice your {ratingLabel} oral exam with an AI DPE examiner</p>
             </div>
-          </div>
-        )}
 
-        <SessionConfig
-          onStart={startSession}
-          loading={loading}
-          preferredRating={preferredRating}
-          preferredAircraftClass={preferredAircraftClass}
-          prefsLoaded={prefsLoaded}
-        />
+            {/* 3-step onboarding */}
+            <div className="grid grid-cols-3 gap-4 mb-8">
+              {[
+                { step: '1', title: 'Choose your focus', desc: 'Pick a study mode and difficulty' },
+                { step: '2', title: 'Answer questions', desc: 'Voice or text — your choice' },
+                { step: '3', title: 'Get instant feedback', desc: 'Scored against FAA ACS standards' },
+              ].map((s) => (
+                <div key={s.step} className="text-center">
+                  <div className="w-9 h-9 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center mx-auto mb-2">
+                    <span className="text-blue-400 text-sm font-bold">{s.step}</span>
+                  </div>
+                  <p className="text-sm font-medium text-gray-200">{s.title}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{s.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={startQuickSession}
+              disabled={loading}
+              className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl font-medium transition-colors mb-3 text-base"
+            >
+              {loading ? 'Starting...' : 'Start Your First Session'}
+            </button>
+
+            <details className="group">
+              <summary className="text-xs text-gray-500 hover:text-gray-400 cursor-pointer transition-colors text-center py-2">
+                Customize session settings
+              </summary>
+              <div className="mt-3">
+                <SessionConfig
+                  onStart={startSession}
+                  loading={loading}
+                  preferredRating={preferredRating}
+                  preferredAircraftClass={preferredAircraftClass}
+                  prefsLoaded={prefsLoaded}
+                />
+              </div>
+            </details>
+
+            <p className="text-amber-200/60 text-xs leading-relaxed mt-6 text-center">
+              For study purposes only. Not a substitute for CFI instruction or an actual checkride.
+            </p>
+          </div>
+        ) : (
+          /* ──────── RETURNING USER ──────── */
+          <>
+            {/* Header with progress indicators */}
+            <div className="flex items-center justify-between mb-5">
+              <h1 className="text-2xl font-bold text-white">Practice</h1>
+              {practiceStats && (
+                <div className="flex items-center gap-3">
+                  {coveragePct > 0 && (
+                    <span className="flex items-center gap-1.5 text-xs text-gray-400">
+                      <svg className="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
+                      </svg>
+                      <span className="text-white font-medium">{coveragePct}%</span> ACS
+                    </span>
+                  )}
+                  {streak > 0 && (
+                    <span className="flex items-center gap-1 text-xs text-amber-400 bg-amber-900/20 px-2 py-0.5 rounded-full">
+                      <svg className="w-3 h-3" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 1c.2 0 .4.1.5.2C10.3 3 12 5.5 12 8c0 2.2-1.8 4-4 4S4 10.2 4 8c0-1.4.5-2.7 1.2-3.8.1-.2.3-.2.5-.2.3 0 .5.2.5.5 0 .1 0 .2-.1.3C5.5 5.9 5 7 5 8c0 1.7 1.3 3 3 3s3-1.3 3-3c0-2-1.3-4-2.8-5.5C8.1 2.4 8 2.2 8 2c0-.6.4-1 1-1z" />
+                      </svg>
+                      {streak}d
+                    </span>
+                  )}
+                  {ratingSessions.length > 0 && (
+                    <span className="text-xs text-gray-600">{ratingSessions.length} sessions</span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Quick 5 + suggested focus */}
+            {ratingSessions.length > 0 && (
+              <div className="flex items-center gap-3 mb-5">
+                <button
+                  onClick={startQuickSession}
+                  disabled={loading}
+                  className="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-600 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+                  </svg>
+                  Quick 5 — Weak Areas
+                </button>
+                {suggestedFocus && (
+                  <p className="text-xs text-gray-500">
+                    Suggested: <span className="text-gray-400">{suggestedFocus}</span>
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Resume previous session card */}
+            {resumableSession && (
+              <div className="bg-blue-900/20 border border-blue-800/50 rounded-xl p-4 mb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-medium text-blue-300">Continue Previous Session</h3>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {new Date(resumableSession.started_at).toLocaleDateString('en-US', {
+                        month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+                      })}
+                      {' '}&middot; {resumableSession.exchange_count || 0} exchanges
+                      {' '}&middot; {resumableSession.rating.toUpperCase()}
+                      {resumableSession.aircraft_class ? ` · ${resumableSession.aircraft_class}` : ''}
+                      {' '}&middot; {resumableSession.study_mode === 'linear' ? 'Linear' : resumableSession.study_mode === 'cross_acs' ? 'Cross-ACS' : 'Weak Areas'}
+                      {' '}&middot; {resumableSession.difficulty_preference}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-1.5 text-xs text-gray-400 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={resumeVoiceToggle}
+                        onChange={(e) => setResumeVoiceToggle(e.target.checked)}
+                        className="rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 w-3.5 h-3.5"
+                      />
+                      Voice
+                    </label>
+                    <button
+                      onClick={() => resumeSession(resumableSession)}
+                      disabled={loading}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                    >
+                      Continue
+                    </button>
+                    <button
+                      onClick={async () => {
+                        await fetch('/api/session', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ action: 'update', sessionId: resumableSession.id, status: 'completed' }),
+                        });
+                        setResumableSession(null);
+                      }}
+                      className="px-3 py-2 text-gray-400 hover:text-gray-300 text-sm transition-colors"
+                    >
+                      Start New
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Session config form */}
+            <SessionConfig
+              onStart={startSession}
+              loading={loading}
+              preferredRating={preferredRating}
+              preferredAircraftClass={preferredAircraftClass}
+              prefsLoaded={prefsLoaded}
+            />
+
+            {/* Disclaimer — always visible but low visual weight */}
+            <p className="text-amber-200/50 text-xs leading-relaxed mt-4">
+              For study purposes only. Not a substitute for CFI instruction or an actual DPE checkride.
+              Always verify information against current FAA publications.
+            </p>
+          </>
+        )}
 
         {/* Quota exceeded modal (Task 34) */}
         {showQuotaModal && (
