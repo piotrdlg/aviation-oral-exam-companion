@@ -100,6 +100,11 @@ export default function PracticePage() {
   const [reportSubmitting, setReportSubmitting] = useState(false);
   // Session paused notification toast (Task 30)
   const [pausedSessionToast, setPausedSessionToast] = useState(false);
+  // Error recovery modal state
+  const [showErrorRecovery, setShowErrorRecovery] = useState(false);
+  const [lastFailedAnswer, setLastFailedAnswer] = useState<string | null>(null);
+  // Scroll-to-bottom FAB visibility
+  const [showScrollFab, setShowScrollFab] = useState(false);
   // Resumable session (active/paused with planner state in metadata)
   const [resumableSession, setResumableSession] = useState<{
     id: string;
@@ -115,6 +120,7 @@ export default function PracticePage() {
   // Track per-task assessment scores (ref avoids stale closures in fire-and-forget fetches)
   const taskScoresRef = useRef<Record<string, { score: 'satisfactory' | 'unsatisfactory' | 'partial'; attempts: number }>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const voiceEnabledRef = useRef(false);
   // Text waiting to be revealed when TTS audio actually starts playing
   const pendingFullTextRef = useRef<string | null>(null);
@@ -202,6 +208,18 @@ export default function PracticePage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Track scroll position to show/hide scroll-to-bottom FAB
+  const handleChatScroll = useCallback(() => {
+    const el = chatContainerRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    setShowScrollFab(distanceFromBottom > 100);
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
+
   // Keep ref in sync so speakText never has stale closure
   useEffect(() => {
     voiceEnabledRef.current = voiceEnabled;
@@ -232,6 +250,15 @@ export default function PracticePage() {
       flushReveal();
     }
   }, [voice.isSpeaking, flushReveal]);
+
+  // Voice failure auto-fallback: disable voice mode on TTS/STT errors
+  useEffect(() => {
+    if (voice.error && voiceEnabled && sessionActive) {
+      setVoiceEnabled(false);
+      voiceEnabledRef.current = false;
+      flushReveal();
+    }
+  }, [voice.error, voiceEnabled, sessionActive, flushReveal]);
 
   // Play examiner's message via the voice provider
   const speakText = useCallback(async (text: string) => {
@@ -362,15 +389,15 @@ export default function PracticePage() {
     }
   }
 
-  async function sendAnswer() {
-    if (!input.trim() || !taskData || loading) return;
+  async function sendAnswer(overrideText?: string) {
+    const studentAnswer = overrideText || input.trim();
+    if (!studentAnswer || !taskData || loading) return;
 
     // Stop mic when sending — user is done talking
     if (voice.isListening) {
       voice.stopListening();
     }
 
-    const studentAnswer = input.trim();
     setInput('');
     userEditingRef.current = false;
     setMessages((prev) => [...prev, { role: 'student', text: studentAnswer }]);
@@ -640,10 +667,21 @@ export default function PracticePage() {
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to get response');
+      const errorMsg = err instanceof Error ? err.message : 'Failed to get response';
+      setError(errorMsg);
+      setLastFailedAnswer(studentAnswer);
+      setShowErrorRecovery(true);
     } finally {
       setLoading(false);
     }
+  }
+
+  // Retry failed answer from error recovery modal
+  function retryLastAnswer() {
+    if (!lastFailedAnswer) return;
+    setShowErrorRecovery(false);
+    setError(null);
+    sendAnswer(lastFailedAnswer);
   }
 
   async function endSession() {
@@ -921,25 +959,26 @@ export default function PracticePage() {
 
   return (
     <div className="max-w-2xl mx-auto flex flex-col h-[calc(100vh-8rem)]">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h1 className="text-xl font-bold text-white">Oral Exam in Progress</h1>
+      {/* Session header — persistent but low-weight */}
+      <div className="flex items-center justify-between mb-3 px-1">
+        <div className="flex items-center gap-3 min-w-0">
           {taskData && (
-            <p className="text-sm text-gray-500 mt-1">
-              {taskData.area} &gt; {taskData.task}
+            <p className="text-xs text-gray-500 truncate">
+              {taskData.area} <span className="text-gray-700">/</span> {taskData.task}
               {currentElement && (
-                <span className="ml-2 font-mono text-xs text-gray-600">[{currentElement}]</span>
+                <span className="ml-1.5 font-mono text-gray-600">[{currentElement}]</span>
               )}
             </p>
           )}
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-500">
-            {exchangeCount} exchange{exchangeCount !== 1 ? 's' : ''}
+        <div className="flex items-center gap-3 shrink-0">
+          <span className="text-xs text-gray-600 tabular-nums">
+            {exchangeCount} Q&amp;A
           </span>
           {voiceEnabled && (
-            <span className="text-xs text-green-400">
-              Voice On
+            <span className="flex items-center gap-1 text-xs text-green-500">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              Voice
             </span>
           )}
           <button
@@ -947,37 +986,79 @@ export default function PracticePage() {
               if (exchangeCount > 0 && !confirm('End this session? Your progress will be saved.')) return;
               endSession();
             }}
-            className="text-sm text-gray-400 hover:text-red-400 transition-colors"
+            className="text-xs text-gray-500 hover:text-red-400 transition-colors underline-offset-2 hover:underline"
           >
             End Session
           </button>
         </div>
       </div>
 
+      {/* Error banner with recovery options */}
       {(error || voice.error) && (
-        <div className="bg-red-900/30 border border-red-800 rounded-lg p-3 mb-4 text-red-300 text-sm flex items-center justify-between">
-          <span>{error || voice.error}</span>
-          <button onClick={() => setError(null)} className="text-red-400 hover:text-red-300 ml-3">
-            &times;
-          </button>
+        <div className="bg-red-900/30 border border-red-800 rounded-lg p-3 mb-3 text-sm">
+          <div className="flex items-start gap-2">
+            <svg className="w-4 h-4 text-red-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+            </svg>
+            <div className="flex-1">
+              <p className="text-red-300">{error || voice.error}</p>
+              {voice.error && !error && (
+                <p className="text-xs text-gray-500 mt-1">Voice mode disabled. Continuing in text-only mode.</p>
+              )}
+              {showErrorRecovery && lastFailedAnswer && (
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={retryLastAnswer}
+                    className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors"
+                  >
+                    Retry
+                  </button>
+                  <button
+                    onClick={() => {
+                      setVoiceEnabled(false);
+                      voiceEnabledRef.current = false;
+                      setShowErrorRecovery(false);
+                      setError(null);
+                    }}
+                    className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors"
+                  >
+                    Text-only
+                  </button>
+                  <button
+                    onClick={() => { endSession(); setShowErrorRecovery(false); setError(null); }}
+                    className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors"
+                  >
+                    End Session
+                  </button>
+                </div>
+              )}
+            </div>
+            {!showErrorRecovery && (
+              <button onClick={() => { setError(null); }} className="text-red-400 hover:text-red-300 shrink-0">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
       )}
 
-      <div className="flex-1 bg-gray-900 rounded-xl border border-gray-800 p-4 overflow-y-auto mb-4 space-y-4">
+      <div className="flex-1 bg-gray-900 rounded-xl border border-gray-800 p-4 overflow-y-auto mb-3 space-y-4 relative" ref={chatContainerRef} onScroll={handleChatScroll}>
         {messages.map((msg, i) => (
           <div
             key={i}
             className={`flex ${msg.role === 'student' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[70%] rounded-xl px-4 py-3 ${
+              className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                 msg.role === 'examiner'
                   ? 'bg-gray-800 text-gray-100'
                   : 'bg-blue-600 text-white'
               }`}
             >
               <div className="flex items-center justify-between mb-1">
-                <p className="text-xs font-medium opacity-60">
+                <p className="text-[10px] font-medium uppercase tracking-wide opacity-50">
                   {msg.role === 'examiner' ? 'DPE Examiner' : 'You'}
                 </p>
                 {/* Report button on examiner messages (Task 26) */}
@@ -1091,49 +1172,98 @@ export default function PracticePage() {
         )}
 
         <div ref={messagesEndRef} />
+
+        {/* Scroll-to-bottom FAB */}
+        {showScrollFab && (
+          <button
+            onClick={scrollToBottom}
+            className="sticky bottom-2 left-1/2 -translate-x-1/2 w-8 h-8 bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded-full flex items-center justify-center shadow-lg transition-colors z-10"
+            aria-label="Scroll to bottom"
+          >
+            <svg className="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" />
+            </svg>
+          </button>
+        )}
       </div>
 
+      {/* Input area — pinned to bottom */}
       <div className="flex gap-2">
         {voiceEnabled && (
           <button
-            onClick={voice.isListening ? () => voice.stopListening() : () => voice.startListening()}
-            disabled={loading || voice.isSpeaking}
-            className={`px-4 py-3 rounded-xl font-medium transition-colors ${
+            onClick={() => {
+              if (voice.isListening) {
+                voice.stopListening();
+              } else {
+                // Barge-in: if TTS is playing, stop it immediately
+                if (voice.isSpeaking) {
+                  voice.stopSpeaking();
+                  flushReveal();
+                }
+                voice.startListening();
+              }
+            }}
+            disabled={loading}
+            className={`px-4 py-3 rounded-xl font-medium transition-all ${
               voice.isListening
-                ? 'bg-red-600 hover:bg-red-700 text-white animate-pulse'
+                ? 'bg-red-600 hover:bg-red-700 text-white ring-2 ring-red-400/50 ring-offset-2 ring-offset-gray-950 animate-pulse'
+                : voice.isSpeaking
+                ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 border border-dashed border-gray-500'
                 : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
             } disabled:opacity-50`}
-            title={voice.isListening ? 'Stop recording' : 'Start recording'}
+            title={voice.isListening ? 'Stop recording' : voice.isSpeaking ? 'Interrupt & start speaking' : 'Start recording'}
           >
-            {voice.isListening ? '⏹' : '🎤'}
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              {voice.isListening ? (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 7.5A2.25 2.25 0 0 1 7.5 5.25h9a2.25 2.25 0 0 1 2.25 2.25v9a2.25 2.25 0 0 1-2.25 2.25h-9a2.25 2.25 0 0 1-2.25-2.25v-9Z" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 0 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+              )}
+            </svg>
           </button>
         )}
-        <textarea
-          rows={3}
-          value={input}
-          onChange={(e) => {
-            setInput(e.target.value);
-            // If user types while STT is active, stop overwriting their edits
-            if (voice.isListening) {
-              userEditingRef.current = true;
-            }
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              sendAnswer();
-            }
-          }}
-          placeholder={voice.isListening ? 'Listening...' : 'Type your answer... (Enter to send, Shift+Enter for new line)'}
-          disabled={loading}
-          className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 resize-none"
-        />
+        <div className="flex-1 flex flex-col gap-1.5">
+          <textarea
+            rows={2}
+            value={input}
+            onChange={(e) => {
+              setInput(e.target.value);
+              // Barge-in: stop TTS if user starts typing
+              if (voice.isSpeaking) {
+                voice.stopSpeaking();
+                flushReveal();
+              }
+              // If user types while STT is active, stop overwriting their edits
+              if (voice.isListening) {
+                userEditingRef.current = true;
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendAnswer();
+              }
+            }}
+            placeholder={voice.isListening ? 'Listening...' : 'Type your answer... (Enter to send)'}
+            disabled={loading}
+            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 resize-none text-sm"
+          />
+          <button
+            onClick={() => sendAnswer("I don't know the answer to this question.")}
+            disabled={loading}
+            className="self-start text-xs text-gray-500 hover:text-gray-300 transition-colors disabled:opacity-50 px-1"
+          >
+            I don&apos;t know
+          </button>
+        </div>
         <button
-          onClick={sendAnswer}
+          onClick={() => sendAnswer()}
           disabled={loading || !input.trim()}
-          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 text-white rounded-xl font-medium transition-colors"
+          className="px-5 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 text-white rounded-xl font-medium transition-colors self-start"
         >
-          Send
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+          </svg>
         </button>
       </div>
 
