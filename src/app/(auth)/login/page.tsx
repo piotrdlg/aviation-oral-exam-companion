@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { Provider } from '@supabase/supabase-js';
@@ -30,14 +31,15 @@ function getErrorMessage(code: string | null, detail: string | null): string | n
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-950">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-950 px-4">
         <div className="w-full max-w-md p-8 bg-gray-900 rounded-xl border border-gray-800 animate-pulse">
-          <div className="h-8 bg-gray-800 rounded w-32 mb-2" />
-          <div className="h-4 bg-gray-800 rounded w-64 mb-8" />
+          <div className="h-6 bg-gray-800 rounded w-20 mb-6 mx-auto" />
+          <div className="h-5 bg-gray-800 rounded w-48 mb-2 mx-auto" />
+          <div className="h-4 bg-gray-800 rounded w-64 mb-8 mx-auto" />
           <div className="space-y-3">
-            <div className="h-10 bg-gray-800 rounded" />
-            <div className="h-10 bg-gray-800 rounded" />
-            <div className="h-10 bg-gray-800 rounded" />
+            <div className="h-11 bg-gray-800 rounded-xl" />
+            <div className="h-11 bg-gray-800 rounded-xl" />
+            <div className="h-11 bg-gray-800 rounded-xl" />
           </div>
         </div>
       </div>
@@ -68,12 +70,11 @@ function LoginForm() {
     const msg = getErrorMessage(errorCode, errorDetail);
     if (msg) {
       setError(msg);
-      // Clean URL without triggering navigation
       window.history.replaceState({}, '', '/login');
     }
   }, [searchParams]);
 
-  // Redirect if already authenticated (handles back-button after login)
+  // Redirect if already authenticated
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) router.replace('/practice');
@@ -102,7 +103,6 @@ function LoginForm() {
       setError(error.message);
       setLoadingOAuth(null);
     }
-    // If successful, browser redirects to OAuth provider
   }
 
   async function handleSendOtp(e: React.FormEvent) {
@@ -121,26 +121,23 @@ function LoginForm() {
       setError(error.message);
       setLoadingOtp(false);
     } else {
-      setCodeSentMessage(`Login code sent to ${email}`);
+      setCodeSentMessage(`Code sent to ${email}`);
       setStep('otp-sent');
       setLoadingOtp(false);
     }
   }
 
   function handleOtpChange(index: number, value: string) {
-    // Only allow single digits
     if (value && !/^\d$/.test(value)) return;
 
     const newDigits = [...otpDigits];
     newDigits[index] = value;
     setOtpDigits(newDigits);
 
-    // Auto-advance to next input
     if (value && index < 5) {
       otpRefs.current[index + 1]?.focus();
     }
 
-    // Auto-submit when all 6 digits entered
     if (value && index === 5) {
       const code = newDigits.join('');
       if (code.length === 6) {
@@ -166,13 +163,11 @@ function LoginForm() {
     }
     setOtpDigits(newDigits);
 
-    // Focus the next empty input or the last one
     const nextEmpty = newDigits.findIndex((d) => !d);
     if (nextEmpty >= 0) {
       otpRefs.current[nextEmpty]?.focus();
     } else {
       otpRefs.current[5]?.focus();
-      // Auto-submit if all 6 digits pasted
       const code = newDigits.join('');
       if (code.length === 6) {
         handleVerifyOtp(code);
@@ -199,6 +194,7 @@ function LoginForm() {
 
     if (error) {
       setError(error.message);
+      setOtpDigits(['', '', '', '', '', '']);
       setStep('otp-sent');
       setLoadingVerify(false);
     } else {
@@ -219,22 +215,10 @@ function LoginForm() {
       label: 'Continue with Google',
       icon: (
         <svg className="w-5 h-5" viewBox="0 0 24 24">
-          <path
-            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
-            fill="#4285F4"
-          />
-          <path
-            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-            fill="#34A853"
-          />
-          <path
-            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-            fill="#FBBC05"
-          />
-          <path
-            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-            fill="#EA4335"
-          />
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
         </svg>
       ),
     },
@@ -262,144 +246,185 @@ function LoginForm() {
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4">
-      <div className="w-full max-w-md p-8 bg-gray-900 rounded-xl border border-gray-800">
-        <h1 className="text-2xl font-bold text-white mb-1">HeyDPE</h1>
-        <p className="text-gray-400 mb-8">Sign in or create an account to start practicing</p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-950 px-4">
+      {/* Brand link */}
+      <Link href="/" className="text-white font-semibold text-sm tracking-tight mb-8 hover:text-gray-300 transition-colors">
+        HeyDPE
+      </Link>
 
-        {/* Error banner — shows callback failures and other errors */}
-        {error && step === 'initial' && (
-          <div className="mb-6 p-3 bg-red-950/50 border border-red-900/50 rounded-lg">
-            <p className="text-red-400 text-sm">{error}</p>
+      <div className="w-full max-w-md">
+        {/* Auth card */}
+        <div className="p-8 bg-gray-900 rounded-xl border border-gray-800">
+          <div className="text-center mb-8">
+            <h1 className="text-xl font-semibold text-white mb-1">Sign in to HeyDPE</h1>
+            <p className="text-sm text-gray-400">Practice your checkride oral exam</p>
           </div>
-        )}
 
-        {/* OAuth buttons */}
-        <div className="space-y-3">
-          {oauthProviders.map(({ provider, label, icon }) => (
-            <button
-              key={provider}
-              onClick={() => handleOAuthLogin(provider)}
-              disabled={loadingOAuth !== null}
-              className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-gray-600 rounded-lg text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loadingOAuth === provider ? (
-                <Spinner />
-              ) : (
-                icon
-              )}
-              {loadingOAuth === provider ? 'Redirecting...' : label}
-            </button>
-          ))}
-        </div>
-
-        {/* Divider */}
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-700" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-gray-900 px-3 text-gray-500">or continue with email</span>
-          </div>
-        </div>
-
-        {/* Email OTP flow */}
-        {step === 'initial' && (
-          <form onSubmit={handleSendOtp} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm text-gray-300 mb-1">
-                Email address
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="you@example.com"
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+          {/* Error banner */}
+          {error && step === 'initial' && (
+            <div className="mb-6 p-3 bg-red-950/50 border border-red-900/50 rounded-xl flex items-start gap-2.5">
+              <svg className="w-4 h-4 text-red-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+              </svg>
+              <p className="text-red-400 text-sm">{error}</p>
             </div>
+          )}
 
-            <button
-              type="submit"
-              disabled={loadingOtp}
-              className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-            >
-              {loadingOtp ? (
-                <>
-                  <Spinner />
-                  Sending code...
-                </>
-              ) : (
-                'Send Login Code'
-              )}
-            </button>
-          </form>
-        )}
-
-        {(step === 'otp-sent' || step === 'verifying') && (
-          <div className="space-y-4">
-            {codeSentMessage && (
-              <p className="text-green-400 text-sm text-center">{codeSentMessage}</p>
-            )}
-
-            <div>
-              <label className="block text-sm text-gray-300 mb-3 text-center">
-                Enter the 6-digit code
-              </label>
-              <div className="flex justify-center gap-2" onPaste={handleOtpPaste}>
-                {otpDigits.map((digit, index) => (
-                  <input
-                    key={index}
-                    ref={(el) => { otpRefs.current[index] = el; }}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleOtpChange(index, e.target.value)}
-                    onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                    disabled={step === 'verifying'}
-                    className="w-11 h-12 text-center text-lg font-mono bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
-                    aria-label={`Digit ${index + 1}`}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <p className="text-gray-500 text-xs text-center">Code expires in 10 minutes</p>
-
-            {error && <p className="text-red-400 text-sm text-center">{error}</p>}
-
-            {step === 'verifying' && (
-              <div className="flex items-center justify-center gap-2 text-gray-400 text-sm">
-                <Spinner />
-                Verifying...
-              </div>
-            )}
-
-            {step === 'otp-sent' && (
+          {/* OAuth buttons */}
+          <div className="space-y-2.5">
+            {oauthProviders.map(({ provider, label, icon }) => (
               <button
-                onClick={() => handleVerifyOtp()}
-                disabled={otpDigits.join('').length !== 6}
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                key={provider}
+                onClick={() => handleOAuthLogin(provider)}
+                disabled={loadingOAuth !== null}
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-gray-600 rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Verify Code
+                {loadingOAuth === provider ? <Spinner /> : icon}
+                {loadingOAuth === provider ? 'Redirecting...' : label}
               </button>
-            )}
-
-            <button
-              onClick={handleResendCode}
-              disabled={step === 'verifying'}
-              className="w-full text-sm text-gray-400 hover:text-white transition-colors disabled:opacity-50"
-            >
-              Use a different email or resend code
-            </button>
+            ))}
           </div>
-        )}
 
-        <p className="mt-8 text-xs text-gray-600 text-center leading-relaxed">
-          By continuing, you agree to our terms of service. No password needed — we&apos;ll send you a one-time login code, or sign in instantly with Google, Apple, or Microsoft.
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-800" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-gray-900 px-3 text-gray-500 uppercase tracking-wide">or</span>
+            </div>
+          </div>
+
+          {/* Email OTP flow — Step 1: email input */}
+          {step === 'initial' && (
+            <form onSubmit={handleSendOtp} className="space-y-3">
+              <div>
+                <label htmlFor="email" className="block text-sm text-gray-300 mb-1.5">
+                  Email address
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  className="w-full px-3.5 py-2.5 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loadingOtp}
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white rounded-xl font-medium text-sm transition-colors flex items-center justify-center gap-2"
+              >
+                {loadingOtp ? (
+                  <>
+                    <Spinner />
+                    Sending code...
+                  </>
+                ) : (
+                  'Send Login Code'
+                )}
+              </button>
+            </form>
+          )}
+
+          {/* Email OTP flow — Step 2: code input */}
+          {(step === 'otp-sent' || step === 'verifying') && (
+            <div className="space-y-4">
+              {codeSentMessage && (
+                <div className="flex items-center gap-2 justify-center">
+                  <svg className="w-4 h-4 text-green-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                  </svg>
+                  <p className="text-green-400 text-sm">{codeSentMessage}</p>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm text-gray-300 mb-3 text-center">
+                  Enter the 6-digit code
+                </label>
+                <div className="flex justify-center gap-2" onPaste={handleOtpPaste}>
+                  {otpDigits.map((digit, index) => (
+                    <input
+                      key={index}
+                      ref={(el) => { otpRefs.current[index] = el; }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleOtpChange(index, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                      disabled={step === 'verifying'}
+                      className="w-11 h-12 text-center text-lg font-mono bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 transition-colors"
+                      aria-label={`Digit ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-gray-600 text-xs text-center">Code expires in 10 minutes</p>
+
+              {/* OTP error */}
+              {error && (
+                <div className="flex items-center gap-2 justify-center">
+                  <svg className="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+                  </svg>
+                  <p className="text-red-400 text-sm">{error}</p>
+                </div>
+              )}
+
+              {step === 'verifying' && (
+                <div className="flex items-center justify-center gap-2 text-gray-400 text-sm">
+                  <Spinner />
+                  Verifying...
+                </div>
+              )}
+
+              {step === 'otp-sent' && (
+                <button
+                  onClick={() => handleVerifyOtp()}
+                  disabled={otpDigits.join('').length !== 6}
+                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white rounded-xl font-medium text-sm transition-colors flex items-center justify-center gap-2"
+                >
+                  Verify Code
+                </button>
+              )}
+
+              <button
+                onClick={handleResendCode}
+                disabled={step === 'verifying'}
+                className="w-full text-sm text-gray-400 hover:text-white transition-colors disabled:opacity-50"
+              >
+                Use a different email or resend code
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* "Why no password?" explainer */}
+        <details className="mt-4 group">
+          <summary className="text-xs text-gray-600 hover:text-gray-400 cursor-pointer transition-colors flex items-center justify-center gap-1">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+            </svg>
+            Why no password?
+          </summary>
+          <div className="mt-2 p-3 bg-gray-900 border border-gray-800 rounded-xl text-xs text-gray-400 leading-relaxed">
+            Passwordless login is more secure — no passwords to leak, reuse, or forget. Sign in with your Google, Apple, or Microsoft account for one-tap access, or use a one-time email code. Your account is tied to your email, not a password you have to remember.
+          </div>
+        </details>
+
+        {/* Trust + legal */}
+        <p className="mt-6 text-xs text-gray-600 text-center leading-relaxed max-w-sm mx-auto">
+          By continuing, you agree to our{' '}
+          <Link href="/terms" className="text-gray-400 hover:text-gray-300 underline underline-offset-2 transition-colors">Terms of Service</Link>
+          {' '}and{' '}
+          <Link href="/privacy" className="text-gray-400 hover:text-gray-300 underline underline-offset-2 transition-colors">Privacy Policy</Link>.
         </p>
       </div>
     </div>
@@ -414,19 +439,8 @@ function Spinner() {
       fill="none"
       viewBox="0 0 24 24"
     >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-      />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-      />
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
     </svg>
   );
 }
