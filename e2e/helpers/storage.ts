@@ -48,7 +48,7 @@ export async function getDataLayerEvents(page: Page, eventName: string): Promise
 export async function getConsentUpdates(page: Page): Promise<unknown[]> {
   return page.evaluate(() =>
     ((window as any).dataLayer || []).filter(
-      (e: any) => Array.isArray(e) && e[0] === 'consent' && e[1] === 'update'
+      (e: any) => e && e[0] === 'consent' && e[1] === 'update'
     )
   );
 }

@@ -89,6 +89,9 @@ test.describe('UTM Capture — sessionStorage', () => {
   test('UTM params survive same-origin navigation', async ({ page }) => {
     await page.goto('/?utm_source=test');
 
+    // Wait for React hydration and UTMCapture component to run
+    await page.waitForTimeout(1500);
+
     // Verify initial capture
     const utmBefore = await getUTMStorage(page);
     expect(utmBefore).not.toBeNull();

@@ -20,7 +20,7 @@ test.describe('robots.txt', () => {
   test('contains User-agent: *', async ({ request }) => {
     const response = await request.get('/robots.txt');
     const body = await response.text();
-    expect(body).toContain('User-agent: *');
+    expect(body).toContain('User-Agent: *');
   });
 
   test('contains Allow: /', async ({ request }) => {

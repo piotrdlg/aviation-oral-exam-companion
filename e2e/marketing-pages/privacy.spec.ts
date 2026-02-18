@@ -29,7 +29,7 @@ test.describe('Privacy Policy Page', () => {
   });
 
   test('contains effective date text', async ({ page }) => {
-    await expect(page.getByText(/effective date/i)).toBeVisible();
+    await expect(page.getByText(/Effective Date:/).first()).toBeVisible();
   });
 
   test('links to /terms', async ({ page }) => {

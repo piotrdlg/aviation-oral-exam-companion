@@ -35,9 +35,9 @@ test.describe('Cookie Consent — Customize Modal', () => {
     await banner.expectModalVisible();
 
     // All three category headings are visible
-    await expect(page.getByText('Strictly Necessary')).toBeVisible();
-    await expect(page.getByText('Analytics')).toBeVisible();
-    await expect(page.getByText('Marketing')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Strictly Necessary' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Analytics' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Marketing' })).toBeVisible();
   });
 
   test('Strictly Necessary toggle is non-interactive', async ({ page }) => {
