@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from 'next/headers';
 import { JetBrains_Mono, IBM_Plex_Sans } from "next/font/google";
+import { GoogleTagManager } from '@next/third-parties/google';
 import "./globals.css";
 
 const jetbrainsMono = JetBrains_Mono({
@@ -18,6 +19,9 @@ const ibmPlexSans = IBM_Plex_Sans({
 export const metadata: Metadata = {
   title: "HeyDPE — AI Checkride Oral Exam Simulator",
   description: "Practice your FAA checkride oral exam with an AI examiner that follows ACS standards. Supports Private Pilot, Commercial Pilot, and Instrument Rating.",
+  verification: {
+    google: 'Ou3CWjTH5f5r4r3OJZJEVQjCqBszKJuc_alUAIPimGM',
+  },
 };
 
 export default async function RootLayout({
@@ -31,6 +35,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className="dark" {...(dataTheme ? { 'data-theme': dataTheme } : {})}>
+      <GoogleTagManager gtmId="GTM-WZ5DFFK6" />
       <body
         className={`${jetbrainsMono.variable} ${ibmPlexSans.variable} antialiased scanline bg-c-bg text-c-text`}
       >
