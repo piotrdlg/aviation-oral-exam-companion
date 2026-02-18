@@ -81,7 +81,7 @@ export default defineConfig({
     // Unauthenticated tests — no stored auth state
     {
       name: 'no-auth',
-      testMatch: /landing\/.*\.spec\.ts/,
+      testMatch: /(landing|seo|consent|analytics|utm|marketing-pages|integration)\/.*\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
         storageState: { cookies: [], origins: [] },
