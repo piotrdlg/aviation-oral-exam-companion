@@ -75,6 +75,7 @@ export default function SettingsPage() {
   const [subInfo, setSubInfo] = useState<SubscriptionInfo | null>(null);
   const [subLoading, setSubLoading] = useState(true);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [portalError, setPortalError] = useState<string | null>(null);
 
   // Feedback widget state (Task 27)
   const [feedbackType, setFeedbackType] = useState<'bug_report' | 'content_error' | null>(null);
@@ -89,6 +90,7 @@ export default function SettingsPage() {
   const [sessionsMessage, setSessionsMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   // Voice diagnostics state
+  const [diagOpen, setDiagOpen] = useState(false);
   const [diagRunning, setDiagRunning] = useState(false);
   const [steps, setSteps] = useState<DiagStep[]>([
     { label: 'Microphone access', status: 'idle', detail: '' },
@@ -164,6 +166,7 @@ export default function SettingsPage() {
 
   async function openCustomerPortal() {
     setPortalLoading(true);
+    setPortalError(null);
     try {
       const res = await fetch('/api/stripe/portal', {
         method: 'POST',
@@ -174,8 +177,8 @@ export default function SettingsPage() {
       if (data.url) {
         window.location.href = data.url;
       }
-    } catch {
-      // Failed to open portal — user may not have a Stripe customer
+    } catch (err) {
+      setPortalError(err instanceof Error ? err.message : 'Failed to open subscription portal. Please try again.');
     } finally {
       setPortalLoading(false);
     }
@@ -621,92 +624,88 @@ export default function SettingsPage() {
     }
   };
 
+  const isPaidUser = subInfo?.hasStripeCustomer && (subInfo.status === 'active' || subInfo.status === 'trialing');
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white mb-2">Settings</h1>
-        <p className="text-gray-400 mb-8">Manage your account and preferences.</p>
+        <h1 className="text-2xl font-bold text-white mb-1">Settings</h1>
+        <p className="text-sm text-gray-400">Manage your account, subscription, and preferences.</p>
       </div>
 
+      {/* 1. Account Info */}
       <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
         <h2 className="text-lg font-medium text-white mb-4">Account</h2>
-        <div className="text-sm">
+        <div className="text-sm mb-4">
           <span className="text-gray-400">Email: </span>
           <span className="text-white">{email ?? 'Loading...'}</span>
         </div>
+
+        {/* Practice Defaults (folded into Account) */}
+        <div className="border-t border-gray-800 pt-4">
+          <h3 className="text-sm font-medium text-gray-300 mb-3">Practice Defaults</h3>
+          {tierLoading ? (
+            <div className="text-sm text-gray-500">Loading preferences...</div>
+          ) : (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-gray-400 mb-1.5">Certificate Rating</label>
+                <div className="flex gap-2">
+                  {([
+                    { value: 'private', label: 'Private Pilot' },
+                    { value: 'commercial', label: 'Commercial' },
+                    { value: 'instrument', label: 'Instrument' },
+                  ] as const).map((r) => (
+                    <button
+                      key={r.value}
+                      onClick={() => savePracticeDefault('preferredRating', r.value)}
+                      disabled={defaultsSaving || tierInfo?.preferredRating === r.value}
+                      className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                        tierInfo?.preferredRating === r.value
+                          ? 'border-blue-500 bg-blue-500/10 text-blue-400'
+                          : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
+                      } disabled:opacity-70`}
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1.5">Aircraft Class</label>
+                <div className="flex gap-2">
+                  {([
+                    { value: 'ASEL', label: 'ASEL' },
+                    { value: 'AMEL', label: 'AMEL' },
+                    { value: 'ASES', label: 'ASES' },
+                    { value: 'AMES', label: 'AMES' },
+                  ] as const).map((cls) => (
+                    <button
+                      key={cls.value}
+                      onClick={() => savePracticeDefault('preferredAircraftClass', cls.value)}
+                      disabled={defaultsSaving || tierInfo?.preferredAircraftClass === cls.value}
+                      className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                        tierInfo?.preferredAircraftClass === cls.value
+                          ? 'border-blue-500 bg-blue-500/10 text-blue-400'
+                          : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
+                      } disabled:opacity-70`}
+                    >
+                      {cls.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {defaultsMessage && (
+                <p className={`text-xs ${defaultsMessage.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                  {defaultsMessage.text}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Practice Defaults */}
-      <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-        <h2 className="text-lg font-medium text-white mb-1">Practice Defaults</h2>
-        <p className="text-sm text-gray-400 mb-5">
-          Set your default certificate rating and aircraft class for practice sessions.
-        </p>
-
-        {tierLoading ? (
-          <div className="text-sm text-gray-500">Loading preferences...</div>
-        ) : (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm text-gray-300 mb-2">Certificate Rating</label>
-              <div className="grid grid-cols-3 gap-2">
-                {([
-                  { value: 'private', label: 'Private Pilot' },
-                  { value: 'commercial', label: 'Commercial' },
-                  { value: 'instrument', label: 'Instrument' },
-                ] as const).map((r) => (
-                  <button
-                    key={r.value}
-                    onClick={() => savePracticeDefault('preferredRating', r.value)}
-                    disabled={defaultsSaving || tierInfo?.preferredRating === r.value}
-                    className={`p-2.5 rounded-lg border text-center text-sm font-medium transition-colors ${
-                      tierInfo?.preferredRating === r.value
-                        ? 'border-blue-500 bg-blue-500/10 text-blue-400'
-                        : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
-                    } disabled:opacity-70`}
-                  >
-                    {r.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-300 mb-2">Aircraft Class</label>
-              <div className="grid grid-cols-4 gap-2">
-                {([
-                  { value: 'ASEL', label: 'ASEL', desc: 'Single-Engine Land' },
-                  { value: 'AMEL', label: 'AMEL', desc: 'Multi-Engine Land' },
-                  { value: 'ASES', label: 'ASES', desc: 'Single-Engine Sea' },
-                  { value: 'AMES', label: 'AMES', desc: 'Multi-Engine Sea' },
-                ] as const).map((cls) => (
-                  <button
-                    key={cls.value}
-                    onClick={() => savePracticeDefault('preferredAircraftClass', cls.value)}
-                    disabled={defaultsSaving || tierInfo?.preferredAircraftClass === cls.value}
-                    className={`p-2 rounded-lg border text-center transition-colors ${
-                      tierInfo?.preferredAircraftClass === cls.value
-                        ? 'border-blue-500 bg-blue-500/10 text-blue-400'
-                        : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
-                    } disabled:opacity-70`}
-                  >
-                    <p className="text-sm font-bold">{cls.label}</p>
-                    <p className="text-[10px] mt-0.5 opacity-70">{cls.desc}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {defaultsMessage && (
-              <p className={`text-sm ${defaultsMessage.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
-                {defaultsMessage.text}
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Usage Dashboard (Task 35) */}
+      {/* 2. Plan & Usage */}
       <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
         <h2 className="text-lg font-medium text-white mb-1">Plan &amp; Usage</h2>
         <p className="text-sm text-gray-400 mb-5">
@@ -714,27 +713,32 @@ export default function SettingsPage() {
         </p>
 
         {subLoading || tierLoading ? (
-          <div className="text-sm text-gray-500">Loading subscription info...</div>
+          <div className="space-y-3 animate-pulse">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gray-800 rounded-lg p-4 h-20" />
+              <div className="bg-gray-800 rounded-lg p-4 h-20" />
+            </div>
+          </div>
         ) : (
           <>
             <div className="grid grid-cols-2 gap-4 mb-5">
               <div className="bg-gray-800 rounded-lg p-4">
                 <div className="text-xs text-gray-500 mb-1">Current Plan</div>
                 <div className="text-white font-semibold capitalize">
-                  {subInfo?.status === 'active' || subInfo?.status === 'trialing'
-                    ? (subInfo.plan || 'Paid')
-                    : 'Free'}
+                  {isPaidUser ? (subInfo?.plan || 'Paid') : 'Free'}
                 </div>
                 {subInfo?.status === 'trialing' && (
                   <div className="text-xs text-blue-400 mt-1">Trial active</div>
                 )}
               </div>
               <div className="bg-gray-800 rounded-lg p-4">
-                <div className="text-xs text-gray-500 mb-1">Renewal Date</div>
+                <div className="text-xs text-gray-500 mb-1">
+                  {isPaidUser ? 'Renewal Date' : 'Status'}
+                </div>
                 <div className="text-white font-semibold">
                   {subInfo?.renewalDate
                     ? new Date(subInfo.renewalDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                    : 'N/A'}
+                    : isPaidUser ? 'N/A' : 'Free tier'}
                 </div>
               </div>
             </div>
@@ -788,15 +792,28 @@ export default function SettingsPage() {
               </div>
             )}
 
-            <div className="flex gap-3">
-              {subInfo?.hasStripeCustomer ? (
-                <button
-                  onClick={openCustomerPortal}
-                  disabled={portalLoading}
-                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white text-sm rounded-lg font-medium transition-colors disabled:opacity-50"
-                >
-                  {portalLoading ? 'Opening...' : 'Manage Subscription'}
-                </button>
+            {portalError && (
+              <p className="text-sm text-red-400 mb-3">{portalError}</p>
+            )}
+
+            <div className="flex items-center gap-3">
+              {isPaidUser ? (
+                <>
+                  <button
+                    onClick={openCustomerPortal}
+                    disabled={portalLoading}
+                    className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white text-sm rounded-lg font-medium transition-colors disabled:opacity-50"
+                  >
+                    {portalLoading ? 'Opening...' : 'Manage Subscription'}
+                  </button>
+                  <button
+                    onClick={openCustomerPortal}
+                    disabled={portalLoading}
+                    className="px-4 py-2 text-sm text-gray-400 hover:text-gray-300 transition-colors"
+                  >
+                    Pause Subscription
+                  </button>
+                </>
               ) : (
                 <a
                   href="/pricing"
@@ -810,6 +827,7 @@ export default function SettingsPage() {
         )}
       </div>
 
+      {/* 3. Examiner Voice */}
       <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
         <h2 className="text-lg font-medium text-white mb-1">Examiner Voice</h2>
         <p className="text-sm text-gray-400 mb-5">
@@ -820,7 +838,7 @@ export default function SettingsPage() {
           <div className="text-sm text-gray-500">Loading voice options...</div>
         ) : tierInfo?.voiceOptions && tierInfo.voiceOptions.length > 0 ? (
           <>
-            <div className="grid gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               {tierInfo.voiceOptions.map((option) => {
                 const isActive = tierInfo.preferredVoice === option.model
                   || (!tierInfo.preferredVoice && option === tierInfo.voiceOptions[0]);
@@ -828,49 +846,56 @@ export default function SettingsPage() {
                 return (
                   <div
                     key={option.model}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg border transition-colors ${
+                    className={`relative rounded-lg border p-4 transition-colors ${
                       isActive
                         ? 'border-blue-500 bg-blue-950/40 ring-1 ring-blue-500/50'
-                        : 'border-gray-700 bg-gray-800'
+                        : 'border-gray-700 bg-gray-800 hover:border-gray-600'
                     }`}
                   >
-                    <button
-                      onClick={() => isPreviewing ? (() => { previewAudioRef.current?.pause(); previewAudioRef.current = null; setPreviewingVoice(null); })() : previewVoice(option.model)}
-                      disabled={previewingVoice !== null && !isPreviewing}
-                      className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
-                        isPreviewing
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
-                      } disabled:opacity-40`}
-                      title={isPreviewing ? 'Stop preview' : 'Preview voice'}
-                    >
-                      {isPreviewing ? (
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <rect x="6" y="6" width="12" height="12" rx="1" />
-                        </svg>
-                      ) : (
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                      )}
-                    </button>
-                    <button
-                      onClick={() => switchVoice(option.model)}
-                      disabled={voiceSaving || isActive}
-                      className="flex-1 text-left min-w-0"
-                    >
-                      <div className="flex items-center justify-between">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
                         <span className={`text-sm font-medium ${isActive ? 'text-blue-400' : 'text-white'}`}>
                           {option.label}
                         </span>
-                        {isActive && (
-                          <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">
-                            Selected
-                          </span>
-                        )}
+                        <p className="text-xs text-gray-500 mt-0.5">{option.model}</p>
                       </div>
-                      <p className="text-xs text-gray-400 mt-1">Deepgram Aura-2 &middot; {option.model}</p>
-                    </button>
+                      {isActive && (
+                        <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">
+                          Active
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-3">
+                      <button
+                        onClick={() => isPreviewing ? (() => { previewAudioRef.current?.pause(); previewAudioRef.current = null; setPreviewingVoice(null); })() : previewVoice(option.model)}
+                        disabled={previewingVoice !== null && !isPreviewing}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                          isPreviewing
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+                        } disabled:opacity-40`}
+                      >
+                        {isPreviewing ? (
+                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                            <rect x="6" y="6" width="12" height="12" rx="1" />
+                          </svg>
+                        ) : (
+                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        )}
+                        {isPreviewing ? 'Stop' : 'Preview'}
+                      </button>
+                      {!isActive && (
+                        <button
+                          onClick={() => switchVoice(option.model)}
+                          disabled={voiceSaving}
+                          className="px-3 py-1.5 rounded-md text-xs font-medium bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 transition-colors disabled:opacity-40"
+                        >
+                          Select
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -883,83 +908,103 @@ export default function SettingsPage() {
             )}
           </>
         ) : (
-          <div className="text-sm text-gray-500">No voice options available. Contact admin.</div>
+          <div className="text-sm text-gray-500">No voice options available for your current plan.</div>
         )}
       </div>
 
-      <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-        <h2 className="text-lg font-medium text-white mb-1">Voice Diagnostics</h2>
-        <p className="text-sm text-gray-400 mb-5">
-          Test your microphone, speech recognition, and speaker to make sure voice mode works.
-        </p>
-
-        {/* Microphone selector */}
-        {audioDevices.length > 0 && (
-          <div className="mb-5">
-            <label className="block text-sm text-gray-300 mb-1.5">Microphone</label>
-            <select
-              value={selectedDeviceId}
-              onChange={(e) => setSelectedDeviceId(e.target.value)}
-              disabled={diagRunning}
-              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-            >
-              {audioDevices.map((d) => (
-                <option key={d.deviceId} value={d.deviceId}>
-                  {d.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        <div className="space-y-4 mb-5">
-          {steps.map((step, i) => (
-            <div key={i} className="flex items-start gap-3">
-              <span className={`text-lg font-mono mt-0.5 ${statusColor(step.status)}`}>
-                {statusIcon(step.status)}
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white">{step.label}</p>
-                {step.detail && (
-                  <p className={`text-xs mt-0.5 ${step.status === 'fail' ? 'text-red-300' : 'text-gray-400'}`}>
-                    {step.detail}
-                  </p>
-                )}
-                {/* Mic level meter */}
-                {i === 0 && step.status === 'running' && micLevel > 0 && (
-                  <div className="mt-2 h-2 w-full bg-gray-800 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-green-500 rounded-full transition-all duration-75"
-                      style={{ width: `${micLevel}%` }}
-                    />
-                  </div>
-                )}
-                {/* Recognized text display */}
-                {i === 1 && step.status === 'running' && recognizedText && (
-                  <p className="text-xs mt-1 text-blue-300 italic">
-                    &ldquo;{recognizedText}&rdquo;
-                  </p>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
+      {/* 4. Voice Diagnostics (collapsible) */}
+      <div className="bg-gray-900 rounded-xl border border-gray-800">
         <button
-          onClick={runDiagnostics}
-          disabled={diagRunning}
-          className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 text-white text-sm rounded-lg font-medium transition-colors"
+          onClick={() => setDiagOpen(!diagOpen)}
+          className="w-full flex items-center justify-between p-6 text-left"
         >
-          {diagRunning ? 'Running...' : 'Run Voice Test'}
+          <div>
+            <h2 className="text-lg font-medium text-white">Voice Diagnostics</h2>
+            <p className="text-sm text-gray-400 mt-0.5">
+              Test your microphone, speech recognition, and speaker.
+            </p>
+          </div>
+          <svg
+            className={`w-5 h-5 text-gray-400 transition-transform ${diagOpen ? 'rotate-180' : ''}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
         </button>
 
-        <p className="text-xs text-gray-600 mt-3">
-          Note: Speech recognition uses Chrome&apos;s built-in mic setting, which may differ from the selection above.
-          Check chrome://settings/content/microphone if recognition fails.
-        </p>
+        {diagOpen && (
+          <div className="px-6 pb-6 border-t border-gray-800 pt-4">
+            {/* Microphone selector */}
+            {audioDevices.length > 0 && (
+              <div className="mb-5">
+                <label className="block text-sm text-gray-300 mb-1.5">Microphone</label>
+                <select
+                  value={selectedDeviceId}
+                  onChange={(e) => setSelectedDeviceId(e.target.value)}
+                  disabled={diagRunning}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                >
+                  {audioDevices.map((d) => (
+                    <option key={d.deviceId} value={d.deviceId}>
+                      {d.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="space-y-4 mb-5">
+              {steps.map((step, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <span className={`text-lg font-mono mt-0.5 ${statusColor(step.status)}`}>
+                    {statusIcon(step.status)}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white">{step.label}</p>
+                    {step.detail && (
+                      <p className={`text-xs mt-0.5 ${step.status === 'fail' ? 'text-red-300' : 'text-gray-400'}`}>
+                        {step.detail}
+                      </p>
+                    )}
+                    {/* Mic level meter */}
+                    {i === 0 && step.status === 'running' && micLevel > 0 && (
+                      <div className="mt-2 h-2 w-full bg-gray-800 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-green-500 rounded-full transition-all duration-75"
+                          style={{ width: `${micLevel}%` }}
+                        />
+                      </div>
+                    )}
+                    {/* Recognized text display */}
+                    {i === 1 && step.status === 'running' && recognizedText && (
+                      <p className="text-xs mt-1 text-blue-300 italic">
+                        &ldquo;{recognizedText}&rdquo;
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={runDiagnostics}
+              disabled={diagRunning}
+              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 text-white text-sm rounded-lg font-medium transition-colors"
+            >
+              {diagRunning ? 'Running...' : 'Run Voice Test'}
+            </button>
+
+            <p className="text-xs text-gray-600 mt-3">
+              Note: Speech recognition uses Chrome&apos;s built-in mic setting, which may differ from the selection above.
+              Check chrome://settings/content/microphone if recognition fails.
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* Active Sessions (Task 32) */}
+      {/* 5. Active Sessions */}
       <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
         <h2 className="text-lg font-medium text-white mb-1">Active Sessions</h2>
         <p className="text-sm text-gray-400 mb-5">
@@ -967,11 +1012,13 @@ export default function SettingsPage() {
         </p>
 
         {sessionsLoading ? (
-          <div className="text-sm text-gray-500">Loading sessions...</div>
+          <div className="space-y-3 animate-pulse">
+            <div className="bg-gray-800 rounded-lg p-3 h-16" />
+          </div>
         ) : activeSessions.length === 0 ? (
           <div className="text-sm text-gray-500">No active sessions found.</div>
         ) : (
-          <div className="space-y-3 mb-5">
+          <div className="space-y-3">
             {activeSessions.map((session) => (
               <div
                 key={session.id}
@@ -1020,12 +1067,12 @@ export default function SettingsPage() {
         )}
 
         {sessionsMessage && (
-          <p className={`text-sm mb-3 ${sessionsMessage.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+          <p className={`text-sm mt-3 ${sessionsMessage.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
             {sessionsMessage.text}
           </p>
         )}
 
-        {activeSessions.length > 1 && (
+        {activeSessions.filter(s => !s.this_device).length > 0 && (
           <button
             onClick={async () => {
               setSignOutOthersLoading(true);
@@ -1043,14 +1090,14 @@ export default function SettingsPage() {
               }
             }}
             disabled={signOutOthersLoading}
-            className="px-4 py-2 bg-red-600/80 hover:bg-red-600 disabled:opacity-50 text-white text-sm rounded-lg font-medium transition-colors"
+            className="mt-4 px-4 py-2 bg-red-600/80 hover:bg-red-600 disabled:opacity-50 text-white text-sm rounded-lg font-medium transition-colors"
           >
             {signOutOthersLoading ? 'Signing out...' : 'Sign Out All Other Sessions'}
           </button>
         )}
       </div>
 
-      {/* Feedback Widget (Task 27) */}
+      {/* 6. Feedback */}
       <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
         <h2 className="text-lg font-medium text-white mb-1">Feedback</h2>
         <p className="text-sm text-gray-400 mb-5">
@@ -1058,10 +1105,10 @@ export default function SettingsPage() {
         </p>
 
         {feedbackType === null ? (
-          <div className="flex gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => { setFeedbackType('bug_report'); setFeedbackMessage(null); }}
-              className="flex-1 px-4 py-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 rounded-lg text-left transition-colors"
+              className="px-4 py-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-gray-600 rounded-lg text-left transition-colors"
             >
               <div className="flex items-center gap-2 mb-1">
                 <svg className="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -1073,13 +1120,13 @@ export default function SettingsPage() {
             </button>
             <button
               onClick={() => { setFeedbackType('content_error'); setFeedbackMessage(null); }}
-              className="flex-1 px-4 py-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 rounded-lg text-left transition-colors"
+              className="px-4 py-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-gray-600 rounded-lg text-left transition-colors"
             >
               <div className="flex items-center gap-2 mb-1">
                 <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
                 </svg>
-                <span className="text-sm font-medium text-white">Report Content Error</span>
+                <span className="text-sm font-medium text-white">Content Error</span>
               </div>
               <p className="text-xs text-gray-400">Incorrect aviation information</p>
             </button>
@@ -1094,6 +1141,17 @@ export default function SettingsPage() {
               }`}>
                 {feedbackType === 'bug_report' ? 'Bug Report' : 'Content Error'}
               </span>
+              <button
+                onClick={() => {
+                  setFeedbackType(null);
+                  setFeedbackDescription('');
+                  setFeedbackMessage(null);
+                }}
+                disabled={feedbackSubmitting}
+                className="text-xs text-gray-500 hover:text-gray-400 transition-colors ml-auto"
+              >
+                Change type
+              </button>
             </div>
 
             <textarea
@@ -1132,7 +1190,6 @@ export default function SettingsPage() {
                     const details: Record<string, unknown> = {
                       description: feedbackDescription,
                     };
-                    // Capture browser info for bug reports
                     if (feedbackType === 'bug_report' && typeof navigator !== 'undefined') {
                       details.browser_info = navigator.userAgent;
                       details.page_url = window.location.href;
