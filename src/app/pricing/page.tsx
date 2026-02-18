@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import UTMCapture from '@/components/UTMCapture';
 
 const plans = [
   {
@@ -121,6 +122,7 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-c-bg">
+      <UTMCapture />
       {/* ─── Sticky nav ─── */}
       <nav className="fixed top-0 inset-x-0 z-50 border-b border-c-border bg-c-bg/80 backdrop-blur-lg">
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">

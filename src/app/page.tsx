@@ -1,8 +1,25 @@
 import Link from 'next/link';
+import JsonLd from '@/components/JsonLd';
+import UTMCapture from '@/components/UTMCapture';
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-c-bg">
+      <UTMCapture />
+      <JsonLd data={{
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "HeyDPE",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Web",
+        "description": "Practice your FAA checkride oral exam with an AI examiner that follows ACS standards.",
+        "offers": {
+          "@type": "Offer",
+          "price": "39.00",
+          "priceCurrency": "USD"
+        }
+      }} />
+
       {/* Nav */}
       <nav className="fixed top-0 inset-x-0 z-50 border-b border-c-border bg-c-bg/80 backdrop-blur-lg">
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
@@ -353,6 +370,8 @@ export default function Home() {
               <Link href="/pricing" className="hover:text-c-amber transition-colors">PRICING</Link>
               <Link href="/login" className="hover:text-c-text transition-colors">SIGN IN</Link>
               <Link href="/signup" className="hover:text-c-text transition-colors">GET STARTED</Link>
+              <Link href="/privacy" className="hover:text-c-text transition-colors">PRIVACY</Link>
+              <Link href="/terms" className="hover:text-c-text transition-colors">TERMS</Link>
             </div>
           </div>
           <p className="text-[10px] text-c-muted text-center leading-relaxed max-w-xl mx-auto font-mono">

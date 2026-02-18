@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { Provider } from '@supabase/supabase-js';
+import { getStoredUTMParams } from '@/lib/utm';
+import { trackSignup } from '@/lib/analytics';
 
 type AuthStep = 'initial' | 'otp-sent' | 'verifying';
 
@@ -63,6 +65,15 @@ function LoginForm() {
   const supabase = createClient();
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  /** Persist UTM params from sessionStorage to user metadata (fire-and-forget). */
+  function persistUTMToUser(method: string) {
+    const utm = getStoredUTMParams();
+    if (utm) {
+      supabase.auth.updateUser({ data: { utm } }).catch(() => {});
+    }
+    trackSignup(method);
+  }
+
   // Show callback errors from URL params
   useEffect(() => {
     const errorCode = searchParams.get('error');
@@ -92,6 +103,10 @@ function LoginForm() {
     setLoadingOAuth(provider);
     setError(null);
 
+    // Persist UTM params before OAuth redirect (they'll be saved to user metadata
+    // when the user returns via the auth callback)
+    const utm = getStoredUTMParams();
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -102,6 +117,10 @@ function LoginForm() {
     if (error) {
       setError(error.message);
       setLoadingOAuth(null);
+    } else if (utm) {
+      // UTM params are in sessionStorage; they'll survive the OAuth redirect
+      // and be picked up on return. Track the signup intent.
+      trackSignup(provider);
     }
   }
 
@@ -198,6 +217,7 @@ function LoginForm() {
       setStep('otp-sent');
       setLoadingVerify(false);
     } else {
+      persistUTMToUser('email_otp');
       router.push('/practice');
       router.refresh();
     }

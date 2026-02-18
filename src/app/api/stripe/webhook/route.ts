@@ -144,6 +144,37 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, eventId
       last_webhook_event_ts: new Date().toISOString(),
     })
     .eq('user_id', userId);
+
+  // Fire GA4 server-side purchase event for reliable revenue tracking
+  if (process.env.GA4_API_SECRET && process.env.GA4_MEASUREMENT_ID) {
+    try {
+      const price = subscription.items.data[0]?.price;
+      const amount = (session.amount_total ?? 0) / 100;
+      const planName = price?.recurring?.interval === 'year' ? 'Annual' : 'Monthly';
+
+      await fetch(
+        `https://www.google-analytics.com/mp/collect?measurement_id=${process.env.GA4_MEASUREMENT_ID}&api_secret=${process.env.GA4_API_SECRET}`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            client_id: userId,
+            events: [{
+              name: 'purchase',
+              params: {
+                transaction_id: session.id,
+                value: amount,
+                currency: session.currency?.toUpperCase() || 'USD',
+                items: [{ item_name: `HeyDPE ${planName}` }],
+              },
+            }],
+          }),
+        }
+      );
+    } catch (err) {
+      // Non-critical: don't fail the webhook if GA4 reporting fails
+      console.error('GA4 Measurement Protocol error:', err);
+    }
+  }
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription, eventId: string) {

@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { getStoredUTMParams } from '@/lib/utm';
 
 const navItems = [
   { href: '/practice', label: 'Practice' },
@@ -32,6 +33,13 @@ export default function DashboardLayout({
         .eq('user_id', user.id)
         .maybeSingle();
       setIsAdmin(!!data);
+
+      // Persist UTM params from sessionStorage to user metadata (OAuth return flow)
+      const utm = getStoredUTMParams();
+      if (utm) {
+        supabase.auth.updateUser({ data: { utm } }).catch(() => {});
+        try { sessionStorage.removeItem('heydpe_utm'); } catch {}
+      }
     }
     checkAdmin();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
