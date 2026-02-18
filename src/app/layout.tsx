@@ -21,6 +21,9 @@ export const metadata: Metadata = {
   description: "Practice your FAA checkride oral exam with an AI examiner that follows ACS standards. Supports Private Pilot, Commercial Pilot, and Instrument Rating.",
   verification: {
     google: 'Ou3CWjTH5f5r4r3OJZJEVQjCqBszKJuc_alUAIPimGM',
+    other: {
+      'msvalidate.01': 'CA4EEA33C3B3E7E6054CCC931D85F87A',
+    },
   },
 };
 
