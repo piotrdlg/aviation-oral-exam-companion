@@ -49,7 +49,7 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
   const [studyMode, setStudyMode] = useState<SessionConfigData['studyMode']>('linear');
   const [difficulty, setDifficulty] = useState<SessionConfigData['difficulty']>('mixed');
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
-  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [showTaskPicker, setShowTaskPicker] = useState(false);
   const [allTasks, setAllTasks] = useState<AcsTaskItem[]>([]);
   const [tasksLoading, setTasksLoading] = useState(false);
