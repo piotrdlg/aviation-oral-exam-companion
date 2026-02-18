@@ -74,7 +74,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
   const [aircraftClass, setAircraftClass] = useState<AircraftClass>(defaultAircraftClass);
   const [aircraftType, setAircraftType] = useState('');
   const [homeAirport, setHomeAirport] = useState('');
-  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const showClassPicker = rating === 'private' || rating === 'commercial';
