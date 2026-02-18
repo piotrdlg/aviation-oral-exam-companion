@@ -797,7 +797,7 @@ export default function PracticePage() {
         <h1 className="text-2xl font-bold text-white mb-2">Practice Session</h1>
         <p className="text-gray-400 mb-6">
           Start an oral exam practice session. The AI examiner will ask you questions
-          based on the FAA Private Pilot ACS.
+          based on the FAA {preferredRating === 'commercial' ? 'Commercial Pilot' : preferredRating === 'instrument' ? 'Instrument Rating' : preferredRating === 'atp' ? 'ATP' : 'Private Pilot'} ACS.
         </p>
 
         {/* Post-checkout success banner (Task 36) */}

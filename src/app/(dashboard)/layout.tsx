@@ -48,7 +48,7 @@ export default function DashboardLayout({
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
           <div className="flex items-center gap-6">
             <Link href="/practice" className="text-white font-semibold text-sm">
-              Aviation Oral Exam
+              HeyDPE
             </Link>
             <div className="flex gap-1">
               {navItems.map((item) => (

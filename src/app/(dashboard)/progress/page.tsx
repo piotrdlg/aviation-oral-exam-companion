@@ -55,12 +55,27 @@ export default function ProgressPage() {
   const [view, setView] = useState<'overview' | 'treemap'>('overview');
   const [selectedClass, setSelectedClass] = useState<AircraftClass>('ASEL');
   const [selectedRating, setSelectedRating] = useState<Rating>('private');
+  const [prefsLoaded, setPrefsLoaded] = useState(false);
   // Session-scoped treemap: null = "All Sessions (Lifetime)"
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [sessionScores, setSessionScores] = useState<ElementScore[]>([]);
   const [sessionScoresLoading, setSessionScoresLoading] = useState(false);
 
+  // Initialize from user preferences
   useEffect(() => {
+    fetch('/api/user/tier')
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data?.preferredRating) setSelectedRating(data.preferredRating);
+        if (data?.preferredAircraftClass) setSelectedClass(data.preferredAircraftClass);
+        setPrefsLoaded(true);
+      })
+      .catch(() => { setPrefsLoaded(true); });
+  }, []);
+
+  // Fetch session data when rating changes (wait for preferences to load)
+  useEffect(() => {
+    if (!prefsLoaded) return;
     setLoading(true);
     setSelectedSessionId(null);
     setSessionScores([]);
@@ -76,7 +91,7 @@ export default function ProgressPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [selectedRating]);
+  }, [selectedRating, prefsLoaded]);
 
   // Filter sessions by selected rating
   const filteredSessions = useMemo(

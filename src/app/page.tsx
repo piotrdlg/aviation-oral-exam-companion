@@ -11,12 +11,13 @@ export default function Home() {
           Aviation Oral Exam Companion
         </p>
         <p className="text-base text-gray-500 mb-8 max-w-lg mx-auto">
-          Practice for your FAA checkride with an AI examiner that follows ACS standards. Supports Private Pilot, Commercial Pilot, and Instrument Rating.
+          Practice for your FAA checkride with an AI examiner that follows ACS standards.
+          Set your certificate rating and aircraft class once, then jump straight into practice.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
-            href="/login"
+            href="/signup"
             className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
           >
             Get Started
@@ -29,18 +30,24 @@ export default function Home() {
           </Link>
         </div>
 
-        <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
+        <div className="mt-12 flex flex-wrap justify-center gap-2 text-xs text-gray-500">
+          <span className="px-3 py-1 bg-gray-900 rounded-full border border-gray-800">Private Pilot (FAA-S-ACS-6C)</span>
+          <span className="px-3 py-1 bg-gray-900 rounded-full border border-gray-800">Commercial Pilot (FAA-S-ACS-7B)</span>
+          <span className="px-3 py-1 bg-gray-900 rounded-full border border-gray-800">Instrument Rating (FAA-S-ACS-8C)</span>
+        </div>
+
+        <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
           <div className="p-4 bg-gray-900 rounded-lg border border-gray-800">
             <h3 className="text-white font-medium mb-2">ACS-Aligned</h3>
-            <p className="text-gray-400 text-sm">Questions follow the FAA Airman Certification Standards for Private, Commercial, and Instrument ratings.</p>
+            <p className="text-gray-400 text-sm">Questions follow the FAA Airman Certification Standards. Choose your rating and aircraft class in Settings, and every session is tailored to your checkride.</p>
           </div>
           <div className="p-4 bg-gray-900 rounded-lg border border-gray-800">
             <h3 className="text-white font-medium mb-2">Voice-First</h3>
-            <p className="text-gray-400 text-sm">Speak your answers naturally, just like a real oral exam with a DPE.</p>
+            <p className="text-gray-400 text-sm">Speak your answers naturally, just like a real oral exam with a DPE. Type or talk — your choice each session.</p>
           </div>
           <div className="p-4 bg-gray-900 rounded-lg border border-gray-800">
-            <h3 className="text-white font-medium mb-2">Adaptive</h3>
-            <p className="text-gray-400 text-sm">The AI examiner follows up on weak areas and navigates between topics naturally.</p>
+            <h3 className="text-white font-medium mb-2">Personalized</h3>
+            <p className="text-gray-400 text-sm">Track progress across ACS areas, focus on weak spots, and pick up right where you left off between sessions.</p>
           </div>
         </div>
 
