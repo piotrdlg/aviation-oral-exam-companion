@@ -71,7 +71,7 @@ export default function Home() {
             <div className="s1">
               <div
                 className="w-20 h-20 mx-auto rounded-full border-2 border-c-amber/40 flex items-center justify-center gauge"
-                style={{ '--gc': '#f5a623', '--gp': '85%' } as React.CSSProperties}
+                style={{ '--gc': 'var(--color-c-amber)', '--gp': '85%' } as React.CSSProperties}
               >
                 <div className="w-16 h-16 rounded-full bg-c-panel flex items-center justify-center">
                   <span className="font-mono font-bold text-c-amber text-lg glow-a">143+</span>
@@ -82,7 +82,7 @@ export default function Home() {
             <div className="s2">
               <div
                 className="w-20 h-20 mx-auto rounded-full border-2 border-c-green/40 flex items-center justify-center gauge"
-                style={{ '--gc': '#00ff41', '--gp': '60%' } as React.CSSProperties}
+                style={{ '--gc': 'var(--color-c-green)', '--gp': '60%' } as React.CSSProperties}
               >
                 <div className="w-16 h-16 rounded-full bg-c-panel flex items-center justify-center">
                   <span className="font-mono font-bold text-c-green text-lg glow-g">3</span>
@@ -93,7 +93,7 @@ export default function Home() {
             <div className="s3">
               <div
                 className="w-20 h-20 mx-auto rounded-full border-2 border-c-cyan/40 flex items-center justify-center gauge"
-                style={{ '--gc': '#00d4ff', '--gp': '70%' } as React.CSSProperties}
+                style={{ '--gc': 'var(--color-c-cyan)', '--gp': '70%' } as React.CSSProperties}
               >
                 <div className="w-16 h-16 rounded-full bg-c-panel flex items-center justify-center">
                   <span className="font-mono font-bold text-c-cyan text-lg glow-c">6</span>
@@ -104,7 +104,7 @@ export default function Home() {
             <div className="s4">
               <div
                 className="w-20 h-20 mx-auto rounded-full border-2 border-c-amber/40 flex items-center justify-center gauge"
-                style={{ '--gc': '#f5a623', '--gp': '100%' } as React.CSSProperties}
+                style={{ '--gc': 'var(--color-c-amber)', '--gp': '100%' } as React.CSSProperties}
               >
                 <div className="w-16 h-16 rounded-full bg-c-panel flex items-center justify-center">
                   <span className="font-mono font-bold text-c-amber text-sm glow-a">24/7</span>

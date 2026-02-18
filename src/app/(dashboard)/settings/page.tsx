@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { VoiceTier, TierFeatures } from '@/lib/voice/types';
 import type { Rating, AircraftClass } from '@/types/database';
+import { THEMES, setTheme } from '@/lib/theme';
 
 type TestStatus = 'idle' | 'running' | 'pass' | 'fail';
 
@@ -36,6 +37,7 @@ interface TierInfo {
   preferredAircraftClass: AircraftClass;
   aircraftType: string | null;
   homeAirport: string | null;
+  preferredTheme: string;
   voiceOptions: VoiceOption[];
 }
 
@@ -127,6 +129,7 @@ export default function SettingsPage() {
             preferredAircraftClass: data.preferredAircraftClass || 'ASEL',
             aircraftType: data.aircraftType || null,
             homeAirport: data.homeAirport || null,
+            preferredTheme: data.preferredTheme || 'cockpit',
             voiceOptions: data.voiceOptions || [],
           });
         }
@@ -210,7 +213,7 @@ export default function SettingsPage() {
     }
   }
 
-  async function savePracticeDefault(field: 'preferredRating' | 'preferredAircraftClass' | 'aircraftType' | 'homeAirport', value: string) {
+  async function savePracticeDefault(field: 'preferredRating' | 'preferredAircraftClass' | 'aircraftType' | 'homeAirport' | 'preferredTheme', value: string) {
     setDefaultsSaving(true);
     setDefaultsMessage(null);
     try {
@@ -865,7 +868,50 @@ export default function SettingsPage() {
         )}
       </div>
 
-      {/* 3. Examiner Voice */}
+      {/* 3. Theme */}
+      <div className="bezel rounded-lg border border-c-border p-6">
+        <h2 className="font-mono font-semibold text-sm text-c-amber mb-1 tracking-wider uppercase">THEME</h2>
+        <p className="font-mono text-[10px] text-c-muted mb-5">
+          Choose the cockpit aesthetic for your entire interface.
+        </p>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          {THEMES.map((t) => {
+            const isActive = (tierInfo?.preferredTheme || 'cockpit') === t.id;
+            return (
+              <button
+                key={t.id}
+                onClick={() => {
+                  setTheme(t.id);
+                  savePracticeDefault('preferredTheme', t.id);
+                  setTierInfo(prev => prev ? { ...prev, preferredTheme: t.id } : null);
+                }}
+                disabled={isActive}
+                className={`iframe rounded-lg p-4 text-left transition-colors ${
+                  isActive
+                    ? 'border-l-2 border-c-amber ring-1 ring-c-amber/20'
+                    : 'hover:border-c-border-hi cursor-pointer'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ background: t.accent }} />
+                  <span className={`font-mono text-xs font-semibold uppercase ${isActive ? 'text-c-amber' : 'text-c-text'}`}>
+                    {t.label}
+                  </span>
+                  {isActive && (
+                    <span className="font-mono text-[10px] bg-c-amber-lo text-c-amber px-2 py-0.5 rounded border border-c-amber/20 uppercase ml-auto">
+                      ACTIVE
+                    </span>
+                  )}
+                </div>
+                <p className="font-mono text-[10px] text-c-dim">{t.desc}</p>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 4. Examiner Voice */}
       <div className="bezel rounded-lg border border-c-border p-6">
         <h2 className="font-mono font-semibold text-sm text-c-amber mb-1 tracking-wider uppercase">EXAMINER VOICE</h2>
         <p className="font-mono text-[10px] text-c-muted mb-5">
@@ -941,7 +987,7 @@ export default function SettingsPage() {
         )}
       </div>
 
-      {/* 4. Voice Diagnostics (collapsible) */}
+      {/* 5. Voice Diagnostics (collapsible) */}
       <div className="bezel rounded-lg border border-c-border">
         <button
           onClick={() => setDiagOpen(!diagOpen)}
@@ -1028,7 +1074,7 @@ export default function SettingsPage() {
         )}
       </div>
 
-      {/* 5. Active Sessions */}
+      {/* 6. Active Sessions */}
       <div className="bezel rounded-lg border border-c-border p-6">
         <h2 className="font-mono font-semibold text-sm text-c-amber mb-1 tracking-wider uppercase">ACTIVE SESSIONS</h2>
         <p className="font-mono text-[10px] text-c-muted mb-5">
@@ -1122,7 +1168,7 @@ export default function SettingsPage() {
         )}
       </div>
 
-      {/* 6. Feedback */}
+      {/* 7. Feedback */}
       <div className="bezel rounded-lg border border-c-border p-6">
         <h2 className="font-mono font-semibold text-sm text-c-amber mb-1 tracking-wider uppercase">FEEDBACK</h2>
         <p className="font-mono text-[10px] text-c-muted mb-5">

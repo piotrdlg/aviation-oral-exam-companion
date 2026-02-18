@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from 'next/headers';
 import { JetBrains_Mono, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -19,13 +20,17 @@ export const metadata: Metadata = {
   description: "Practice your FAA checkride oral exam with an AI examiner that follows ACS standards. Supports Private Pilot, Commercial Pilot, and Instrument Rating.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const theme = cookieStore.get('theme')?.value || 'cockpit';
+  const dataTheme = theme === 'cockpit' ? undefined : theme;
+
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" {...(dataTheme ? { 'data-theme': dataTheme } : {})}>
       <body
         className={`${jetbrainsMono.variable} ${ibmPlexSans.variable} antialiased scanline bg-c-bg text-c-text`}
       >

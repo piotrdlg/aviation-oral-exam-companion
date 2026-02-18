@@ -8,6 +8,7 @@ import type { PlannerState, SessionConfig as SessionConfigType, Rating, Aircraft
 import type { VoiceTier } from '@/lib/voice/types';
 import { useVoiceProvider } from '@/hooks/useVoiceProvider';
 import { ExamImages } from '@/components/ui/ExamImages';
+import { setTheme } from '@/lib/theme';
 
 /**
  * Retry a fetch call once on transient infrastructure errors (405, 502, 503, 504).
@@ -142,6 +143,10 @@ export default function PracticePage() {
         if (data?.preferredRating) setPreferredRating(data.preferredRating);
         if (data?.preferredAircraftClass) setPreferredAircraftClass(data.preferredAircraftClass);
         if (data?.onboardingCompleted !== undefined) setOnboardingCompleted(data.onboardingCompleted);
+        // Sync theme from DB preference
+        if (data?.preferredTheme && data.preferredTheme !== 'cockpit') {
+          setTheme(data.preferredTheme);
+        }
         setPrefsLoaded(true);
         // Check if usage is at 80% or above for proactive warning (Task 34)
         if (data?.usage && data?.features) {
@@ -965,6 +970,7 @@ export default function PracticePage() {
           <OnboardingWizard
             defaultRating={preferredRating}
             defaultAircraftClass={preferredAircraftClass}
+            defaultTheme="cockpit"
             loading={loading}
             onComplete={(config) => {
               setPreferredRating(config.rating);
@@ -1003,7 +1009,7 @@ export default function PracticePage() {
                 <div className="flex items-center gap-3">
                   {coveragePct > 0 && (
                     <div className="flex items-center gap-2">
-                      <div className="w-10 h-10 rounded-full border border-c-cyan/40 flex items-center justify-center gauge" style={{ '--gc': '#00d4ff', '--gp': `${coveragePct}%` } as React.CSSProperties}>
+                      <div className="w-10 h-10 rounded-full border border-c-cyan/40 flex items-center justify-center gauge" style={{ '--gc': 'var(--color-c-cyan)', '--gp': `${coveragePct}%` } as React.CSSProperties}>
                         <div className="w-7 h-7 rounded-full bg-c-panel flex items-center justify-center">
                           <span className="font-mono font-bold text-c-cyan text-[10px]">{coveragePct}%</span>
                         </div>

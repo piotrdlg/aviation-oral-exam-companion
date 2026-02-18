@@ -2,16 +2,20 @@
 
 import { useState } from 'react';
 import type { Rating, AircraftClass } from '@/types/database';
+import type { Theme } from '@/types/database';
+import { THEMES, setTheme } from '@/lib/theme';
 
 interface Props {
   defaultRating: Rating;
   defaultAircraftClass: AircraftClass;
+  defaultTheme?: Theme;
   onComplete: (config: {
     rating: Rating;
     aircraftClass: AircraftClass;
     aircraftType: string;
     homeAirport: string;
     voiceEnabled: boolean;
+    theme: Theme;
   }) => void;
   onSkip: () => void;
   loading?: boolean;
@@ -68,13 +72,14 @@ const RATING_LABELS: Record<string, string> = {
   atp: 'ATP',
 };
 
-export default function OnboardingWizard({ defaultRating, defaultAircraftClass, onComplete, onSkip, loading }: Props) {
+export default function OnboardingWizard({ defaultRating, defaultAircraftClass, defaultTheme, onComplete, onSkip, loading }: Props) {
   const [step, setStep] = useState(1);
   const [rating, setRating] = useState<Rating>(defaultRating);
   const [aircraftClass, setAircraftClass] = useState<AircraftClass>(defaultAircraftClass);
   const [aircraftType, setAircraftType] = useState('');
   const [homeAirport, setHomeAirport] = useState('');
   const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [selectedTheme, setSelectedTheme] = useState<Theme>(defaultTheme || 'cockpit');
   const [saving, setSaving] = useState(false);
 
   const showClassPicker = rating === 'private' || rating === 'commercial';
@@ -90,6 +95,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
           preferredAircraftClass: aircraftClass,
           aircraftType: aircraftType.trim() || null,
           homeAirport: homeAirport.trim() || null,
+          preferredTheme: selectedTheme,
           onboardingCompleted: true,
         }),
       });
@@ -102,6 +108,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
       aircraftType: aircraftType.trim(),
       homeAirport: homeAirport.trim(),
       voiceEnabled,
+      theme: selectedTheme,
     });
     setSaving(false);
   }
@@ -121,7 +128,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
       <div className="max-w-lg w-full mx-4">
         {/* Progress dots */}
         <div className="flex justify-center gap-2 mb-6">
-          {[1, 2, 3].map((s) => (
+          {[1, 2, 3, 4].map((s) => (
             <div
               key={s}
               className={`w-2.5 h-2.5 rounded-full transition-colors ${
@@ -267,8 +274,58 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
           </div>
         )}
 
-        {/* Step 3: Confirmation */}
+        {/* Step 3: Theme selection */}
         {step === 3 && (
+          <div className="bezel rounded-lg border border-c-border p-8">
+            <h2 className="font-mono font-bold text-xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
+              CUSTOMIZE YOUR COCKPIT
+            </h2>
+            <p className="text-sm text-c-muted text-center mb-6">
+              Choose your instrument panel aesthetic
+            </p>
+
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              {THEMES.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => {
+                    setSelectedTheme(t.id);
+                    setTheme(t.id);
+                  }}
+                  className={`p-4 rounded-lg border text-center transition-colors ${
+                    selectedTheme === t.id
+                      ? 'border-c-amber/50 bg-c-amber-lo/50 ring-1 ring-c-amber/20'
+                      : 'border-c-border bg-c-bezel hover:border-c-border-hi'
+                  }`}
+                >
+                  <div className="w-6 h-6 rounded-full mx-auto mb-2" style={{ background: t.accent }} />
+                  <p className={`font-mono text-xs font-semibold uppercase ${selectedTheme === t.id ? 'text-c-amber' : 'text-c-text'}`}>
+                    {t.label}
+                  </p>
+                  <p className="text-[10px] text-c-muted mt-0.5">{t.desc}</p>
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setStep(2)}
+                className="font-mono text-xs text-c-muted hover:text-c-text transition-colors uppercase"
+              >
+                &larr; BACK
+              </button>
+              <button
+                onClick={() => setStep(4)}
+                className="flex-1 py-3 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
+              >
+                NEXT
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 4: Confirmation */}
+        {step === 4 && (
           <div className="bezel rounded-lg border border-c-border p-8">
             <h2 className="font-mono font-bold text-xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
               READY TO START?
@@ -317,7 +374,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
 
             <div className="flex items-center gap-3">
               <button
-                onClick={() => setStep(2)}
+                onClick={() => setStep(3)}
                 className="font-mono text-xs text-c-muted hover:text-c-text transition-colors uppercase"
               >
                 &larr; BACK

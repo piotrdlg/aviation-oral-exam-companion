@@ -21,7 +21,7 @@ export async function GET() {
     const [profileResult, voiceOptionsResult] = await Promise.all([
       serviceSupabase
         .from('user_profiles')
-        .select('tier, preferred_voice, preferred_rating, preferred_aircraft_class, aircraft_type, home_airport, onboarding_completed, subscription_status, cancel_at_period_end, current_period_end')
+        .select('tier, preferred_voice, preferred_rating, preferred_aircraft_class, aircraft_type, home_airport, onboarding_completed, preferred_theme, subscription_status, cancel_at_period_end, current_period_end')
         .eq('user_id', user.id)
         .single(),
       serviceSupabase
@@ -80,6 +80,7 @@ export async function GET() {
       aircraftType: profile?.aircraft_type || null,
       homeAirport: profile?.home_airport || null,
       onboardingCompleted: profile?.onboarding_completed ?? false,
+      preferredTheme: profile?.preferred_theme || 'cockpit',
       voiceOptions: voiceOptionsResult.data?.value || [],
     });
   } catch (error) {
@@ -104,7 +105,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { preferredVoice, preferredRating, preferredAircraftClass, aircraftType, homeAirport, onboardingCompleted } = body;
+    const { preferredVoice, preferredRating, preferredAircraftClass, aircraftType, homeAirport, onboardingCompleted, preferredTheme } = body;
 
     const updateFields: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
@@ -165,6 +166,15 @@ export async function POST(request: NextRequest) {
     // Mark onboarding as completed
     if (onboardingCompleted !== undefined) {
       updateFields.onboarding_completed = !!onboardingCompleted;
+    }
+
+    // Validate theme if provided
+    const VALID_THEMES = ['cockpit', 'glass', 'radar', 'neon'] as const;
+    if (preferredTheme !== undefined) {
+      if (preferredTheme && !(VALID_THEMES as readonly string[]).includes(preferredTheme)) {
+        return NextResponse.json({ error: 'Invalid theme' }, { status: 400 });
+      }
+      updateFields.preferred_theme = preferredTheme || 'cockpit';
     }
 
     const { error: updateError } = await serviceSupabase

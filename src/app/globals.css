@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@theme inline {
+@theme {
   --font-sans: 'IBM Plex Sans', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
@@ -43,8 +43,8 @@
 
 body {
   font-family: 'IBM Plex Sans', sans-serif;
-  background: #080c12;
-  color: #c9d1d9;
+  background: var(--color-c-bg);
+  color: var(--color-c-text);
 }
 
 /* Scanline overlay */
@@ -56,29 +56,29 @@ body {
     0deg,
     transparent,
     transparent 2px,
-    rgba(0, 212, 255, 0.012) 2px,
-    rgba(0, 212, 255, 0.012) 4px
+    var(--scanline-tint, rgba(0, 212, 255, 0.012)) 2px,
+    var(--scanline-tint, rgba(0, 212, 255, 0.012)) 4px
   );
   pointer-events: none;
   z-index: 9999;
 }
 
 /* CRT text glow */
-.glow-a { text-shadow: 0 0 10px rgba(245,166,35,0.4), 0 0 30px rgba(245,166,35,0.1); }
-.glow-g { text-shadow: 0 0 10px rgba(0,255,65,0.4), 0 0 30px rgba(0,255,65,0.1); }
-.glow-c { text-shadow: 0 0 10px rgba(0,212,255,0.4), 0 0 30px rgba(0,212,255,0.1); }
+.glow-a { text-shadow: 0 0 10px color-mix(in srgb, var(--color-c-amber) 40%, transparent), 0 0 30px color-mix(in srgb, var(--color-c-amber) 10%, transparent); }
+.glow-g { text-shadow: 0 0 10px color-mix(in srgb, var(--color-c-green) 40%, transparent), 0 0 30px color-mix(in srgb, var(--color-c-green) 10%, transparent); }
+.glow-c { text-shadow: 0 0 10px color-mix(in srgb, var(--color-c-cyan) 40%, transparent), 0 0 30px color-mix(in srgb, var(--color-c-cyan) 10%, transparent); }
 
 /* Bezel card */
 .bezel {
-  background: linear-gradient(135deg, #161b22 0%, #0d1117 50%, #161b22 100%);
+  background: linear-gradient(135deg, var(--color-c-bezel) 0%, var(--color-c-panel) 50%, var(--color-c-bezel) 100%);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 4px 20px rgba(0,0,0,0.5);
 }
 
 /* Instrument frame */
 .iframe {
-  border: 1px solid #1c2333;
+  border: 1px solid var(--color-c-border);
   box-shadow: inset 0 0 8px rgba(0,0,0,0.5), 0 2px 12px rgba(0,0,0,0.3);
-  background: linear-gradient(180deg, #0d1117 0%, #0a0e14 100%);
+  background: linear-gradient(180deg, var(--color-c-panel) 0%, var(--color-c-bg) 100%);
 }
 
 /* Gauge ring */
@@ -87,10 +87,10 @@ body {
 }
 
 /* Progress bars */
-.prog-a { background: linear-gradient(90deg, #8b6914, #f5a623); }
-.prog-g { background: linear-gradient(90deg, #0a5c1a, #00ff41); }
-.prog-c { background: linear-gradient(90deg, #0a4a5c, #00d4ff); }
-.prog-r { background: linear-gradient(90deg, #5c1a16, #ff3b30); }
+.prog-a { background: linear-gradient(90deg, var(--color-c-amber-dim), var(--color-c-amber)); }
+.prog-g { background: linear-gradient(90deg, var(--color-c-green-dim), var(--color-c-green)); }
+.prog-c { background: linear-gradient(90deg, var(--color-c-cyan-dim), var(--color-c-cyan)); }
+.prog-r { background: linear-gradient(90deg, var(--color-c-red-dim), var(--color-c-red)); }
 
 /* Noise texture */
 .noise {
@@ -115,8 +115,8 @@ body {
 
 /* Instrument pulse */
 @keyframes ipulse {
-  0%, 100% { box-shadow: 0 0 15px rgba(0,212,255,0.08); }
-  50% { box-shadow: 0 0 25px rgba(0,212,255,0.18); }
+  0%, 100% { box-shadow: 0 0 15px color-mix(in srgb, var(--color-c-cyan) 8%, transparent); }
+  50% { box-shadow: 0 0 25px color-mix(in srgb, var(--color-c-cyan) 18%, transparent); }
 }
 .ipulse { animation: ipulse 3s ease-in-out infinite; }
 
@@ -150,9 +150,76 @@ body {
 
 /* Focus glow for textareas */
 .fb-textarea:focus {
-  box-shadow: 0 0 0 1px #f5a623, 0 0 15px rgba(245,166,35,0.1);
+  box-shadow: 0 0 0 1px var(--color-c-amber), 0 0 15px color-mix(in srgb, var(--color-c-amber) 10%, transparent);
 }
 
 /* Task picker styles */
-.task-area:hover { background: rgba(0,212,255,0.03); }
-.task-item:hover { background: rgba(0,212,255,0.05); }
+.task-area:hover { background: color-mix(in srgb, var(--color-c-cyan) 3%, transparent); }
+.task-item:hover { background: color-mix(in srgb, var(--color-c-cyan) 5%, transparent); }
+
+/* ============================================
+   THEME OVERRIDES
+   ============================================ */
+
+/* ========== THEME: Glass Cockpit ========== */
+[data-theme="glass"] {
+  --color-c-amber: #3B82F6;
+  --color-c-amber-dim: #1E3A6E;
+  --color-c-amber-lo: #0F1D3A;
+  --color-c-green: #34D399;
+  --color-c-green-dim: #0A5C3A;
+  --color-c-green-lo: #0A2E1E;
+  --color-c-cyan: #67E8F9;
+  --color-c-cyan-dim: #0E4D5C;
+  --color-c-cyan-lo: #0A2A35;
+  --color-c-red: #F87171;
+  --color-c-red-dim: #5C1A1A;
+}
+
+/* ========== THEME: Radar ========== */
+[data-theme="radar"] {
+  --color-c-bg: #040D04;
+  --color-c-panel: #081208;
+  --color-c-bezel: #0F1E0F;
+  --color-c-elevated: #142814;
+  --color-c-border: #1A3018;
+  --color-c-border-hi: #274027;
+  --color-c-amber: #4ADE80;
+  --color-c-amber-dim: #1A5C2E;
+  --color-c-amber-lo: #0A2E12;
+  --color-c-green: #86EFAC;
+  --color-c-green-dim: #1A5C3A;
+  --color-c-green-lo: #0A2E1E;
+  --color-c-cyan: #A7F3D0;
+  --color-c-cyan-dim: #1A5C4A;
+  --color-c-cyan-lo: #0A2E25;
+  --color-c-red: #FCA5A5;
+  --color-c-red-dim: #5C2A1A;
+  --color-c-text: #D1FAE5;
+  --color-c-muted: #6B8B7B;
+  --color-c-dim: #4A6050;
+}
+
+/* ========== THEME: Neon ========== */
+[data-theme="neon"] {
+  --color-c-bg: #060812;
+  --color-c-panel: #0A0E1A;
+  --color-c-bezel: #101828;
+  --color-c-elevated: #141E30;
+  --color-c-border: #1A2540;
+  --color-c-border-hi: #253555;
+  --color-c-amber: #22D3EE;
+  --color-c-amber-dim: #0E5C6E;
+  --color-c-amber-lo: #082A35;
+  --color-c-green: #A3E635;
+  --color-c-green-dim: #3A5C0A;
+  --color-c-green-lo: #1E2E0A;
+  --color-c-cyan: #818CF8;
+  --color-c-cyan-dim: #3A3A6E;
+  --color-c-cyan-lo: #1A1A3A;
+  --color-c-red: #FB7185;
+  --color-c-red-dim: #5C1A2A;
+  --color-c-text: #E0E7FF;
+  --color-c-muted: #7B83A0;
+  --color-c-dim: #505870;
+}

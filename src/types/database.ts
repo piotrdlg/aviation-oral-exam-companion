@@ -245,6 +245,7 @@ export interface OffGraphMention {
 export type VoiceTier = 'ground_school' | 'checkride_prep' | 'dpe_live';
 
 export type AccountStatus = 'active' | 'suspended' | 'banned';
+export type Theme = 'cockpit' | 'glass' | 'radar' | 'neon';
 export type SubscriptionStatus = 'active' | 'past_due' | 'canceled' | 'trialing' | 'incomplete' | 'none';
 export type AuthMethod = 'email_otp' | 'google' | 'apple' | 'microsoft' | 'password';
 
@@ -258,6 +259,7 @@ export interface UserProfile {
   aircraft_type: string | null;
   home_airport: string | null;
   onboarding_completed: boolean;
+  preferred_theme: Theme;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   stripe_price_id: string | null;
