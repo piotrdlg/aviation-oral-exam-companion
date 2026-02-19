@@ -114,20 +114,20 @@ function TreemapTooltip({ node }: { node: ComputedNode<TreeNode> }) {
   return (
     <div className="bg-c-bezel border border-c-border rounded-lg px-3 py-2 max-w-xs shadow-lg">
       <div className="flex items-center gap-2 mb-1">
-        <span className="font-mono text-xs text-c-muted">{data.elementCode}</span>
+        <span className="font-mono text-[9px] text-c-muted">{data.elementCode}</span>
         {data.elementType && (
-          <span className="font-mono text-xs text-c-dim">{TYPE_LABELS[data.elementType] || data.elementType}</span>
+          <span className="font-mono text-[9px] text-c-dim">{TYPE_LABELS[data.elementType] || data.elementType}</span>
         )}
       </div>
       {data.taskName && (
-        <p className="font-mono text-xs text-c-muted mb-1">{data.taskName}</p>
+        <p className="font-mono text-[9px] text-c-muted mb-1">{data.taskName}</p>
       )}
       {data.description && (
-        <p className="text-base text-c-text mb-1.5">{data.description}</p>
+        <p className="text-xs text-c-text mb-1.5">{data.description}</p>
       )}
       <div className="flex items-center gap-2">
         {scoreStyle ? (
-          <span className={`font-mono text-xs px-1.5 py-0.5 rounded border ${scoreStyle.bg} ${scoreStyle.text} ${
+          <span className={`font-mono text-[9px] px-1.5 py-0.5 rounded border ${scoreStyle.bg} ${scoreStyle.text} ${
             data.latestScore === 'satisfactory' ? 'border-c-green/20' :
             data.latestScore === 'partial' ? 'border-c-amber/20' :
             'border-c-red/20'
@@ -135,10 +135,10 @@ function TreemapTooltip({ node }: { node: ComputedNode<TreeNode> }) {
             {scoreStyle.label}
           </span>
         ) : (
-          <span className="font-mono text-xs text-c-dim">NOT ATTEMPTED</span>
+          <span className="font-mono text-[9px] text-c-dim">NOT ATTEMPTED</span>
         )}
         {(data.totalAttempts ?? 0) > 0 && (
-          <span className="font-mono text-xs text-c-dim">
+          <span className="font-mono text-[9px] text-c-dim">
             {data.totalAttempts} attempt{data.totalAttempts === 1 ? '' : 's'}
           </span>
         )}
