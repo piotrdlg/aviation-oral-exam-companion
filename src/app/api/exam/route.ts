@@ -12,7 +12,8 @@ import {
   type AssessmentData,
   type LlmUsage,
 } from '@/lib/exam-engine';
-import { initPlanner, advancePlanner, type PlannerResult } from '@/lib/exam-planner';
+import { computeExamResult } from '@/lib/exam-logic';
+import { initPlanner, advancePlanner } from '@/lib/exam-planner';
 import { getSystemConfig } from '@/lib/system-config';
 import { checkKillSwitch } from '@/lib/kill-switch';
 import { getUserTier } from '@/lib/voice/tier-lookup';
@@ -237,14 +238,12 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'start') {
-      // Track last active usage — non-blocking (Task 25)
-      serviceSupabase
+      // Track last active usage
+      const { error: profileErr } = await serviceSupabase
         .from('user_profiles')
         .update({ last_login_at: new Date().toISOString() })
-        .eq('user_id', user.id)
-        .then(({ error: profileErr }) => {
-          if (profileErr) console.error('last_login_at update error:', profileErr.message);
-        });
+        .eq('user_id', user.id);
+      if (profileErr) console.error('last_login_at update error:', profileErr.message);
 
       // If session config provided, use the planner for element-level scheduling
       if (sessionConfig) {
@@ -274,15 +273,13 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        // Persist planner state + session config + taskData to metadata for resume (non-blocking)
+        // Persist planner state + session config + taskData to metadata for resume
         if (sessionId) {
-          serviceSupabase
+          const { error: metaErr } = await serviceSupabase
             .from('exam_sessions')
             .update({ metadata: { plannerState: plannerResult.plannerState, sessionConfig, taskData: plannerResult.task } })
-            .eq('id', sessionId)
-            .then(({ error: metaErr }) => {
-              if (metaErr) console.error('Planner state persist error:', metaErr.message);
-            });
+            .eq('id', sessionId);
+          if (metaErr) console.error('Planner state persist error:', metaErr.message);
         }
 
         return NextResponse.json({
@@ -388,16 +385,15 @@ export async function POST(request: NextRequest) {
         const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty);
 
         // onComplete callback: persist examiner transcript to DB after stream finishes
-        const onStreamComplete = (fullText: string) => {
+        const onStreamComplete = async (fullText: string) => {
           if (sessionId && fullText) {
-            supabase.from('session_transcripts').insert({
+            const { error } = await supabase.from('session_transcripts').insert({
               session_id: sessionId,
               exchange_number: exchangeNumber,
               role: 'examiner',
               text: fullText,
-            }).then(({ error }) => {
-              if (error) console.error('Examiner transcript write error:', error.message);
             });
+            if (error) console.error('Examiner transcript write error:', error.message);
           }
         };
 
@@ -405,26 +401,27 @@ export async function POST(request: NextRequest) {
           taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessmentPromise, onStreamComplete, respondRating, sessionConfig?.studyMode, personaId, studentName
         );
 
-        // DB writes happen inside the stream (assessment sent as final SSE event)
-        // The client will handle persisting after receiving the full stream.
-        // Write student assessment + element_attempts + citations in the background
-        // after the assessment promise resolves.
+        // Write student assessment + element_attempts + citations after the
+        // assessment promise resolves. These writes run after the SSE response is
+        // returned, but each is individually awaited so failures are logged.
         assessmentPromise.then(async (assessment) => {
-          // Log assessment LLM usage (non-blocking)
+          // Log assessment LLM usage
           logLlmUsage(user.id, assessment.usage, tier, sessionId, { action: 'respond', call: 'assessAnswer' });
 
           if (studentTranscriptId && assessment) {
-            // Use serviceSupabase to bypass RLS for assessment UPDATE
-            // (session_transcripts only had SELECT+INSERT policies, no UPDATE)
-            const dbWrites: PromiseLike<unknown>[] = [
-              serviceSupabase
-                .from('session_transcripts')
-                .update({ assessment })
-                .eq('id', studentTranscriptId),
-            ];
+            // 1. Assessment update on student transcript
+            const { error: assessErr } = await serviceSupabase
+              .from('session_transcripts')
+              .update({ assessment })
+              .eq('id', studentTranscriptId);
+            if (assessErr) console.error('Assessment update error:', assessErr.message);
+
+            // 2. Element attempts
             if (sessionId) {
-              dbWrites.push(writeElementAttempts(supabase, sessionId, studentTranscriptId, assessment));
+              await writeElementAttempts(supabase, sessionId, studentTranscriptId, assessment);
             }
+
+            // 3. Citations
             if (assessment.rag_chunks && assessment.rag_chunks.length > 0) {
               const citations = assessment.rag_chunks.map((chunk, idx) => ({
                 transcript_id: studentTranscriptId,
@@ -433,13 +430,11 @@ export async function POST(request: NextRequest) {
                 score: chunk.score,
                 snippet: chunk.content.slice(0, 300),
               }));
-              dbWrites.push(
-                serviceSupabase.from('transcript_citations').insert(citations).then(({ error: citErr }) => {
-                  if (citErr) console.error('Citation write error:', citErr.message);
-                })
-              );
+              const { error: citErr } = await serviceSupabase
+                .from('transcript_citations')
+                .insert(citations);
+              if (citErr) console.error('Citation write error:', citErr.message);
             }
-            await Promise.all(dbWrites);
           }
         }).catch(err => console.error('Background assessment/DB error:', err));
 
@@ -463,18 +458,21 @@ export async function POST(request: NextRequest) {
       logLlmUsage(user.id, assessment.usage, tier, sessionId, { action: 'respond', call: 'assessAnswer' });
       logLlmUsage(user.id, turn.usage, tier, sessionId, { action: 'respond', call: 'generateExaminerTurn' });
 
-      // Step 4: Persist all DB writes in parallel (non-blocking for response)
-      // Use serviceSupabase for UPDATE/citation writes to bypass RLS
+      // Step 4: Persist all DB writes (awaited to prevent silent data loss)
       if (studentTranscriptId && assessment) {
-        const dbWrites: PromiseLike<unknown>[] = [
-          serviceSupabase
-            .from('session_transcripts')
-            .update({ assessment })
-            .eq('id', studentTranscriptId),
-        ];
+        // 1. Assessment update on student transcript
+        const { error: assessErr } = await serviceSupabase
+          .from('session_transcripts')
+          .update({ assessment })
+          .eq('id', studentTranscriptId);
+        if (assessErr) console.error('Assessment update error:', assessErr.message);
+
+        // 2. Element attempts
         if (sessionId) {
-          dbWrites.push(writeElementAttempts(supabase, sessionId, studentTranscriptId, assessment));
+          await writeElementAttempts(supabase, sessionId, studentTranscriptId, assessment);
         }
+
+        // 3. Citations
         if (assessment.rag_chunks && assessment.rag_chunks.length > 0) {
           const citations = assessment.rag_chunks.map((chunk, idx) => ({
             transcript_id: studentTranscriptId,
@@ -483,33 +481,31 @@ export async function POST(request: NextRequest) {
             score: chunk.score,
             snippet: chunk.content.slice(0, 300),
           }));
-          dbWrites.push(
-            serviceSupabase.from('transcript_citations').insert(citations).then(({ error: citErr }) => {
-              if (citErr) console.error('Citation write error:', citErr.message);
-            })
-          );
+          const { error: citErr } = await serviceSupabase
+            .from('transcript_citations')
+            .insert(citations);
+          if (citErr) console.error('Citation write error:', citErr.message);
         }
-        // Write examiner transcript in same batch
+
+        // 4. Examiner transcript
         if (sessionId) {
-          dbWrites.push(
-            supabase.from('session_transcripts').insert({
-              session_id: sessionId,
-              exchange_number: exchangeNumber,
-              role: 'examiner',
-              text: turn.examinerMessage,
-            })
-          );
+          const { error: examErr } = await supabase.from('session_transcripts').insert({
+            session_id: sessionId,
+            exchange_number: exchangeNumber,
+            role: 'examiner',
+            text: turn.examinerMessage,
+          });
+          if (examErr) console.error('Examiner transcript write error:', examErr.message);
         }
-        // Fire all DB writes in parallel — don't block response
-        Promise.all(dbWrites).catch(err => console.error('DB write error:', err));
       } else if (sessionId) {
         // No assessment to write, but still persist examiner transcript
-        supabase.from('session_transcripts').insert({
+        const { error: examErr } = await supabase.from('session_transcripts').insert({
           session_id: sessionId,
           exchange_number: exchangeNumber,
           role: 'examiner',
           text: turn.examinerMessage,
-        }).then(({ error }) => { if (error) console.error('Examiner transcript error:', error.message); });
+        });
+        if (examErr) console.error('Examiner transcript write error:', examErr.message);
       }
 
       return NextResponse.json({
@@ -578,6 +574,34 @@ export async function POST(request: NextRequest) {
       if (clientPlannerState && sessionConfig) {
         const plannerResult = await advancePlanner(clientPlannerState, sessionConfig);
         if (!plannerResult) {
+          // All elements exhausted — auto-complete with grading
+          if (sessionId) {
+            try {
+              const { data: attempts } = await serviceSupabase
+                .from('element_attempts')
+                .select('element_code, score')
+                .eq('session_id', sessionId)
+                .eq('tag_type', 'attempt')
+                .not('score', 'is', null);
+
+              const totalElements = clientPlannerState.queue.length;
+              const attemptData = (attempts || []).map(a => ({
+                element_code: a.element_code,
+                score: a.score as 'satisfactory' | 'unsatisfactory' | 'partial',
+                area: a.element_code.split('.')[1],
+              }));
+              const result = computeExamResult(attemptData, totalElements, 'all_tasks_covered');
+
+              const { error: completeErr } = await serviceSupabase
+                .from('exam_sessions')
+                .update({ status: 'completed', ended_at: new Date().toISOString(), result })
+                .eq('id', sessionId);
+              if (completeErr) console.error('Auto-complete session update error:', completeErr.message);
+            } catch (err) {
+              console.error('Auto-complete grading error:', err);
+            }
+          }
+
           return NextResponse.json({
             examinerMessage: 'We have covered all the elements in your study plan. Great job today!',
             sessionComplete: true,
@@ -607,15 +631,13 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        // Persist updated planner state + taskData to metadata for resume (non-blocking)
+        // Persist updated planner state + taskData to metadata for resume
         if (sessionId) {
-          serviceSupabase
+          const { error: metaErr } = await serviceSupabase
             .from('exam_sessions')
             .update({ metadata: { plannerState: plannerResult.plannerState, sessionConfig, taskData: plannerResult.task } })
-            .eq('id', sessionId)
-            .then(({ error: metaErr }) => {
-              if (metaErr) console.error('Planner state persist error:', metaErr.message);
-            });
+            .eq('id', sessionId);
+          if (metaErr) console.error('Planner state persist error:', metaErr.message);
         }
 
         return NextResponse.json({
