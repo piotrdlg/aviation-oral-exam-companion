@@ -466,7 +466,7 @@ function SessionStatusBadge({ status }: { status: string }) {
     completed: 'bg-c-cyan-lo text-c-cyan border-c-cyan/20',
     paused: 'bg-c-amber-lo text-c-amber border-c-amber/20',
     abandoned: 'bg-c-bezel text-c-muted border-c-border',
-    errored: 'bg-c-red-dim/40 text-c-red border-c-red/20',
+    expired: 'bg-c-amber-lo text-c-amber border-c-amber/20',
   };
 
   return (
