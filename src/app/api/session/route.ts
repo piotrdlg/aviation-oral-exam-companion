@@ -24,15 +24,35 @@ export async function POST(request: NextRequest) {
   const { action } = body;
 
   if (action === 'create') {
-    const { study_mode, difficulty_preference, selected_areas, aircraft_class, selected_tasks, rating, is_onboarding } = body;
+    const { study_mode, difficulty_preference, selected_areas, aircraft_class, selected_tasks, rating } = body;
 
     // Check trial limit for non-paying users
     const tier = await getUserTier(serviceSupabase, user.id);
     const isPaying = tier === 'dpe_live';
 
+    // Determine is_onboarding server-side (never trust client).
+    // Onboarding is allowed only when the user has not completed onboarding
+    // AND has no existing onboarding exams (capped at 1 per user).
+    let isOnboarding = false;
+    if (body.is_onboarding) {
+      const [{ data: profile }, { count: existingOnboarding }] = await Promise.all([
+        serviceSupabase
+          .from('user_profiles')
+          .select('onboarding_completed')
+          .eq('user_id', user.id)
+          .single(),
+        serviceSupabase
+          .from('exam_sessions')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('is_onboarding', true),
+      ]);
+      isOnboarding = !profile?.onboarding_completed && (existingOnboarding ?? 0) === 0;
+    }
+
     let expiresAt: string | null = null;
 
-    if (!isPaying && !is_onboarding) {
+    if (!isPaying && !isOnboarding) {
       // Count non-onboarding, non-abandoned exams for this user (service role bypasses RLS for accurate count)
       const { count, error: countError } = await serviceSupabase
         .from('exam_sessions')
@@ -54,7 +74,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Set expiration for free-tier exams (onboarding exams don't expire)
-    if (!isPaying && !is_onboarding) {
+    if (!isPaying && !isOnboarding) {
       const expiry = new Date();
       expiry.setDate(expiry.getDate() + FREE_TRIAL_EXPIRY_DAYS);
       expiresAt = expiry.toISOString();
@@ -72,7 +92,7 @@ export async function POST(request: NextRequest) {
         selected_areas: selected_areas || [],
         aircraft_class: aircraft_class || 'ASEL',
         selected_tasks: selected_tasks || [],
-        is_onboarding: is_onboarding || false,
+        is_onboarding: isOnboarding,
         expires_at: expiresAt,
       })
       .select()

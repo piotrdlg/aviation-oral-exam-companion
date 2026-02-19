@@ -336,10 +336,16 @@ export function initPlannerState(queue: string[]): PlannerState {
  * Compute the grade and result summary for a completed exam.
  * Pure function — no external dependencies.
  *
- * Grading rules:
- *   - satisfactory: all elements asked AND all scored satisfactory
- *   - unsatisfactory: any element scored unsatisfactory or partial
- *   - incomplete: fewer elements asked than total in set
+ * Point-based grading (mirrors FAA oral exam 70% pass standard):
+ *   - satisfactory = 1.0 point
+ *   - partial = 0.7 points
+ *   - unsatisfactory = 0 points
+ *   - Pass threshold: score_percentage >= 70%
+ *
+ * Grade rules:
+ *   - incomplete: fewer elements asked than total in set (exam not finished)
+ *   - satisfactory: score_percentage >= 70%
+ *   - unsatisfactory: score_percentage < 70%
  */
 export function computeExamResult(
   attempts: Array<{ element_code: string; score: 'satisfactory' | 'unsatisfactory' | 'partial'; area: string }>,
@@ -350,6 +356,7 @@ export function computeExamResult(
   if (totalElementsInSet === 0) {
     return {
       grade: 'incomplete',
+      score_percentage: 0,
       total_elements_in_set: 0,
       elements_asked: 0,
       elements_satisfactory: 0,
@@ -376,6 +383,13 @@ export function computeExamResult(
   const elementsPartial = uniqueAttempts.filter(a => a.score === 'partial').length;
   const elementsNotAsked = Math.max(0, totalElementsInSet - elementsAsked);
 
+  // Point-based scoring: sat=1.0, partial=0.7, unsat=0
+  const pointsEarned = elementsSatisfactory * 1.0 + elementsPartial * 0.7;
+  const pointsPossible = elementsAsked; // 1.0 per element asked
+  const scorePercentage = pointsPossible > 0
+    ? Math.round((pointsEarned / pointsPossible) * 100) / 100
+    : 0;
+
   // Build score by area
   const scoreByArea: Record<string, { asked: number; satisfactory: number; unsatisfactory: number }> = {};
   for (const attempt of uniqueAttempts) {
@@ -391,14 +405,15 @@ export function computeExamResult(
   let grade: ExamGrade;
   if (elementsAsked < totalElementsInSet) {
     grade = 'incomplete';
-  } else if (elementsUnsatisfactory > 0 || elementsPartial > 0) {
-    grade = 'unsatisfactory';
-  } else {
+  } else if (scorePercentage >= 0.70) {
     grade = 'satisfactory';
+  } else {
+    grade = 'unsatisfactory';
   }
 
   return {
     grade,
+    score_percentage: scorePercentage,
     total_elements_in_set: totalElementsInSet,
     elements_asked: elementsAsked,
     elements_satisfactory: elementsSatisfactory,

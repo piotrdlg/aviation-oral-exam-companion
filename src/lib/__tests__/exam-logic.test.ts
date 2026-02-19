@@ -422,7 +422,9 @@ describe('computeExamResult', () => {
     }));
   }
 
-  it('returns satisfactory when all elements asked and all satisfactory', () => {
+  // --- Score percentage & grade tests ---
+
+  it('returns satisfactory (100%) when all elements are satisfactory', () => {
     const attempts = makeAttempts([
       { code: 'PA.I.A.K1', score: 'satisfactory' },
       { code: 'PA.I.A.K2', score: 'satisfactory' },
@@ -430,6 +432,7 @@ describe('computeExamResult', () => {
     ]);
     const result = computeExamResult(attempts, 3, 'all_tasks_covered');
     expect(result.grade).toBe('satisfactory');
+    expect(result.score_percentage).toBe(1.0);
     expect(result.elements_asked).toBe(3);
     expect(result.elements_satisfactory).toBe(3);
     expect(result.elements_unsatisfactory).toBe(0);
@@ -437,15 +440,75 @@ describe('computeExamResult', () => {
     expect(result.completion_trigger).toBe('all_tasks_covered');
   });
 
-  it('returns unsatisfactory when any element is unsatisfactory', () => {
+  it('returns satisfactory when score >= 70% (mix of sat + partial)', () => {
+    // 7 sat (7.0) + 3 partial (2.1) = 9.1 / 10 = 91%
+    const attempts = makeAttempts([
+      { code: 'PA.I.A.K1', score: 'satisfactory' },
+      { code: 'PA.I.A.K2', score: 'satisfactory' },
+      { code: 'PA.I.A.R1', score: 'satisfactory' },
+      { code: 'PA.II.A.K1', score: 'satisfactory' },
+      { code: 'PA.II.A.K2', score: 'satisfactory' },
+      { code: 'PA.II.B.R1', score: 'satisfactory' },
+      { code: 'PA.III.A.K1', score: 'satisfactory' },
+      { code: 'PA.III.A.K2', score: 'partial' },
+      { code: 'PA.III.B.K1', score: 'partial' },
+      { code: 'PA.III.B.R1', score: 'partial' },
+    ]);
+    const result = computeExamResult(attempts, 10, 'all_tasks_covered');
+    expect(result.grade).toBe('satisfactory');
+    expect(result.score_percentage).toBe(0.91);
+  });
+
+  it('returns satisfactory at exactly 70% threshold', () => {
+    // 4 sat (4.0) + 0 partial + 0 unsat, but we need exactly 70% with partials
+    // 0 sat + 10 partial = 7.0 / 10 = 70% exactly
+    const attempts = makeAttempts([
+      { code: 'PA.I.A.K1', score: 'partial' },
+      { code: 'PA.I.A.K2', score: 'partial' },
+      { code: 'PA.I.A.R1', score: 'partial' },
+      { code: 'PA.II.A.K1', score: 'partial' },
+      { code: 'PA.II.A.K2', score: 'partial' },
+      { code: 'PA.II.B.R1', score: 'partial' },
+      { code: 'PA.III.A.K1', score: 'partial' },
+      { code: 'PA.III.A.K2', score: 'partial' },
+      { code: 'PA.III.B.K1', score: 'partial' },
+      { code: 'PA.III.B.R1', score: 'partial' },
+    ]);
+    const result = computeExamResult(attempts, 10, 'all_tasks_covered');
+    expect(result.grade).toBe('satisfactory');
+    expect(result.score_percentage).toBe(0.7);
+  });
+
+  it('returns unsatisfactory when score < 70%', () => {
+    // 1 sat (1.0) + 0 partial + 2 unsat (0) = 1.0 / 3 = 33%
     const attempts = makeAttempts([
       { code: 'PA.I.A.K1', score: 'satisfactory' },
       { code: 'PA.I.A.K2', score: 'unsatisfactory' },
-      { code: 'PA.II.A.K1', score: 'satisfactory' },
+      { code: 'PA.II.A.K1', score: 'unsatisfactory' },
     ]);
     const result = computeExamResult(attempts, 3, 'user_ended');
     expect(result.grade).toBe('unsatisfactory');
-    expect(result.elements_unsatisfactory).toBe(1);
+    expect(result.score_percentage).toBeCloseTo(0.33, 2);
+    expect(result.elements_unsatisfactory).toBe(2);
+  });
+
+  it('returns unsatisfactory just below 70% threshold', () => {
+    // 6 sat (6.0) + 0 partial + 4 unsat (0) = 6.0 / 10 = 60%
+    const attempts = makeAttempts([
+      { code: 'PA.I.A.K1', score: 'satisfactory' },
+      { code: 'PA.I.A.K2', score: 'satisfactory' },
+      { code: 'PA.I.A.R1', score: 'satisfactory' },
+      { code: 'PA.II.A.K1', score: 'satisfactory' },
+      { code: 'PA.II.A.K2', score: 'satisfactory' },
+      { code: 'PA.II.B.R1', score: 'satisfactory' },
+      { code: 'PA.III.A.K1', score: 'unsatisfactory' },
+      { code: 'PA.III.A.K2', score: 'unsatisfactory' },
+      { code: 'PA.III.B.K1', score: 'unsatisfactory' },
+      { code: 'PA.III.B.R1', score: 'unsatisfactory' },
+    ]);
+    const result = computeExamResult(attempts, 10, 'all_tasks_covered');
+    expect(result.grade).toBe('unsatisfactory');
+    expect(result.score_percentage).toBe(0.6);
   });
 
   it('returns incomplete when not all elements asked (user ended early)', () => {
@@ -454,6 +517,7 @@ describe('computeExamResult', () => {
     ]);
     const result = computeExamResult(attempts, 5, 'user_ended');
     expect(result.grade).toBe('incomplete');
+    expect(result.score_percentage).toBe(1.0); // 1/1 = 100% of what was asked
     expect(result.elements_asked).toBe(1);
     expect(result.elements_not_asked).toBe(4);
   });
@@ -483,23 +547,26 @@ describe('computeExamResult', () => {
   it('handles empty attempts (zero exchanges)', () => {
     const result = computeExamResult([], 10, 'user_ended');
     expect(result.grade).toBe('incomplete');
+    expect(result.score_percentage).toBe(0);
     expect(result.elements_asked).toBe(0);
     expect(result.elements_not_asked).toBe(10);
   });
 
-  it('counts partial elements separately', () => {
+  it('all-partial scores 70% — passes at threshold', () => {
     const attempts = makeAttempts([
-      { code: 'PA.I.A.K1', score: 'satisfactory' },
+      { code: 'PA.I.A.K1', score: 'partial' },
       { code: 'PA.I.A.K2', score: 'partial' },
     ]);
     const result = computeExamResult(attempts, 2, 'all_tasks_covered');
-    expect(result.grade).toBe('unsatisfactory');
-    expect(result.elements_partial).toBe(1);
+    expect(result.grade).toBe('satisfactory');
+    expect(result.score_percentage).toBe(0.7);
+    expect(result.elements_partial).toBe(2);
   });
 
   it('returns incomplete when totalElementsInSet is 0 (degenerate case)', () => {
     const result = computeExamResult([], 0, 'user_ended');
     expect(result.grade).toBe('incomplete');
+    expect(result.score_percentage).toBe(0);
     expect(result.elements_asked).toBe(0);
     expect(result.elements_not_asked).toBe(0);
     expect(result.total_elements_in_set).toBe(0);
@@ -516,17 +583,7 @@ describe('computeExamResult', () => {
     expect(result.elements_satisfactory).toBe(2);
     expect(result.elements_unsatisfactory).toBe(0);
     expect(result.grade).toBe('satisfactory');
-  });
-
-  it('grades all-partial as unsatisfactory', () => {
-    const attempts = makeAttempts([
-      { code: 'PA.I.A.K1', score: 'partial' },
-      { code: 'PA.I.A.K2', score: 'partial' },
-    ]);
-    const result = computeExamResult(attempts, 2, 'all_tasks_covered');
-    expect(result.grade).toBe('unsatisfactory');
-    expect(result.elements_partial).toBe(2);
-    expect(result.elements_satisfactory).toBe(0);
+    expect(result.score_percentage).toBe(1.0);
   });
 
   it('handles more attempts than total elements (retries with dedup)', () => {
@@ -549,5 +606,18 @@ describe('computeExamResult', () => {
     const result = computeExamResult(attempts, 2, 'all_tasks_covered');
     expect(result.score_by_area['VIII']).toEqual({ asked: 1, satisfactory: 1, unsatisfactory: 0 });
     expect(result.score_by_area['VII']).toEqual({ asked: 1, satisfactory: 0, unsatisfactory: 1 });
+  });
+
+  it('mixed sat/partial/unsat computes correct percentage', () => {
+    // 2 sat (2.0) + 1 partial (0.7) + 1 unsat (0) = 2.7 / 4 = 67.5% → unsatisfactory
+    const attempts = makeAttempts([
+      { code: 'PA.I.A.K1', score: 'satisfactory' },
+      { code: 'PA.I.A.K2', score: 'satisfactory' },
+      { code: 'PA.II.A.K1', score: 'partial' },
+      { code: 'PA.II.A.K2', score: 'unsatisfactory' },
+    ]);
+    const result = computeExamResult(attempts, 4, 'all_tasks_covered');
+    expect(result.grade).toBe('unsatisfactory');
+    expect(result.score_percentage).toBeCloseTo(0.68, 2);
   });
 });

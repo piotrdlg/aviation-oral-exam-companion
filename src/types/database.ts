@@ -140,6 +140,7 @@ export type CompletionTrigger = 'user_ended' | 'all_tasks_covered' | 'expired';
 
 export interface ExamResult {
   grade: ExamGrade;
+  score_percentage: number;
   total_elements_in_set: number;
   elements_asked: number;
   elements_satisfactory: number;
