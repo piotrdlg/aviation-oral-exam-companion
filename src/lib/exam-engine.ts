@@ -261,7 +261,7 @@ export async function generateExaminerTurnStreaming(
   aircraftClass?: AircraftClass,
   prefetchedRag?: { ragContext: string; ragImages?: ImageResult[] },
   assessmentPromise?: Promise<AssessmentData>,
-  onComplete?: (fullText: string) => void,
+  onComplete?: (fullText: string) => Promise<void> | void,
   rating: Rating = 'private',
   studyMode?: string,
   personaId?: string,
@@ -335,7 +335,7 @@ export async function generateExaminerTurnStreaming(
 
         // Trigger onComplete callback for server-side persistence (e.g., writing transcript)
         if (onComplete) {
-          try { onComplete(fullText); } catch { /* non-critical */ }
+          try { await onComplete(fullText); } catch (err) { console.error('onComplete callback error:', err); }
         }
 
         // If we have a parallel assessment promise, wait for it and send the result

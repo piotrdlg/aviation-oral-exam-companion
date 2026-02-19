@@ -496,4 +496,58 @@ describe('computeExamResult', () => {
     expect(result.grade).toBe('unsatisfactory');
     expect(result.elements_partial).toBe(1);
   });
+
+  it('returns incomplete when totalElementsInSet is 0 (degenerate case)', () => {
+    const result = computeExamResult([], 0, 'user_ended');
+    expect(result.grade).toBe('incomplete');
+    expect(result.elements_asked).toBe(0);
+    expect(result.elements_not_asked).toBe(0);
+    expect(result.total_elements_in_set).toBe(0);
+  });
+
+  it('deduplicates element_codes using last-score-wins', () => {
+    const attempts = makeAttempts([
+      { code: 'PA.I.A.K1', score: 'unsatisfactory' },
+      { code: 'PA.I.A.K2', score: 'satisfactory' },
+      { code: 'PA.I.A.K1', score: 'satisfactory' }, // retry — should supersede the unsatisfactory
+    ]);
+    const result = computeExamResult(attempts, 2, 'all_tasks_covered');
+    expect(result.elements_asked).toBe(2); // deduplicated count
+    expect(result.elements_satisfactory).toBe(2);
+    expect(result.elements_unsatisfactory).toBe(0);
+    expect(result.grade).toBe('satisfactory');
+  });
+
+  it('grades all-partial as unsatisfactory', () => {
+    const attempts = makeAttempts([
+      { code: 'PA.I.A.K1', score: 'partial' },
+      { code: 'PA.I.A.K2', score: 'partial' },
+    ]);
+    const result = computeExamResult(attempts, 2, 'all_tasks_covered');
+    expect(result.grade).toBe('unsatisfactory');
+    expect(result.elements_partial).toBe(2);
+    expect(result.elements_satisfactory).toBe(0);
+  });
+
+  it('handles more attempts than total elements (retries with dedup)', () => {
+    const attempts = makeAttempts([
+      { code: 'PA.I.A.K1', score: 'satisfactory' },
+      { code: 'PA.I.A.K2', score: 'satisfactory' },
+      { code: 'PA.I.A.K1', score: 'satisfactory' }, // retry
+    ]);
+    const result = computeExamResult(attempts, 2, 'all_tasks_covered');
+    expect(result.elements_asked).toBe(2); // deduplicated
+    expect(result.elements_not_asked).toBe(0);
+    expect(result.grade).toBe('satisfactory');
+  });
+
+  it('extracts area correctly for multi-character Roman numerals', () => {
+    const attempts = makeAttempts([
+      { code: 'CA.VIII.A.R2', score: 'satisfactory' },
+      { code: 'IR.VII.A.K1', score: 'unsatisfactory' },
+    ]);
+    const result = computeExamResult(attempts, 2, 'all_tasks_covered');
+    expect(result.score_by_area['VIII']).toEqual({ asked: 1, satisfactory: 1, unsatisfactory: 0 });
+    expect(result.score_by_area['VII']).toEqual({ asked: 1, satisfactory: 0, unsatisfactory: 1 });
+  });
 });

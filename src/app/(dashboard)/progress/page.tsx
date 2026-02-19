@@ -325,7 +325,7 @@ export default function ProgressPage() {
           </div>
           <h2 className="font-mono font-semibold text-base text-c-text uppercase mb-2">NO PROGRESS DATA YET</h2>
           <p className="text-base text-c-muted mb-5 max-w-sm mx-auto">
-            Complete your first practice session to start tracking your {RATING_LABELS[selectedRating]} checkride readiness.
+            Complete your first practice exam to start tracking your {RATING_LABELS[selectedRating]} checkride readiness.
           </p>
           <Link
             href="/practice"
@@ -421,7 +421,7 @@ export default function ProgressPage() {
             <div className="space-y-4">
               {/* Session selector */}
               <div className="flex items-center gap-2">
-                <label className="font-mono text-xs text-c-muted uppercase tracking-wider">SESSION:</label>
+                <label className="font-mono text-xs text-c-muted uppercase tracking-wider">EXAM:</label>
                 <select
                   value={selectedSessionId || ''}
                   onChange={(e) => setSelectedSessionId(e.target.value || null)}

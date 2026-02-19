@@ -33,8 +33,8 @@ export async function POST(request: NextRequest) {
     let expiresAt: string | null = null;
 
     if (!isPaying && !is_onboarding) {
-      // Count non-onboarding, non-abandoned exams for this user
-      const { count, error: countError } = await supabase
+      // Count non-onboarding, non-abandoned exams for this user (service role bypasses RLS for accurate count)
+      const { count, error: countError } = await serviceSupabase
         .from('exam_sessions')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', user.id)
@@ -53,14 +53,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Set expiration for free-tier exams
-    if (!isPaying) {
+    // Set expiration for free-tier exams (onboarding exams don't expire)
+    if (!isPaying && !is_onboarding) {
       const expiry = new Date();
       expiry.setDate(expiry.getDate() + FREE_TRIAL_EXPIRY_DAYS);
       expiresAt = expiry.toISOString();
     }
 
-    const { data, error } = await supabase
+    // Use service role to insert — prevents RLS bypass of is_onboarding/expires_at fields
+    const { data, error } = await serviceSupabase
       .from('exam_sessions')
       .insert({
         user_id: user.id,
@@ -85,6 +86,11 @@ export async function POST(request: NextRequest) {
 
   if (action === 'update') {
     const { sessionId, status, acs_tasks_covered, exchange_count, planner_state, session_config, task_data, voice_enabled } = body;
+
+    if (!sessionId) {
+      return NextResponse.json({ error: 'sessionId required' }, { status: 400 });
+    }
+
     const updateData: Record<string, unknown> = {};
     if (status) updateData.status = status;
     if (acs_tasks_covered) updateData.acs_tasks_covered = acs_tasks_covered;
@@ -94,41 +100,41 @@ export async function POST(request: NextRequest) {
     if (status === 'completed') {
       updateData.ended_at = new Date().toISOString();
 
-      if (sessionId) {
-        try {
-          const { computeExamResult } = await import('@/lib/exam-logic');
+      try {
+        const { computeExamResult } = await import('@/lib/exam-logic');
 
-          // Load scored element attempts for this session
-          const { data: attempts } = await supabase
-            .from('element_attempts')
-            .select('element_code, score')
-            .eq('session_id', sessionId)
-            .eq('tag_type', 'attempt')
-            .not('score', 'is', null);
+        // Load scored element attempts for this session
+        const { data: attempts } = await supabase
+          .from('element_attempts')
+          .select('element_code, score')
+          .eq('session_id', sessionId)
+          .eq('tag_type', 'attempt')
+          .not('score', 'is', null);
 
-          // Load the planner state to determine total elements in the exam set
-          const { data: examRow } = await supabase
-            .from('exam_sessions')
-            .select('metadata')
-            .eq('id', sessionId)
-            .eq('user_id', user.id)
-            .single();
+        // Load the planner state to determine total elements in the exam set
+        const { data: examRow } = await supabase
+          .from('exam_sessions')
+          .select('metadata')
+          .eq('id', sessionId)
+          .eq('user_id', user.id)
+          .single();
 
-          const plannerState = (examRow?.metadata as Record<string, unknown>)?.plannerState as { queue: string[] } | undefined;
-          const totalElements = plannerState?.queue?.length || 0;
+        const plannerState = (examRow?.metadata as Record<string, unknown>)?.plannerState as { queue: string[] } | undefined;
+        const totalElements = plannerState?.queue?.length || 0;
 
-          if (attempts && totalElements > 0) {
-            const attemptData = attempts.map(a => ({
-              element_code: a.element_code,
-              score: a.score as 'satisfactory' | 'unsatisfactory' | 'partial',
-              area: a.element_code.split('.')[1],
-            }));
-            const result = computeExamResult(attemptData, totalElements, 'user_ended');
-            updateData.result = result;
-          }
-        } catch (err) {
-          console.error('Exam grading error:', err);
+        if (attempts && totalElements > 0) {
+          const attemptData = attempts.map(a => ({
+            element_code: a.element_code,
+            score: a.score as 'satisfactory' | 'unsatisfactory' | 'partial',
+            area: a.element_code.split('.')[1],
+          }));
+          const result = computeExamResult(attemptData, totalElements, 'user_ended');
+          updateData.result = result;
+        } else {
+          console.warn(`Exam grading skipped for session ${sessionId}: attempts=${attempts?.length ?? 'null'}, totalElements=${totalElements}`);
         }
+      } catch (err) {
+        console.error('Exam grading error:', err);
       }
     }
 

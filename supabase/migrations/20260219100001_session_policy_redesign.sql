@@ -27,7 +27,8 @@ CREATE INDEX IF NOT EXISTS idx_exam_sessions_expires
 -- Note: 24-hour buffer on 0-exchange condition to avoid destroying fresh sessions
 UPDATE exam_sessions
 SET status = 'abandoned', ended_at = NOW()
-WHERE status = 'active'
+WHERE status IN ('active', 'paused')
+  AND ended_at IS NULL
   AND (
     (exchange_count = 0 AND started_at < NOW() - INTERVAL '24 hours')
     OR started_at < NOW() - INTERVAL '7 days'
@@ -49,7 +50,7 @@ WHERE e.user_id = p.user_id
 -- Job 1: Clear stale activity windows (every 15 minutes)
 -- Clears is_exam_active on devices idle for 2+ hours.
 -- Does NOT change the exam's status -- exam stays resumable.
-SELECT cron.unschedule('clear-stale-activity-windows');
+DO $$ BEGIN PERFORM cron.unschedule('clear-stale-activity-windows'); EXCEPTION WHEN OTHERS THEN NULL; END; $$;
 SELECT cron.schedule(
   'clear-stale-activity-windows',
   '*/15 * * * *',
@@ -62,7 +63,7 @@ SELECT cron.schedule(
 );
 
 -- Job 2: Expire free trial exams past their 7-day window (every hour)
-SELECT cron.unschedule('expire-trial-exams');
+DO $$ BEGIN PERFORM cron.unschedule('expire-trial-exams'); EXCEPTION WHEN OTHERS THEN NULL; END; $$;
 SELECT cron.schedule(
   'expire-trial-exams',
   '0 * * * *',
@@ -76,14 +77,15 @@ SELECT cron.schedule(
 );
 
 -- Job 3: Clean up orphaned exams with 0 exchanges (daily at 3 AM UTC)
-SELECT cron.unschedule('cleanup-orphaned-exams');
+-- Also covers paused sessions with 0 exchanges (started on one device, abandoned)
+DO $$ BEGIN PERFORM cron.unschedule('cleanup-orphaned-exams'); EXCEPTION WHEN OTHERS THEN NULL; END; $$;
 SELECT cron.schedule(
   'cleanup-orphaned-exams',
   '0 3 * * *',
   $$
     UPDATE exam_sessions
     SET status = 'abandoned', ended_at = NOW()
-    WHERE status = 'active'
+    WHERE status IN ('active', 'paused')
       AND exchange_count = 0
       AND started_at < NOW() - INTERVAL '24 hours';
   $$

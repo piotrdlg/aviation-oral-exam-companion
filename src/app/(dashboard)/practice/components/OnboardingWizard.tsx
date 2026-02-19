@@ -292,7 +292,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
               WHAT SHOULD WE CALL YOU?
             </h2>
             <p className="text-base text-c-muted text-center mb-6">
-              Your examiner will address you by name during sessions
+              Your examiner will address you by name during exams
             </p>
             <input
               data-testid="wizard-name-input"

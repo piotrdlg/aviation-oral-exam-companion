@@ -346,15 +346,39 @@ export function computeExamResult(
   totalElementsInSet: number,
   completionTrigger: CompletionTrigger
 ): ExamResult {
-  const elementsAsked = attempts.length;
-  const elementsSatisfactory = attempts.filter(a => a.score === 'satisfactory').length;
-  const elementsUnsatisfactory = attempts.filter(a => a.score === 'unsatisfactory').length;
-  const elementsPartial = attempts.filter(a => a.score === 'partial').length;
+  // Degenerate case: no elements in exam set
+  if (totalElementsInSet === 0) {
+    return {
+      grade: 'incomplete',
+      total_elements_in_set: 0,
+      elements_asked: 0,
+      elements_satisfactory: 0,
+      elements_unsatisfactory: 0,
+      elements_partial: 0,
+      elements_not_asked: 0,
+      score_by_area: {},
+      completion_trigger: completionTrigger,
+      graded_at: new Date().toISOString(),
+    };
+  }
+
+  // Deduplicate: if an element was attempted multiple times, use the latest score (last write wins).
+  // This handles planner queue wrap-around where students retry elements.
+  const deduped = new Map<string, typeof attempts[0]>();
+  for (const a of attempts) {
+    deduped.set(a.element_code, a);
+  }
+  const uniqueAttempts = [...deduped.values()];
+
+  const elementsAsked = uniqueAttempts.length;
+  const elementsSatisfactory = uniqueAttempts.filter(a => a.score === 'satisfactory').length;
+  const elementsUnsatisfactory = uniqueAttempts.filter(a => a.score === 'unsatisfactory').length;
+  const elementsPartial = uniqueAttempts.filter(a => a.score === 'partial').length;
   const elementsNotAsked = Math.max(0, totalElementsInSet - elementsAsked);
 
   // Build score by area
   const scoreByArea: Record<string, { asked: number; satisfactory: number; unsatisfactory: number }> = {};
-  for (const attempt of attempts) {
+  for (const attempt of uniqueAttempts) {
     if (!scoreByArea[attempt.area]) {
       scoreByArea[attempt.area] = { asked: 0, satisfactory: 0, unsatisfactory: 0 };
     }

@@ -118,7 +118,7 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
 
   return (
     <div className="bezel rounded-lg border border-c-border p-6">
-      <h2 className="font-mono font-semibold text-base text-c-amber mb-5 tracking-wider uppercase">NEW SESSION</h2>
+      <h2 className="font-mono font-semibold text-base text-c-amber mb-5 tracking-wider uppercase">NEW EXAM</h2>
       <div className="space-y-5">
         {/* Rating & Class (read-only from Settings) */}
         <div className="flex items-center justify-between px-4 py-3 bg-c-panel rounded-lg border border-c-border">

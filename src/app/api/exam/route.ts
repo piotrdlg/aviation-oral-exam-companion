@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import {
@@ -265,12 +266,13 @@ export async function POST(request: NextRequest) {
 
         // Persist examiner opening turn to transcript
         if (sessionId) {
-          await supabase.from('session_transcripts').insert({
+          const { error: openErr } = await supabase.from('session_transcripts').insert({
             session_id: sessionId,
             exchange_number: 0,
             role: 'examiner',
             text: turn.examinerMessage,
           });
+          if (openErr) console.error('Opening examiner transcript write error:', openErr.message);
         }
 
         // Persist planner state + session config + taskData to metadata for resume
@@ -324,12 +326,13 @@ export async function POST(request: NextRequest) {
 
       // Persist examiner opening turn to transcript
       if (sessionId) {
-        await supabase.from('session_transcripts').insert({
+        const { error: openErr } = await supabase.from('session_transcripts').insert({
           session_id: sessionId,
           exchange_number: 0,
           role: 'examiner',
           text: turn.examinerMessage,
         });
+        if (openErr) console.error('Opening examiner transcript write error:', openErr.message);
       }
 
       return NextResponse.json({
@@ -368,6 +371,10 @@ export async function POST(request: NextRequest) {
         fetchRagContext(taskData, history, studentAnswer),
       ]);
       const studentTranscriptId = studentTranscriptResult.data?.id ?? null;
+      if (!studentTranscriptId && sessionId) {
+        const insertErr = 'error' in studentTranscriptResult ? (studentTranscriptResult as { error?: { message?: string } }).error?.message : 'unknown';
+        console.error('Student transcript insert failed:', insertErr, '— assessment, element_attempts, and citations will NOT be persisted for this exchange');
+      }
 
       // Step 2: Build updated history for examiner
       const updatedHistory: ExamMessage[] = [
@@ -401,42 +408,47 @@ export async function POST(request: NextRequest) {
           taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessmentPromise, onStreamComplete, respondRating, sessionConfig?.studyMode, personaId, studentName
         );
 
-        // Write student assessment + element_attempts + citations after the
-        // assessment promise resolves. These writes run after the SSE response is
-        // returned, but each is individually awaited so failures are logged.
-        assessmentPromise.then(async (assessment) => {
-          // Log assessment LLM usage
-          logLlmUsage(user.id, assessment.usage, tier, sessionId, { action: 'respond', call: 'assessAnswer' });
+        // Use after() to ensure assessment DB writes complete even after stream closes.
+        // This keeps the serverless function alive until all writes finish.
+        after(async () => {
+          try {
+            const assessment = await assessmentPromise;
 
-          if (studentTranscriptId && assessment) {
-            // 1. Assessment update on student transcript
-            const { error: assessErr } = await serviceSupabase
-              .from('session_transcripts')
-              .update({ assessment })
-              .eq('id', studentTranscriptId);
-            if (assessErr) console.error('Assessment update error:', assessErr.message);
+            // Log assessment LLM usage
+            logLlmUsage(user.id, assessment.usage, tier, sessionId, { action: 'respond', call: 'assessAnswer' });
 
-            // 2. Element attempts
-            if (sessionId) {
-              await writeElementAttempts(supabase, sessionId, studentTranscriptId, assessment);
+            if (studentTranscriptId && assessment) {
+              // 1. Assessment update on student transcript
+              const { error: assessErr } = await serviceSupabase
+                .from('session_transcripts')
+                .update({ assessment })
+                .eq('id', studentTranscriptId);
+              if (assessErr) console.error('Assessment update error:', assessErr.message);
+
+              // 2. Element attempts
+              if (sessionId) {
+                await writeElementAttempts(supabase, sessionId, studentTranscriptId, assessment);
+              }
+
+              // 3. Citations
+              if (assessment.rag_chunks && assessment.rag_chunks.length > 0) {
+                const citations = assessment.rag_chunks.map((chunk, idx) => ({
+                  transcript_id: studentTranscriptId,
+                  chunk_id: chunk.id,
+                  rank: idx + 1,
+                  score: chunk.score,
+                  snippet: chunk.content.slice(0, 300),
+                }));
+                const { error: citErr } = await serviceSupabase
+                  .from('transcript_citations')
+                  .insert(citations);
+                if (citErr) console.error('Citation write error:', citErr.message);
+              }
             }
-
-            // 3. Citations
-            if (assessment.rag_chunks && assessment.rag_chunks.length > 0) {
-              const citations = assessment.rag_chunks.map((chunk, idx) => ({
-                transcript_id: studentTranscriptId,
-                chunk_id: chunk.id,
-                rank: idx + 1,
-                score: chunk.score,
-                snippet: chunk.content.slice(0, 300),
-              }));
-              const { error: citErr } = await serviceSupabase
-                .from('transcript_citations')
-                .insert(citations);
-              if (citErr) console.error('Citation write error:', citErr.message);
-            }
+          } catch (err) {
+            console.error('Background assessment/DB error:', err);
           }
-        }).catch(err => console.error('Background assessment/DB error:', err));
+        });
 
         return new Response(readableStream, {
           headers: {
@@ -577,26 +589,40 @@ export async function POST(request: NextRequest) {
           // All elements exhausted — auto-complete with grading
           if (sessionId) {
             try {
-              const { data: attempts } = await serviceSupabase
-                .from('element_attempts')
-                .select('element_code, score')
-                .eq('session_id', sessionId)
-                .eq('tag_type', 'attempt')
-                .not('score', 'is', null);
+              // Load attempts + server-side planner state (don't trust client for totalElements)
+              const [{ data: attempts }, { data: examRow }] = await Promise.all([
+                serviceSupabase
+                  .from('element_attempts')
+                  .select('element_code, score')
+                  .eq('session_id', sessionId)
+                  .eq('tag_type', 'attempt')
+                  .not('score', 'is', null),
+                serviceSupabase
+                  .from('exam_sessions')
+                  .select('metadata')
+                  .eq('id', sessionId)
+                  .single(),
+              ]);
 
-              const totalElements = clientPlannerState.queue.length;
-              const attemptData = (attempts || []).map(a => ({
-                element_code: a.element_code,
-                score: a.score as 'satisfactory' | 'unsatisfactory' | 'partial',
-                area: a.element_code.split('.')[1],
-              }));
-              const result = computeExamResult(attemptData, totalElements, 'all_tasks_covered');
+              const serverPlannerState = (examRow?.metadata as Record<string, unknown>)?.plannerState as { queue: string[] } | undefined;
+              const totalElements = serverPlannerState?.queue?.length || clientPlannerState.queue.length;
 
-              const { error: completeErr } = await serviceSupabase
-                .from('exam_sessions')
-                .update({ status: 'completed', ended_at: new Date().toISOString(), result })
-                .eq('id', sessionId);
-              if (completeErr) console.error('Auto-complete session update error:', completeErr.message);
+              if (totalElements > 0) {
+                const attemptData = (attempts || []).map(a => ({
+                  element_code: a.element_code,
+                  score: a.score as 'satisfactory' | 'unsatisfactory' | 'partial',
+                  area: a.element_code.split('.')[1],
+                }));
+                const result = computeExamResult(attemptData, totalElements, 'all_tasks_covered');
+
+                const { error: completeErr } = await serviceSupabase
+                  .from('exam_sessions')
+                  .update({ status: 'completed', ended_at: new Date().toISOString(), result })
+                  .eq('id', sessionId);
+                if (completeErr) console.error('Auto-complete session update error:', completeErr.message);
+              } else {
+                console.warn(`Auto-complete grading skipped for session ${sessionId}: totalElements=0`);
+              }
             } catch (err) {
               console.error('Auto-complete grading error:', err);
             }
