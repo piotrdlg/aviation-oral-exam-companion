@@ -33,7 +33,7 @@ const AcsCoverageTreemap = dynamic(() => import('./components/AcsCoverageTreemap
 interface Session {
   id: string;
   rating: Rating;
-  status: 'active' | 'paused' | 'completed';
+  status: 'active' | 'paused' | 'completed' | 'expired' | 'abandoned';
   started_at: string;
   ended_at: string | null;
   exchange_count: number;
@@ -41,6 +41,12 @@ interface Session {
   difficulty_preference: string;
   aircraft_class?: string;
   acs_tasks_covered: { task_id: string; status: string; attempts?: number }[];
+  result?: {
+    grade: string;
+    elements_asked: number;
+    total_elements_in_set: number;
+    completion_trigger: string;
+  } | null;
 }
 
 interface TaskInfo {
@@ -72,9 +78,9 @@ function computeAchievements(
   attemptedElements: number,
 ): Achievement[] {
   return [
-    { id: 'first', label: 'First Session', icon: '1', earned: totalSessions >= 1 },
-    { id: 'five', label: '5 Sessions', icon: '5', earned: completedSessions >= 5 },
-    { id: 'ten', label: '10 Sessions', icon: '10', earned: completedSessions >= 10 },
+    { id: 'first', label: 'First Exam', icon: '1', earned: totalSessions >= 1 },
+    { id: 'five', label: '5 Exams', icon: '5', earned: completedSessions >= 5 },
+    { id: 'ten', label: '10 Exams', icon: '10', earned: completedSessions >= 10 },
     { id: 'exchanges50', label: '50 Exchanges', icon: '50', earned: totalExchanges >= 50 },
     { id: 'exchanges200', label: '200 Exchanges', icon: '200', earned: totalExchanges >= 200 },
     { id: 'coverage25', label: '25% Coverage', icon: '25%', earned: coveragePct >= 25 },
@@ -94,7 +100,7 @@ export default function ProgressPage() {
   const [selectedClass, setSelectedClass] = useState<AircraftClass>('ASEL');
   const [selectedRating, setSelectedRating] = useState<Rating>('private');
   const [prefsLoaded, setPrefsLoaded] = useState(false);
-  // Session-scoped treemap: null = "All Sessions (Lifetime)"
+  // Session-scoped treemap: null = "All Exams (Lifetime)"
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [sessionScores, setSessionScores] = useState<ElementScore[]>([]);
   const [sessionScoresLoading, setSessionScoresLoading] = useState(false);
@@ -347,7 +353,7 @@ export default function ProgressPage() {
             <div className="bezel rounded-lg border border-c-border p-3 text-center">
               <p className="text-2xl font-mono font-semibold text-c-text">{totalSessions}</p>
               <p className="font-mono text-xs text-c-muted uppercase tracking-wider mt-0.5">
-                SESSIONS{completedSessions < totalSessions ? ` (${completedSessions} DONE)` : ''}
+                EXAMS{completedSessions < totalSessions ? ` (${completedSessions} DONE)` : ''}
               </p>
             </div>
             <div className="bezel rounded-lg border border-c-border p-3 text-center">
@@ -421,7 +427,7 @@ export default function ProgressPage() {
                   onChange={(e) => setSelectedSessionId(e.target.value || null)}
                   className="bg-c-panel border border-c-border rounded-lg text-sm text-c-text font-mono px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber"
                 >
-                  <option value="">All Sessions (Lifetime)</option>
+                  <option value="">All Exams (Lifetime)</option>
                   {filteredSessions.map((s) => (
                     <option key={s.id} value={s.id}>
                       {new Date(s.started_at).toLocaleDateString('en-US', {
@@ -448,49 +454,72 @@ export default function ProgressPage() {
             /* Overview View — Sessions + Weak Areas */
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
-                <h2 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-3">RECENT SESSIONS</h2>
+                <h2 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-3">RECENT EXAMS</h2>
                 <div className="space-y-2">
                   {filteredSessions.length === 0 ? (
                     <div className="bezel rounded-lg border border-c-border p-4 text-center">
-                      <p className="text-base text-c-dim font-mono">No {RATING_LABELS[selectedRating]} sessions yet</p>
+                      <p className="text-base text-c-dim font-mono">No {RATING_LABELS[selectedRating]} exams yet</p>
                     </div>
                   ) : (
-                    filteredSessions.slice(0, 10).map((session) => (
-                      <div
-                        key={session.id}
-                        className="iframe rounded-lg p-3 flex items-center justify-between"
-                      >
-                        <div>
-                          <p className="text-base font-mono text-c-text">
-                            {new Date(session.started_at).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric',
-                              hour: 'numeric',
-                              minute: '2-digit',
-                            })}
-                          </p>
-                          <p className="font-mono text-xs text-c-dim mt-0.5">
-                            {session.exchange_count || 0} exchanges
-                            {session.acs_tasks_covered?.length
-                              ? ` / ${session.acs_tasks_covered.length} tasks`
-                              : ''}
-                            {session.aircraft_class ? ` · ${session.aircraft_class}` : ''}
-                          </p>
-                        </div>
-                        <span
-                          className={`font-mono text-xs px-2 py-0.5 rounded border uppercase ${
-                            session.status === 'completed'
-                              ? 'bg-c-green-lo text-c-green border-c-green/20'
-                              : session.status === 'active'
-                              ? 'bg-c-cyan-lo text-c-cyan border-c-cyan/20'
-                              : 'bg-c-amber-lo text-c-amber border-c-amber/20'
-                          }`}
+                    filteredSessions.slice(0, 10).map((session) => {
+                      const grade = session.result?.grade;
+                      const gradeLabel = grade === 'satisfactory' ? 'SATISFACTORY'
+                        : grade === 'unsatisfactory' ? 'UNSATISFACTORY'
+                        : session.status === 'completed' ? 'INCOMPLETE' : null;
+                      const gradeBadgeClass = grade === 'satisfactory'
+                        ? 'bg-c-green-lo text-c-green border-c-green/20'
+                        : grade === 'unsatisfactory'
+                        ? 'bg-red-500/10 text-red-400 border-red-400/20'
+                        : 'bg-c-amber-lo text-c-amber border-c-amber/20';
+                      const statusLabel = session.status === 'active' ? 'IN PROGRESS' : session.status.toUpperCase();
+                      const statusBadgeClass = session.status === 'completed'
+                        ? 'bg-c-green-lo text-c-green border-c-green/20'
+                        : session.status === 'active'
+                        ? 'bg-c-cyan-lo text-c-cyan border-c-cyan/20'
+                        : session.status === 'expired'
+                        ? 'bg-red-500/10 text-red-400 border-red-400/20'
+                        : 'bg-c-amber-lo text-c-amber border-c-amber/20';
+                      const coveragePctSession = session.result
+                        ? Math.round((session.result.elements_asked / session.result.total_elements_in_set) * 100)
+                        : null;
+                      const difficultyLabel = session.difficulty_preference
+                        ? session.difficulty_preference.charAt(0).toUpperCase() + session.difficulty_preference.slice(1)
+                        : null;
+                      return (
+                        <div
+                          key={session.id}
+                          className="iframe rounded-lg p-3 flex items-center justify-between gap-2"
                         >
-                          {session.status}
-                        </span>
-                      </div>
-                    ))
+                          <div className="min-w-0 flex-1">
+                            <p className="text-base font-mono text-c-text truncate">
+                              {RATING_LABELS[session.rating]}
+                              {session.aircraft_class ? ` ${session.aircraft_class}` : ''}
+                              {difficultyLabel ? `, ${difficultyLabel}` : ''}
+                            </p>
+                            <p className="font-mono text-xs text-c-dim mt-0.5">
+                              {new Date(session.started_at).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                              })}
+                              {' · '}{session.exchange_count || 0} exchanges
+                              {coveragePctSession !== null ? ` · ${coveragePctSession}% coverage` : ''}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {gradeLabel && (
+                              <span className={`font-mono text-xs px-2 py-0.5 rounded border ${gradeBadgeClass}`}>
+                                {gradeLabel}
+                              </span>
+                            )}
+                            {!gradeLabel && (
+                              <span className={`font-mono text-xs px-2 py-0.5 rounded border uppercase ${statusBadgeClass}`}>
+                                {statusLabel}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
                   )}
                 </div>
               </div>
