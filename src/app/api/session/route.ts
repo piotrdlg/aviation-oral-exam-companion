@@ -1,5 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
+import { getUserTier } from '@/lib/voice/tier-lookup';
+
+// Service-role client for tier lookups + grading queries (bypasses RLS)
+const serviceSupabase = createServiceClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+const FREE_TRIAL_EXAM_LIMIT = 3;
+const FREE_TRIAL_EXPIRY_DAYS = 7;
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -13,7 +24,42 @@ export async function POST(request: NextRequest) {
   const { action } = body;
 
   if (action === 'create') {
-    const { study_mode, difficulty_preference, selected_areas, aircraft_class, selected_tasks, rating } = body;
+    const { study_mode, difficulty_preference, selected_areas, aircraft_class, selected_tasks, rating, is_onboarding } = body;
+
+    // Check trial limit for non-paying users
+    const tier = await getUserTier(serviceSupabase, user.id);
+    const isPaying = tier === 'dpe_live';
+
+    let expiresAt: string | null = null;
+
+    if (!isPaying && !is_onboarding) {
+      // Count non-onboarding, non-abandoned exams for this user
+      const { count, error: countError } = await supabase
+        .from('exam_sessions')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('is_onboarding', false)
+        .neq('status', 'abandoned');
+
+      if (countError) {
+        return NextResponse.json({ error: countError.message }, { status: 500 });
+      }
+
+      if ((count ?? 0) >= FREE_TRIAL_EXAM_LIMIT) {
+        return NextResponse.json(
+          { error: 'trial_limit_reached', limit: FREE_TRIAL_EXAM_LIMIT, upgrade_url: '/pricing' },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Set expiration for free-tier exams
+    if (!isPaying) {
+      const expiry = new Date();
+      expiry.setDate(expiry.getDate() + FREE_TRIAL_EXPIRY_DAYS);
+      expiresAt = expiry.toISOString();
+    }
+
     const { data, error } = await supabase
       .from('exam_sessions')
       .insert({
@@ -25,6 +71,8 @@ export async function POST(request: NextRequest) {
         selected_areas: selected_areas || [],
         aircraft_class: aircraft_class || 'ASEL',
         selected_tasks: selected_tasks || [],
+        is_onboarding: is_onboarding || false,
+        expires_at: expiresAt,
       })
       .select()
       .single();
@@ -41,7 +89,48 @@ export async function POST(request: NextRequest) {
     if (status) updateData.status = status;
     if (acs_tasks_covered) updateData.acs_tasks_covered = acs_tasks_covered;
     if (exchange_count !== undefined) updateData.exchange_count = exchange_count;
-    if (status === 'completed') updateData.ended_at = new Date().toISOString();
+
+    // Grade the exam when completing
+    if (status === 'completed') {
+      updateData.ended_at = new Date().toISOString();
+
+      if (sessionId) {
+        try {
+          const { computeExamResult } = await import('@/lib/exam-logic');
+
+          // Load scored element attempts for this session
+          const { data: attempts } = await supabase
+            .from('element_attempts')
+            .select('element_code, score')
+            .eq('session_id', sessionId)
+            .eq('tag_type', 'attempt')
+            .not('score', 'is', null);
+
+          // Load the planner state to determine total elements in the exam set
+          const { data: examRow } = await supabase
+            .from('exam_sessions')
+            .select('metadata')
+            .eq('id', sessionId)
+            .eq('user_id', user.id)
+            .single();
+
+          const plannerState = (examRow?.metadata as Record<string, unknown>)?.plannerState as { queue: string[] } | undefined;
+          const totalElements = plannerState?.queue?.length || 0;
+
+          if (attempts && totalElements > 0) {
+            const attemptData = attempts.map(a => ({
+              element_code: a.element_code,
+              score: a.score as 'satisfactory' | 'unsatisfactory' | 'partial',
+              area: a.element_code.split('.')[1],
+            }));
+            const result = computeExamResult(attemptData, totalElements, 'user_ended');
+            updateData.result = result;
+          }
+        } catch (err) {
+          console.error('Exam grading error:', err);
+        }
+      }
+    }
 
     // Persist planner state, session config, task data, and voice pref in metadata for session resume
     if (planner_state || session_config || task_data || voice_enabled !== undefined) {
