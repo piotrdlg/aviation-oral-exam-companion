@@ -1,6 +1,7 @@
 import 'server-only';
 import OpenAI from 'openai';
 import { createClient } from '@supabase/supabase-js';
+import { createHash } from 'crypto';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
@@ -8,6 +9,20 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
+
+// ---------------------------------------------------------------------------
+// Embedding cache helpers
+// ---------------------------------------------------------------------------
+
+/** Normalize a query for cache key stability: lowercase, collapse whitespace, trim. */
+function normalizeQuery(text: string): string {
+  return text.toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+/** SHA-256 hex hash of the normalized query text. */
+function queryHash(normalized: string): string {
+  return createHash('sha256').update(normalized).digest('hex');
+}
 
 export interface ChunkSearchResult {
   id: string;
@@ -23,13 +38,58 @@ export interface ChunkSearchResult {
 
 /**
  * Generate an embedding for a text query using OpenAI's text-embedding-3-small.
+ * Checks the DB embedding_cache first. On miss, calls OpenAI and upserts the cache.
+ * The cache key is SHA-256(lowercase + whitespace-collapsed text).
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
+  const normalized = normalizeQuery(text);
+  const hash = queryHash(normalized);
+
+  // 1. Check cache
+  try {
+    const { data: cached } = await supabase
+      .from('embedding_cache')
+      .select('embedding')
+      .eq('query_hash', hash)
+      .maybeSingle();
+
+    if (cached?.embedding) {
+      // Touch last_used_at (non-blocking)
+      supabase
+        .from('embedding_cache')
+        .update({ last_used_at: new Date().toISOString() })
+        .eq('query_hash', hash)
+        .then(({ error }) => {
+          if (error) console.error('embedding_cache touch error:', error.message);
+        });
+      return cached.embedding as unknown as number[];
+    }
+  } catch {
+    // Cache read failed — fall through to OpenAI (cache is non-critical)
+  }
+
+  // 2. Cache miss → call OpenAI
   const response = await openai.embeddings.create({
     model: 'text-embedding-3-small',
     input: text,
   });
-  return response.data[0].embedding;
+  const embedding = response.data[0].embedding;
+
+  // 3. Upsert cache (non-blocking)
+  supabase
+    .from('embedding_cache')
+    .upsert({
+      query_hash: hash,
+      normalized_query: normalized.slice(0, 1000), // cap for storage
+      embedding: embedding as unknown as string,
+      model: 'text-embedding-3-small',
+      last_used_at: new Date().toISOString(),
+    }, { onConflict: 'query_hash' })
+    .then(({ error }) => {
+      if (error) console.error('embedding_cache upsert error:', error.message);
+    });
+
+  return embedding;
 }
 
 /**
