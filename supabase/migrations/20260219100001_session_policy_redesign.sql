@@ -7,6 +7,8 @@ ALTER TABLE exam_sessions ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ;
 ALTER TABLE exam_sessions ADD COLUMN IF NOT EXISTS result JSONB;
 
 -- 2. Update status constraint: replace 'errored' with 'expired'
+-- Migrate any existing 'errored' rows before applying new constraint
+UPDATE exam_sessions SET status = 'abandoned' WHERE status = 'errored';
 ALTER TABLE exam_sessions DROP CONSTRAINT IF EXISTS exam_sessions_status_check;
 ALTER TABLE exam_sessions ADD CONSTRAINT exam_sessions_status_check
   CHECK (status IN ('active', 'paused', 'completed', 'expired', 'abandoned'));
@@ -22,11 +24,12 @@ CREATE INDEX IF NOT EXISTS idx_exam_sessions_expires
   WHERE expires_at IS NOT NULL AND status IN ('active', 'paused');
 
 -- 5. Backfill: mark stale active sessions as abandoned
+-- Note: 24-hour buffer on 0-exchange condition to avoid destroying fresh sessions
 UPDATE exam_sessions
 SET status = 'abandoned', ended_at = NOW()
 WHERE status = 'active'
   AND (
-    exchange_count = 0
+    (exchange_count = 0 AND started_at < NOW() - INTERVAL '24 hours')
     OR started_at < NOW() - INTERVAL '7 days'
   );
 
@@ -46,6 +49,7 @@ WHERE e.user_id = p.user_id
 -- Job 1: Clear stale activity windows (every 15 minutes)
 -- Clears is_exam_active on devices idle for 2+ hours.
 -- Does NOT change the exam's status -- exam stays resumable.
+SELECT cron.unschedule('clear-stale-activity-windows');
 SELECT cron.schedule(
   'clear-stale-activity-windows',
   '*/15 * * * *',
@@ -58,6 +62,7 @@ SELECT cron.schedule(
 );
 
 -- Job 2: Expire free trial exams past their 7-day window (every hour)
+SELECT cron.unschedule('expire-trial-exams');
 SELECT cron.schedule(
   'expire-trial-exams',
   '0 * * * *',
@@ -71,6 +76,7 @@ SELECT cron.schedule(
 );
 
 -- Job 3: Clean up orphaned exams with 0 exchanges (daily at 3 AM UTC)
+SELECT cron.unschedule('cleanup-orphaned-exams');
 SELECT cron.schedule(
   'cleanup-orphaned-exams',
   '0 3 * * *',
