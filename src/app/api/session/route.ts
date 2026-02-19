@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, result: updateData.result ?? null });
   }
 
   return NextResponse.json({ error: 'Invalid action' }, { status: 400 });

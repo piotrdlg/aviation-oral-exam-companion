@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import SessionConfig, { type SessionConfigData } from './components/SessionConfig';
 import OnboardingWizard from './components/OnboardingWizard';
-import type { PlannerState, SessionConfig as SessionConfigType, Rating, AircraftClass } from '@/types/database';
+import type { PlannerState, SessionConfig as SessionConfigType, Rating, AircraftClass, ExamResult } from '@/types/database';
 import type { VoiceTier } from '@/lib/voice/types';
 import { useVoiceProvider } from '@/hooks/useVoiceProvider';
 import { ExamImages } from '@/components/ui/ExamImages';
@@ -126,6 +126,9 @@ export default function PracticePage() {
     metadata: Record<string, unknown>;
   } | null>(null);
   const [resumeVoiceToggle, setResumeVoiceToggle] = useState(true);
+  // Exam results modal state
+  const [examResult, setExamResult] = useState<ExamResult | null>(null);
+  const [gradingInProgress, setGradingInProgress] = useState(false);
   // Track per-task assessment scores (ref avoids stale closures in fire-and-forget fetches)
   const taskScoresRef = useRef<Record<string, { score: 'satisfactory' | 'unsatisfactory' | 'partial'; attempts: number }>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -815,15 +818,17 @@ export default function PracticePage() {
     sendAnswer(lastFailedAnswer);
   }
 
-  async function endSession() {
-    flushReveal(); // Clear any pending sentence reveal timers
+  /** Grade and end the current in-session exam, showing the results modal. */
+  async function gradeSession() {
+    flushReveal();
     voice.stopSpeaking();
     voice.stopListening();
+    setGradingInProgress(true);
 
-    // Mark session as completed in database — await to ensure it saves
+    let result: ExamResult | null = null;
     if (sessionId) {
       try {
-        await fetch('/api/session', {
+        const res = await fetch('/api/session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -838,6 +843,8 @@ export default function PracticePage() {
             })),
           }),
         });
+        const data = await res.json();
+        if (data.result) result = data.result as ExamResult;
       } catch {
         // Session update failed, but still clean up UI
       }
@@ -855,6 +862,85 @@ export default function PracticePage() {
     setPlannerState(null);
     setSessionConfig(null);
     taskScoresRef.current = {};
+    setGradingInProgress(false);
+    if (result) setExamResult(result);
+  }
+
+  /** End session without showing results (used by error recovery). */
+  async function endSession() {
+    await gradeSession();
+  }
+
+  /** Pause the current exam — saves state and returns to pre-session. */
+  async function pauseSession() {
+    flushReveal();
+    voice.stopSpeaking();
+    voice.stopListening();
+
+    if (sessionId) {
+      try {
+        await fetch('/api/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'update',
+            sessionId,
+            status: 'paused',
+            exchange_count: exchangeCount,
+            acs_tasks_covered: Object.entries(taskScoresRef.current).map(([id, s]) => ({
+              task_id: id,
+              status: s.score,
+              attempts: s.attempts,
+            })),
+            planner_state: plannerState,
+            session_config: sessionConfig,
+            task_data: taskData,
+            voice_enabled: voiceEnabled,
+          }),
+        });
+      } catch {
+        // Session update failed, still clean up UI
+      }
+    }
+
+    // Refresh resumable session so the resume card appears
+    try {
+      const res = await fetch('/api/session?action=get-resumable');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.session) setResumableSession(data.session);
+      }
+    } catch { /* ignore */ }
+
+    setSessionActive(false);
+    setMessages([]);
+    setTaskData(null);
+    setError(null);
+    setInput('');
+    setSessionId(null);
+    setExchangeCount(0);
+    setCoveredTaskIds([]);
+    setCurrentElement(null);
+    setPlannerState(null);
+    setSessionConfig(null);
+    taskScoresRef.current = {};
+  }
+
+  /** Grade a paused/resumable session from the pre-session screen. */
+  async function gradeResumableSession() {
+    if (!resumableSession) return;
+    setGradingInProgress(true);
+    try {
+      const res = await fetch('/api/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update', sessionId: resumableSession.id, status: 'completed' }),
+      });
+      const data = await res.json();
+      setResumableSession(null);
+      if (data.result) setExamResult(data.result as ExamResult);
+    } catch { /* ignore */ }
+    setGradingInProgress(false);
   }
 
   async function resumeSession(session: NonNullable<typeof resumableSession>) {
@@ -1123,36 +1209,48 @@ export default function PracticePage() {
                       {' '}&middot; {resumableSession.study_mode === 'linear' ? 'Area by Area' : resumableSession.study_mode === 'cross_acs' ? 'Across ACS' : 'Weak Areas'}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <label className="flex items-center gap-1.5 text-xs text-c-muted font-mono cursor-pointer select-none uppercase">
-                      <input
-                        type="checkbox"
-                        checked={resumeVoiceToggle}
-                        onChange={(e) => setResumeVoiceToggle(e.target.checked)}
-                        className="rounded border-c-border bg-c-bezel text-c-cyan focus:ring-c-cyan w-3.5 h-3.5"
-                      />
-                      VOICE
-                    </label>
-                    <button
-                      onClick={() => resumeSession(resumableSession)}
-                      disabled={loading}
-                      className="px-4 py-2 bg-c-cyan hover:bg-c-cyan/90 text-c-bg rounded-lg font-mono text-sm font-semibold transition-colors disabled:opacity-50 uppercase"
-                    >
-                      CONTINUE EXAM
-                    </button>
-                    <button
-                      onClick={async () => {
-                        await fetch('/api/session', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ action: 'update', sessionId: resumableSession.id, status: 'completed' }),
-                        });
-                        setResumableSession(null);
-                      }}
-                      className="px-3 py-2 text-c-muted hover:text-c-text font-mono text-sm transition-colors border border-c-border rounded-lg hover:border-c-border-hi uppercase"
-                    >
-                      START NEW EXAM
-                    </button>
+                  <div className="flex flex-col gap-2 items-end">
+                    <div className="flex items-center gap-3">
+                      <label className="flex items-center gap-1.5 text-xs text-c-muted font-mono cursor-pointer select-none uppercase">
+                        <input
+                          type="checkbox"
+                          checked={resumeVoiceToggle}
+                          onChange={(e) => setResumeVoiceToggle(e.target.checked)}
+                          className="rounded border-c-border bg-c-bezel text-c-cyan focus:ring-c-cyan w-3.5 h-3.5"
+                        />
+                        VOICE
+                      </label>
+                      <button
+                        onClick={() => resumeSession(resumableSession)}
+                        disabled={loading || gradingInProgress}
+                        className="px-4 py-2 bg-c-cyan hover:bg-c-cyan/90 text-c-bg rounded-lg font-mono text-sm font-semibold transition-colors disabled:opacity-50 uppercase"
+                      >
+                        CONTINUE EXAM
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={gradeResumableSession}
+                        disabled={gradingInProgress}
+                        className="px-3 py-1.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded font-mono text-xs font-semibold transition-colors disabled:opacity-50 uppercase"
+                      >
+                        {gradingInProgress ? 'GRADING...' : 'GRADE'}
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (!confirm('Discard this exam? It will be marked as abandoned and won\u2019t count toward your progress.')) return;
+                          await fetch('/api/session', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'update', sessionId: resumableSession.id, status: 'abandoned' }),
+                          });
+                          setResumableSession(null);
+                        }}
+                        className="px-3 py-1.5 text-c-muted hover:text-red-400 font-mono text-xs transition-colors uppercase"
+                      >
+                        DISCARD
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1230,14 +1328,22 @@ export default function PracticePage() {
             </span>
           )}
           <button
+            onClick={pauseSession}
+            disabled={gradingInProgress}
+            className="px-2.5 py-1 text-xs font-mono text-c-muted hover:text-c-text transition-colors border border-c-border rounded hover:border-c-border-hi uppercase disabled:opacity-50"
+          >
+            PAUSE
+          </button>
+          <button
             data-testid="end-exam-button"
             onClick={() => {
-              if (exchangeCount > 0 && !confirm('End this exam? Your progress will be saved.')) return;
-              endSession();
+              if (exchangeCount > 0 && !confirm('Grade and end this exam?')) return;
+              gradeSession();
             }}
-            className="text-xs font-mono text-c-muted hover:text-c-red transition-colors underline-offset-2 hover:underline uppercase"
+            disabled={gradingInProgress}
+            className="px-2.5 py-1 text-xs font-mono bg-c-amber hover:bg-c-amber/90 text-c-bg rounded font-semibold transition-colors uppercase disabled:opacity-50"
           >
-            END EXAM
+            {gradingInProgress ? 'GRADING...' : 'GRADE EXAM'}
           </button>
         </div>
       </div>
@@ -1662,6 +1768,94 @@ export default function PracticePage() {
                 className="px-4 py-2 font-mono text-sm bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg rounded-lg font-semibold transition-colors uppercase tracking-wider"
               >
                 {reportSubmitting ? 'SUBMITTING...' : 'SUBMIT REPORT'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Exam results modal */}
+      {examResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
+          <div className="bezel rounded-lg border border-c-border p-6 max-w-lg mx-4 shadow-2xl w-full">
+            <h2 className="font-mono font-bold text-xl text-c-text tracking-wider uppercase mb-4 text-center">EXAM RESULTS</h2>
+
+            {/* Grade badge + score */}
+            <div className={`rounded-lg border p-4 mb-4 text-center ${
+              examResult.grade === 'satisfactory'
+                ? 'bg-c-green-lo border-c-green/20'
+                : examResult.grade === 'unsatisfactory'
+                ? 'bg-red-500/10 border-red-400/20'
+                : 'bg-c-amber-lo border-c-amber/20'
+            }`}>
+              <span className={`font-mono font-bold text-2xl tracking-wider ${
+                examResult.grade === 'satisfactory' ? 'text-c-green'
+                  : examResult.grade === 'unsatisfactory' ? 'text-red-400'
+                  : 'text-c-amber'
+              }`}>
+                {examResult.grade === 'satisfactory' ? 'SATISFACTORY' : examResult.grade === 'unsatisfactory' ? 'UNSATISFACTORY' : 'INCOMPLETE'}
+              </span>
+              <span className={`ml-3 font-mono text-2xl font-bold ${
+                examResult.grade === 'satisfactory' ? 'text-c-green'
+                  : examResult.grade === 'unsatisfactory' ? 'text-red-400'
+                  : 'text-c-amber'
+              }`}>
+                {Math.round(examResult.score_percentage * 100)}%
+              </span>
+            </div>
+
+            {/* Element breakdown */}
+            <div className="space-y-1 mb-4">
+              <p className="text-sm font-mono text-c-text">
+                {examResult.elements_asked} of {examResult.total_elements_in_set} elements covered
+              </p>
+              <p className="text-xs font-mono text-c-muted">
+                {examResult.elements_satisfactory} satisfactory
+                {' '}&middot; {examResult.elements_partial} partial
+                {' '}&middot; {examResult.elements_unsatisfactory} unsatisfactory
+                {examResult.elements_not_asked > 0 && <> &middot; {examResult.elements_not_asked} not asked</>}
+              </p>
+            </div>
+
+            {/* Per-area breakdown */}
+            {Object.keys(examResult.score_by_area).length > 0 && (
+              <div className="mb-5">
+                <h3 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-2">SCORE BY AREA</h3>
+                <div className="space-y-1.5">
+                  {Object.entries(examResult.score_by_area)
+                    .sort(([a], [b]) => a.localeCompare(b))
+                    .map(([area, stats]) => {
+                      const pct = stats.asked > 0 ? Math.round((stats.satisfactory / stats.asked) * 100) : 0;
+                      return (
+                        <div key={area} className="flex items-center gap-2 text-xs font-mono">
+                          <span className="text-c-muted w-10 shrink-0">Area {area}</span>
+                          <div className="flex-1 h-2 bg-c-bezel rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${pct >= 70 ? 'bg-c-green' : pct > 0 ? 'bg-c-amber' : 'bg-c-dim'}`}
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className="text-c-text w-16 text-right">{stats.satisfactory}/{stats.asked} ({pct}%)</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              <Link
+                href="/progress"
+                className="flex-1 py-2.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-mono font-semibold text-sm text-center transition-colors border border-c-border uppercase tracking-wider"
+              >
+                VIEW PROGRESS
+              </Link>
+              <button
+                onClick={() => setExamResult(null)}
+                className="flex-1 py-2.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm transition-colors uppercase tracking-wider"
+              >
+                NEW EXAM
               </button>
             </div>
           </div>
