@@ -197,13 +197,42 @@ export async function POST(request: NextRequest) {
       plannerState?: PlannerState;
     };
 
-    // Load user profile for persona personality + student name
-    const { data: examUserProfile } = await serviceSupabase
+    // Parallel pre-checks: profile fetch + session enforcement are independent.
+    // Persona resolution depends on the profile result but is fast (cached config).
+    const profilePromise = serviceSupabase
       .from('user_profiles')
       .select('display_name, preferred_voice')
       .eq('user_id', user.id)
       .single();
 
+    const enforcementPromise = (async () => {
+      if (!sessionId) return { rejected: false, pausedSessionId: undefined as string | undefined };
+      try {
+        const { data: { session: authSession } } = await supabase.auth.getSession();
+        if (authSession?.access_token) {
+          const tokenHash = getSessionTokenHash(authSession);
+          return enforceOneActiveExam(serviceSupabase, user.id, sessionId, tokenHash, action);
+        }
+      } catch (err) {
+        console.error('Session enforcement error:', err);
+      }
+      return { rejected: false, pausedSessionId: undefined as string | undefined };
+    })();
+
+    const [{ data: examUserProfile }, enforcementResult] = await Promise.all([
+      profilePromise,
+      enforcementPromise,
+    ]);
+
+    if (enforcementResult.rejected) {
+      return NextResponse.json(
+        { error: 'session_superseded', message: 'This exam session has been superseded by another device. Please end this session.' },
+        { status: 409 }
+      );
+    }
+    const enforcementPausedSessionId = enforcementResult.pausedSessionId;
+
+    // Persona resolution (depends on profile, but voice.user_options is TTL-cached)
     let personaId: string | undefined;
     if (examUserProfile?.preferred_voice) {
       const { data: voiceConfig } = await serviceSupabase
@@ -215,33 +244,6 @@ export async function POST(request: NextRequest) {
       personaId = personas.find(p => p.model === examUserProfile.preferred_voice)?.persona_id;
     }
     const studentName = examUserProfile?.display_name || undefined;
-
-    // Session enforcement: ensure only one active exam per user
-    let enforcementPausedSessionId: string | undefined;
-    if (sessionId) {
-      try {
-        // Extract token hash from the user's current session
-        const { data: { session: authSession } } = await supabase.auth.getSession();
-        if (authSession?.access_token) {
-          const tokenHash = getSessionTokenHash(authSession);
-          const enforcement = await enforceOneActiveExam(
-            serviceSupabase, user.id, sessionId, tokenHash, action
-          );
-
-          if (enforcement.rejected) {
-            return NextResponse.json(
-              { error: 'session_superseded', message: 'This exam session has been superseded by another device. Please end this session.' },
-              { status: 409 }
-            );
-          }
-
-          enforcementPausedSessionId = enforcement.pausedSessionId;
-        }
-      } catch (err) {
-        // Session enforcement is non-critical — log and continue
-        console.error('Session enforcement error:', err);
-      }
-    }
 
     timing.end('prechecks');
 
