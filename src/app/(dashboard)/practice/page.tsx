@@ -1265,9 +1265,9 @@ export default function PracticePage() {
             {msg.role === 'student' && (
               <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-c-cyan/30 bg-c-bezel flex-shrink-0 mt-1">
                 {userAvatar ? (
-                  <img data-testid="student-avatar-img-lg" src={userAvatar} alt="" className="w-full h-full object-cover" />
+                  <img data-testid="student-avatar-img" src={userAvatar} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-lg font-mono text-c-muted uppercase">
+                  <div data-testid="message-avatar-initials" className="w-full h-full flex items-center justify-center text-lg font-mono text-c-muted uppercase">
                     {userName?.[0]?.toUpperCase() || '?'}
                   </div>
                 )}
@@ -1281,24 +1281,11 @@ export default function PracticePage() {
               }`}
             >
               <div className="flex items-center justify-between mb-1.5">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full overflow-hidden border border-c-border/50 bg-c-bezel flex-shrink-0">
-                    {msg.role === 'examiner' && activePersona?.image ? (
-                      <img data-testid="examiner-avatar-img" src={activePersona.image} alt="" className="w-full h-full object-cover" />
-                    ) : msg.role === 'student' && userAvatar ? (
-                      <img data-testid="student-avatar-img" src={userAvatar} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div data-testid="message-avatar-initials" className="w-full h-full flex items-center justify-center text-[8px] font-mono text-c-muted uppercase">
-                        {msg.role === 'examiner' ? 'DPE' : (userName?.[0]?.toUpperCase() || '?')}
-                      </div>
-                    )}
-                  </div>
-                  <p data-testid="message-sender-label" className={`text-[10px] font-mono uppercase tracking-wide ${
-                    msg.role === 'examiner' ? 'text-c-amber' : 'text-c-cyan'
-                  }`}>
-                    {msg.role === 'examiner' ? (activePersona?.label || 'DPE EXAMINER') : (userName || 'APPLICANT')}
-                  </p>
-                </div>
+                <p data-testid="message-sender-label" className={`text-[10px] font-mono uppercase tracking-wide ${
+                  msg.role === 'examiner' ? 'text-c-amber' : 'text-c-cyan'
+                }`}>
+                  {msg.role === 'examiner' ? (activePersona?.label || 'DPE EXAMINER') : (userName || 'APPLICANT')}
+                </p>
                 {/* Report button on examiner messages (Task 26) */}
                 {msg.role === 'examiner' && msg.text && (
                   <button
@@ -1397,9 +1384,9 @@ export default function PracticePage() {
             {msg.role === 'examiner' && (
               <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-c-amber/30 bg-c-bezel flex-shrink-0 mt-1">
                 {activePersona?.image ? (
-                  <img data-testid="examiner-avatar-img-lg" src={activePersona.image} alt="" className="w-full h-full object-cover" />
+                  <img data-testid="examiner-avatar-img" src={activePersona.image} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-xs font-mono text-c-muted uppercase">DPE</div>
+                  <div data-testid="message-avatar-initials" className="w-full h-full flex items-center justify-center text-xs font-mono text-c-muted uppercase">DPE</div>
                 )}
               </div>
             )}
