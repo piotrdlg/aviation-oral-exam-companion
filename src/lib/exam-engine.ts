@@ -9,6 +9,7 @@ import {
 import type { AircraftClass, Rating } from '@/types/database';
 import { searchChunks, formatChunksForPrompt, getImagesForChunks, type ChunkSearchResult, type ImageResult } from './rag-retrieval';
 import { getPromptContent } from './prompts';
+import { TtlCache } from './ttl-cache';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
@@ -50,6 +51,14 @@ export interface ExamTurn {
 export { type AcsTaskRow } from './exam-logic';
 export { type ImageResult } from './rag-retrieval';
 
+// Module-level prompt cache: 5-min TTL. Keyed by promptKey,
+// caches the full candidate list (specificity scoring happens in-memory).
+type PromptCandidate = {
+  id: string; content: string; rating: string | null;
+  study_mode: string | null; difficulty: string | null; version: number;
+};
+const promptCache = new TtlCache<PromptCandidate[]>(5 * 60_000);
+
 /**
  * Load the best-matching prompt version from the DB with specificity scoring.
  * Falls back gracefully via getPromptContent() if no DB rows found.
@@ -66,12 +75,17 @@ export async function loadPromptFromDB(
   studyMode?: string,
   difficulty?: string
 ): Promise<{ content: string; versionId: string | null }> {
-  const { data: candidates } = await supabaseClient
-    .from('prompt_versions')
-    .select('id, content, rating, study_mode, difficulty, version')
-    .eq('prompt_key', promptKey)
-    .eq('status', 'published')
-    .order('version', { ascending: false });
+  let candidates = promptCache.get(promptKey);
+  if (!candidates) {
+    const { data } = await supabaseClient
+      .from('prompt_versions')
+      .select('id, content, rating, study_mode, difficulty, version')
+      .eq('prompt_key', promptKey)
+      .eq('status', 'published')
+      .order('version', { ascending: false });
+    candidates = (data ?? []) as PromptCandidate[];
+    promptCache.set(promptKey, candidates);
+  }
 
   const scored = (candidates ?? [])
     .filter(c =>

@@ -19,6 +19,7 @@ import { getSystemConfig } from '@/lib/system-config';
 import { checkKillSwitch } from '@/lib/kill-switch';
 import { getUserTier } from '@/lib/voice/tier-lookup';
 import { enforceOneActiveExam, getSessionTokenHash } from '@/lib/session-enforcement';
+import { createTimingContext, writeTimings } from '@/lib/timing';
 import type { SessionConfig, PlannerState } from '@/types/database';
 
 // Service-role client for usage logging + config lookups (bypasses RLS)
@@ -179,6 +180,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Latency instrumentation: record spans for key operations
+    const timing = createTimingContext();
+    timing.start('prechecks');
+
     const body = await request.json();
     const { action, history, taskData, studentAnswer, coveredTaskIds, sessionId, stream, sessionConfig, plannerState: clientPlannerState } = body as {
       action: 'start' | 'respond' | 'next-task' | 'resume-current';
@@ -237,6 +242,8 @@ export async function POST(request: NextRequest) {
         console.error('Session enforcement error:', err);
       }
     }
+
+    timing.end('prechecks');
 
     if (action === 'start') {
       // Track last active usage
@@ -351,10 +358,13 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      timing.start('exchange.total');
+
       // Calculate exchange number from history length
       const exchangeNumber = Math.floor(history.length / 2) + 1;
 
       // Step 1: Persist student transcript + fetch RAG in parallel
+      timing.start('rag.total');
       const [studentTranscriptResult, rag] = await Promise.all([
         sessionId
           ? supabase
@@ -376,6 +386,8 @@ export async function POST(request: NextRequest) {
         console.error('Student transcript insert failed:', insertErr, '— assessment, element_attempts, and citations will NOT be persisted for this exchange');
       }
 
+      timing.end('rag.total');
+
       // Step 2: Build updated history for examiner
       const updatedHistory: ExamMessage[] = [
         ...history,
@@ -389,10 +401,15 @@ export async function POST(request: NextRequest) {
       const respondDifficulty = sessionConfig?.difficulty || undefined;
       if (stream) {
         // Streaming path: start assessment in background, stream examiner immediately
-        const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty);
+        timing.start('llm.assessment.total');
+        timing.start('llm.examiner.total');
+        const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty)
+          .then(a => { timing.end('llm.assessment.total'); return a; });
 
         // onComplete callback: persist examiner transcript to DB after stream finishes
         const onStreamComplete = async (fullText: string) => {
+          timing.end('llm.examiner.total');
+          timing.end('exchange.total');
           if (sessionId && fullText) {
             const { error } = await supabase.from('session_transcripts').insert({
               session_id: sessionId,
@@ -448,6 +465,11 @@ export async function POST(request: NextRequest) {
           } catch (err) {
             console.error('Background assessment/DB error:', err);
           }
+
+          // Write latency instrumentation (non-blocking, best-effort)
+          if (sessionId) {
+            await writeTimings(serviceSupabase, sessionId, exchangeNumber, timing);
+          }
         });
 
         return new Response(readableStream, {
@@ -461,10 +483,15 @@ export async function POST(request: NextRequest) {
       }
 
       // Non-streaming path: run both in parallel, wait for both
+      timing.start('llm.assessment.total');
+      timing.start('llm.examiner.total');
       const [assessment, turn] = await Promise.all([
-        assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty),
-        generateExaminerTurn(taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass as import('@/types/database').AircraftClass | undefined, rag, respondRating, sessionConfig?.studyMode, personaId, studentName),
+        assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty)
+          .then(a => { timing.end('llm.assessment.total'); return a; }),
+        generateExaminerTurn(taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass as import('@/types/database').AircraftClass | undefined, rag, respondRating, sessionConfig?.studyMode, personaId, studentName)
+          .then(t => { timing.end('llm.examiner.total'); return t; }),
       ]);
+      timing.end('exchange.total');
 
       // Log LLM usage for both calls (non-blocking)
       logLlmUsage(user.id, assessment.usage, tier, sessionId, { action: 'respond', call: 'assessAnswer' });
@@ -518,6 +545,11 @@ export async function POST(request: NextRequest) {
           text: turn.examinerMessage,
         });
         if (examErr) console.error('Examiner transcript write error:', examErr.message);
+      }
+
+      // Write latency instrumentation (non-blocking, best-effort)
+      if (sessionId) {
+        writeTimings(serviceSupabase, sessionId, exchangeNumber, timing);
       }
 
       return NextResponse.json({
