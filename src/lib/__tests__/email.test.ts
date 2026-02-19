@@ -191,7 +191,7 @@ describe('email service', () => {
       expect(call.from).toBe('HeyDPE Support <support@heydpe.com>');
       expect(call.to).toBe('pilot@example.com');
       expect(call.subject).toBe('Re: Help with exam');
-      expect(call.html).toBe('<p>Response body</p>');
+      expect(call.text).toBe('<p>Response body</p>');
     });
 
     it('sets In-Reply-To and References headers when inReplyTo provided', async () => {

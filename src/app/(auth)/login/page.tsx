@@ -383,7 +383,7 @@ function LoginForm() {
                 </div>
               </div>
 
-              <p className="text-c-dim text-xs text-center font-mono">Code expires in 10 minutes</p>
+              <p className="text-c-dim text-xs text-center font-mono">Code expires in 60 minutes</p>
 
               {/* OTP error */}
               {error && (

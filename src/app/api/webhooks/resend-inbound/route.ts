@@ -123,6 +123,9 @@ export async function POST(request: Request) {
         // User lookup failed — create ticket without user link
       }
 
+      // SECURITY: body_html contains raw HTML from external email senders.
+      // It is stored for reference but MUST NEVER be rendered with dangerouslySetInnerHTML.
+      // Only body_text is displayed in the admin UI.
       const { error: insertError } = await serviceSupabase
         .from('support_tickets')
         .insert({

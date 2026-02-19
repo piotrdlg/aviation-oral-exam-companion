@@ -125,7 +125,7 @@ export async function sendTicketReply(
       from: SENDERS.support,
       to,
       subject: `Re: ${subject}`,
-      html: body,
+      text: body,
       headers,
     });
 
