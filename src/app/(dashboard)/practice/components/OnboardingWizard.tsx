@@ -128,13 +128,14 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/95 backdrop-blur-sm">
+    <div data-testid="onboarding-wizard" className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/95 backdrop-blur-sm">
       <div className="max-w-lg w-full mx-4">
         {/* Progress dots */}
-        <div className="flex justify-center gap-2 mb-6">
+        <div data-testid="wizard-progress-dots" className="flex justify-center gap-2 mb-6">
           {[1, 2, 3, 4, 5].map((s) => (
             <div
               key={s}
+              data-testid={`wizard-dot-${s}`}
               className={`w-2.5 h-2.5 rounded-full transition-colors ${
                 s === step
                   ? 'bg-c-amber'
@@ -149,6 +150,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
         {/* Skip link */}
         <div className="flex justify-end mb-4">
           <button
+            data-testid="wizard-skip"
             onClick={handleSkip}
             className="font-mono text-xs text-c-amber hover:text-c-amber/80 transition-colors uppercase"
           >
@@ -158,7 +160,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
 
         {/* Step 1: Rating selection */}
         {step === 1 && (
-          <div className="bezel rounded-lg border border-c-border p-8">
+          <div data-testid="wizard-step-1" className="bezel rounded-lg border border-c-border p-8">
             <h2 className="font-mono font-bold text-xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
               WHAT ARE YOU PREPARING FOR?
             </h2>
@@ -188,6 +190,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
             </div>
 
             <button
+              data-testid="wizard-step1-next"
               onClick={() => setStep(2)}
               className="w-full py-3 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
             >
@@ -198,7 +201,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
 
         {/* Step 2: Aircraft details */}
         {step === 2 && (
-          <div className="bezel rounded-lg border border-c-border p-8">
+          <div data-testid="wizard-step-2" className="bezel rounded-lg border border-c-border p-8">
             <h2 className="font-mono font-bold text-xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
               TELL US ABOUT YOUR AIRCRAFT
             </h2>
@@ -263,12 +266,14 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
 
             <div className="flex items-center gap-3">
               <button
+                data-testid="wizard-step2-back"
                 onClick={() => setStep(1)}
                 className="font-mono text-xs text-c-muted hover:text-c-text transition-colors uppercase"
               >
                 &larr; BACK
               </button>
               <button
+                data-testid="wizard-step2-next"
                 onClick={() => setStep(3)}
                 className="flex-1 py-3 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
               >
@@ -280,7 +285,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
 
         {/* Step 3: Display name */}
         {step === 3 && (
-          <div className="bezel rounded-lg border border-c-border p-8">
+          <div data-testid="wizard-step-3" className="bezel rounded-lg border border-c-border p-8">
             <h2 className="font-mono font-bold text-xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
               WHAT SHOULD WE CALL YOU?
             </h2>
@@ -288,6 +293,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
               Your examiner will address you by name during sessions
             </p>
             <input
+              data-testid="wizard-name-input"
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
@@ -298,8 +304,9 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
             />
             <p className="text-[10px] text-c-dim mt-2 text-center font-mono">Optional — you can always change this in Settings</p>
             <div className="flex items-center gap-3 mt-6">
-              <button onClick={() => setStep(2)} className="font-mono text-xs text-c-muted hover:text-c-text transition-colors uppercase">&larr; BACK</button>
+              <button data-testid="wizard-step3-back" onClick={() => setStep(2)} className="font-mono text-xs text-c-muted hover:text-c-text transition-colors uppercase">&larr; BACK</button>
               <button
+                data-testid="wizard-step3-next"
                 onClick={() => setStep(4)}
                 className="flex-1 py-3 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
               >
@@ -311,7 +318,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
 
         {/* Step 4: Theme selection */}
         {step === 4 && (
-          <div className="bezel rounded-lg border border-c-border p-8">
+          <div data-testid="wizard-step-4" className="bezel rounded-lg border border-c-border p-8">
             <h2 className="font-mono font-bold text-xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
               CUSTOMIZE YOUR COCKPIT
             </h2>
@@ -350,6 +357,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
                 &larr; BACK
               </button>
               <button
+                data-testid="wizard-step4-next"
                 onClick={() => setStep(5)}
                 className="flex-1 py-3 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
               >
@@ -361,7 +369,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
 
         {/* Step 5: Confirmation */}
         {step === 5 && (
-          <div className="bezel rounded-lg border border-c-border p-8">
+          <div data-testid="wizard-step-5" className="bezel rounded-lg border border-c-border p-8">
             <h2 className="font-mono font-bold text-xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
               READY TO START?
             </h2>
@@ -415,6 +423,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
                 &larr; BACK
               </button>
               <button
+                data-testid="wizard-start-button"
                 onClick={handleComplete}
                 disabled={saving || loading}
                 className="flex-1 py-3.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg rounded-lg font-mono font-bold text-sm tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"

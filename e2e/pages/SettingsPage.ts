@@ -11,6 +11,8 @@ import { type Page, type Locator, expect } from '@playwright/test';
  * - Subscription management (Stripe portal link)
  * - Feedback widget (bug report, content error)
  * - Sign out all other sessions
+ * - Profile management (avatar, display name)
+ * - Voice persona images
  */
 export class SettingsPage {
   readonly page: Page;
@@ -48,6 +50,18 @@ export class SettingsPage {
   readonly feedbackSubmitButton: Locator;
   readonly feedbackSuccessMessage: Locator;
 
+  // Profile section
+  readonly profileSection: Locator;
+  readonly profileAvatarContainer: Locator;
+  readonly profileAvatarImg: Locator;
+  readonly profileAvatarInitials: Locator;
+  readonly avatarFileInput: Locator;
+  readonly avatarUploadLabel: Locator;
+  readonly defaultAvatarsGrid: Locator;
+  readonly displayNameInput: Locator;
+  readonly profileSaveMessage: Locator;
+  readonly voiceCardPersonaImgs: Locator;
+
   constructor(page: Page) {
     this.page = page;
     this.pageContainer = page.getByTestId('settings-page');
@@ -83,6 +97,18 @@ export class SettingsPage {
     this.feedbackDescription = page.getByTestId('feedback-description');
     this.feedbackSubmitButton = page.getByTestId('feedback-submit');
     this.feedbackSuccessMessage = page.getByTestId('feedback-success');
+
+    // Profile
+    this.profileSection = page.getByTestId('profile-section');
+    this.profileAvatarContainer = page.getByTestId('profile-avatar-container');
+    this.profileAvatarImg = page.getByTestId('profile-avatar-img');
+    this.profileAvatarInitials = page.getByTestId('profile-avatar-initials');
+    this.avatarFileInput = page.getByTestId('avatar-file-input');
+    this.avatarUploadLabel = page.getByTestId('avatar-upload-label');
+    this.defaultAvatarsGrid = page.getByTestId('default-avatars-grid');
+    this.displayNameInput = page.getByTestId('display-name-input');
+    this.profileSaveMessage = page.getByTestId('profile-save-message');
+    this.voiceCardPersonaImgs = page.locator('[data-testid="voice-card-persona-img"]');
   }
 
   async goto() {
@@ -133,5 +159,14 @@ export class SettingsPage {
 
   async expectCurrentPlan(plan: string | RegExp) {
     await expect(this.currentPlan).toContainText(plan);
+  }
+
+  async selectDefaultAvatar(avatarId: string) {
+    await this.page.getByTestId(`default-avatar-${avatarId}`).click();
+  }
+
+  async setDisplayName(name: string) {
+    await this.displayNameInput.fill(name);
+    await this.displayNameInput.blur();
   }
 }

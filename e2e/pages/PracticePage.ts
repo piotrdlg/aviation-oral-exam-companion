@@ -11,6 +11,8 @@ import { type Page, type Locator, expect } from '@playwright/test';
  * - Report inaccurate answer flow
  * - Upgrade prompts and checkout success handling
  * - Kill switch error banners
+ * - Onboarding wizard navigation
+ * - Avatar/persona in message bubbles
  */
 export class PracticePage {
   readonly page: Page;
@@ -64,6 +66,21 @@ export class PracticePage {
   // Loading
   readonly examLoading: Locator;
 
+  // Onboarding wizard
+  readonly onboardingWizard: Locator;
+  readonly wizardProgressDots: Locator;
+  readonly wizardSkip: Locator;
+  readonly wizardNameInput: Locator;
+  readonly wizardStep3Next: Locator;
+  readonly wizardStep3Back: Locator;
+  readonly wizardStartButton: Locator;
+
+  // Avatar/persona in message bubbles
+  readonly examinerAvatarImgs: Locator;
+  readonly studentAvatarImgs: Locator;
+  readonly messageAvatarInitials: Locator;
+  readonly messageSenderLabels: Locator;
+
   constructor(page: Page) {
     this.page = page;
     this.pageContainer = page.getByTestId('practice-page');
@@ -115,6 +132,21 @@ export class PracticePage {
 
     // Loading
     this.examLoading = page.getByTestId('exam-loading');
+
+    // Onboarding wizard
+    this.onboardingWizard = page.getByTestId('onboarding-wizard');
+    this.wizardProgressDots = page.getByTestId('wizard-progress-dots');
+    this.wizardSkip = page.getByTestId('wizard-skip');
+    this.wizardNameInput = page.getByTestId('wizard-name-input');
+    this.wizardStep3Next = page.getByTestId('wizard-step3-next');
+    this.wizardStep3Back = page.getByTestId('wizard-step3-back');
+    this.wizardStartButton = page.getByTestId('wizard-start-button');
+
+    // Avatar/persona in message bubbles
+    this.examinerAvatarImgs = page.locator('[data-testid="examiner-avatar-img"]');
+    this.studentAvatarImgs = page.locator('[data-testid="student-avatar-img"]');
+    this.messageAvatarInitials = page.locator('[data-testid="message-avatar-initials"]');
+    this.messageSenderLabels = page.locator('[data-testid="message-sender-label"]');
   }
 
   async goto() {
@@ -192,5 +224,21 @@ export class PracticePage {
   async expectCheckoutSuccess() {
     await expect(this.checkoutSuccessBanner).toBeVisible();
     await expect(this.checkoutSuccessBanner).toContainText(/subscription is active|welcome/i);
+  }
+
+  async navigateThroughWizardToStep3() {
+    await this.page.getByTestId('wizard-step1-next').click();
+    await this.page.getByTestId('wizard-step2-next').click();
+    await expect(this.page.getByTestId('wizard-step-3')).toBeVisible();
+  }
+
+  async expectExaminerSenderLabel(label: string) {
+    const firstExaminer = this.examinerMessages.first();
+    await expect(firstExaminer.locator('[data-testid="message-sender-label"]')).toContainText(label);
+  }
+
+  async expectStudentSenderLabel(label: string) {
+    const firstStudent = this.studentMessages.first();
+    await expect(firstStudent.locator('[data-testid="message-sender-label"]')).toContainText(label);
   }
 }

@@ -289,6 +289,7 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
 
         {/* Start Button */}
         <button
+          data-testid="start-exam-button"
           onClick={() => onStart({
             rating,
             studyMode,

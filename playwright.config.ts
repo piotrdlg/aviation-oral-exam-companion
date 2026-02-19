@@ -81,7 +81,7 @@ export default defineConfig({
     // Unauthenticated tests — no stored auth state
     {
       name: 'no-auth',
-      testMatch: /(landing|seo|consent|analytics|utm|marketing-pages|integration)\/.*\.spec\.ts/,
+      testMatch: /(landing|seo|consent|analytics|utm|marketing-pages|integration|assets)\/.*\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
         storageState: { cookies: [], origins: [] },
@@ -90,7 +90,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm run dev',
+    command: 'PLAYWRIGHT_TEST=1 npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

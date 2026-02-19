@@ -3,6 +3,12 @@ import { updateSession } from '@/lib/supabase/middleware';
 import { checkRateLimit, getRateLimitConfig } from '@/lib/rate-limit';
 
 export async function middleware(request: NextRequest) {
+  // E2E test bypass: skip Supabase auth so Playwright can mock APIs client-side.
+  // Only active when the dev server is started with PLAYWRIGHT_TEST=1.
+  if (process.env.PLAYWRIGHT_TEST === '1') {
+    return NextResponse.next({ request });
+  }
+
   const { pathname } = request.nextUrl;
 
   // Rate limiting for API routes (Task 41)

@@ -1191,6 +1191,7 @@ export default function PracticePage() {
             </span>
           )}
           <button
+            data-testid="end-exam-button"
             onClick={() => {
               if (exchangeCount > 0 && !confirm('End this session? Your progress will be saved.')) return;
               endSession();
@@ -1257,10 +1258,23 @@ export default function PracticePage() {
         {messages.map((msg, i) => (
           <div
             key={i}
-            className={`flex ${msg.role === 'student' ? 'justify-end' : 'justify-start'}`}
+            data-testid={msg.role === 'examiner' ? 'examiner-message' : 'student-message'}
+            className={`flex items-start gap-3 ${msg.role === 'student' ? 'justify-end' : 'justify-start'}`}
           >
+            {/* Large avatar — student: left of bubble */}
+            {msg.role === 'student' && (
+              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-c-cyan/30 bg-c-bezel flex-shrink-0 mt-1">
+                {userAvatar ? (
+                  <img data-testid="student-avatar-img-lg" src={userAvatar} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-lg font-mono text-c-muted uppercase">
+                    {userName?.[0]?.toUpperCase() || '?'}
+                  </div>
+                )}
+              </div>
+            )}
             <div
-              className={`max-w-[80%] rounded-lg px-4 py-3 ${
+              className={`min-w-0 max-w-[calc(100%-4.5rem)] rounded-lg px-4 py-3 ${
                 msg.role === 'examiner'
                   ? 'bg-c-bezel border-l-2 border-c-amber/50'
                   : 'bg-c-cyan-lo/40 border-r-2 border-c-cyan/50'
@@ -1270,16 +1284,16 @@ export default function PracticePage() {
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 rounded-full overflow-hidden border border-c-border/50 bg-c-bezel flex-shrink-0">
                     {msg.role === 'examiner' && activePersona?.image ? (
-                      <img src={activePersona.image} alt="" className="w-full h-full object-cover" />
+                      <img data-testid="examiner-avatar-img" src={activePersona.image} alt="" className="w-full h-full object-cover" />
                     ) : msg.role === 'student' && userAvatar ? (
-                      <img src={userAvatar} alt="" className="w-full h-full object-cover" />
+                      <img data-testid="student-avatar-img" src={userAvatar} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[8px] font-mono text-c-muted uppercase">
+                      <div data-testid="message-avatar-initials" className="w-full h-full flex items-center justify-center text-[8px] font-mono text-c-muted uppercase">
                         {msg.role === 'examiner' ? 'DPE' : (userName?.[0]?.toUpperCase() || '?')}
                       </div>
                     )}
                   </div>
-                  <p className={`text-[10px] font-mono uppercase tracking-wide ${
+                  <p data-testid="message-sender-label" className={`text-[10px] font-mono uppercase tracking-wide ${
                     msg.role === 'examiner' ? 'text-c-amber' : 'text-c-cyan'
                   }`}>
                     {msg.role === 'examiner' ? (activePersona?.label || 'DPE EXAMINER') : (userName || 'APPLICANT')}
@@ -1379,6 +1393,16 @@ export default function PracticePage() {
                 </details>
               )}
             </div>
+            {/* Large avatar — examiner: right of bubble */}
+            {msg.role === 'examiner' && (
+              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-c-amber/30 bg-c-bezel flex-shrink-0 mt-1">
+                {activePersona?.image ? (
+                  <img data-testid="examiner-avatar-img-lg" src={activePersona.image} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xs font-mono text-c-muted uppercase">DPE</div>
+                )}
+              </div>
+            )}
           </div>
         ))}
 
@@ -1448,6 +1472,7 @@ export default function PracticePage() {
         )}
         <div className="flex-1 flex flex-col gap-1.5">
           <textarea
+            data-testid="answer-input"
             rows={2}
             value={input}
             onChange={(e) => {
@@ -1481,6 +1506,7 @@ export default function PracticePage() {
           </button>
         </div>
         <button
+          data-testid="send-answer-button"
           onClick={() => sendAnswer()}
           disabled={loading || !input.trim()}
           className="px-5 py-3 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 disabled:hover:bg-c-amber text-c-bg rounded-lg font-mono font-medium transition-colors self-start uppercase"

@@ -252,9 +252,14 @@ export default function SettingsPage() {
     }
   }
 
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarMessage, setAvatarMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
   async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    setAvatarUploading(true);
+    setAvatarMessage(null);
     const formData = new FormData();
     formData.append('avatar', file);
     try {
@@ -262,10 +267,14 @@ export default function SettingsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Upload failed');
       setTierInfo((prev) => prev ? { ...prev, avatarUrl: data.avatarUrl } : null);
-      setDefaultsMessage({ text: 'Avatar updated', type: 'success' });
-      setTimeout(() => setDefaultsMessage(null), 2000);
+      setAvatarMessage({ text: 'Avatar updated', type: 'success' });
+      setTimeout(() => setAvatarMessage(null), 3000);
     } catch (err) {
-      setDefaultsMessage({ text: err instanceof Error ? err.message : 'Upload failed', type: 'error' });
+      setAvatarMessage({ text: err instanceof Error ? err.message : 'Upload failed', type: 'error' });
+    } finally {
+      setAvatarUploading(false);
+      // Reset file input so re-selecting the same file triggers onChange
+      e.target.value = '';
     }
   }
 
@@ -673,7 +682,7 @@ export default function SettingsPage() {
       </div>
 
       {/* 1. Profile */}
-      <div className="bezel rounded-lg border border-c-border p-6">
+      <div data-testid="profile-section" className="bezel rounded-lg border border-c-border p-6">
         <h2 className="font-mono font-semibold text-sm text-c-amber mb-1 tracking-wider uppercase">PROFILE</h2>
         <p className="font-mono text-[10px] text-c-muted mb-5">
           Your name and avatar appear during exam sessions.
@@ -681,31 +690,37 @@ export default function SettingsPage() {
 
         {/* Avatar */}
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-c-border bg-c-bezel flex-shrink-0">
+          <div data-testid="profile-avatar-container" className="w-16 h-16 rounded-full overflow-hidden border-2 border-c-border bg-c-bezel flex-shrink-0">
             {tierInfo?.avatarUrl ? (
-              <img src={tierInfo.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              <img data-testid="profile-avatar-img" src={tierInfo.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-c-muted text-2xl font-mono">
+              <div data-testid="profile-avatar-initials" className="w-full h-full flex items-center justify-center text-c-muted text-2xl font-mono">
                 {tierInfo?.displayName?.[0]?.toUpperCase() || '?'}
               </div>
             )}
           </div>
           <div>
-            <input type="file" id="avatar-upload" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleAvatarUpload} />
-            <label htmlFor="avatar-upload" className="cursor-pointer inline-block px-3 py-1.5 rounded font-mono text-[10px] font-medium bg-c-bezel border border-c-border text-c-muted hover:bg-c-border hover:text-c-text transition-colors uppercase">
-              UPLOAD PHOTO
+            <input data-testid="avatar-file-input" type="file" id="avatar-upload" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleAvatarUpload} />
+            <label data-testid="avatar-upload-label" htmlFor="avatar-upload" className={`cursor-pointer inline-block px-3 py-1.5 rounded font-mono text-[10px] font-medium bg-c-bezel border border-c-border text-c-muted hover:bg-c-border hover:text-c-text transition-colors uppercase ${avatarUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+              {avatarUploading ? 'UPLOADING...' : 'UPLOAD PHOTO'}
             </label>
             <p className="font-mono text-[10px] text-c-dim mt-1">Max 2MB. JPG, PNG, or WebP.</p>
+            {avatarMessage && (
+              <p className={`font-mono text-[10px] mt-1 ${avatarMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+                {avatarMessage.type === 'success' ? '\u2713 ' : ''}{avatarMessage.text}
+              </p>
+            )}
           </div>
         </div>
 
         {/* Default avatar options */}
-        <div className="mb-4">
+        <div data-testid="default-avatars-grid" className="mb-4">
           <label className="block font-mono text-[10px] text-c-muted mb-2 uppercase tracking-wider">OR CHOOSE AN AVATAR</label>
           <div className="flex gap-2">
             {DEFAULT_AVATARS.map((av) => (
               <button
                 key={av.id}
+                data-testid={`default-avatar-${av.id}`}
                 onClick={() => savePracticeDefault('avatarUrl', av.url)}
                 className={`w-10 h-10 rounded-full overflow-hidden border-2 transition-colors ${
                   tierInfo?.avatarUrl === av.url ? 'border-c-amber' : 'border-c-border hover:border-c-border-hi'
@@ -721,6 +736,7 @@ export default function SettingsPage() {
         <div>
           <label className="block font-mono text-[10px] text-c-muted mb-1.5 uppercase tracking-wider">DISPLAY NAME</label>
           <input
+            data-testid="display-name-input"
             type="text"
             defaultValue={tierInfo?.displayName || ''}
             onBlur={(e) => {
@@ -835,7 +851,7 @@ export default function SettingsPage() {
                 />
               </div>
               {defaultsMessage && (
-                <p className={`font-mono text-[10px] ${defaultsMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+                <p data-testid="profile-save-message" className={`font-mono text-[10px] ${defaultsMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
                   {defaultsMessage.type === 'success' ? '\u2713 ' : ''}{defaultsMessage.text}
                 </p>
               )}
@@ -1020,6 +1036,7 @@ export default function SettingsPage() {
                 return (
                   <div
                     key={option.model}
+                    data-testid={`voice-card-${option.model}`}
                     className={`iframe rounded-lg p-4 transition-colors ${
                       isActive
                         ? 'border-l-2 border-c-amber ring-1 ring-c-amber/20'
@@ -1030,7 +1047,7 @@ export default function SettingsPage() {
                       <div className="flex items-start gap-3">
                         {option.image && (
                           <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-c-border flex-shrink-0 bg-c-bezel">
-                            <img src={option.image} alt={option.label} className="w-full h-full object-cover" />
+                            <img data-testid="voice-card-persona-img" src={option.image} alt={option.label} className="w-full h-full object-cover" />
                           </div>
                         )}
                         <div>

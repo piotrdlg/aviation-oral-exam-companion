@@ -46,17 +46,24 @@ export async function POST(request: NextRequest) {
     });
 
   if (uploadError) {
-    return NextResponse.json({ error: uploadError.message }, { status: 500 });
+    console.error('Avatar storage upload error:', uploadError);
+    return NextResponse.json({ error: `Storage upload failed: ${uploadError.message}` }, { status: 500 });
   }
 
   const { data: urlData } = serviceSupabase.storage.from('avatars').getPublicUrl(path);
-  const avatarUrl = urlData.publicUrl;
+  // Add cache-busting param so the browser fetches the new image on re-upload
+  const avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
 
-  // Update user profile
-  await serviceSupabase
+  // Update user profile with the new avatar URL
+  const { error: updateError } = await serviceSupabase
     .from('user_profiles')
     .update({ avatar_url: avatarUrl, updated_at: new Date().toISOString() })
     .eq('user_id', user.id);
+
+  if (updateError) {
+    console.error('Avatar profile update error:', updateError);
+    return NextResponse.json({ error: `Profile update failed: ${updateError.message}` }, { status: 500 });
+  }
 
   return NextResponse.json({ avatarUrl });
 }
