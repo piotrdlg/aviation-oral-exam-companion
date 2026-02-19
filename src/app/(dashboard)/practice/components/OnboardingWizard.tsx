@@ -17,6 +17,7 @@ interface Props {
     voiceEnabled: boolean;
     theme: Theme;
     displayName: string;
+    isOnboarding: boolean;
   }) => void;
   onSkip: () => void;
   loading?: boolean;
@@ -113,6 +114,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
       voiceEnabled,
       theme: selectedTheme,
       displayName: displayName.trim(),
+      isOnboarding: true,
     });
     setSaving(false);
   }

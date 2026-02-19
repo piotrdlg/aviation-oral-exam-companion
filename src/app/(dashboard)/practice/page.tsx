@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import SessionConfig, { type SessionConfigData } from './components/SessionConfig';
 import OnboardingWizard from './components/OnboardingWizard';
 import type { PlannerState, SessionConfig as SessionConfigType, Rating, AircraftClass } from '@/types/database';
@@ -444,11 +445,21 @@ export default function PracticePage() {
           selected_areas: configData.selectedAreas,
           aircraft_class: configData.aircraftClass,
           selected_tasks: configData.selectedTasks,
+          is_onboarding: configData.isOnboarding || false,
         }),
       });
       const sessionData = await sessionRes.json();
+      if (!sessionRes.ok) {
+        if (sessionData.error === 'trial_limit_reached') {
+          setError(`You've used all ${sessionData.limit} free exam slots. Upgrade to continue practicing.`);
+          setSessionActive(false);
+          setLoading(false);
+          return;
+        }
+        throw new Error(sessionData.error || 'Failed to create exam');
+      }
       let newSessionId: string | null = null;
-      if (sessionRes.ok && sessionData.session) {
+      if (sessionData.session) {
         newSessionId = sessionData.session.id;
         setSessionId(newSessionId);
       }
@@ -464,7 +475,7 @@ export default function PracticePage() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to start session');
+      if (!res.ok) throw new Error(data.error || 'Failed to start exam');
 
       // Task 30: Show notification if another session was paused
       if (data.pausedSessionId) {
@@ -503,7 +514,7 @@ export default function PracticePage() {
         setMessages([{ role: 'examiner', text: examinerMsg }]);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to start session');
+      setError(err instanceof Error ? err.message : 'Failed to start exam');
     } finally {
       setLoading(false);
     }
@@ -548,7 +559,7 @@ export default function PracticePage() {
         }
         // Handle session superseded by another device (Task 30)
         if (res.status === 409 && errData.error === 'session_superseded') {
-          setError('This exam session has been superseded by another device. Please end this session.');
+          setError('This exam has been paused on this device. Please end this exam and start a new one.');
           setLoading(false);
           return;
         }
@@ -930,7 +941,7 @@ export default function PracticePage() {
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to resume session');
+        if (!res.ok) throw new Error(data.error || 'Failed to resume exam');
 
         if (data.sessionComplete) {
           setMessages((prev) => [...prev, { role: 'examiner', text: data.examinerMessage }]);
@@ -949,7 +960,7 @@ export default function PracticePage() {
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to resume session');
+      setError(err instanceof Error ? err.message : 'Failed to resume exam');
     } finally {
       setLoading(false);
     }
@@ -975,7 +986,7 @@ export default function PracticePage() {
         {/* Banners */}
         {checkoutSuccess && (
           <div className="bg-c-green-lo border border-c-green/20 rounded-lg p-3 mb-4 text-c-green text-base flex items-center justify-between">
-            <span>Welcome to HeyDPE! Your subscription is active. Enjoy unlimited practice sessions.</span>
+            <span>Welcome to HeyDPE! Your subscription is active. Enjoy unlimited practice exams.</span>
             <button onClick={() => setCheckoutSuccess(false)} className="text-c-green hover:text-c-green/80 ml-3 shrink-0">&times;</button>
           </div>
         )}
@@ -983,6 +994,25 @@ export default function PracticePage() {
           <div className="bg-c-amber-lo border border-c-amber/20 rounded-lg p-3 mb-4 text-c-amber text-base flex items-center justify-between">
             <span>{quotaWarning} <a href="/pricing" className="underline hover:text-c-amber/80">Upgrade</a> for unlimited access.</span>
             <button onClick={() => setQuotaWarning(null)} className="text-c-amber hover:text-c-amber/80 ml-3 shrink-0">&times;</button>
+          </div>
+        )}
+        {error && (
+          <div className="bg-c-red-dim/40 border border-c-red/20 rounded-lg p-3 mb-4 text-base">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="text-c-red">{error}</p>
+                {error.includes('Upgrade') && (
+                  <Link href="/pricing" className="text-c-amber underline mt-2 inline-block font-mono text-sm uppercase">
+                    View Plans
+                  </Link>
+                )}
+              </div>
+              <button onClick={() => setError(null)} className="text-c-red hover:text-c-red/80 shrink-0">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
         )}
 
@@ -1007,6 +1037,7 @@ export default function PracticePage() {
                 selectedAreas: ['I'],
                 selectedTasks: [],
                 voiceEnabled: config.voiceEnabled,
+                isOnboarding: true,
               });
             }}
             onSkip={() => {
@@ -1045,7 +1076,7 @@ export default function PracticePage() {
                     </span>
                   )}
                   {ratingSessions.length > 0 && (
-                    <span className="text-xs text-c-muted font-mono uppercase">{ratingSessions.length} SESSIONS</span>
+                    <span className="text-xs text-c-muted font-mono uppercase">{ratingSessions.length} EXAMS</span>
                   )}
                 </div>
               )}
@@ -1070,24 +1101,26 @@ export default function PracticePage() {
               </div>
             )}
 
-            {/* Resume previous session card */}
+            {/* Resume previous exam card */}
             {resumableSession && (
               <div className="iframe rounded-lg p-4 mb-5 border-l-2 border-c-cyan">
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <div className="w-1.5 h-1.5 rounded-full bg-c-cyan blink"></div>
-                      <h3 className="font-mono text-sm font-semibold text-c-cyan glow-c uppercase">CONTINUE PREVIOUS SESSION</h3>
+                      <h3 className="font-mono text-sm font-semibold text-c-cyan glow-c uppercase">CONTINUE PREVIOUS EXAM</h3>
                     </div>
-                    <p className="text-xs text-c-muted font-mono mt-1">
+                    <p className="text-xs text-c-text font-mono mt-1">
+                      {resumableSession.rating === 'commercial' ? 'Commercial' : resumableSession.rating === 'instrument' ? 'Instrument' : resumableSession.rating === 'atp' ? 'ATP' : 'Private'}
+                      {resumableSession.aircraft_class ? ` ${resumableSession.aircraft_class}` : ''}
+                      , {resumableSession.difficulty_preference === 'easy' ? 'Easy' : resumableSession.difficulty_preference === 'medium' ? 'Medium' : resumableSession.difficulty_preference === 'hard' ? 'Hard' : 'Mixed'}
+                      {' '}&mdash; {resumableSession.exchange_count || 0} exchanges
+                    </p>
+                    <p className="text-xs text-c-muted font-mono mt-0.5">
                       {new Date(resumableSession.started_at).toLocaleDateString('en-US', {
                         month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
                       })}
-                      {' '}&middot; {resumableSession.exchange_count || 0} exchanges
-                      {' '}&middot; {resumableSession.rating.toUpperCase()}
-                      {resumableSession.aircraft_class ? ` \u00B7 ${resumableSession.aircraft_class}` : ''}
                       {' '}&middot; {resumableSession.study_mode === 'linear' ? 'Area by Area' : resumableSession.study_mode === 'cross_acs' ? 'Across ACS' : 'Weak Areas'}
-                      {' '}&middot; {resumableSession.difficulty_preference}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -1105,7 +1138,7 @@ export default function PracticePage() {
                       disabled={loading}
                       className="px-4 py-2 bg-c-cyan hover:bg-c-cyan/90 text-c-bg rounded-lg font-mono text-sm font-semibold transition-colors disabled:opacity-50 uppercase"
                     >
-                      CONTINUE
+                      CONTINUE EXAM
                     </button>
                     <button
                       onClick={async () => {
@@ -1118,7 +1151,7 @@ export default function PracticePage() {
                       }}
                       className="px-3 py-2 text-c-muted hover:text-c-text font-mono text-sm transition-colors border border-c-border rounded-lg hover:border-c-border-hi uppercase"
                     >
-                      START NEW
+                      START NEW EXAM
                     </button>
                   </div>
                 </div>
@@ -1146,9 +1179,9 @@ export default function PracticePage() {
         {showQuotaModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
             <div className="bezel rounded-lg border border-c-border p-6 max-w-md mx-4 shadow-2xl">
-              <h2 className="font-mono font-bold text-2xl text-c-amber glow-a mb-2 tracking-wider uppercase">SESSION LIMIT REACHED</h2>
+              <h2 className="font-mono font-bold text-2xl text-c-amber glow-a mb-2 tracking-wider uppercase">EXAM LIMIT REACHED</h2>
               <p className="text-c-muted text-base mb-6">
-                You&apos;ve reached your monthly session limit. Upgrade your plan to continue practicing
+                You&apos;ve reached your monthly exam limit. Upgrade your plan to continue practicing
                 for your checkride.
               </p>
               <div className="flex gap-3">
@@ -1199,12 +1232,12 @@ export default function PracticePage() {
           <button
             data-testid="end-exam-button"
             onClick={() => {
-              if (exchangeCount > 0 && !confirm('End this session? Your progress will be saved.')) return;
+              if (exchangeCount > 0 && !confirm('End this exam? Your progress will be saved.')) return;
               endSession();
             }}
             className="text-xs font-mono text-c-muted hover:text-c-red transition-colors underline-offset-2 hover:underline uppercase"
           >
-            END SESSION
+            END EXAM
           </button>
         </div>
       </div>
@@ -1244,7 +1277,7 @@ export default function PracticePage() {
                     onClick={() => { endSession(); setShowErrorRecovery(false); setError(null); }}
                     className="px-3 py-1.5 text-sm bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors font-mono uppercase"
                   >
-                    END SESSION
+                    END EXAM
                   </button>
                 </div>
               )}
@@ -1514,9 +1547,9 @@ export default function PracticePage() {
       {showQuotaModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
           <div className="bezel rounded-lg border border-c-border p-6 max-w-md mx-4 shadow-2xl">
-            <h2 className="font-mono font-bold text-2xl text-c-amber glow-a mb-2 tracking-wider uppercase">SESSION LIMIT REACHED</h2>
+            <h2 className="font-mono font-bold text-2xl text-c-amber glow-a mb-2 tracking-wider uppercase">EXAM LIMIT REACHED</h2>
             <p className="text-c-muted text-base mb-6">
-              You&apos;ve reached your monthly session limit. Upgrade your plan to continue practicing
+              You&apos;ve reached your monthly exam limit. Upgrade your plan to continue practicing
               for your checkride.
             </p>
             <div className="flex gap-3">

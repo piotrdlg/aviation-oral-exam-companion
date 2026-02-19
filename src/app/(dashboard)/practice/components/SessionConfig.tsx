@@ -12,6 +12,7 @@ export interface SessionConfigData {
   selectedAreas: string[];
   selectedTasks: string[];
   voiceEnabled: boolean;
+  isOnboarding?: boolean;
 }
 
 const RATING_LABELS: Record<string, string> = {
