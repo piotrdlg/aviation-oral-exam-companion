@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import UTMCapture from '@/components/UTMCapture';
+import Footer from '@/components/Footer';
 
 const plans = [
   {
@@ -357,13 +358,8 @@ export default function PricingPage() {
           </p>
         </div>
 
-        {/* ─── Footer ─── */}
-        <p className="text-[10px] text-c-muted font-mono leading-relaxed text-center max-w-xl mx-auto pt-8 border-t border-c-border uppercase">
-          ALL PRICES IN USD. SUBSCRIPTIONS ARE BILLED THROUGH STRIPE. CANCEL ANYTIME FROM YOUR SETTINGS PAGE.
-          FOR STUDY PURPOSES ONLY. NOT A SUBSTITUTE FOR INSTRUCTION FROM A CERTIFICATED FLIGHT INSTRUCTOR.
-          HEYDPE IS A PRODUCT OF IMAGINE FLYING LLC, JACKSONVILLE, FL.
-        </p>
       </div>
+      <Footer variant="public" />
     </div>
   );
 }

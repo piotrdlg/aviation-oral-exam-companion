@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import type { Provider } from '@supabase/supabase-js';
 import { getStoredUTMParams } from '@/lib/utm';
 import { trackSignup } from '@/lib/analytics';
+import Footer from '@/components/Footer';
 
 type AuthStep = 'initial' | 'otp-sent' | 'verifying';
 
@@ -266,7 +267,8 @@ function LoginForm() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-c-bg px-4">
+    <div className="min-h-screen flex flex-col bg-c-bg">
+      <div className="flex-1 flex flex-col items-center justify-center px-4">
       {/* Brand link */}
       <Link href="/" className="font-mono font-bold text-c-amber glow-a text-xl tracking-widest mb-8 hover:text-c-amber/80 transition-colors">
         HEYDPE
@@ -440,6 +442,8 @@ function LoginForm() {
           <Link href="/privacy" className="text-c-amber hover:text-c-amber/80 underline underline-offset-2 transition-colors">Privacy Policy</Link>.
         </p>
       </div>
+      </div>
+      <Footer variant="public" />
     </div>
   );
 }

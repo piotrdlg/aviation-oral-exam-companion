@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getStoredUTMParams } from '@/lib/utm';
+import Footer from '@/components/Footer';
 
 const navItems = [
   { href: '/practice', label: 'Practice' },
@@ -97,6 +98,7 @@ export default function DashboardLayout({
       <main className="max-w-5xl mx-auto px-4 py-8">
         {children}
       </main>
+      <Footer variant="compact" />
     </div>
   );
 }

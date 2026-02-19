@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import UTMCapture from '@/components/UTMCapture';
+import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: "Try HeyDPE Free — AI Checkride Oral Exam Practice",
@@ -271,21 +272,7 @@ export default function TryPage() {
         </div>
       </section>
 
-      {/* Minimal Footer */}
-      <footer className="py-10 px-4 border-t border-c-border">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-            <span className="font-mono font-bold text-c-amber glow-a text-sm tracking-widest">HEYDPE</span>
-            <div className="flex items-center gap-6 text-xs font-mono text-c-muted">
-              <Link href="/privacy" className="hover:text-c-text transition-colors">PRIVACY POLICY</Link>
-              <Link href="/terms" className="hover:text-c-text transition-colors">TERMS</Link>
-            </div>
-          </div>
-          <p className="text-[10px] text-c-muted text-center leading-relaxed max-w-xl mx-auto font-mono">
-            HEYDPE IS A PRODUCT OF IMAGINE FLYING LLC, JACKSONVILLE, FL.
-          </p>
-        </div>
-      </footer>
+      <Footer variant="compact" />
     </div>
   );
 }
