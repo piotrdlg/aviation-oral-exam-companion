@@ -3,7 +3,7 @@
  * Separated from exam-engine.ts for testability.
  */
 
-import type { AcsElement as AcsElementDB, ElementScore, PlannerState, SessionConfig, Difficulty, AircraftClass, Rating } from '@/types/database';
+import type { AcsElement as AcsElementDB, ElementScore, PlannerState, SessionConfig, Difficulty, AircraftClass, Rating, ExamResult, ExamGrade, CompletionTrigger } from '@/types/database';
 
 export interface AcsElement {
   code: string;
@@ -325,6 +325,65 @@ export function initPlannerState(queue: string[]): PlannerState {
     cursor: 0,
     recent: [],
     attempts: {},
+  };
+}
+
+// ================================================================
+// Exam Grading
+// ================================================================
+
+/**
+ * Compute the grade and result summary for a completed exam.
+ * Pure function — no external dependencies.
+ *
+ * Grading rules:
+ *   - satisfactory: all elements asked AND all scored satisfactory
+ *   - unsatisfactory: any element scored unsatisfactory or partial
+ *   - incomplete: fewer elements asked than total in set
+ */
+export function computeExamResult(
+  attempts: Array<{ element_code: string; score: 'satisfactory' | 'unsatisfactory' | 'partial'; area: string }>,
+  totalElementsInSet: number,
+  completionTrigger: CompletionTrigger
+): ExamResult {
+  const elementsAsked = attempts.length;
+  const elementsSatisfactory = attempts.filter(a => a.score === 'satisfactory').length;
+  const elementsUnsatisfactory = attempts.filter(a => a.score === 'unsatisfactory').length;
+  const elementsPartial = attempts.filter(a => a.score === 'partial').length;
+  const elementsNotAsked = Math.max(0, totalElementsInSet - elementsAsked);
+
+  // Build score by area
+  const scoreByArea: Record<string, { asked: number; satisfactory: number; unsatisfactory: number }> = {};
+  for (const attempt of attempts) {
+    if (!scoreByArea[attempt.area]) {
+      scoreByArea[attempt.area] = { asked: 0, satisfactory: 0, unsatisfactory: 0 };
+    }
+    scoreByArea[attempt.area].asked++;
+    if (attempt.score === 'satisfactory') scoreByArea[attempt.area].satisfactory++;
+    if (attempt.score === 'unsatisfactory') scoreByArea[attempt.area].unsatisfactory++;
+  }
+
+  // Determine grade
+  let grade: ExamGrade;
+  if (elementsAsked < totalElementsInSet) {
+    grade = 'incomplete';
+  } else if (elementsUnsatisfactory > 0 || elementsPartial > 0) {
+    grade = 'unsatisfactory';
+  } else {
+    grade = 'satisfactory';
+  }
+
+  return {
+    grade,
+    total_elements_in_set: totalElementsInSet,
+    elements_asked: elementsAsked,
+    elements_satisfactory: elementsSatisfactory,
+    elements_unsatisfactory: elementsUnsatisfactory,
+    elements_partial: elementsPartial,
+    elements_not_asked: elementsNotAsked,
+    score_by_area: scoreByArea,
+    completion_trigger: completionTrigger,
+    graded_at: new Date().toISOString(),
   };
 }
 

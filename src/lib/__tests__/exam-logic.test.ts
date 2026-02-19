@@ -7,9 +7,10 @@ import {
   buildElementQueue,
   pickNextElement,
   initPlannerState,
+  computeExamResult,
   type AcsTaskRow,
 } from '../exam-logic';
-import type { AcsElement as AcsElementDB, ElementScore, SessionConfig } from '@/types/database';
+import type { AcsElement as AcsElementDB, ElementScore, SessionConfig, CompletionTrigger } from '@/types/database';
 
 function makeTask(id: string, opts?: Partial<AcsTaskRow>): AcsTaskRow {
   return {
@@ -405,5 +406,94 @@ describe('initPlannerState', () => {
     expect(state.queue).toEqual(['X', 'Y']);
     expect(state.recent).toEqual([]);
     expect(state.attempts).toEqual({});
+  });
+});
+
+// ================================================================
+// Exam Grading
+// ================================================================
+
+describe('computeExamResult', () => {
+  function makeAttempts(entries: Array<{ code: string; score: 'satisfactory' | 'unsatisfactory' | 'partial' }>) {
+    return entries.map(e => ({
+      element_code: e.code,
+      score: e.score,
+      area: e.code.split('.')[1],
+    }));
+  }
+
+  it('returns satisfactory when all elements asked and all satisfactory', () => {
+    const attempts = makeAttempts([
+      { code: 'PA.I.A.K1', score: 'satisfactory' },
+      { code: 'PA.I.A.K2', score: 'satisfactory' },
+      { code: 'PA.I.A.R1', score: 'satisfactory' },
+    ]);
+    const result = computeExamResult(attempts, 3, 'all_tasks_covered');
+    expect(result.grade).toBe('satisfactory');
+    expect(result.elements_asked).toBe(3);
+    expect(result.elements_satisfactory).toBe(3);
+    expect(result.elements_unsatisfactory).toBe(0);
+    expect(result.elements_not_asked).toBe(0);
+    expect(result.completion_trigger).toBe('all_tasks_covered');
+  });
+
+  it('returns unsatisfactory when any element is unsatisfactory', () => {
+    const attempts = makeAttempts([
+      { code: 'PA.I.A.K1', score: 'satisfactory' },
+      { code: 'PA.I.A.K2', score: 'unsatisfactory' },
+      { code: 'PA.II.A.K1', score: 'satisfactory' },
+    ]);
+    const result = computeExamResult(attempts, 3, 'user_ended');
+    expect(result.grade).toBe('unsatisfactory');
+    expect(result.elements_unsatisfactory).toBe(1);
+  });
+
+  it('returns incomplete when not all elements asked (user ended early)', () => {
+    const attempts = makeAttempts([
+      { code: 'PA.I.A.K1', score: 'satisfactory' },
+    ]);
+    const result = computeExamResult(attempts, 5, 'user_ended');
+    expect(result.grade).toBe('incomplete');
+    expect(result.elements_asked).toBe(1);
+    expect(result.elements_not_asked).toBe(4);
+  });
+
+  it('returns incomplete for expired exams', () => {
+    const attempts = makeAttempts([
+      { code: 'PA.I.A.K1', score: 'satisfactory' },
+      { code: 'PA.I.A.K2', score: 'satisfactory' },
+    ]);
+    const result = computeExamResult(attempts, 10, 'expired');
+    expect(result.grade).toBe('incomplete');
+    expect(result.completion_trigger).toBe('expired');
+  });
+
+  it('computes score_by_area correctly', () => {
+    const attempts = makeAttempts([
+      { code: 'PA.I.A.K1', score: 'satisfactory' },
+      { code: 'PA.I.A.K2', score: 'unsatisfactory' },
+      { code: 'PA.II.A.K1', score: 'satisfactory' },
+      { code: 'PA.II.B.R1', score: 'satisfactory' },
+    ]);
+    const result = computeExamResult(attempts, 4, 'all_tasks_covered');
+    expect(result.score_by_area['I']).toEqual({ asked: 2, satisfactory: 1, unsatisfactory: 1 });
+    expect(result.score_by_area['II']).toEqual({ asked: 2, satisfactory: 2, unsatisfactory: 0 });
+  });
+
+  it('handles empty attempts (zero exchanges)', () => {
+    const result = computeExamResult([], 10, 'user_ended');
+    expect(result.grade).toBe('incomplete');
+    expect(result.elements_asked).toBe(0);
+    expect(result.elements_not_asked).toBe(10);
+  });
+
+  it('counts partial elements separately', () => {
+    const attempts = makeAttempts([
+      { code: 'PA.I.A.K1', score: 'satisfactory' },
+      { code: 'PA.I.A.K2', score: 'partial' },
+    ]);
+    const result = computeExamResult(attempts, 2, 'all_tasks_covered');
+    expect(result.grade).toBe('unsatisfactory');
+    expect(result.elements_partial).toBe(1);
   });
 });
