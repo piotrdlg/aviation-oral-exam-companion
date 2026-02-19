@@ -414,8 +414,10 @@ export async function POST(request: NextRequest) {
           logLlmUsage(user.id, assessment.usage, tier, sessionId, { action: 'respond', call: 'assessAnswer' });
 
           if (studentTranscriptId && assessment) {
+            // Use serviceSupabase to bypass RLS for assessment UPDATE
+            // (session_transcripts only had SELECT+INSERT policies, no UPDATE)
             const dbWrites: PromiseLike<unknown>[] = [
-              supabase
+              serviceSupabase
                 .from('session_transcripts')
                 .update({ assessment })
                 .eq('id', studentTranscriptId),
@@ -432,7 +434,7 @@ export async function POST(request: NextRequest) {
                 snippet: chunk.content.slice(0, 300),
               }));
               dbWrites.push(
-                supabase.from('transcript_citations').insert(citations).then(({ error: citErr }) => {
+                serviceSupabase.from('transcript_citations').insert(citations).then(({ error: citErr }) => {
                   if (citErr) console.error('Citation write error:', citErr.message);
                 })
               );
@@ -462,9 +464,10 @@ export async function POST(request: NextRequest) {
       logLlmUsage(user.id, turn.usage, tier, sessionId, { action: 'respond', call: 'generateExaminerTurn' });
 
       // Step 4: Persist all DB writes in parallel (non-blocking for response)
+      // Use serviceSupabase for UPDATE/citation writes to bypass RLS
       if (studentTranscriptId && assessment) {
         const dbWrites: PromiseLike<unknown>[] = [
-          supabase
+          serviceSupabase
             .from('session_transcripts')
             .update({ assessment })
             .eq('id', studentTranscriptId),
@@ -481,7 +484,7 @@ export async function POST(request: NextRequest) {
             snippet: chunk.content.slice(0, 300),
           }));
           dbWrites.push(
-            supabase.from('transcript_citations').insert(citations).then(({ error: citErr }) => {
+            serviceSupabase.from('transcript_citations').insert(citations).then(({ error: citErr }) => {
               if (citErr) console.error('Citation write error:', citErr.message);
             })
           );

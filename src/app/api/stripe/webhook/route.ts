@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import type Stripe from 'stripe';
+import { sendSubscriptionConfirmed, sendSubscriptionCancelled, sendPaymentFailed } from '@/lib/email';
 
 const serviceSupabase = createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -175,6 +176,14 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, eventId
       console.error('GA4 Measurement Protocol error:', err);
     }
   }
+
+  // Send confirmation email
+  const customerEmail = session.customer_details?.email || session.customer_email;
+  if (customerEmail) {
+    const priceId = subscription.items.data[0]?.price.id;
+    const plan = priceId === process.env.STRIPE_PRICE_ANNUAL ? 'annual' as const : 'monthly' as const;
+    void sendSubscriptionConfirmed(customerEmail, plan);
+  }
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription, eventId: string) {
@@ -231,6 +240,19 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription, even
     })
     .eq('stripe_customer_id', customerId)
     .or(`last_webhook_event_ts.is.null,last_webhook_event_ts.lt.${eventTs}`);
+
+  // Send cancellation email — need to look up user email
+  const { data: cancelProfile } = await serviceSupabase
+    .from('user_profiles')
+    .select('user_id')
+    .eq('stripe_customer_id', customerId)
+    .single();
+  if (cancelProfile?.user_id) {
+    const { data: { user: cancelUser } } = await serviceSupabase.auth.admin.getUserById(cancelProfile.user_id);
+    if (cancelUser?.email) {
+      void sendSubscriptionCancelled(cancelUser.email);
+    }
+  }
 }
 
 async function handleInvoicePaid(invoice: Stripe.Invoice, eventId: string) {
@@ -276,4 +298,18 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, eventId: string) {
     })
     .eq('stripe_customer_id', customerId)
     .or(`last_webhook_event_ts.is.null,last_webhook_event_ts.lt.${eventTs}`);
+
+  // Send payment failed email
+  const failedCustomerId = invoice.customer as string;
+  const { data: failProfile } = await serviceSupabase
+    .from('user_profiles')
+    .select('user_id')
+    .eq('stripe_customer_id', failedCustomerId)
+    .single();
+  if (failProfile?.user_id) {
+    const { data: { user: failUser } } = await serviceSupabase.auth.admin.getUserById(failProfile.user_id);
+    if (failUser?.email) {
+      void sendPaymentFailed(failUser.email);
+    }
+  }
 }

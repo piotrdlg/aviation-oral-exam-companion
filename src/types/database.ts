@@ -442,3 +442,44 @@ export interface SystemConfigStructured {
   maintenanceMode: MaintenanceModeValue;
   userHardCaps: UserHardCapsValue;
 }
+
+// ============================================================
+// Support tickets
+// ============================================================
+
+export type TicketType = 'support' | 'feedback';
+export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
+export type TicketPriority = 'low' | 'normal' | 'high' | 'urgent';
+export type ReplyDirection = 'inbound' | 'outbound';
+
+export interface SupportTicket {
+  id: string;
+  resend_email_id: string | null;
+  from_email: string;
+  from_name: string | null;
+  to_address: string;
+  subject: string;
+  body_text: string | null;
+  body_html: string | null;
+  ticket_type: TicketType;
+  status: TicketStatus;
+  priority: TicketPriority;
+  assigned_to: string | null;
+  user_id: string | null;
+  reply_count: number;
+  last_reply_at: string | null;
+  admin_notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TicketReply {
+  id: string;
+  ticket_id: string;
+  direction: ReplyDirection;
+  from_email: string;
+  body_text: string | null;
+  body_html: string | null;
+  resend_email_id: string | null;
+  created_at: string;
+}

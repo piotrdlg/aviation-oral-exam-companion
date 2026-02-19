@@ -879,10 +879,16 @@ export default function PracticePage() {
       const transcriptRes = await fetch(`/api/session?action=transcripts&sessionId=${session.id}`);
       const transcriptData = await transcriptRes.json();
 
-      const loadedMessages: Message[] = (transcriptData.transcripts || []).map((t: { role: string; text: string; assessment?: Assessment }) => ({
+      const loadedMessages: Message[] = (transcriptData.transcripts || []).map((t: { role: string; text: string; assessment?: Assessment & { rag_chunks?: Array<{ doc_abbreviation: string; heading: string | null; content: string; page_start: number | null }> } }) => ({
         role: t.role as 'examiner' | 'student',
         text: t.text,
         assessment: t.assessment || undefined,
+        sources: t.assessment?.rag_chunks?.map((c) => ({
+          doc_abbreviation: c.doc_abbreviation,
+          heading: c.heading,
+          content: c.content,
+          page_start: c.page_start,
+        })) || undefined,
       }));
 
       // Check if the last message is from the examiner (question pending, user hasn't answered)

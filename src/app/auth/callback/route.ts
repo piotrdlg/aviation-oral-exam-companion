@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import type { EmailOtpType } from '@supabase/supabase-js';
 import type { AuthMethod } from '@/types/database';
+import { sendWelcomeEmail } from '@/lib/email';
 
 // Service-role client for profile updates (bypasses RLS)
 const serviceSupabase = createServiceClient(
@@ -47,8 +48,10 @@ async function trackLogin(userId: string, provider?: string): Promise<void> {
  * Ensure user_profiles row exists for this user.
  * The on_auth_user_created trigger should create it, but this is a safety net
  * in case the trigger fails or there's a race condition with OAuth providers.
+ *
+ * Returns true if a new profile was created, false otherwise.
  */
-async function ensureProfile(userId: string): Promise<void> {
+async function ensureProfile(userId: string): Promise<boolean> {
   const { data } = await serviceSupabase
     .from('user_profiles')
     .select('user_id')
@@ -60,10 +63,16 @@ async function ensureProfile(userId: string): Promise<void> {
       .from('user_profiles')
       .insert({ user_id: userId, tier: 'checkride_prep', subscription_status: 'none' });
 
-    if (error && !error.message.includes('duplicate')) {
-      console.error('[auth/callback] Failed to create user profile:', error.message);
+    if (error) {
+      if (!error.message.includes('duplicate')) {
+        console.error('[auth/callback] Failed to create user profile:', error.message);
+      }
+      return false;
     }
+    return true;
   }
+
+  return false;
 }
 
 export async function GET(request: NextRequest) {
@@ -102,9 +111,12 @@ export async function GET(request: NextRequest) {
     // Track login and ensure profile exists
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      // These are fire-and-forget — don't block the redirect
       void trackLogin(user.id, user.app_metadata?.provider);
-      void ensureProfile(user.id);
+      const isNewUser = await ensureProfile(user.id);
+      if (isNewUser && user.email) {
+        const name = user.user_metadata?.full_name || user.user_metadata?.name;
+        void sendWelcomeEmail(user.email, name ?? undefined);
+      }
     }
     return NextResponse.redirect(`${origin}${next}`);
   }
@@ -129,7 +141,11 @@ export async function GET(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       void trackLogin(user.id, user.app_metadata?.provider);
-      void ensureProfile(user.id);
+      const isNewUser = await ensureProfile(user.id);
+      if (isNewUser && user.email) {
+        const name = user.user_metadata?.full_name || user.user_metadata?.name;
+        void sendWelcomeEmail(user.email, name ?? undefined);
+      }
     }
     return NextResponse.redirect(`${origin}${next}`);
   }

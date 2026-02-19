@@ -17,6 +17,7 @@
     "@next/third-parties": "^16.1.6",
     "@nivo/core": "^0.99.0",
     "@nivo/treemap": "^0.99.0",
+    "@react-email/components": "^1.0.8",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.95.3",
     "ai": "^6.0.86",
@@ -26,8 +27,10 @@
     "posthog-js": "^1.351.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "resend": "^6.9.2",
     "server-only": "^0.0.1",
-    "stripe": "^20.3.1"
+    "stripe": "^20.3.1",
+    "svix": "^1.85.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
