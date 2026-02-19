@@ -74,7 +74,7 @@ export default function StudyRecommendations({ scores }: Props) {
   if (recs.length === 0) {
     return (
       <div className="bezel rounded-lg border border-c-border p-6 text-center">
-        <p className="text-c-dim font-mono text-xs">
+        <p className="text-c-dim font-mono text-sm">
           {scores.some((s) => s.total_attempts > 0)
             ? 'No study recommendations — all areas are looking good!'
             : 'Complete a practice session to get study recommendations.'}
@@ -85,7 +85,7 @@ export default function StudyRecommendations({ scores }: Props) {
 
   return (
     <div className="bezel rounded-lg border border-c-border p-4">
-      <h3 className="font-mono text-sm font-semibold text-c-amber uppercase tracking-wider mb-3">STUDY RECOMMENDATIONS</h3>
+      <h3 className="font-mono text-base font-semibold text-c-amber uppercase tracking-wider mb-3">STUDY RECOMMENDATIONS</h3>
       <div className="space-y-3 max-h-80 overflow-y-auto">
         {recs.slice(0, 8).map((rec) => (
           <div
@@ -97,8 +97,8 @@ export default function StudyRecommendations({ scores }: Props) {
             }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <p className="font-mono text-xs font-semibold text-c-text uppercase">{rec.area}</p>
-              <span className={`font-mono text-[10px] px-2 py-0.5 rounded border ${
+              <p className="font-mono text-sm font-semibold text-c-text uppercase">{rec.area}</p>
+              <span className={`font-mono text-xs px-2 py-0.5 rounded border ${
                 rec.severity === 'critical'
                   ? 'bg-c-red-dim/40 text-c-red border-c-red/20'
                   : 'bg-c-amber-lo text-c-amber border-c-amber/20'
@@ -106,8 +106,8 @@ export default function StudyRecommendations({ scores }: Props) {
                 {rec.elementCodes.length} WEAK ELEMENT{rec.elementCodes.length !== 1 ? 'S' : ''}
               </span>
             </div>
-            <p className="text-xs text-c-muted mb-1">{rec.suggestion}</p>
-            <p className="font-mono text-[10px] text-c-cyan">{rec.sourceHint}</p>
+            <p className="text-sm text-c-muted mb-1">{rec.suggestion}</p>
+            <p className="font-mono text-xs text-c-cyan">{rec.sourceHint}</p>
           </div>
         ))}
       </div>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" width="400" height="100">
+  <rect width="400" height="100" fill="transparent"/>
+  <text x="200" y="62" text-anchor="middle" font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', monospace" font-weight="700" font-size="44" letter-spacing="6" fill="#080c12">HeyDPE</text>
+  <text x="200" y="82" text-anchor="middle" font-family="'IBM Plex Sans', 'Helvetica Neue', sans-serif" font-weight="400" font-size="11" letter-spacing="4" fill="#6b7280">CHECKRIDE PREP</text>
+</svg>

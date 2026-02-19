@@ -974,13 +974,13 @@ export default function PracticePage() {
       <div className="max-w-2xl mx-auto">
         {/* Banners */}
         {checkoutSuccess && (
-          <div className="bg-c-green-lo border border-c-green/20 rounded-lg p-3 mb-4 text-c-green text-sm flex items-center justify-between">
+          <div className="bg-c-green-lo border border-c-green/20 rounded-lg p-3 mb-4 text-c-green text-base flex items-center justify-between">
             <span>Welcome to HeyDPE! Your subscription is active. Enjoy unlimited practice sessions.</span>
             <button onClick={() => setCheckoutSuccess(false)} className="text-c-green hover:text-c-green/80 ml-3 shrink-0">&times;</button>
           </div>
         )}
         {quotaWarning && (
-          <div className="bg-c-amber-lo border border-c-amber/20 rounded-lg p-3 mb-4 text-c-amber text-sm flex items-center justify-between">
+          <div className="bg-c-amber-lo border border-c-amber/20 rounded-lg p-3 mb-4 text-c-amber text-base flex items-center justify-between">
             <span>{quotaWarning} <a href="/pricing" className="underline hover:text-c-amber/80">Upgrade</a> for unlimited access.</span>
             <button onClick={() => setQuotaWarning(null)} className="text-c-amber hover:text-c-amber/80 ml-3 shrink-0">&times;</button>
           </div>
@@ -1026,26 +1026,26 @@ export default function PracticePage() {
           <>
             {/* Header with progress indicators */}
             <div className="flex items-center justify-between mb-5">
-              <h1 className="font-mono font-bold text-xl text-c-amber glow-a tracking-wider uppercase">PRACTICE</h1>
+              <h1 className="font-mono font-bold text-2xl text-c-amber glow-a tracking-wider uppercase">PRACTICE</h1>
               {practiceStats && (
                 <div className="flex items-center gap-3">
                   {coveragePct > 0 && (
                     <div className="flex items-center gap-2">
                       <div className="w-10 h-10 rounded-full border border-c-cyan/40 flex items-center justify-center gauge" style={{ '--gc': 'var(--color-c-cyan)', '--gp': `${coveragePct}%` } as React.CSSProperties}>
                         <div className="w-7 h-7 rounded-full bg-c-panel flex items-center justify-center">
-                          <span className="font-mono font-bold text-c-cyan text-[10px]">{coveragePct}%</span>
+                          <span className="font-mono font-bold text-c-cyan text-xs">{coveragePct}%</span>
                         </div>
                       </div>
-                      <span className="text-[10px] text-c-muted font-mono uppercase">ACS</span>
+                      <span className="text-xs text-c-muted font-mono uppercase">ACS</span>
                     </div>
                   )}
                   {streak > 0 && (
-                    <span className="flex items-center gap-1 text-[10px] font-mono text-c-amber bg-c-amber-lo px-2 py-1 rounded border border-c-amber/20">
+                    <span className="flex items-center gap-1 text-xs font-mono text-c-amber bg-c-amber-lo px-2 py-1 rounded border border-c-amber/20">
                       &#9670; {streak}d
                     </span>
                   )}
                   {ratingSessions.length > 0 && (
-                    <span className="text-[10px] text-c-muted font-mono uppercase">{ratingSessions.length} SESSIONS</span>
+                    <span className="text-xs text-c-muted font-mono uppercase">{ratingSessions.length} SESSIONS</span>
                   )}
                 </div>
               )}
@@ -1057,13 +1057,13 @@ export default function PracticePage() {
                 <button
                   onClick={startQuickSession}
                   disabled={loading}
-                  className="px-4 py-2.5 bg-c-bezel hover:bg-c-border border border-c-border hover:border-c-amber/30 text-c-text rounded-lg font-mono text-xs font-medium transition-colors disabled:opacity-50 flex items-center gap-2 uppercase"
+                  className="px-4 py-2.5 bg-c-bezel hover:bg-c-border border border-c-border hover:border-c-amber/30 text-c-text rounded-lg font-mono text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2 uppercase"
                 >
                   <span className="text-c-amber">&#9889;</span>
                   QUICK 5 &mdash; WEAK AREAS
                 </button>
                 {suggestedFocus && (
-                  <p className="text-[10px] text-c-muted font-mono">
+                  <p className="text-xs text-c-muted font-mono">
                     Suggested: <span className="text-c-text">{suggestedFocus}</span>
                   </p>
                 )}
@@ -1077,9 +1077,9 @@ export default function PracticePage() {
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <div className="w-1.5 h-1.5 rounded-full bg-c-cyan blink"></div>
-                      <h3 className="font-mono text-xs font-semibold text-c-cyan glow-c uppercase">CONTINUE PREVIOUS SESSION</h3>
+                      <h3 className="font-mono text-sm font-semibold text-c-cyan glow-c uppercase">CONTINUE PREVIOUS SESSION</h3>
                     </div>
-                    <p className="text-[10px] text-c-muted font-mono mt-1">
+                    <p className="text-xs text-c-muted font-mono mt-1">
                       {new Date(resumableSession.started_at).toLocaleDateString('en-US', {
                         month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
                       })}
@@ -1091,7 +1091,7 @@ export default function PracticePage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <label className="flex items-center gap-1.5 text-[10px] text-c-muted font-mono cursor-pointer select-none uppercase">
+                    <label className="flex items-center gap-1.5 text-xs text-c-muted font-mono cursor-pointer select-none uppercase">
                       <input
                         type="checkbox"
                         checked={resumeVoiceToggle}
@@ -1103,7 +1103,7 @@ export default function PracticePage() {
                     <button
                       onClick={() => resumeSession(resumableSession)}
                       disabled={loading}
-                      className="px-4 py-2 bg-c-cyan hover:bg-c-cyan/90 text-c-bg rounded-lg font-mono text-xs font-semibold transition-colors disabled:opacity-50 uppercase"
+                      className="px-4 py-2 bg-c-cyan hover:bg-c-cyan/90 text-c-bg rounded-lg font-mono text-sm font-semibold transition-colors disabled:opacity-50 uppercase"
                     >
                       CONTINUE
                     </button>
@@ -1116,7 +1116,7 @@ export default function PracticePage() {
                         });
                         setResumableSession(null);
                       }}
-                      className="px-3 py-2 text-c-muted hover:text-c-text font-mono text-xs transition-colors border border-c-border rounded-lg hover:border-c-border-hi uppercase"
+                      className="px-3 py-2 text-c-muted hover:text-c-text font-mono text-sm transition-colors border border-c-border rounded-lg hover:border-c-border-hi uppercase"
                     >
                       START NEW
                     </button>
@@ -1135,7 +1135,7 @@ export default function PracticePage() {
             />
 
             {/* Disclaimer — always visible but low visual weight */}
-            <p className="text-c-amber/25 text-[10px] font-mono leading-relaxed mt-4 text-center uppercase">
+            <p className="text-c-amber/25 text-xs font-mono leading-relaxed mt-4 text-center uppercase">
               FOR STUDY PURPOSES ONLY. NOT A SUBSTITUTE FOR CFI INSTRUCTION OR AN ACTUAL DPE CHECKRIDE.
               ALWAYS VERIFY INFORMATION AGAINST CURRENT FAA PUBLICATIONS.
             </p>
@@ -1146,21 +1146,21 @@ export default function PracticePage() {
         {showQuotaModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
             <div className="bezel rounded-lg border border-c-border p-6 max-w-md mx-4 shadow-2xl">
-              <h2 className="font-mono font-bold text-xl text-c-amber glow-a mb-2 tracking-wider uppercase">SESSION LIMIT REACHED</h2>
-              <p className="text-c-muted text-sm mb-6">
+              <h2 className="font-mono font-bold text-2xl text-c-amber glow-a mb-2 tracking-wider uppercase">SESSION LIMIT REACHED</h2>
+              <p className="text-c-muted text-base mb-6">
                 You&apos;ve reached your monthly session limit. Upgrade your plan to continue practicing
                 for your checkride.
               </p>
               <div className="flex gap-3">
                 <a
                   href="/pricing"
-                  className="flex-1 py-2.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm text-center transition-colors uppercase tracking-wider"
+                  className="flex-1 py-2.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-base text-center transition-colors uppercase tracking-wider"
                 >
                   VIEW PLANS
                 </a>
                 <button
                   onClick={() => setShowQuotaModal(false)}
-                  className="px-4 py-2.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-mono text-sm transition-colors border border-c-border uppercase"
+                  className="px-4 py-2.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-mono text-base transition-colors border border-c-border uppercase"
                 >
                   DISMISS
                 </button>
@@ -1178,7 +1178,7 @@ export default function PracticePage() {
       <div className="flex items-center justify-between mb-3 px-1">
         <div className="flex items-center gap-3 min-w-0">
           {taskData && (
-            <p className="text-xs text-c-muted truncate font-mono">
+            <p className="text-sm text-c-muted truncate font-mono">
               {taskData.area} <span className="text-c-dim">/</span> {taskData.task}
               {currentElement && (
                 <span className="ml-1.5 font-mono text-c-dim">[{currentElement}]</span>
@@ -1187,11 +1187,11 @@ export default function PracticePage() {
           )}
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          <span className="text-[10px] text-c-dim font-mono tabular-nums uppercase">
+          <span className="text-xs text-c-dim font-mono tabular-nums uppercase">
             {exchangeCount} Q&amp;A
           </span>
           {voiceEnabled && (
-            <span className="flex items-center gap-1 text-[10px] font-mono text-c-green uppercase">
+            <span className="flex items-center gap-1 text-xs font-mono text-c-green uppercase">
               <span className="w-1.5 h-1.5 rounded-full bg-c-green blink" />
               VOICE
             </span>
@@ -1202,7 +1202,7 @@ export default function PracticePage() {
               if (exchangeCount > 0 && !confirm('End this session? Your progress will be saved.')) return;
               endSession();
             }}
-            className="text-[10px] font-mono text-c-muted hover:text-c-red transition-colors underline-offset-2 hover:underline uppercase"
+            className="text-xs font-mono text-c-muted hover:text-c-red transition-colors underline-offset-2 hover:underline uppercase"
           >
             END SESSION
           </button>
@@ -1211,7 +1211,7 @@ export default function PracticePage() {
 
       {/* Error banner with recovery options */}
       {(error || voice.error) && (
-        <div className="bg-c-red-dim/40 border border-c-red/20 rounded-lg p-3 mb-3 text-sm">
+        <div className="bg-c-red-dim/40 border border-c-red/20 rounded-lg p-3 mb-3 text-base">
           <div className="flex items-start gap-2">
             <svg className="w-4 h-4 text-c-red mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
@@ -1219,13 +1219,13 @@ export default function PracticePage() {
             <div className="flex-1">
               <p className="text-c-red">{error || voice.error}</p>
               {voice.error && !error && (
-                <p className="text-xs text-c-muted mt-1">Voice mode disabled. Continuing in text-only mode.</p>
+                <p className="text-sm text-c-muted mt-1">Voice mode disabled. Continuing in text-only mode.</p>
               )}
               {showErrorRecovery && lastFailedAnswer && (
                 <div className="flex gap-2 mt-2">
                   <button
                     onClick={retryLastAnswer}
-                    className="px-3 py-1.5 text-xs bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors font-mono uppercase"
+                    className="px-3 py-1.5 text-sm bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors font-mono uppercase"
                   >
                     RETRY
                   </button>
@@ -1236,13 +1236,13 @@ export default function PracticePage() {
                       setShowErrorRecovery(false);
                       setError(null);
                     }}
-                    className="px-3 py-1.5 text-xs bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors font-mono uppercase"
+                    className="px-3 py-1.5 text-sm bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors font-mono uppercase"
                   >
                     TEXT-ONLY
                   </button>
                   <button
                     onClick={() => { endSession(); setShowErrorRecovery(false); setError(null); }}
-                    className="px-3 py-1.5 text-xs bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors font-mono uppercase"
+                    className="px-3 py-1.5 text-sm bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors font-mono uppercase"
                   >
                     END SESSION
                   </button>
@@ -1273,7 +1273,7 @@ export default function PracticePage() {
                 {userAvatar ? (
                   <img data-testid="student-avatar-img" src={userAvatar} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  <div data-testid="message-avatar-initials" className="w-full h-full flex items-center justify-center text-lg font-mono text-c-muted uppercase">
+                  <div data-testid="message-avatar-initials" className="w-full h-full flex items-center justify-center text-xl font-mono text-c-muted uppercase">
                     {userName?.[0]?.toUpperCase() || '?'}
                   </div>
                 )}
@@ -1287,7 +1287,7 @@ export default function PracticePage() {
               }`}
             >
               <div className="flex items-center justify-between mb-1.5">
-                <p data-testid="message-sender-label" className={`text-[10px] font-mono uppercase tracking-wide ${
+                <p data-testid="message-sender-label" className={`text-xs font-mono uppercase tracking-wide ${
                   msg.role === 'examiner' ? 'text-c-amber' : 'text-c-cyan'
                 }`}>
                   {msg.role === 'examiner' ? (activePersona?.label || 'DPE EXAMINER') : (userName || 'APPLICANT')}
@@ -1309,7 +1309,7 @@ export default function PracticePage() {
                   </button>
                 )}
               </div>
-              <p className="text-sm text-c-text leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+              <p className="text-base text-c-text leading-relaxed whitespace-pre-wrap">{msg.text}</p>
 
               {/* Reference images (feature-flagged) */}
               {msg.images && msg.images.length > 0 && (
@@ -1319,7 +1319,7 @@ export default function PracticePage() {
               {/* Assessment badge */}
               {msg.assessment && (
                 <div className="mt-2 pt-2 border-t border-c-border">
-                  <span className={`font-mono text-[10px] px-2 py-0.5 rounded border uppercase ${
+                  <span className={`font-mono text-xs px-2 py-0.5 rounded border uppercase ${
                     msg.assessment.score === 'satisfactory'
                       ? 'bg-c-green-lo/40 text-c-green border-c-green/20'
                       : msg.assessment.score === 'unsatisfactory'
@@ -1329,7 +1329,7 @@ export default function PracticePage() {
                     {msg.assessment.score.toUpperCase()}
                   </span>
                   {msg.assessment.feedback && (
-                    <p className="text-xs text-c-muted mt-1">{msg.assessment.feedback}</p>
+                    <p className="text-sm text-c-muted mt-1">{msg.assessment.feedback}</p>
                   )}
                 </div>
               )}
@@ -1337,12 +1337,12 @@ export default function PracticePage() {
               {/* FAA source summary (LLM-synthesized) + deduplicated document references */}
               {(msg.assessment?.source_summary || (msg.sources && msg.sources.length > 0)) && (
                 <details className="mt-2 pt-2 border-t border-c-border">
-                  <summary className="text-xs text-c-cyan cursor-pointer hover:text-c-cyan/80 font-mono uppercase">
+                  <summary className="text-sm text-c-cyan cursor-pointer hover:text-c-cyan/80 font-mono uppercase">
                     FAA REFERENCES
                   </summary>
                   <div className="mt-1.5">
                     {msg.assessment?.source_summary && (
-                      <p className="text-xs text-c-text leading-relaxed mb-1.5">{msg.assessment.source_summary}</p>
+                      <p className="text-sm text-c-text leading-relaxed mb-1.5">{msg.assessment.source_summary}</p>
                     )}
                     {msg.sources && msg.sources.length > 0 && (() => {
                       // Deduplicate sources by abbreviation + heading
@@ -1370,11 +1370,11 @@ export default function PracticePage() {
                               + (src.page_start ? ` (p.${src.page_start})` : '');
                             return link ? (
                               <a key={j} href={link} target="_blank" rel="noopener noreferrer"
-                                className="text-[10px] font-mono bg-c-panel rounded px-1.5 py-0.5 text-c-cyan hover:text-c-cyan/80 hover:bg-c-elevated transition-colors border border-c-border">
+                                className="text-xs font-mono bg-c-panel rounded px-1.5 py-0.5 text-c-cyan hover:text-c-cyan/80 hover:bg-c-elevated transition-colors border border-c-border">
                                 {label} &#8599;
                               </a>
                             ) : (
-                              <span key={j} className="text-[10px] font-mono bg-c-panel rounded px-1.5 py-0.5 text-c-muted border border-c-border">
+                              <span key={j} className="text-xs font-mono bg-c-panel rounded px-1.5 py-0.5 text-c-muted border border-c-border">
                                 {label}
                               </span>
                             );
@@ -1392,7 +1392,7 @@ export default function PracticePage() {
                 {activePersona?.image ? (
                   <img data-testid="examiner-avatar-img" src={activePersona.image} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  <div data-testid="message-avatar-initials" className="w-full h-full flex items-center justify-center text-xs font-mono text-c-muted uppercase">DPE</div>
+                  <div data-testid="message-avatar-initials" className="w-full h-full flex items-center justify-center text-sm font-mono text-c-muted uppercase">DPE</div>
                 )}
               </div>
             )}
@@ -1402,7 +1402,7 @@ export default function PracticePage() {
         {loading && (
           <div className="flex justify-start">
             <div className="bg-c-bezel rounded-lg px-4 py-3 border-l-2 border-c-amber/50">
-              <p className="text-[10px] font-mono mb-1 text-c-amber uppercase">DPE EXAMINER</p>
+              <p className="text-xs font-mono mb-1 text-c-amber uppercase">DPE EXAMINER</p>
               <div className="flex space-x-1">
                 <div className="w-2 h-2 bg-c-muted rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                 <div className="w-2 h-2 bg-c-muted rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -1488,12 +1488,12 @@ export default function PracticePage() {
             }}
             placeholder={voice.isListening ? 'Listening...' : 'Type your answer... (Enter to send)'}
             disabled={loading}
-            className="w-full px-4 py-3 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-xs placeholder-c-dim focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber disabled:opacity-50 resize-none transition-colors"
+            className="w-full px-4 py-3 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm placeholder-c-dim focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber disabled:opacity-50 resize-none transition-colors"
           />
           <button
             onClick={() => sendAnswer("I don't know the answer to this question.")}
             disabled={loading}
-            className="self-start text-[10px] text-c-muted hover:text-c-text transition-colors disabled:opacity-50 px-1 font-mono uppercase"
+            className="self-start text-xs text-c-muted hover:text-c-text transition-colors disabled:opacity-50 px-1 font-mono uppercase"
           >
             I DON&apos;T KNOW
           </button>
@@ -1514,21 +1514,21 @@ export default function PracticePage() {
       {showQuotaModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
           <div className="bezel rounded-lg border border-c-border p-6 max-w-md mx-4 shadow-2xl">
-            <h2 className="font-mono font-bold text-xl text-c-amber glow-a mb-2 tracking-wider uppercase">SESSION LIMIT REACHED</h2>
-            <p className="text-c-muted text-sm mb-6">
+            <h2 className="font-mono font-bold text-2xl text-c-amber glow-a mb-2 tracking-wider uppercase">SESSION LIMIT REACHED</h2>
+            <p className="text-c-muted text-base mb-6">
               You&apos;ve reached your monthly session limit. Upgrade your plan to continue practicing
               for your checkride.
             </p>
             <div className="flex gap-3">
               <a
                 href="/pricing"
-                className="flex-1 py-2.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm text-center transition-colors uppercase tracking-wider"
+                className="flex-1 py-2.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-base text-center transition-colors uppercase tracking-wider"
               >
                 VIEW PLANS
               </a>
               <button
                 onClick={() => setShowQuotaModal(false)}
-                className="px-4 py-2.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-mono text-sm transition-colors border border-c-border uppercase"
+                className="px-4 py-2.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-mono text-base transition-colors border border-c-border uppercase"
               >
                 DISMISS
               </button>
@@ -1543,7 +1543,7 @@ export default function PracticePage() {
           <svg className="w-5 h-5 text-c-amber flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
           </svg>
-          <p className="text-sm text-c-amber">Your exam on another device has been paused. Your progress is saved.</p>
+          <p className="text-base text-c-amber">Your exam on another device has been paused. Your progress is saved.</p>
           <button onClick={() => setPausedSessionToast(false)} className="text-c-amber hover:text-c-amber/80 flex-shrink-0">
             &times;
           </button>
@@ -1554,17 +1554,17 @@ export default function PracticePage() {
       {reportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
           <div className="bezel rounded-lg border border-c-border p-6 max-w-md mx-4 shadow-2xl">
-            <h3 className="font-mono font-bold text-lg text-c-amber glow-a mb-1 tracking-wider uppercase">REPORT INACCURATE ANSWER</h3>
-            <p className="text-[10px] text-c-muted font-mono mb-4 uppercase">EXCHANGE #{Math.ceil((reportModal.exchangeIndex + 1) / 2)}</p>
+            <h3 className="font-mono font-bold text-xl text-c-amber glow-a mb-1 tracking-wider uppercase">REPORT INACCURATE ANSWER</h3>
+            <p className="text-xs text-c-muted font-mono mb-4 uppercase">EXCHANGE #{Math.ceil((reportModal.exchangeIndex + 1) / 2)}</p>
 
             <div className="mb-4">
-              <label className="block font-mono text-[10px] text-c-muted mb-2 tracking-wider uppercase">ERROR TYPE</label>
+              <label className="block font-mono text-xs text-c-muted mb-2 tracking-wider uppercase">ERROR TYPE</label>
               <div className="flex gap-2">
                 {(['factual', 'scoring', 'safety'] as const).map((type) => (
                   <button
                     key={type}
                     onClick={() => setReportErrorType(type)}
-                    className={`px-3 py-1.5 font-mono text-xs rounded-lg border transition-colors uppercase ${
+                    className={`px-3 py-1.5 font-mono text-sm rounded-lg border transition-colors uppercase ${
                       reportErrorType === type
                         ? 'border-c-amber/50 bg-c-amber-lo/50 text-c-amber font-semibold'
                         : 'border-c-border bg-c-bezel text-c-muted hover:border-c-border-hi'
@@ -1577,13 +1577,13 @@ export default function PracticePage() {
             </div>
 
             <div className="mb-4">
-              <label className="block font-mono text-[10px] text-c-muted mb-1.5 tracking-wider uppercase">WHAT WAS INCORRECT?</label>
+              <label className="block font-mono text-xs text-c-muted mb-1.5 tracking-wider uppercase">WHAT WAS INCORRECT?</label>
               <textarea
                 value={reportComment}
                 onChange={(e) => setReportComment(e.target.value)}
                 placeholder="Describe the issue..."
                 rows={3}
-                className="w-full px-3 py-2.5 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-xs placeholder-c-dim focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber resize-none transition-colors"
+                className="w-full px-3 py-2.5 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm placeholder-c-dim focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber resize-none transition-colors"
               />
             </div>
 
@@ -1591,7 +1591,7 @@ export default function PracticePage() {
               <button
                 onClick={() => setReportModal(null)}
                 disabled={reportSubmitting}
-                className="px-4 py-2 font-mono text-xs text-c-muted hover:text-c-text transition-colors uppercase"
+                className="px-4 py-2 font-mono text-sm text-c-muted hover:text-c-text transition-colors uppercase"
               >
                 CANCEL
               </button>
@@ -1626,7 +1626,7 @@ export default function PracticePage() {
                   }
                 }}
                 disabled={reportSubmitting || !reportComment.trim()}
-                className="px-4 py-2 font-mono text-xs bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg rounded-lg font-semibold transition-colors uppercase tracking-wider"
+                className="px-4 py-2 font-mono text-sm bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg rounded-lg font-semibold transition-colors uppercase tracking-wider"
               >
                 {reportSubmitting ? 'SUBMITTING...' : 'SUBMIT REPORT'}
               </button>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="g">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d1117"/>
+      <stop offset="100%" stop-color="#080c12"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="64" fill="url(#bg)"/>
+  <rect x="8" y="8" width="496" height="496" rx="56" fill="none" stroke="#1c2333" stroke-width="2"/>
+  <!-- Stylized "H" monogram from HeyDPE -->
+  <g filter="url(#g)">
+    <!-- Left vertical of H -->
+    <rect x="128" y="128" width="40" height="256" rx="4" fill="#f5a623"/>
+    <!-- Right vertical of H -->
+    <rect x="344" y="128" width="40" height="256" rx="4" fill="#f5a623"/>
+    <!-- Crossbar of H (angled, dynamic) -->
+    <rect x="152" y="236" width="220" height="40" rx="4" fill="#f5a623"/>
+    <!-- Small accent dot — cyan, like a status indicator -->
+    <circle cx="404" cy="148" r="16" fill="#00d4ff" opacity="0.9"/>
+  </g>
+</svg>

@@ -57,6 +57,14 @@ export async function POST(request: NextRequest) {
         trial_period_days: 7,
         metadata: { supabase_user_id: user.id },
       },
+      custom_text: {
+        submit: {
+          message: 'Start your 7-day free trial. Cancel anytime \u2014 no questions asked.',
+        },
+        after_submit: {
+          message: 'Welcome to HeyDPE! Your practice sessions are ready.',
+        },
+      },
       success_url: `${baseUrl}/practice?checkout=success`,
       cancel_url: `${baseUrl}/pricing?checkout=canceled`,
     });

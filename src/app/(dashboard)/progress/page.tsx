@@ -25,7 +25,7 @@ const AcsCoverageTreemap = dynamic(() => import('./components/AcsCoverageTreemap
   ssr: false,
   loading: () => (
     <div className="bezel rounded-lg border border-c-border p-6 flex items-center justify-center" style={{ height: 460 }}>
-      <p className="text-c-dim font-mono text-xs">LOADING TREEMAP...</p>
+      <p className="text-c-dim font-mono text-sm">LOADING TREEMAP...</p>
     </div>
   ),
 });
@@ -236,8 +236,8 @@ export default function ProgressPage() {
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="mb-2">
-        <h1 className="font-mono font-bold text-xl text-c-amber glow-a tracking-wider uppercase">PROGRESS</h1>
-        <p className="text-sm text-c-muted mt-1">
+        <h1 className="font-mono font-bold text-2xl text-c-amber glow-a tracking-wider uppercase">PROGRESS</h1>
+        <p className="text-base text-c-muted mt-1">
           {RATING_LABELS[selectedRating]}{selectedRating !== 'instrument' ? ` (${selectedClass})` : ' — Airplane'} checkride preparation
         </p>
       </div>
@@ -251,7 +251,7 @@ export default function ProgressPage() {
               <button
                 key={r.value}
                 onClick={() => setSelectedRating(r.value)}
-                className={`px-2.5 py-1.5 text-xs rounded-md font-mono transition-colors ${
+                className={`px-2.5 py-1.5 text-sm rounded-md font-mono transition-colors ${
                   selectedRating === r.value ? 'bg-c-amber text-c-bg font-semibold' : 'text-c-muted hover:text-c-text'
                 }`}
               >
@@ -266,7 +266,7 @@ export default function ProgressPage() {
                 <button
                   key={cls.value}
                   onClick={() => setSelectedClass(cls.value)}
-                  className={`px-2.5 py-1.5 text-xs rounded-md font-mono transition-colors ${
+                  className={`px-2.5 py-1.5 text-sm rounded-md font-mono transition-colors ${
                     selectedClass === cls.value ? 'bg-c-amber text-c-bg font-semibold' : 'text-c-muted hover:text-c-text'
                   }`}
                 >
@@ -279,7 +279,7 @@ export default function ProgressPage() {
           <div className="flex gap-0.5 bg-c-bezel rounded-lg p-0.5 ml-auto">
             <button
               onClick={() => setView('overview')}
-              className={`px-3 py-1.5 text-xs rounded-md font-mono transition-colors ${
+              className={`px-3 py-1.5 text-sm rounded-md font-mono transition-colors ${
                 view === 'overview' ? 'bg-c-elevated text-c-text font-semibold' : 'text-c-muted hover:text-c-text'
               }`}
             >
@@ -287,7 +287,7 @@ export default function ProgressPage() {
             </button>
             <button
               onClick={() => setView('treemap')}
-              className={`px-3 py-1.5 text-xs rounded-md font-mono transition-colors ${
+              className={`px-3 py-1.5 text-sm rounded-md font-mono transition-colors ${
                 view === 'treemap' ? 'bg-c-elevated text-c-text font-semibold' : 'text-c-muted hover:text-c-text'
               }`}
             >
@@ -308,7 +308,7 @@ export default function ProgressPage() {
             ))}
           </div>
           <div className="bezel rounded-lg border border-c-border p-6 flex items-center justify-center min-h-[200px]">
-            <p className="text-c-dim font-mono text-xs">LOADING YOUR PROGRESS...</p>
+            <p className="text-c-dim font-mono text-sm">LOADING YOUR PROGRESS...</p>
           </div>
         </div>
       ) : filteredSessions.length === 0 && elementScores.length === 0 ? (
@@ -317,13 +317,13 @@ export default function ProgressPage() {
           <div className="text-4xl mb-3 opacity-50">
             <span className="text-c-muted text-3xl">&#9636;</span>
           </div>
-          <h2 className="font-mono font-semibold text-sm text-c-text uppercase mb-2">NO PROGRESS DATA YET</h2>
-          <p className="text-sm text-c-muted mb-5 max-w-sm mx-auto">
+          <h2 className="font-mono font-semibold text-base text-c-text uppercase mb-2">NO PROGRESS DATA YET</h2>
+          <p className="text-base text-c-muted mb-5 max-w-sm mx-auto">
             Complete your first practice session to start tracking your {RATING_LABELS[selectedRating]} checkride readiness.
           </p>
           <Link
             href="/practice"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-c-amber hover:bg-c-amber/90 text-c-bg text-xs font-mono font-semibold rounded-lg tracking-wide transition-colors shadow-lg shadow-c-amber/20 uppercase"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-c-amber hover:bg-c-amber/90 text-c-bg text-sm font-mono font-semibold rounded-lg tracking-wide transition-colors shadow-lg shadow-c-amber/20 uppercase"
           >
             START PRACTICING
             <span>&#9654;</span>
@@ -336,7 +336,7 @@ export default function ProgressPage() {
             {/* Readiness Score */}
             <div className={`col-span-2 md:col-span-1 ${readinessBg} rounded-lg border border-c-border p-4 text-center`}>
               <p className={`text-3xl font-mono font-bold ${readinessColor} ${readinessGlow}`}>{readinessScore}</p>
-              <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider mt-0.5">READINESS</p>
+              <p className="font-mono text-xs text-c-muted uppercase tracking-wider mt-0.5">READINESS</p>
               <div className="mt-2 h-1.5 bg-c-border rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${readinessProgClass}`}
@@ -345,22 +345,22 @@ export default function ProgressPage() {
               </div>
             </div>
             <div className="bezel rounded-lg border border-c-border p-3 text-center">
-              <p className="text-xl font-mono font-semibold text-c-text">{totalSessions}</p>
-              <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider mt-0.5">
+              <p className="text-2xl font-mono font-semibold text-c-text">{totalSessions}</p>
+              <p className="font-mono text-xs text-c-muted uppercase tracking-wider mt-0.5">
                 SESSIONS{completedSessions < totalSessions ? ` (${completedSessions} DONE)` : ''}
               </p>
             </div>
             <div className="bezel rounded-lg border border-c-border p-3 text-center">
-              <p className="text-xl font-mono font-semibold text-c-text">{totalExchanges}</p>
-              <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider mt-0.5">EXCHANGES</p>
+              <p className="text-2xl font-mono font-semibold text-c-text">{totalExchanges}</p>
+              <p className="font-mono text-xs text-c-muted uppercase tracking-wider mt-0.5">EXCHANGES</p>
             </div>
             <div className="bezel rounded-lg border border-c-border p-3 text-center">
-              <p className="text-xl font-mono font-semibold text-c-text">{coveragePct}%</p>
-              <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider mt-0.5">COVERAGE</p>
+              <p className="text-2xl font-mono font-semibold text-c-text">{coveragePct}%</p>
+              <p className="font-mono text-xs text-c-muted uppercase tracking-wider mt-0.5">COVERAGE</p>
             </div>
             <div className="bezel rounded-lg border border-c-border p-3 text-center">
-              <p className="text-xl font-mono font-semibold text-c-text">{attemptedElements}</p>
-              <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider mt-0.5">ELEMENTS</p>
+              <p className="text-2xl font-mono font-semibold text-c-text">{attemptedElements}</p>
+              <p className="font-mono text-xs text-c-muted uppercase tracking-wider mt-0.5">ELEMENTS</p>
             </div>
           </div>
 
@@ -372,18 +372,18 @@ export default function ProgressPage() {
                   <span
                     key={a.id}
                     title={a.label}
-                    className="shrink-0 inline-flex items-center gap-1.5 font-mono text-[10px] bg-c-bezel text-c-muted px-2.5 py-1 rounded-full border border-c-border"
+                    className="shrink-0 inline-flex items-center gap-1.5 font-mono text-xs bg-c-bezel text-c-muted px-2.5 py-1 rounded-full border border-c-border"
                   >
-                    <span className="text-c-amber font-bold text-[10px]">{a.icon}</span>
+                    <span className="text-c-amber font-bold text-xs">{a.icon}</span>
                     {a.label}
                   </span>
                 ))}
                 {nextAchievement && (
                   <span
                     title={`Next: ${nextAchievement.label}`}
-                    className="shrink-0 inline-flex items-center gap-1.5 font-mono text-[10px] bg-c-panel text-c-dim px-2.5 py-1 rounded-full border border-c-border border-dashed"
+                    className="shrink-0 inline-flex items-center gap-1.5 font-mono text-xs bg-c-panel text-c-dim px-2.5 py-1 rounded-full border border-c-border border-dashed"
                   >
-                    <span className="text-c-dim font-bold text-[10px]">{nextAchievement.icon}</span>
+                    <span className="text-c-dim font-bold text-xs">{nextAchievement.icon}</span>
                     {nextAchievement.label}
                   </span>
                 )}
@@ -399,10 +399,10 @@ export default function ProgressPage() {
                 className="flex items-center justify-between w-full px-4 py-3 bg-c-red-dim/40 hover:bg-c-red-dim/60 border border-c-red/20 rounded-lg transition-colors group"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-c-red text-lg">&#9888;</span>
+                  <span className="text-c-red text-xl">&#9888;</span>
                   <div>
-                    <p className="text-sm font-mono font-medium text-c-red">{weakCount} WEAK ELEMENT{weakCount !== 1 ? 'S' : ''} NEED ATTENTION</p>
-                    <p className="text-xs text-c-muted">Practice focused on your gaps</p>
+                    <p className="text-base font-mono font-medium text-c-red">{weakCount} WEAK ELEMENT{weakCount !== 1 ? 'S' : ''} NEED ATTENTION</p>
+                    <p className="text-sm text-c-muted">Practice focused on your gaps</p>
                   </div>
                 </div>
                 <span className="text-c-dim group-hover:text-c-red transition-colors">&#9654;</span>
@@ -415,11 +415,11 @@ export default function ProgressPage() {
             <div className="space-y-4">
               {/* Session selector */}
               <div className="flex items-center gap-2">
-                <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider">SESSION:</label>
+                <label className="font-mono text-xs text-c-muted uppercase tracking-wider">SESSION:</label>
                 <select
                   value={selectedSessionId || ''}
                   onChange={(e) => setSelectedSessionId(e.target.value || null)}
-                  className="bg-c-panel border border-c-border rounded-lg text-xs text-c-text font-mono px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber"
+                  className="bg-c-panel border border-c-border rounded-lg text-sm text-c-text font-mono px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber"
                 >
                   <option value="">All Sessions (Lifetime)</option>
                   {filteredSessions.map((s) => (
@@ -435,7 +435,7 @@ export default function ProgressPage() {
                   ))}
                 </select>
                 {sessionScoresLoading && (
-                  <span className="font-mono text-[10px] text-c-dim">LOADING...</span>
+                  <span className="font-mono text-xs text-c-dim">LOADING...</span>
                 )}
               </div>
               <AcsCoverageTreemap scores={treemapScores} />
@@ -448,11 +448,11 @@ export default function ProgressPage() {
             /* Overview View — Sessions + Weak Areas */
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
-                <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-3">RECENT SESSIONS</h2>
+                <h2 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-3">RECENT SESSIONS</h2>
                 <div className="space-y-2">
                   {filteredSessions.length === 0 ? (
                     <div className="bezel rounded-lg border border-c-border p-4 text-center">
-                      <p className="text-sm text-c-dim font-mono">No {RATING_LABELS[selectedRating]} sessions yet</p>
+                      <p className="text-base text-c-dim font-mono">No {RATING_LABELS[selectedRating]} sessions yet</p>
                     </div>
                   ) : (
                     filteredSessions.slice(0, 10).map((session) => (
@@ -461,7 +461,7 @@ export default function ProgressPage() {
                         className="iframe rounded-lg p-3 flex items-center justify-between"
                       >
                         <div>
-                          <p className="text-sm font-mono text-c-text">
+                          <p className="text-base font-mono text-c-text">
                             {new Date(session.started_at).toLocaleDateString('en-US', {
                               month: 'short',
                               day: 'numeric',
@@ -470,7 +470,7 @@ export default function ProgressPage() {
                               minute: '2-digit',
                             })}
                           </p>
-                          <p className="font-mono text-[10px] text-c-dim mt-0.5">
+                          <p className="font-mono text-xs text-c-dim mt-0.5">
                             {session.exchange_count || 0} exchanges
                             {session.acs_tasks_covered?.length
                               ? ` / ${session.acs_tasks_covered.length} tasks`
@@ -479,7 +479,7 @@ export default function ProgressPage() {
                           </p>
                         </div>
                         <span
-                          className={`font-mono text-[10px] px-2 py-0.5 rounded border uppercase ${
+                          className={`font-mono text-xs px-2 py-0.5 rounded border uppercase ${
                             session.status === 'completed'
                               ? 'bg-c-green-lo text-c-green border-c-green/20'
                               : session.status === 'active'
@@ -497,11 +497,11 @@ export default function ProgressPage() {
 
               <div className="space-y-4">
                 <div>
-                  <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-3">WEAK AREAS</h2>
+                  <h2 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-3">WEAK AREAS</h2>
                   <WeakAreas scores={filteredScores} />
                 </div>
                 <div>
-                  <h2 className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-3">STUDY PLAN</h2>
+                  <h2 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-3">STUDY PLAN</h2>
                   <StudyRecommendations scores={filteredScores} />
                 </div>
               </div>

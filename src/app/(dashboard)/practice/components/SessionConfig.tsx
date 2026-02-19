@@ -117,14 +117,14 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
 
   return (
     <div className="bezel rounded-lg border border-c-border p-6">
-      <h2 className="font-mono font-semibold text-sm text-c-amber mb-5 tracking-wider uppercase">NEW SESSION</h2>
+      <h2 className="font-mono font-semibold text-base text-c-amber mb-5 tracking-wider uppercase">NEW SESSION</h2>
       <div className="space-y-5">
         {/* Rating & Class (read-only from Settings) */}
         <div className="flex items-center justify-between px-4 py-3 bg-c-panel rounded-lg border border-c-border">
           {prefsLoading ? (
-            <span className="font-mono text-xs text-c-dim">LOADING PREFERENCES...</span>
+            <span className="font-mono text-sm text-c-dim">LOADING PREFERENCES...</span>
           ) : (
-            <span className="font-mono text-xs">
+            <span className="font-mono text-sm">
               <span className="text-c-green font-semibold glow-g">{(RATING_LABELS[rating] || rating).toUpperCase()}</span>
               <span className="text-c-muted mx-2">&middot;</span>
               <span className="text-c-cyan font-semibold">{rating === 'instrument' ? 'AIRPLANE' : aircraftClass}</span>
@@ -132,7 +132,7 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
           )}
           <Link
             href="/settings"
-            className="font-mono text-[10px] text-c-amber hover:text-c-amber/80 transition-colors whitespace-nowrap ml-3 uppercase tracking-wider"
+            className="font-mono text-xs text-c-amber hover:text-c-amber/80 transition-colors whitespace-nowrap ml-3 uppercase tracking-wider"
           >
             CHANGE IN SETTINGS &rarr;
           </Link>
@@ -140,7 +140,7 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
 
         {/* Study Mode */}
         <div>
-          <label className="block font-mono text-[10px] text-c-muted mb-2 tracking-wider uppercase">STUDY MODE</label>
+          <label className="block font-mono text-xs text-c-muted mb-2 tracking-wider uppercase">STUDY MODE</label>
           <div className="grid grid-cols-3 gap-2">
             {[
               { value: 'linear' as const, label: 'AREA BY AREA', desc: 'One area at a time' },
@@ -156,8 +156,8 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
                     : 'border-c-border bg-c-bezel hover:border-c-border-hi'
                 }`}
               >
-                <p className={`font-mono text-xs ${studyMode === mode.value ? 'font-semibold text-c-amber' : 'font-medium text-c-muted'}`}>{mode.label}</p>
-                <p className="text-[10px] text-c-muted mt-1">{mode.desc}</p>
+                <p className={`font-mono text-sm ${studyMode === mode.value ? 'font-semibold text-c-amber' : 'font-medium text-c-muted'}`}>{mode.label}</p>
+                <p className="text-xs text-c-muted mt-1">{mode.desc}</p>
               </button>
             ))}
           </div>
@@ -165,7 +165,7 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
 
         {/* Difficulty */}
         <div>
-          <label className="block font-mono text-[10px] text-c-muted mb-2 tracking-wider uppercase">DIFFICULTY</label>
+          <label className="block font-mono text-xs text-c-muted mb-2 tracking-wider uppercase">DIFFICULTY</label>
           <div className="flex gap-2">
             {[
               { value: 'mixed' as const, label: 'MIXED' },
@@ -176,7 +176,7 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
               <button
                 key={d.value}
                 onClick={() => setDifficulty(d.value)}
-                className={`px-4 py-2 rounded-lg font-mono text-xs transition-colors ${
+                className={`px-4 py-2 rounded-lg font-mono text-sm transition-colors ${
                   difficulty === d.value
                     ? 'bg-c-amber text-c-bg font-semibold'
                     : 'bg-c-bezel text-c-muted border border-c-border font-medium hover:border-c-border-hi'
@@ -192,12 +192,12 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
         <div>
           <button
             onClick={() => setShowTaskPicker(!showTaskPicker)}
-            className="font-mono text-xs text-c-cyan hover:text-c-cyan/80 transition-colors flex items-center gap-1"
+            className="font-mono text-sm text-c-cyan hover:text-c-cyan/80 transition-colors flex items-center gap-1"
           >
-            <span className="text-[10px]">{showTaskPicker ? '\u25BC' : '\u25B6'}</span>
+            <span className="text-xs">{showTaskPicker ? '\u25BC' : '\u25B6'}</span>
             CUSTOMIZE TASKS...
             {selectedTasks.length > 0 && (
-              <span className="text-[10px] text-c-dim ml-1">
+              <span className="text-xs text-c-dim ml-1">
                 ({selectedTasks.length} of {filteredTasks.length} selected)
               </span>
             )}
@@ -206,9 +206,9 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
           {showTaskPicker && (
             <div className="mt-3 max-h-64 overflow-y-auto border border-c-border rounded-lg bg-c-panel">
               {tasksLoading ? (
-                <p className="p-3 font-mono text-xs text-c-dim">LOADING TASKS...</p>
+                <p className="p-3 font-mono text-sm text-c-dim">LOADING TASKS...</p>
               ) : areaGroups.length === 0 ? (
-                <p className="p-3 font-mono text-xs text-c-dim">NO TASKS FOUND.</p>
+                <p className="p-3 font-mono text-sm text-c-dim">NO TASKS FOUND.</p>
               ) : (
                 areaGroups.map((group) => {
                   const areaTaskIds = group.tasks.map((t) => t.id);
@@ -220,7 +220,7 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
                       {/* Area header */}
                       <button
                         onClick={() => toggleArea(group.areaId)}
-                        className={`w-full px-3 py-2 flex items-center gap-2 text-left text-xs font-medium transition-colors hover:bg-c-elevated ${
+                        className={`w-full px-3 py-2 flex items-center gap-2 text-left text-sm font-medium transition-colors hover:bg-c-elevated ${
                           allSelected ? 'text-c-cyan' : someSelected ? 'text-c-cyan/70' : 'text-c-text'
                         }`}
                       >
@@ -233,9 +233,9 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
                         }`}>
                           {allSelected ? '\u2713' : someSelected ? '\u2013' : ''}
                         </span>
-                        <span className="font-mono text-[10px] text-c-dim">{group.areaId}</span>
+                        <span className="font-mono text-xs text-c-dim">{group.areaId}</span>
                         {group.areaName}
-                        <span className="ml-auto text-[10px] text-c-dim">{group.tasks.length}</span>
+                        <span className="ml-auto text-xs text-c-dim">{group.tasks.length}</span>
                       </button>
 
                       {/* Individual tasks */}
@@ -263,12 +263,12 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
           )}
 
           {showTaskPicker && selectedTasks.length === 0 && (
-            <p className="text-[10px] text-c-dim font-mono mt-1.5">All tasks for {aircraftClass} will be included if none selected</p>
+            <p className="text-xs text-c-dim font-mono mt-1.5">All tasks for {aircraftClass} will be included if none selected</p>
           )}
           {showTaskPicker && selectedTasks.length > 0 && (
             <button
               onClick={() => setSelectedTasks([])}
-              className="text-[10px] text-c-muted hover:text-c-text font-mono mt-1 transition-colors"
+              className="text-xs text-c-muted hover:text-c-text font-mono mt-1 transition-colors"
             >
               CLEAR SELECTION
             </button>
@@ -283,8 +283,8 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
             onChange={(e) => setVoiceEnabled(e.target.checked)}
             className="w-4 h-4 rounded border-c-border bg-c-bezel text-c-green focus:ring-c-green"
           />
-          <span className="font-mono text-xs text-c-text uppercase">ENABLE VOICE MODE</span>
-          <span className="text-[10px] text-c-dim font-mono">(MIC + SPEAKER)</span>
+          <span className="font-mono text-sm text-c-text uppercase">ENABLE VOICE MODE</span>
+          <span className="text-xs text-c-dim font-mono">(MIC + SPEAKER)</span>
         </label>
 
         {/* Start Button */}
@@ -300,7 +300,7 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
             voiceEnabled,
           })}
           disabled={loading || prefsLoading}
-          className="w-full py-3.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg rounded-lg font-mono font-bold text-sm tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
+          className="w-full py-3.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg rounded-lg font-mono font-bold text-base tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
         >
           {loading ? 'STARTING...' : 'START PRACTICE EXAM'}
         </button>

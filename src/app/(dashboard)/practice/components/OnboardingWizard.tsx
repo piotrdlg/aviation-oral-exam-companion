@@ -152,7 +152,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
           <button
             data-testid="wizard-skip"
             onClick={handleSkip}
-            className="font-mono text-xs text-c-amber hover:text-c-amber/80 transition-colors uppercase"
+            className="font-mono text-sm text-c-amber hover:text-c-amber/80 transition-colors uppercase"
           >
             I know what I&apos;m doing &rarr; Full config
           </button>
@@ -161,10 +161,10 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
         {/* Step 1: Rating selection */}
         {step === 1 && (
           <div data-testid="wizard-step-1" className="bezel rounded-lg border border-c-border p-8">
-            <h2 className="font-mono font-bold text-xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
+            <h2 className="font-mono font-bold text-2xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
               WHAT ARE YOU PREPARING FOR?
             </h2>
-            <p className="text-sm text-c-muted text-center mb-6">
+            <p className="text-base text-c-muted text-center mb-6">
               Select your certificate or rating
             </p>
 
@@ -182,9 +182,9 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
                   <div className={`mx-auto mb-2 ${rating === opt.value ? 'text-c-amber' : 'text-c-muted'}`}>
                     {opt.icon}
                   </div>
-                  <p className={`font-mono text-xs font-semibold uppercase ${rating === opt.value ? 'text-c-amber' : 'text-c-text'}`}>{opt.label}</p>
-                  <p className="font-mono text-[10px] uppercase tracking-wider text-c-muted mt-0.5">{opt.abbr}</p>
-                  <p className="text-[10px] text-c-muted mt-1">{opt.desc}</p>
+                  <p className={`font-mono text-sm font-semibold uppercase ${rating === opt.value ? 'text-c-amber' : 'text-c-text'}`}>{opt.label}</p>
+                  <p className="font-mono text-xs uppercase tracking-wider text-c-muted mt-0.5">{opt.abbr}</p>
+                  <p className="text-xs text-c-muted mt-1">{opt.desc}</p>
                 </button>
               ))}
             </div>
@@ -192,7 +192,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
             <button
               data-testid="wizard-step1-next"
               onClick={() => setStep(2)}
-              className="w-full py-3 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
+              className="w-full py-3 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-base tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
             >
               NEXT
             </button>
@@ -202,10 +202,10 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
         {/* Step 2: Aircraft details */}
         {step === 2 && (
           <div data-testid="wizard-step-2" className="bezel rounded-lg border border-c-border p-8">
-            <h2 className="font-mono font-bold text-xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
+            <h2 className="font-mono font-bold text-2xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
               TELL US ABOUT YOUR AIRCRAFT
             </h2>
-            <p className="text-sm text-c-muted text-center mb-6">
+            <p className="text-base text-c-muted text-center mb-6">
               This helps personalize your exam
             </p>
 
@@ -213,7 +213,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
               {/* Aircraft class — only for Private/Commercial */}
               {showClassPicker ? (
                 <div>
-                  <label className="block font-mono text-[10px] text-c-muted mb-2 tracking-wider uppercase">WHAT CLASS OF AIRCRAFT?</label>
+                  <label className="block font-mono text-xs text-c-muted mb-2 tracking-wider uppercase">WHAT CLASS OF AIRCRAFT?</label>
                   <div className="grid grid-cols-4 gap-2">
                     {CLASS_OPTIONS.map((cls) => (
                       <button
@@ -225,41 +225,41 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
                             : 'border-c-border bg-c-bezel hover:border-c-border-hi'
                         }`}
                       >
-                        <p className={`font-mono text-xs font-medium ${aircraftClass === cls.value ? 'text-c-cyan' : 'text-c-muted'}`}>{cls.label}</p>
-                        <p className="text-[10px] text-c-muted mt-0.5">{cls.desc}</p>
+                        <p className={`font-mono text-sm font-medium ${aircraftClass === cls.value ? 'text-c-cyan' : 'text-c-muted'}`}>{cls.label}</p>
+                        <p className="text-xs text-c-muted mt-0.5">{cls.desc}</p>
                       </button>
                     ))}
                   </div>
                 </div>
               ) : (
                 <div className="px-4 py-3 bg-c-panel rounded-lg border border-c-border">
-                  <p className="font-mono text-xs text-c-text">Instrument Rating &mdash; Airplane</p>
+                  <p className="font-mono text-sm text-c-text">Instrument Rating &mdash; Airplane</p>
                 </div>
               )}
 
               {/* Aircraft type */}
               <div>
-                <label className="block font-mono text-[10px] text-c-muted mb-2 tracking-wider uppercase">WHAT TYPE OF AIRCRAFT DO YOU FLY?</label>
+                <label className="block font-mono text-xs text-c-muted mb-2 tracking-wider uppercase">WHAT TYPE OF AIRCRAFT DO YOU FLY?</label>
                 <input
                   type="text"
                   value={aircraftType}
                   onChange={(e) => setAircraftType(e.target.value)}
                   placeholder="e.g., Cessna 172"
                   maxLength={100}
-                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-xs placeholder-c-dim focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber transition-colors"
+                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm placeholder-c-dim focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber transition-colors"
                 />
               </div>
 
               {/* Home airport */}
               <div>
-                <label className="block font-mono text-[10px] text-c-muted mb-2 tracking-wider uppercase">WHAT&apos;S YOUR HOME AIRPORT?</label>
+                <label className="block font-mono text-xs text-c-muted mb-2 tracking-wider uppercase">WHAT&apos;S YOUR HOME AIRPORT?</label>
                 <input
                   type="text"
                   value={homeAirport}
                   onChange={(e) => setHomeAirport(e.target.value.toUpperCase())}
                   placeholder="e.g., KJAX"
                   maxLength={10}
-                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-xs placeholder-c-dim focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber transition-colors uppercase"
+                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm placeholder-c-dim focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber transition-colors uppercase"
                 />
               </div>
             </div>
@@ -268,14 +268,14 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
               <button
                 data-testid="wizard-step2-back"
                 onClick={() => setStep(1)}
-                className="font-mono text-xs text-c-muted hover:text-c-text transition-colors uppercase"
+                className="font-mono text-sm text-c-muted hover:text-c-text transition-colors uppercase"
               >
                 &larr; BACK
               </button>
               <button
                 data-testid="wizard-step2-next"
                 onClick={() => setStep(3)}
-                className="flex-1 py-3 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
+                className="flex-1 py-3 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-base tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
               >
                 NEXT
               </button>
@@ -286,10 +286,10 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
         {/* Step 3: Display name */}
         {step === 3 && (
           <div data-testid="wizard-step-3" className="bezel rounded-lg border border-c-border p-8">
-            <h2 className="font-mono font-bold text-xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
+            <h2 className="font-mono font-bold text-2xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
               WHAT SHOULD WE CALL YOU?
             </h2>
-            <p className="text-sm text-c-muted text-center mb-6">
+            <p className="text-base text-c-muted text-center mb-6">
               Your examiner will address you by name during sessions
             </p>
             <input
@@ -299,16 +299,16 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="e.g., Mike, Sarah, Captain Smith"
               maxLength={50}
-              className="w-full px-4 py-3 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm placeholder-c-dim focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber transition-colors text-center"
+              className="w-full px-4 py-3 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-base placeholder-c-dim focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber transition-colors text-center"
               autoFocus
             />
-            <p className="text-[10px] text-c-dim mt-2 text-center font-mono">Optional — you can always change this in Settings</p>
+            <p className="text-xs text-c-dim mt-2 text-center font-mono">Optional — you can always change this in Settings</p>
             <div className="flex items-center gap-3 mt-6">
-              <button data-testid="wizard-step3-back" onClick={() => setStep(2)} className="font-mono text-xs text-c-muted hover:text-c-text transition-colors uppercase">&larr; BACK</button>
+              <button data-testid="wizard-step3-back" onClick={() => setStep(2)} className="font-mono text-sm text-c-muted hover:text-c-text transition-colors uppercase">&larr; BACK</button>
               <button
                 data-testid="wizard-step3-next"
                 onClick={() => setStep(4)}
-                className="flex-1 py-3 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
+                className="flex-1 py-3 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-base tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
               >
                 {displayName.trim() ? 'NEXT' : 'SKIP'}
               </button>
@@ -319,10 +319,10 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
         {/* Step 4: Theme selection */}
         {step === 4 && (
           <div data-testid="wizard-step-4" className="bezel rounded-lg border border-c-border p-8">
-            <h2 className="font-mono font-bold text-xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
+            <h2 className="font-mono font-bold text-2xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
               CUSTOMIZE YOUR COCKPIT
             </h2>
-            <p className="text-sm text-c-muted text-center mb-6">
+            <p className="text-base text-c-muted text-center mb-6">
               Choose your instrument panel aesthetic
             </p>
 
@@ -341,10 +341,10 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
                   }`}
                 >
                   <div className="w-6 h-6 rounded-full mx-auto mb-2" style={{ background: t.accent }} />
-                  <p className={`font-mono text-xs font-semibold uppercase ${selectedTheme === t.id ? 'text-c-amber' : 'text-c-text'}`}>
+                  <p className={`font-mono text-sm font-semibold uppercase ${selectedTheme === t.id ? 'text-c-amber' : 'text-c-text'}`}>
                     {t.label}
                   </p>
-                  <p className="text-[10px] text-c-muted mt-0.5">{t.desc}</p>
+                  <p className="text-xs text-c-muted mt-0.5">{t.desc}</p>
                 </button>
               ))}
             </div>
@@ -352,14 +352,14 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setStep(3)}
-                className="font-mono text-xs text-c-muted hover:text-c-text transition-colors uppercase"
+                className="font-mono text-sm text-c-muted hover:text-c-text transition-colors uppercase"
               >
                 &larr; BACK
               </button>
               <button
                 data-testid="wizard-step4-next"
                 onClick={() => setStep(5)}
-                className="flex-1 py-3 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
+                className="flex-1 py-3 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-base tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
               >
                 NEXT
               </button>
@@ -370,17 +370,17 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
         {/* Step 5: Confirmation */}
         {step === 5 && (
           <div data-testid="wizard-step-5" className="bezel rounded-lg border border-c-border p-8">
-            <h2 className="font-mono font-bold text-xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
+            <h2 className="font-mono font-bold text-2xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
               READY TO START?
             </h2>
-            <p className="text-sm text-c-muted text-center mb-6">
+            <p className="text-base text-c-muted text-center mb-6">
               Your AI examiner is standing by
             </p>
 
             {/* Summary */}
             <div className="iframe rounded-lg p-4 mb-6 space-y-2">
-              <p className="text-sm text-c-text">
-                <span className="text-c-muted font-mono text-[10px] uppercase">Preparing for:</span>{' '}
+              <p className="text-base text-c-text">
+                <span className="text-c-muted font-mono text-xs uppercase">Preparing for:</span>{' '}
                 <span className="text-c-green font-mono font-semibold glow-g">{RATING_LABELS[rating]?.toUpperCase()}</span>
                 {showClassPicker && (
                   <>
@@ -390,7 +390,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
                 )}
               </p>
               {(aircraftType.trim() || homeAirport.trim()) && (
-                <p className="text-sm text-c-muted">
+                <p className="text-base text-c-muted">
                   {aircraftType.trim() && (
                     <>Flying a <span className="text-c-text">{aircraftType.trim()}</span></>
                   )}
@@ -411,14 +411,14 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
                 onChange={(e) => setVoiceEnabled(e.target.checked)}
                 className="w-4 h-4 rounded border-c-border bg-c-bezel text-c-green focus:ring-c-green"
               />
-              <span className="font-mono text-xs text-c-text uppercase">ENABLE VOICE MODE</span>
-              <span className="text-[10px] text-c-dim font-mono">(MIC + SPEAKER)</span>
+              <span className="font-mono text-sm text-c-text uppercase">ENABLE VOICE MODE</span>
+              <span className="text-xs text-c-dim font-mono">(MIC + SPEAKER)</span>
             </label>
 
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setStep(4)}
-                className="font-mono text-xs text-c-muted hover:text-c-text transition-colors uppercase"
+                className="font-mono text-sm text-c-muted hover:text-c-text transition-colors uppercase"
               >
                 &larr; BACK
               </button>
@@ -426,7 +426,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
                 data-testid="wizard-start-button"
                 onClick={handleComplete}
                 disabled={saving || loading}
-                className="flex-1 py-3.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg rounded-lg font-mono font-bold text-sm tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
+                className="flex-1 py-3.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg rounded-lg font-mono font-bold text-base tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
               >
                 {saving || loading ? 'STARTING...' : 'START YOUR FIRST EXAM'}
               </button>

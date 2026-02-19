@@ -677,14 +677,14 @@ export default function SettingsPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="font-mono font-bold text-xl text-c-amber glow-a tracking-wider uppercase">SETTINGS</h1>
-        <p className="font-mono text-xs text-c-muted mt-1">Manage your account, subscription, and preferences.</p>
+        <h1 className="font-mono font-bold text-2xl text-c-amber glow-a tracking-wider uppercase">SETTINGS</h1>
+        <p className="font-mono text-sm text-c-muted mt-1">Manage your account, subscription, and preferences.</p>
       </div>
 
       {/* 1. Profile */}
       <div data-testid="profile-section" className="bezel rounded-lg border border-c-border p-6">
-        <h2 className="font-mono font-semibold text-sm text-c-amber mb-1 tracking-wider uppercase">PROFILE</h2>
-        <p className="font-mono text-[10px] text-c-muted mb-5">
+        <h2 className="font-mono font-semibold text-base text-c-amber mb-1 tracking-wider uppercase">PROFILE</h2>
+        <p className="font-mono text-xs text-c-muted mb-5">
           Your name and avatar appear during exam sessions.
         </p>
 
@@ -701,12 +701,12 @@ export default function SettingsPage() {
           </div>
           <div>
             <input data-testid="avatar-file-input" type="file" id="avatar-upload" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleAvatarUpload} />
-            <label data-testid="avatar-upload-label" htmlFor="avatar-upload" className={`cursor-pointer inline-block px-3 py-1.5 rounded font-mono text-[10px] font-medium bg-c-bezel border border-c-border text-c-muted hover:bg-c-border hover:text-c-text transition-colors uppercase ${avatarUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+            <label data-testid="avatar-upload-label" htmlFor="avatar-upload" className={`cursor-pointer inline-block px-3 py-1.5 rounded font-mono text-xs font-medium bg-c-bezel border border-c-border text-c-muted hover:bg-c-border hover:text-c-text transition-colors uppercase ${avatarUploading ? 'opacity-50 pointer-events-none' : ''}`}>
               {avatarUploading ? 'UPLOADING...' : 'UPLOAD PHOTO'}
             </label>
-            <p className="font-mono text-[10px] text-c-dim mt-1">Max 2MB. JPG, PNG, or WebP.</p>
+            <p className="font-mono text-xs text-c-dim mt-1">Max 2MB. JPG, PNG, or WebP.</p>
             {avatarMessage && (
-              <p className={`font-mono text-[10px] mt-1 ${avatarMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+              <p className={`font-mono text-xs mt-1 ${avatarMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
                 {avatarMessage.type === 'success' ? '\u2713 ' : ''}{avatarMessage.text}
               </p>
             )}
@@ -715,7 +715,7 @@ export default function SettingsPage() {
 
         {/* Default avatar options */}
         <div data-testid="default-avatars-grid" className="mb-4">
-          <label className="block font-mono text-[10px] text-c-muted mb-2 uppercase tracking-wider">OR CHOOSE AN AVATAR</label>
+          <label className="block font-mono text-xs text-c-muted mb-2 uppercase tracking-wider">OR CHOOSE AN AVATAR</label>
           <div className="flex gap-2">
             {DEFAULT_AVATARS.map((av) => (
               <button
@@ -734,7 +734,7 @@ export default function SettingsPage() {
 
         {/* Display name */}
         <div>
-          <label className="block font-mono text-[10px] text-c-muted mb-1.5 uppercase tracking-wider">DISPLAY NAME</label>
+          <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase tracking-wider">DISPLAY NAME</label>
           <input
             data-testid="display-name-input"
             type="text"
@@ -745,28 +745,28 @@ export default function SettingsPage() {
             }}
             placeholder="How should the examiner address you?"
             maxLength={50}
-            className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-xs focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
+            className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
           />
         </div>
       </div>
 
       {/* 2. Account Info */}
       <div className="bezel rounded-lg border border-c-border p-6">
-        <h2 className="font-mono font-semibold text-sm text-c-amber mb-4 tracking-wider uppercase">ACCOUNT</h2>
-        <div className="text-xs mb-5 font-mono">
+        <h2 className="font-mono font-semibold text-base text-c-amber mb-4 tracking-wider uppercase">ACCOUNT</h2>
+        <div className="text-sm mb-5 font-mono">
           <span className="text-c-muted">EMAIL: </span>
           <span className="text-c-text">{email ?? 'LOADING...'}</span>
         </div>
 
         {/* Practice Defaults (folded into Account) */}
         <div className="border-t border-c-border pt-4">
-          <h3 className="font-mono text-[10px] text-c-muted mb-3 tracking-wider uppercase">PRACTICE DEFAULTS</h3>
+          <h3 className="font-mono text-xs text-c-muted mb-3 tracking-wider uppercase">PRACTICE DEFAULTS</h3>
           {tierLoading ? (
-            <div className="font-mono text-xs text-c-dim">LOADING PREFERENCES...</div>
+            <div className="font-mono text-sm text-c-dim">LOADING PREFERENCES...</div>
           ) : (
             <div className="space-y-4">
               <div>
-                <label className="block font-mono text-[10px] text-c-muted mb-1.5 uppercase">CERTIFICATE / RATING</label>
+                <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase">CERTIFICATE / RATING</label>
                 <div className="flex gap-2">
                   {([
                     { value: 'private', label: 'PRIVATE PILOT' },
@@ -777,7 +777,7 @@ export default function SettingsPage() {
                       key={r.value}
                       onClick={() => savePracticeDefault('preferredRating', r.value)}
                       disabled={defaultsSaving || tierInfo?.preferredRating === r.value}
-                      className={`px-3 py-1.5 rounded-lg border font-mono text-[10px] transition-colors ${
+                      className={`px-3 py-1.5 rounded-lg border font-mono text-xs transition-colors ${
                         tierInfo?.preferredRating === r.value
                           ? 'border-c-amber/50 bg-c-amber-lo/50 text-c-amber font-semibold'
                           : 'border-c-border bg-c-bezel text-c-muted hover:border-c-border-hi'
@@ -790,7 +790,7 @@ export default function SettingsPage() {
               </div>
               {tierInfo?.preferredRating !== 'instrument' ? (
                 <div>
-                  <label className="block font-mono text-[10px] text-c-muted mb-1.5 uppercase">AIRCRAFT CLASS</label>
+                  <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase">AIRCRAFT CLASS</label>
                   <div className="flex gap-2">
                     {([
                       { value: 'ASEL', label: 'ASEL' },
@@ -802,7 +802,7 @@ export default function SettingsPage() {
                         key={cls.value}
                         onClick={() => savePracticeDefault('preferredAircraftClass', cls.value)}
                         disabled={defaultsSaving || tierInfo?.preferredAircraftClass === cls.value}
-                        className={`px-3 py-1.5 rounded-lg border font-mono text-[10px] transition-colors ${
+                        className={`px-3 py-1.5 rounded-lg border font-mono text-xs transition-colors ${
                           tierInfo?.preferredAircraftClass === cls.value
                             ? 'border-c-cyan/50 bg-c-cyan-lo/50 text-c-cyan font-semibold'
                             : 'border-c-border bg-c-bezel text-c-muted hover:border-c-border-hi'
@@ -814,10 +814,10 @@ export default function SettingsPage() {
                   </div>
                 </div>
               ) : (
-                <p className="font-mono text-[10px] text-c-dim uppercase">INSTRUMENT RATING — AIRPLANE</p>
+                <p className="font-mono text-xs text-c-dim uppercase">INSTRUMENT RATING — AIRPLANE</p>
               )}
               <div>
-                <label className="block font-mono text-[10px] text-c-muted mb-1.5 uppercase">AIRCRAFT TYPE</label>
+                <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase">AIRCRAFT TYPE</label>
                 <input
                   type="text"
                   value={tierInfo?.aircraftType || ''}
@@ -830,11 +830,11 @@ export default function SettingsPage() {
                   }}
                   placeholder="e.g., Cessna 172"
                   maxLength={100}
-                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-xs focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
+                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
                 />
               </div>
               <div>
-                <label className="block font-mono text-[10px] text-c-muted mb-1.5 uppercase">HOME AIRPORT</label>
+                <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase">HOME AIRPORT</label>
                 <input
                   type="text"
                   value={tierInfo?.homeAirport || ''}
@@ -847,11 +847,11 @@ export default function SettingsPage() {
                   }}
                   placeholder="e.g., KJAX"
                   maxLength={10}
-                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-xs focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim uppercase transition-colors"
+                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim uppercase transition-colors"
                 />
               </div>
               {defaultsMessage && (
-                <p data-testid="profile-save-message" className={`font-mono text-[10px] ${defaultsMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+                <p data-testid="profile-save-message" className={`font-mono text-xs ${defaultsMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
                   {defaultsMessage.type === 'success' ? '\u2713 ' : ''}{defaultsMessage.text}
                 </p>
               )}
@@ -862,8 +862,8 @@ export default function SettingsPage() {
 
       {/* 2. Plan & Usage */}
       <div className="bezel rounded-lg border border-c-border p-6">
-        <h2 className="font-mono font-semibold text-sm text-c-amber mb-1 tracking-wider uppercase">PLAN &amp; USAGE</h2>
-        <p className="font-mono text-[10px] text-c-muted mb-5">
+        <h2 className="font-mono font-semibold text-base text-c-amber mb-1 tracking-wider uppercase">PLAN &amp; USAGE</h2>
+        <p className="font-mono text-xs text-c-muted mb-5">
           Your current subscription and usage this billing period.
         </p>
 
@@ -878,19 +878,19 @@ export default function SettingsPage() {
           <>
             <div className="grid grid-cols-2 gap-3 mb-5">
               <div className="iframe rounded-lg p-4">
-                <div className="font-mono text-[10px] text-c-muted mb-1 uppercase">CURRENT PLAN</div>
-                <div className="font-mono text-c-green font-semibold text-sm glow-g uppercase">
+                <div className="font-mono text-xs text-c-muted mb-1 uppercase">CURRENT PLAN</div>
+                <div className="font-mono text-c-green font-semibold text-base glow-g uppercase">
                   {isPaidUser ? (subInfo?.plan || 'PAID') : 'FREE'}
                 </div>
                 {subInfo?.status === 'trialing' && (
-                  <div className="font-mono text-[10px] text-c-amber mt-1 uppercase">TRIAL ACTIVE</div>
+                  <div className="font-mono text-xs text-c-amber mt-1 uppercase">TRIAL ACTIVE</div>
                 )}
               </div>
               <div className="iframe rounded-lg p-4">
-                <div className="font-mono text-[10px] text-c-muted mb-1 uppercase">
+                <div className="font-mono text-xs text-c-muted mb-1 uppercase">
                   {isPaidUser ? 'RENEWAL DATE' : 'STATUS'}
                 </div>
-                <div className="font-mono text-c-text font-semibold text-sm uppercase">
+                <div className="font-mono text-c-text font-semibold text-base uppercase">
                   {subInfo?.renewalDate
                     ? new Date(subInfo.renewalDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                     : isPaidUser ? 'N/A' : 'FREE TIER'}
@@ -901,8 +901,8 @@ export default function SettingsPage() {
             {tierInfo && (
               <div className="grid grid-cols-2 gap-3 mb-5">
                 <div className="iframe rounded-lg p-4">
-                  <div className="font-mono text-[10px] text-c-muted mb-1 uppercase">SESSIONS THIS MONTH</div>
-                  <div className="font-mono text-c-text font-semibold text-sm">
+                  <div className="font-mono text-xs text-c-muted mb-1 uppercase">SESSIONS THIS MONTH</div>
+                  <div className="font-mono text-c-text font-semibold text-base">
                     {tierInfo.usage.sessionsThisMonth}
                     <span className="text-c-muted font-normal">
                       {' / '}
@@ -919,8 +919,8 @@ export default function SettingsPage() {
                   )}
                 </div>
                 <div className="iframe rounded-lg p-4">
-                  <div className="font-mono text-[10px] text-c-muted mb-1 uppercase">TTS CHARACTERS</div>
-                  <div className="font-mono text-c-text font-semibold text-sm">
+                  <div className="font-mono text-xs text-c-muted mb-1 uppercase">TTS CHARACTERS</div>
+                  <div className="font-mono text-c-text font-semibold text-base">
                     {Math.round(tierInfo.usage.ttsCharsThisMonth / 1000)}k
                     <span className="text-c-muted font-normal">
                       {' / '}
@@ -940,7 +940,7 @@ export default function SettingsPage() {
             )}
 
             {portalError && (
-              <p className="font-mono text-xs text-c-red mb-3">{portalError}</p>
+              <p className="font-mono text-sm text-c-red mb-3">{portalError}</p>
             )}
 
             <div className="flex items-center gap-3">
@@ -949,14 +949,14 @@ export default function SettingsPage() {
                   <button
                     onClick={openCustomerPortal}
                     disabled={portalLoading}
-                    className="px-4 py-2 bg-c-bezel hover:bg-c-border border border-c-border text-c-text font-mono text-xs font-semibold rounded-lg transition-colors disabled:opacity-50 uppercase tracking-wide"
+                    className="px-4 py-2 bg-c-bezel hover:bg-c-border border border-c-border text-c-text font-mono text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 uppercase tracking-wide"
                   >
                     {portalLoading ? 'OPENING...' : 'MANAGE SUBSCRIPTION'}
                   </button>
                   <button
                     onClick={openCustomerPortal}
                     disabled={portalLoading}
-                    className="px-4 py-2 font-mono text-xs text-c-muted hover:text-c-text transition-colors uppercase tracking-wide"
+                    className="px-4 py-2 font-mono text-sm text-c-muted hover:text-c-text transition-colors uppercase tracking-wide"
                   >
                     PAUSE SUBSCRIPTION
                   </button>
@@ -964,7 +964,7 @@ export default function SettingsPage() {
               ) : (
                 <a
                   href="/pricing"
-                  className="px-4 py-2 bg-c-amber hover:bg-c-amber/90 text-c-bg font-mono text-xs font-semibold rounded-lg transition-colors inline-block uppercase tracking-wide"
+                  className="px-4 py-2 bg-c-amber hover:bg-c-amber/90 text-c-bg font-mono text-sm font-semibold rounded-lg transition-colors inline-block uppercase tracking-wide"
                 >
                   UPGRADE PLAN
                 </a>
@@ -976,8 +976,8 @@ export default function SettingsPage() {
 
       {/* 3. Theme */}
       <div className="bezel rounded-lg border border-c-border p-6">
-        <h2 className="font-mono font-semibold text-sm text-c-amber mb-1 tracking-wider uppercase">THEME</h2>
-        <p className="font-mono text-[10px] text-c-muted mb-5">
+        <h2 className="font-mono font-semibold text-base text-c-amber mb-1 tracking-wider uppercase">THEME</h2>
+        <p className="font-mono text-xs text-c-muted mb-5">
           Choose the cockpit aesthetic for your entire interface.
         </p>
 
@@ -1001,16 +1001,16 @@ export default function SettingsPage() {
               >
                 <div className="flex items-center gap-2 mb-1">
                   <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ background: t.accent }} />
-                  <span className={`font-mono text-xs font-semibold uppercase ${isActive ? 'text-c-amber' : 'text-c-text'}`}>
+                  <span className={`font-mono text-sm font-semibold uppercase ${isActive ? 'text-c-amber' : 'text-c-text'}`}>
                     {t.label}
                   </span>
                   {isActive && (
-                    <span className="font-mono text-[10px] bg-c-amber-lo text-c-amber px-2 py-0.5 rounded border border-c-amber/20 uppercase ml-auto">
+                    <span className="font-mono text-xs bg-c-amber-lo text-c-amber px-2 py-0.5 rounded border border-c-amber/20 uppercase ml-auto">
                       ACTIVE
                     </span>
                   )}
                 </div>
-                <p className="font-mono text-[10px] text-c-dim">{t.desc}</p>
+                <p className="font-mono text-xs text-c-dim">{t.desc}</p>
               </button>
             );
           })}
@@ -1019,13 +1019,13 @@ export default function SettingsPage() {
 
       {/* 4. Examiner Voice */}
       <div className="bezel rounded-lg border border-c-border p-6">
-        <h2 className="font-mono font-semibold text-sm text-c-amber mb-1 tracking-wider uppercase">EXAMINER VOICE</h2>
-        <p className="font-mono text-[10px] text-c-muted mb-5">
+        <h2 className="font-mono font-semibold text-base text-c-amber mb-1 tracking-wider uppercase">EXAMINER VOICE</h2>
+        <p className="font-mono text-xs text-c-muted mb-5">
           Choose the voice your DPE examiner will use during sessions.
         </p>
 
         {tierLoading ? (
-          <div className="font-mono text-xs text-c-dim uppercase">LOADING VOICE OPTIONS...</div>
+          <div className="font-mono text-sm text-c-dim uppercase">LOADING VOICE OPTIONS...</div>
         ) : tierInfo?.voiceOptions && tierInfo.voiceOptions.length > 0 ? (
           <>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -1051,14 +1051,14 @@ export default function SettingsPage() {
                           </div>
                         )}
                         <div>
-                          <span className={`font-mono text-xs font-semibold uppercase ${isActive ? 'text-c-amber' : 'font-medium text-c-text'}`}>
+                          <span className={`font-mono text-sm font-semibold uppercase ${isActive ? 'text-c-amber' : 'font-medium text-c-text'}`}>
                             {option.label}
                           </span>
-                          {option.desc && <p className="font-mono text-[10px] text-c-dim mt-0.5">{option.desc}</p>}
+                          {option.desc && <p className="font-mono text-xs text-c-dim mt-0.5">{option.desc}</p>}
                         </div>
                       </div>
                       {isActive && (
-                        <span className="font-mono text-[10px] bg-c-amber-lo text-c-amber px-2 py-0.5 rounded border border-c-amber/20 uppercase">
+                        <span className="font-mono text-xs bg-c-amber-lo text-c-amber px-2 py-0.5 rounded border border-c-amber/20 uppercase">
                           ACTIVE
                         </span>
                       )}
@@ -1067,7 +1067,7 @@ export default function SettingsPage() {
                       <button
                         onClick={() => isPreviewing ? (() => { previewAudioRef.current?.pause(); previewAudioRef.current = null; setPreviewingVoice(null); })() : previewVoice(option.model)}
                         disabled={previewingVoice !== null && !isPreviewing}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded font-mono text-[10px] font-medium transition-colors ${
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded font-mono text-xs font-medium transition-colors ${
                           isPreviewing
                             ? 'bg-c-amber text-c-bg'
                             : 'bg-c-bezel border border-c-border text-c-muted hover:bg-c-border hover:text-c-text'
@@ -1079,7 +1079,7 @@ export default function SettingsPage() {
                         <button
                           onClick={() => switchVoice(option.model)}
                           disabled={voiceSaving}
-                          className="px-3 py-1.5 rounded font-mono text-[10px] font-medium bg-c-amber-lo text-c-amber hover:bg-c-amber hover:text-c-bg transition-colors border border-c-amber/30 disabled:opacity-40 uppercase"
+                          className="px-3 py-1.5 rounded font-mono text-xs font-medium bg-c-amber-lo text-c-amber hover:bg-c-amber hover:text-c-bg transition-colors border border-c-amber/30 disabled:opacity-40 uppercase"
                         >
                           SELECT
                         </button>
@@ -1091,13 +1091,13 @@ export default function SettingsPage() {
             </div>
 
             {voiceMessage && (
-              <p className={`font-mono text-[10px] mt-3 ${voiceMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+              <p className={`font-mono text-xs mt-3 ${voiceMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
                 {voiceMessage.text}
               </p>
             )}
           </>
         ) : (
-          <div className="font-mono text-xs text-c-dim uppercase">NO VOICE OPTIONS AVAILABLE FOR YOUR CURRENT PLAN.</div>
+          <div className="font-mono text-sm text-c-dim uppercase">NO VOICE OPTIONS AVAILABLE FOR YOUR CURRENT PLAN.</div>
         )}
       </div>
 
@@ -1108,12 +1108,12 @@ export default function SettingsPage() {
           className="w-full flex items-center justify-between p-6 text-left"
         >
           <div>
-            <h2 className="font-mono font-semibold text-sm text-c-amber tracking-wider uppercase">VOICE DIAGNOSTICS</h2>
-            <p className="font-mono text-[10px] text-c-muted mt-0.5">
+            <h2 className="font-mono font-semibold text-base text-c-amber tracking-wider uppercase">VOICE DIAGNOSTICS</h2>
+            <p className="font-mono text-xs text-c-muted mt-0.5">
               Test your microphone, speech recognition, and speaker.
             </p>
           </div>
-          <span className={`font-mono text-c-muted text-sm transition-transform ${diagOpen ? 'rotate-180' : ''}`}>
+          <span className={`font-mono text-c-muted text-base transition-transform ${diagOpen ? 'rotate-180' : ''}`}>
             &#9660;
           </span>
         </button>
@@ -1123,12 +1123,12 @@ export default function SettingsPage() {
             {/* Microphone selector */}
             {audioDevices.length > 0 && (
               <div className="mb-5">
-                <label className="block font-mono text-[10px] text-c-muted mb-1.5 uppercase">MICROPHONE</label>
+                <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase">MICROPHONE</label>
                 <select
                   value={selectedDeviceId}
                   onChange={(e) => setSelectedDeviceId(e.target.value)}
                   disabled={diagRunning}
-                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-xs focus:outline-none focus:ring-1 focus:ring-c-amber disabled:opacity-50"
+                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber disabled:opacity-50"
                 >
                   {audioDevices.map((d) => (
                     <option key={d.deviceId} value={d.deviceId}>
@@ -1142,13 +1142,13 @@ export default function SettingsPage() {
             <div className="space-y-3 mb-5">
               {steps.map((step, i) => (
                 <div key={i} className="flex items-start gap-3 px-3 py-2.5 iframe rounded-lg">
-                  <span className={`font-mono text-sm mt-0.5 ${statusColor(step.status)}`}>
+                  <span className={`font-mono text-base mt-0.5 ${statusColor(step.status)}`}>
                     {statusIcon(step.status)}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="font-mono text-xs text-c-text uppercase">{step.label}</p>
+                    <p className="font-mono text-sm text-c-text uppercase">{step.label}</p>
                     {step.detail && (
-                      <p className={`font-mono text-[10px] mt-0.5 ${step.status === 'fail' ? 'text-c-red' : step.status === 'pass' ? 'text-c-green' : 'text-c-muted'}`}>
+                      <p className={`font-mono text-xs mt-0.5 ${step.status === 'fail' ? 'text-c-red' : step.status === 'pass' ? 'text-c-green' : 'text-c-muted'}`}>
                         {step.detail}
                       </p>
                     )}
@@ -1163,7 +1163,7 @@ export default function SettingsPage() {
                     )}
                     {/* Recognized text display */}
                     {i === 1 && step.status === 'running' && recognizedText && (
-                      <p className="font-mono text-[10px] mt-1 text-c-cyan italic">
+                      <p className="font-mono text-xs mt-1 text-c-cyan italic">
                         &ldquo;{recognizedText}&rdquo;
                       </p>
                     )}
@@ -1175,12 +1175,12 @@ export default function SettingsPage() {
             <button
               onClick={runDiagnostics}
               disabled={diagRunning}
-              className="px-5 py-2.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg font-mono text-xs font-semibold rounded-lg transition-colors uppercase tracking-wide"
+              className="px-5 py-2.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg font-mono text-sm font-semibold rounded-lg transition-colors uppercase tracking-wide"
             >
               {diagRunning ? 'RUNNING...' : 'RUN VOICE TEST'}
             </button>
 
-            <p className="text-[10px] text-c-dim font-mono mt-3 leading-relaxed">
+            <p className="text-xs text-c-dim font-mono mt-3 leading-relaxed">
               Note: Speech recognition uses Chrome&apos;s built-in mic setting, which may differ from the selection above.
               Check chrome://settings/content/microphone if recognition fails.
             </p>
@@ -1190,8 +1190,8 @@ export default function SettingsPage() {
 
       {/* 6. Active Sessions */}
       <div className="bezel rounded-lg border border-c-border p-6">
-        <h2 className="font-mono font-semibold text-sm text-c-amber mb-1 tracking-wider uppercase">ACTIVE SESSIONS</h2>
-        <p className="font-mono text-[10px] text-c-muted mb-5">
+        <h2 className="font-mono font-semibold text-base text-c-amber mb-1 tracking-wider uppercase">ACTIVE SESSIONS</h2>
+        <p className="font-mono text-xs text-c-muted mb-5">
           Devices where you are currently signed in.
         </p>
 
@@ -1200,7 +1200,7 @@ export default function SettingsPage() {
             <div className="iframe rounded-lg p-3 h-16" />
           </div>
         ) : activeSessions.length === 0 ? (
-          <div className="font-mono text-xs text-c-dim uppercase">NO ACTIVE SESSIONS FOUND.</div>
+          <div className="font-mono text-sm text-c-dim uppercase">NO ACTIVE SESSIONS FOUND.</div>
         ) : (
           <div className="space-y-3">
             {activeSessions.map((session) => (
@@ -1213,29 +1213,29 @@ export default function SettingsPage() {
                 }`}
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-c-muted text-lg">&#9109;</span>
+                  <span className="text-c-muted text-xl">&#9109;</span>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs text-c-text">{session.device_label}</span>
+                      <span className="font-mono text-sm text-c-text">{session.device_label}</span>
                       {session.this_device && (
-                        <span className="font-mono text-[10px] bg-c-cyan-lo text-c-cyan px-1.5 py-0.5 rounded border border-c-cyan/20 uppercase">
+                        <span className="font-mono text-xs bg-c-cyan-lo text-c-cyan px-1.5 py-0.5 rounded border border-c-cyan/20 uppercase">
                           THIS DEVICE
                         </span>
                       )}
                       {session.is_exam_active && (
-                        <span className="font-mono text-[10px] bg-c-green-lo text-c-green px-1.5 py-0.5 rounded border border-c-green/20 uppercase">
+                        <span className="font-mono text-xs bg-c-green-lo text-c-green px-1.5 py-0.5 rounded border border-c-green/20 uppercase">
                           EXAM ACTIVE
                         </span>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
                       {session.approximate_location && (
-                        <span className="font-mono text-[10px] text-c-dim">{session.approximate_location}</span>
+                        <span className="font-mono text-xs text-c-dim">{session.approximate_location}</span>
                       )}
                       {session.approximate_location && (
-                        <span className="font-mono text-[10px] text-c-dim">&middot;</span>
+                        <span className="font-mono text-xs text-c-dim">&middot;</span>
                       )}
-                      <span className="font-mono text-[10px] text-c-dim">
+                      <span className="font-mono text-xs text-c-dim">
                         Last active: {new Date(session.last_activity_at).toLocaleString('en-US', {
                           month: 'short',
                           day: 'numeric',
@@ -1252,7 +1252,7 @@ export default function SettingsPage() {
         )}
 
         {sessionsMessage && (
-          <p className={`font-mono text-[10px] mt-3 ${sessionsMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+          <p className={`font-mono text-xs mt-3 ${sessionsMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
             {sessionsMessage.text}
           </p>
         )}
@@ -1275,7 +1275,7 @@ export default function SettingsPage() {
               }
             }}
             disabled={signOutOthersLoading}
-            className="mt-4 px-4 py-2 bg-c-red/80 hover:bg-c-red disabled:opacity-50 text-c-text font-mono text-xs font-semibold rounded-lg transition-colors uppercase tracking-wide"
+            className="mt-4 px-4 py-2 bg-c-red/80 hover:bg-c-red disabled:opacity-50 text-c-text font-mono text-sm font-semibold rounded-lg transition-colors uppercase tracking-wide"
           >
             {signOutOthersLoading ? 'SIGNING OUT...' : 'SIGN OUT ALL OTHER SESSIONS'}
           </button>
@@ -1284,8 +1284,8 @@ export default function SettingsPage() {
 
       {/* 7. Feedback */}
       <div className="bezel rounded-lg border border-c-border p-6">
-        <h2 className="font-mono font-semibold text-sm text-c-amber mb-1 tracking-wider uppercase">FEEDBACK</h2>
-        <p className="font-mono text-[10px] text-c-muted mb-5">
+        <h2 className="font-mono font-semibold text-base text-c-amber mb-1 tracking-wider uppercase">FEEDBACK</h2>
+        <p className="font-mono text-xs text-c-muted mb-5">
           Help us improve HeyDPE by reporting bugs or content errors.
         </p>
 
@@ -1296,26 +1296,26 @@ export default function SettingsPage() {
               className="px-4 py-3 bg-c-panel hover:bg-c-elevated border border-c-border hover:border-c-amber/30 rounded-lg text-left transition-colors"
             >
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-c-amber text-sm">&#9888;</span>
-                <span className="font-mono text-xs font-semibold text-c-text uppercase">REPORT A BUG</span>
+                <span className="text-c-amber text-base">&#9888;</span>
+                <span className="font-mono text-sm font-semibold text-c-text uppercase">REPORT A BUG</span>
               </div>
-              <p className="font-mono text-[10px] text-c-muted">Something isn&apos;t working correctly</p>
+              <p className="font-mono text-xs text-c-muted">Something isn&apos;t working correctly</p>
             </button>
             <button
               onClick={() => { setFeedbackType('content_error'); setFeedbackMessage(null); }}
               className="px-4 py-3 bg-c-panel hover:bg-c-elevated border border-c-border hover:border-c-cyan/30 rounded-lg text-left transition-colors"
             >
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-c-cyan text-sm">&#9776;</span>
-                <span className="font-mono text-xs font-semibold text-c-text uppercase">CONTENT ERROR</span>
+                <span className="text-c-cyan text-base">&#9776;</span>
+                <span className="font-mono text-sm font-semibold text-c-text uppercase">CONTENT ERROR</span>
               </div>
-              <p className="font-mono text-[10px] text-c-muted">Incorrect aviation information</p>
+              <p className="font-mono text-xs text-c-muted">Incorrect aviation information</p>
             </button>
           </div>
         ) : (
           <div>
             <div className="flex items-center justify-between mb-4">
-              <span className={`font-mono text-[10px] px-2 py-0.5 rounded border uppercase ${
+              <span className={`font-mono text-xs px-2 py-0.5 rounded border uppercase ${
                 feedbackType === 'bug_report'
                   ? 'bg-c-amber-lo text-c-amber border-c-amber/20'
                   : 'bg-c-cyan-lo text-c-cyan border-c-cyan/20'
@@ -1329,7 +1329,7 @@ export default function SettingsPage() {
                   setFeedbackMessage(null);
                 }}
                 disabled={feedbackSubmitting}
-                className="font-mono text-[10px] text-c-dim hover:text-c-text transition-colors uppercase"
+                className="font-mono text-xs text-c-dim hover:text-c-text transition-colors uppercase"
               >
                 CHANGE TYPE
               </button>
@@ -1342,11 +1342,11 @@ export default function SettingsPage() {
                 ? 'Describe the bug... What happened? What did you expect?'
                 : 'Describe the content error... What information was incorrect?'}
               rows={4}
-              className="fb-textarea w-full px-3 py-2.5 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-xs focus:outline-none focus:border-c-amber placeholder-c-dim resize-none mb-4 transition-colors"
+              className="fb-textarea w-full px-3 py-2.5 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:border-c-amber placeholder-c-dim resize-none mb-4 transition-colors"
             />
 
             {feedbackMessage && (
-              <p className={`font-mono text-[10px] mb-3 ${feedbackMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+              <p className={`font-mono text-xs mb-3 ${feedbackMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
                 {feedbackMessage.text}
               </p>
             )}
@@ -1359,7 +1359,7 @@ export default function SettingsPage() {
                   setFeedbackMessage(null);
                 }}
                 disabled={feedbackSubmitting}
-                className="px-4 py-2 text-c-muted hover:text-c-text font-mono text-xs transition-colors uppercase"
+                className="px-4 py-2 text-c-muted hover:text-c-text font-mono text-sm transition-colors uppercase"
               >
                 CANCEL
               </button>
@@ -1401,7 +1401,7 @@ export default function SettingsPage() {
                   }
                 }}
                 disabled={feedbackSubmitting || !feedbackDescription.trim()}
-                className="px-5 py-2 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg font-mono text-xs font-semibold rounded-lg transition-colors uppercase tracking-wide"
+                className="px-5 py-2 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg font-mono text-sm font-semibold rounded-lg transition-colors uppercase tracking-wide"
               >
                 {feedbackSubmitting ? 'SUBMITTING...' : 'SUBMIT'}
               </button>

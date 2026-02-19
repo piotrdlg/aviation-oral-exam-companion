@@ -114,20 +114,20 @@ function TreemapTooltip({ node }: { node: ComputedNode<TreeNode> }) {
   return (
     <div className="bg-c-bezel border border-c-border rounded-lg px-3 py-2 max-w-xs shadow-lg">
       <div className="flex items-center gap-2 mb-1">
-        <span className="font-mono text-[10px] text-c-muted">{data.elementCode}</span>
+        <span className="font-mono text-xs text-c-muted">{data.elementCode}</span>
         {data.elementType && (
-          <span className="font-mono text-[10px] text-c-dim">{TYPE_LABELS[data.elementType] || data.elementType}</span>
+          <span className="font-mono text-xs text-c-dim">{TYPE_LABELS[data.elementType] || data.elementType}</span>
         )}
       </div>
       {data.taskName && (
-        <p className="font-mono text-[10px] text-c-muted mb-1">{data.taskName}</p>
+        <p className="font-mono text-xs text-c-muted mb-1">{data.taskName}</p>
       )}
       {data.description && (
-        <p className="text-sm text-c-text mb-1.5">{data.description}</p>
+        <p className="text-base text-c-text mb-1.5">{data.description}</p>
       )}
       <div className="flex items-center gap-2">
         {scoreStyle ? (
-          <span className={`font-mono text-[10px] px-1.5 py-0.5 rounded border ${scoreStyle.bg} ${scoreStyle.text} ${
+          <span className={`font-mono text-xs px-1.5 py-0.5 rounded border ${scoreStyle.bg} ${scoreStyle.text} ${
             data.latestScore === 'satisfactory' ? 'border-c-green/20' :
             data.latestScore === 'partial' ? 'border-c-amber/20' :
             'border-c-red/20'
@@ -135,10 +135,10 @@ function TreemapTooltip({ node }: { node: ComputedNode<TreeNode> }) {
             {scoreStyle.label}
           </span>
         ) : (
-          <span className="font-mono text-[10px] text-c-dim">NOT ATTEMPTED</span>
+          <span className="font-mono text-xs text-c-dim">NOT ATTEMPTED</span>
         )}
         {(data.totalAttempts ?? 0) > 0 && (
-          <span className="font-mono text-[10px] text-c-dim">
+          <span className="font-mono text-xs text-c-dim">
             {data.totalAttempts} attempt{data.totalAttempts === 1 ? '' : 's'}
           </span>
         )}
@@ -153,7 +153,7 @@ export default function AcsCoverageTreemap({ scores, onElementClick }: Props) {
   if (scores.length === 0) {
     return (
       <div className="bezel rounded-lg border border-c-border p-6 text-center">
-        <p className="text-c-dim font-mono text-xs">No element data available yet. Complete a practice session to see your progress.</p>
+        <p className="text-c-dim font-mono text-sm">No element data available yet. Complete a practice session to see your progress.</p>
       </div>
     );
   }
@@ -168,8 +168,8 @@ export default function AcsCoverageTreemap({ scores, onElementClick }: Props) {
   return (
     <div className="bezel rounded-lg border border-c-border p-6">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-mono text-sm font-semibold text-c-amber uppercase tracking-wider">ACS COVERAGE MAP</h3>
-        <div className="flex gap-3 font-mono text-[10px]">
+        <h3 className="font-mono text-base font-semibold text-c-amber uppercase tracking-wider">ACS COVERAGE MAP</h3>
+        <div className="flex gap-3 font-mono text-xs">
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-sm bg-c-green" /> <span className="text-c-muted">{satisfactory}</span>
           </span>
@@ -225,7 +225,7 @@ export default function AcsCoverageTreemap({ scores, onElementClick }: Props) {
         />
       </div>
 
-      <p className="font-mono text-[10px] text-c-dim mt-2 text-center uppercase">
+      <p className="font-mono text-xs text-c-dim mt-2 text-center uppercase">
         {attempted} of {total} elements attempted ({Math.round(attempted / total * 100)}% coverage)
       </p>
     </div>
