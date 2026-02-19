@@ -14,7 +14,7 @@
 
   /* COCKPIT Amber */
   --color-c-amber: #f5a623;
-  --color-c-amber-dim: #8b6914;
+  --color-c-amber-dim: #b08a22;
   --color-c-amber-lo: #3d2e0a;
 
   /* COCKPIT Green */
@@ -33,8 +33,8 @@
 
   /* COCKPIT Text */
   --color-c-text: #c9d1d9;
-  --color-c-muted: #6b7280;
-  --color-c-dim: #4a5060;
+  --color-c-muted: #8b949e;
+  --color-c-dim: #7d8898;
 }
 
 /* ============================================
