@@ -9,7 +9,6 @@ import {
 import type { AircraftClass, Rating } from '@/types/database';
 import { searchChunks, formatChunksForPrompt, getImagesForChunks, type ChunkSearchResult, type ImageResult } from './rag-retrieval';
 import { getPromptContent } from './prompts';
-import { TtlCache } from './ttl-cache';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
@@ -17,16 +16,6 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
-
-/**
- * Module-level cache for published prompt_versions rows.
- * Key: promptKey (e.g. "examiner_system", "assessment_system")
- * TTL: 5 minutes. Prompts change infrequently (admin publishes new version).
- */
-const promptCache = new TtlCache<Array<{
-  id: string; content: string; rating: string | null;
-  study_mode: string | null; difficulty: string | null; version: number;
-}>>(5 * 60_000);
 
 export interface ExamMessage {
   role: 'examiner' | 'student';
@@ -77,22 +66,12 @@ export async function loadPromptFromDB(
   studyMode?: string,
   difficulty?: string
 ): Promise<{ content: string; versionId: string | null }> {
-  // Check module-level cache first (TTL 5 min)
-  let candidates = promptCache.get(promptKey) ?? null;
-
-  if (!candidates) {
-    const { data } = await supabaseClient
-      .from('prompt_versions')
-      .select('id, content, rating, study_mode, difficulty, version')
-      .eq('prompt_key', promptKey)
-      .eq('status', 'published')
-      .order('version', { ascending: false });
-
-    candidates = (data ?? []) as typeof candidates;
-    if (candidates && candidates.length > 0) {
-      promptCache.set(promptKey, candidates);
-    }
-  }
+  const { data: candidates } = await supabaseClient
+    .from('prompt_versions')
+    .select('id, content, rating, study_mode, difficulty, version')
+    .eq('prompt_key', promptKey)
+    .eq('status', 'published')
+    .order('version', { ascending: false });
 
   const scored = (candidates ?? [])
     .filter(c =>

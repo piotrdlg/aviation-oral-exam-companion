@@ -19,7 +19,6 @@ import { getSystemConfig } from '@/lib/system-config';
 import { checkKillSwitch } from '@/lib/kill-switch';
 import { getUserTier } from '@/lib/voice/tier-lookup';
 import { enforceOneActiveExam, getSessionTokenHash } from '@/lib/session-enforcement';
-import { createTimingContext, writeTimings } from '@/lib/timing';
 import type { SessionConfig, PlannerState } from '@/types/database';
 
 // Service-role client for usage logging + config lookups (bypasses RLS)
@@ -166,10 +165,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Timing context: records spans for latency instrumentation
-    const timing = createTimingContext();
-    timing.start('prechecks');
-
     // Kill switch check: fetch config + tier, block if Anthropic or tier is disabled
     const [config, tier] = await Promise.all([
       getSystemConfig(serviceSupabase),
@@ -242,8 +237,6 @@ export async function POST(request: NextRequest) {
         console.error('Session enforcement error:', err);
       }
     }
-
-    timing.end('prechecks');
 
     if (action === 'start') {
       // Track last active usage
@@ -362,8 +355,6 @@ export async function POST(request: NextRequest) {
       const exchangeNumber = Math.floor(history.length / 2) + 1;
 
       // Step 1: Persist student transcript + fetch RAG in parallel
-      timing.start('exchange.total');
-      timing.start('rag.total');
       const [studentTranscriptResult, rag] = await Promise.all([
         sessionId
           ? supabase
@@ -379,7 +370,6 @@ export async function POST(request: NextRequest) {
           : Promise.resolve({ data: null }),
         fetchRagContext(taskData, history, studentAnswer),
       ]);
-      timing.end('rag.total');
       const studentTranscriptId = studentTranscriptResult.data?.id ?? null;
       if (!studentTranscriptId && sessionId) {
         const insertErr = 'error' in studentTranscriptResult ? (studentTranscriptResult as { error?: { message?: string } }).error?.message : 'unknown';
@@ -399,9 +389,7 @@ export async function POST(request: NextRequest) {
       const respondDifficulty = sessionConfig?.difficulty || undefined;
       if (stream) {
         // Streaming path: start assessment in background, stream examiner immediately
-        timing.start('llm.assessment.total');
-        const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty)
-          .then(a => { timing.end('llm.assessment.total'); return a; });
+        const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty);
 
         // onComplete callback: persist examiner transcript to DB after stream finishes
         const onStreamComplete = async (fullText: string) => {
@@ -416,13 +404,8 @@ export async function POST(request: NextRequest) {
           }
         };
 
-        timing.start('llm.examiner.total');
         const readableStream = await generateExaminerTurnStreaming(
-          taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessmentPromise, async (fullText: string) => {
-            timing.end('llm.examiner.total');
-            timing.end('exchange.total');
-            if (onStreamComplete) await onStreamComplete(fullText);
-          }, respondRating, sessionConfig?.studyMode, personaId, studentName
+          taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessmentPromise, onStreamComplete, respondRating, sessionConfig?.studyMode, personaId, studentName
         );
 
         // Use after() to ensure assessment DB writes complete even after stream closes.
