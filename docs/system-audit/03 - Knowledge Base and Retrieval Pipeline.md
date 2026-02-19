@@ -140,11 +140,11 @@ Truncated to 500 characters. No query expansion, rewriting, or decomposition.
 
 ### Embedding Generation
 
-**File:** `src/lib/rag-retrieval.ts:27-37`
+**File:** `src/lib/rag-retrieval.ts:39-82`
 
 - Model: `text-embedding-3-small` (1536 dimensions)
 - Single embedding per query (no batch for retrieval)
-- No caching of embeddings
+- **DB-backed embedding cache** (added 2026-02-19): SHA-256(normalized_query) → vector, stored in `embedding_cache` table. Non-blocking upsert on miss, touch `last_used_at` on hit. See `src/lib/rag-retrieval.ts:25-82`.
 
 ### Hybrid Search RPC
 
@@ -247,11 +247,12 @@ sequenceDiagram
 **Improvement:** Add a lightweight reranker (e.g., Cohere Rerank API, or a small cross-encoder) between retrieval and injection.
 **Code touchpoint:** `src/lib/rag-retrieval.ts:39-78` (after `searchChunks`, before `formatChunksForPrompt`)
 
-### Risk 2: No Chunk Metadata Filtering
-**Current state:** The RPC supports `filter_doc_type` and `filter_abbreviation` but these are **never passed** from the application code.
-**Impact:** CFR-specific questions may retrieve handbook paraphrases instead of regulatory text.
-**Improvement:** Use task metadata (from `acs_tasks`) to bias retrieval toward authoritative sources. E.g., regulation questions → filter to `cfr` + `aim`.
-**Code touchpoint:** `src/lib/exam-engine.ts:157-180` (query builder), `src/lib/rag-retrieval.ts:39` (searchChunks options)
+### Risk 2: ~~No~~ Metadata Filtering (Implemented, Feature-Flagged)
+**Current state (2026-02-19):** Metadata filtering is now implemented behind a feature flag (`rag.metadata_filter.enabled` in `system_config`, default `false`).
+- `src/lib/rag-filters.ts` — `inferRagFilters()` detects CFR/AIM/PHAK/AFH signals in question text (24 unit tests)
+- `src/lib/rag-search-with-fallback.ts` — Two-pass search: filtered first, unfiltered fallback if <2 results or top score <0.4
+**Impact when enabled:** CFR-specific questions should preferentially retrieve regulatory text over handbook paraphrases.
+**Risk:** Over-filtering reduces recall. Mitigated by automatic fallback to unfiltered search.
 
 ### Risk 3: No Citation Verification
 **Current state:** RAG chunks are injected into the prompt, but the LLM's claims are not verified against the retrieved sources.
@@ -271,10 +272,10 @@ sequenceDiagram
 **Improvement:** Add `deprecated_at` column; filter in hybrid search; schedule currency checks.
 **Code touchpoint:** Supabase migration + RPC modification
 
-### Risk 6: Empty Knowledge Graph
-**Current state:** `concepts` and `concept_relations` tables are schemaed and indexed but contain zero rows.
-**Impact:** The system cannot leverage graph traversal for topic connections, prerequisite chains, or DPE-like probing.
-**Improvement:** See [[06 - GraphRAG Proposal for Oral Exam Flow]].
+### Risk 6: ~~Empty~~ ACS-Skeleton Knowledge Graph (Populated 2026-02-19)
+**Current state:** `concepts` and `concept_relations` tables now contain the ACS skeleton: areas, tasks, and elements with `is_component_of` edges. Migration: `20260220100002_acs_skeleton_graph.sql`.
+**Impact:** The graph is no longer empty but is not yet used by the runtime exam engine. Future: graph-enhanced retrieval and topic navigation.
+**Improvement:** See [[06 - GraphRAG Proposal for Oral Exam Flow]] for the full graph population roadmap.
 
 ---
 
@@ -285,9 +286,9 @@ sequenceDiagram
 | Modify query construction | `src/lib/exam-engine.ts` | `fetchRagContext():157-180` |
 | Change search parameters (count, threshold) | `src/lib/rag-retrieval.ts` | `searchChunks():39-78` |
 | Add reranking | `src/lib/rag-retrieval.ts` | New function after `searchChunks` |
-| Enable metadata filtering | `src/lib/rag-retrieval.ts` | Pass `filterDocType`/`filterAbbreviation` options |
+| Enable metadata filtering | `src/lib/rag-filters.ts`, `src/lib/rag-search-with-fallback.ts` | `inferRagFilters()`, `searchWithFallback()` (feature-flagged) |
 | Modify hybrid search weights | Supabase migration | `chunk_hybrid_search` RPC |
-| Add embedding cache | `src/lib/rag-retrieval.ts` | Wrap `generateEmbedding()` |
+| Embedding cache | `src/lib/rag-retrieval.ts` | **Done** — DB-backed via `embedding_cache` table |
 | Change chunk size/overlap | `scripts/ingest-sources.ts` | `chunkText():260-309` |
 | Add page tracking | `scripts/ingest-sources.ts` | Modify main pipeline loop |
 | Register new source docs | `scripts/ingest-sources.ts` | `buildDocumentRegistry():56-258` |

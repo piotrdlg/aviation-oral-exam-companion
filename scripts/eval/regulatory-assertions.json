@@ -1,0 +1,202 @@
+[
+  {
+    "id": "vfr-001",
+    "claim": "Basic VFR weather minimums in Class G airspace below 1200 feet AGL during the day require 1 statute mile visibility and clear of clouds",
+    "domain": "weather_minimums",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["91.155", "clear of clouds", "1 statute mile"],
+    "expected_abbreviation": null
+  },
+  {
+    "id": "vfr-002",
+    "claim": "VFR weather minimums in Class B airspace require 3 statute miles visibility and clear of clouds",
+    "domain": "weather_minimums",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["91.155", "Class B", "3 statute miles"],
+    "expected_abbreviation": null
+  },
+  {
+    "id": "vfr-003",
+    "claim": "In Class E airspace above 10000 feet MSL, VFR minimums require 5 statute miles visibility and 1000 feet below, 1000 feet above, and 1 statute mile horizontal cloud clearance",
+    "domain": "weather_minimums",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["91.155", "10,000", "5 statute miles"],
+    "expected_abbreviation": null
+  },
+  {
+    "id": "vfr-004",
+    "claim": "Special VFR operations in controlled airspace require at least 1 statute mile flight visibility and the aircraft must remain clear of clouds",
+    "domain": "weather_minimums",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["91.157", "special VFR", "clear of clouds"],
+    "expected_abbreviation": null
+  },
+  {
+    "id": "currency-001",
+    "claim": "To act as pilot in command carrying passengers, a pilot must have made 3 takeoffs and landings in the preceding 90 days in an aircraft of the same category, class, and type if required",
+    "domain": "currency",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["61.57", "90 days", "three takeoffs", "3 takeoffs"],
+    "expected_abbreviation": null
+  },
+  {
+    "id": "currency-002",
+    "claim": "To carry passengers at night, a pilot must have made 3 takeoffs and 3 full-stop landings to a complete stop during the period 1 hour after sunset to 1 hour before sunrise in the preceding 90 days",
+    "domain": "currency",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["61.57", "night", "full stop", "90 days"],
+    "expected_abbreviation": null
+  },
+  {
+    "id": "currency-003",
+    "claim": "An instrument currency requires 6 instrument approaches, holding procedures, and intercepting and tracking courses in the preceding 6 calendar months",
+    "domain": "currency",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["61.57", "6 instrument approaches", "6 calendar months", "holding"],
+    "expected_abbreviation": null
+  },
+  {
+    "id": "instruments-001",
+    "claim": "Day VFR required instruments and equipment for powered civil aircraft include altimeter, airspeed indicator, magnetic compass, tachometer, and oil pressure gauge",
+    "domain": "required_instruments",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["91.205", "altimeter", "airspeed", "magnetic compass"],
+    "expected_abbreviation": null
+  },
+  {
+    "id": "instruments-002",
+    "claim": "Night VFR operations require all day VFR equipment plus position lights, anti-collision light, landing light if for hire, adequate source of electrical energy, and spare fuses",
+    "domain": "required_instruments",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["91.205", "position lights", "anti-collision", "night"],
+    "expected_abbreviation": null
+  },
+  {
+    "id": "instruments-003",
+    "claim": "IFR operations require the day VFR and night VFR instruments plus gyroscopic rate-of-turn, slip-skid, sensitive altimeter, clock, generator, gyroscopic pitch-and-bank, and DME above FL240",
+    "domain": "required_instruments",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["91.205", "gyroscopic", "IFR", "altimeter"],
+    "expected_abbreviation": null
+  },
+  {
+    "id": "airspace-001",
+    "claim": "Class B airspace requires an ATC clearance to enter and pilots must have at least a private pilot certificate or student pilot endorsement",
+    "domain": "airspace",
+    "expected_doc_type": null,
+    "must_contain_any": ["Class B", "clearance", "private pilot"],
+    "expected_abbreviation": "aim"
+  },
+  {
+    "id": "airspace-002",
+    "claim": "Class C airspace requires two-way radio communication before entering and an operating altitude-encoding transponder",
+    "domain": "airspace",
+    "expected_doc_type": null,
+    "must_contain_any": ["Class C", "two-way", "transponder"],
+    "expected_abbreviation": "aim"
+  },
+  {
+    "id": "airspace-003",
+    "claim": "Class D airspace extends from the surface to 2500 feet AGL and requires two-way radio communication established before entry",
+    "domain": "airspace",
+    "expected_doc_type": null,
+    "must_contain_any": ["Class D", "2,500", "two-way"],
+    "expected_abbreviation": "aim"
+  },
+  {
+    "id": "medical-001",
+    "claim": "A first-class medical certificate is required to exercise privileges of an airline transport pilot and is valid for 6 calendar months for ATPs under age 40 and 12 calendar months for others",
+    "domain": "medical",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["61.23", "first class", "airline transport"],
+    "expected_abbreviation": null
+  },
+  {
+    "id": "medical-002",
+    "claim": "A third-class medical certificate for a private pilot is valid for 60 calendar months for pilots under age 40 and 24 calendar months for those age 40 and older",
+    "domain": "medical",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["61.23", "third class", "60 calendar months"],
+    "expected_abbreviation": null
+  },
+  {
+    "id": "medical-003",
+    "claim": "Under BasicMed, a pilot must hold or have held a medical certificate, complete a medical education course every 24 months, and have a physician examination every 48 months",
+    "domain": "medical",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["BasicMed", "61.23", "24 months"],
+    "expected_abbreviation": null
+  },
+  {
+    "id": "documents-001",
+    "claim": "Required aircraft documents remembered by the ARROW acronym: Airworthiness certificate, Registration, Radio station license if required, Operating limitations, Weight and balance data",
+    "domain": "documents",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["ARROW", "airworthiness", "registration"],
+    "expected_abbreviation": null
+  },
+  {
+    "id": "documents-002",
+    "claim": "An airworthiness certificate remains valid as long as the aircraft is maintained in accordance with applicable regulations and the certificate is displayed in the aircraft",
+    "domain": "documents",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["airworthiness certificate", "91.409", "displayed"],
+    "expected_abbreviation": null
+  },
+  {
+    "id": "documents-003",
+    "claim": "Aircraft registration certificates must be renewed every 3 years and must be carried in the aircraft",
+    "domain": "documents",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["registration", "3 years", "47.40"],
+    "expected_abbreviation": null
+  },
+  {
+    "id": "pilot-docs-001",
+    "claim": "A pilot must have a valid pilot certificate and medical certificate in their physical possession or readily accessible when acting as pilot in command",
+    "domain": "pilot_documents",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["61.3", "physical possession", "pilot certificate"],
+    "expected_abbreviation": null
+  },
+  {
+    "id": "pilot-docs-002",
+    "claim": "A pilot must present their pilot certificate, medical certificate, and photo ID to the FAA, NTSB, or law enforcement upon request",
+    "domain": "pilot_documents",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["61.3", "photo ID", "FAA"],
+    "expected_abbreviation": null
+  },
+  {
+    "id": "currency-004",
+    "claim": "Flight reviews are required every 24 calendar months and must include at least 1 hour of flight training and 1 hour of ground training",
+    "domain": "currency",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["61.56", "24 calendar months", "flight review"],
+    "expected_abbreviation": null
+  },
+  {
+    "id": "airspace-004",
+    "claim": "Transponder equipped aircraft must operate the transponder with altitude reporting in Class A, B, and C airspace and within 30 nautical miles of Class B primary airports",
+    "domain": "airspace",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["91.215", "transponder", "30 nautical miles"],
+    "expected_abbreviation": null
+  },
+  {
+    "id": "vfr-005",
+    "claim": "VFR on top operations are not authorized in Class A airspace which begins at 18000 feet MSL and extends to FL600",
+    "domain": "weather_minimums",
+    "expected_doc_type": null,
+    "must_contain_any": ["Class A", "18,000", "FL600"],
+    "expected_abbreviation": "aim"
+  },
+  {
+    "id": "instruments-004",
+    "claim": "Inoperative instruments or equipment must be removed or deactivated and placarded inoperative, with the MEL or MMEL consulted to determine if flight is permitted",
+    "domain": "required_instruments",
+    "expected_doc_type": "cfr",
+    "must_contain_any": ["91.213", "inoperative", "MEL"],
+    "expected_abbreviation": null
+  }
+]

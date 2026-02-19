@@ -12,7 +12,7 @@ evidence_level: high
 
 ## Current Latency Budget (Estimated)
 
-The system has **no instrumentation** — the `latency_logs` table exists but is never populated. All estimates below are based on code analysis and typical API latencies.
+**UPDATE (2026-02-19):** Instrumentation is now **implemented**. `src/lib/timing.ts` records spans (`prechecks`, `exchange.total`, `rag.total`, `llm.assessment.total`, `llm.examiner.total`) and writes them to `latency_logs.timings` JSONB via `writeTimings()`. See [[09 - Staging Verification]] for SQL queries to extract p50/p95. The estimates below remain useful as baselines until real data is collected.
 
 ### Critical Path: Student Answer → First Token
 

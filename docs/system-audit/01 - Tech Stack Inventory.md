@@ -48,10 +48,10 @@ evidence_level: high
 | **Database** | Supabase PostgreSQL 17.6 | `supabase/migrations/` (35 files) | pgvector, RLS, RPC functions, East US region |
 | **Object Storage** | Supabase Storage | `source-images` bucket | FAA diagram/chart images |
 | **Auth** | Supabase Auth | Email/password + confirmation flow | Session refresh in middleware |
-| **CI/CD** | None (Vercel git integration) | — | No GitHub Actions or pipelines |
+| **CI/CD** | GitHub Actions | `.github/workflows/ci.yml` | Lint + typecheck + test on PR and push to main |
 | **Containerization** | None | — | Pure serverless |
-| **Caching** | None | — | No Redis, no in-memory cache (intentionally, per serverless constraints) |
-| **Observability** | PostHog + `usage_logs` table | `posthog-js` + DB | No APM, no distributed tracing |
+| **Caching** | Module-level TTL caches + DB embedding cache | `src/lib/ttl-cache.ts` | system_config (60s), prompts (5min), tier/voice (5min), embedding_cache table |
+| **Observability** | PostHog + `usage_logs` + `latency_logs` + timing spans | `src/lib/timing.ts` | Per-exchange JSONB spans: prechecks, rag, assessment, examiner |
 | **Rate Limiting** | In-memory sliding window | `src/lib/rate-limit.ts` | Resets on cold starts; not billing-safe |
 
 ---

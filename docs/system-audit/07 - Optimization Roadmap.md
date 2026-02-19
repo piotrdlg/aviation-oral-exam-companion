@@ -49,24 +49,21 @@ quadrantChart
 
 ## Track 1: Knowledge Correctness
 
-### NOW — Enable Metadata Filtering in RAG
-**What:** Pass `filter_doc_type` and `filter_abbreviation` to `chunk_hybrid_search` based on question type.
-**Why:** Regulation questions should retrieve CFR/AIM text, not handbook paraphrases. The RPC already supports filters but they are never used.
-**Impact:** Moderate — reduces off-topic retrieval, especially for regulatory questions
-**Effort:** S — wire existing parameters through from `fetchRagContext()`
-**Risk:** Over-filtering may reduce recall. Mitigate: use filters as preference (boost), not hard exclusion.
-**Validate:** Compare retrieval results with/without filters on 50 regulatory questions.
-**Code:**
-- `src/lib/exam-engine.ts:157-180` — add task metadata analysis
-- `src/lib/rag-retrieval.ts:39-78` — pass filter options
+### ~~NOW — Enable Metadata Filtering in RAG~~ DONE (2026-02-19)
+**What:** Two-pass RAG search with inferred metadata filters + safe unfiltered fallback.
+**Implemented:**
+- `src/lib/rag-filters.ts` — `inferRagFilters()`: detects CFR/AIM/PHAK/AFH signals (24 unit tests)
+- `src/lib/rag-search-with-fallback.ts` — `searchWithFallback()`: filtered Pass 1 → unfiltered fallback if <2 results or low scores
+- Feature flag: `rag.metadata_filter.enabled` in `system_config` (default `false`)
+- Not yet wired into exam engine (requires enabling flag + integration in `fetchRagContext`)
 
-### NOW — Build Regulatory Assertion Test Set (Layer 3)
-**What:** Create 100-200 atomic FAA claims with true/false labels and citation IDs.
-**Why:** This is the minimum viable evaluation for the highest-risk failure mode.
-**Impact:** High — enables measuring hallucination rate before and after changes
-**Effort:** M — requires aviation SME time (or CFI review of LLM-generated candidates)
-**Risk:** None to production
-**Validate:** Automated regression tests: run claims through assessment pipeline, check correctness.
+### ~~NOW — Build Regulatory Assertion Test Set (Layer 3)~~ SCAFFOLDED (2026-02-19)
+**What:** Created evaluation harness with 25 initial assertions across 6 regulatory domains.
+**Implemented:**
+- `scripts/eval/regulatory-assertions.json` — 25 assertions (VFR minimums, currency, instruments, airspace, medical, documents)
+- `scripts/eval/run-regulatory-assertions.ts` — evaluator script with `--with-filters` comparison mode
+- `npm run eval:regulatory` — package.json script entry
+**Remaining:** Expand to 100-200 assertions with SME review.
 **Code:** New test data file + test script
 
 ### NEXT — Regulatory Claim Nodes in Graph
@@ -106,14 +103,13 @@ quadrantChart
 
 ## Track 2: Exam Flow Quality
 
-### NOW — ACS Skeleton in Knowledge Graph
-**What:** Populate `concepts` table with nodes for every ACS element, task, and area. Create `is_component_of` edges.
-**Why:** Provides the backbone for all graph-enhanced features. Zero production risk.
-**Impact:** Low standalone, **enables** all graph-based improvements
-**Effort:** S — SQL migration only
-**Risk:** None
-**Validate:** Query graph for completeness (should match `acs_elements` count)
-**Code:** New Supabase migration
+### ~~NOW — ACS Skeleton in Knowledge Graph~~ DONE (2026-02-19)
+**Implemented:**
+- Migration: `supabase/migrations/20260220100002_acs_skeleton_graph.sql`
+- Inserts area, task, and element concepts (category: `acs_area`, `acs_task`, `acs_element`) with `validation_status='validated'`
+- Inserts `is_component_of` edges: element→task and task→area
+- Idempotent: `ON CONFLICT DO NOTHING`
+- Verification SQL in [[09 - Staging Verification]]
 
 ### NEXT — Adaptive Follow-Up on Weak Answers
 **What:** When `assessAnswer()` returns `unsatisfactory` or `partial`, instead of waiting for user to click "Next Question," automatically generate a follow-up probe on the same topic.
@@ -182,12 +178,10 @@ quadrantChart
 - `src/lib/exam-engine.ts` — 5min TTL cache for prompt candidates (keyed by promptKey)
 - `src/lib/voice/tier-lookup.ts` — 5min TTL cache for user tier + voice preference
 
-### NOW — Parallel Pre-Checks
-**What:** Ensure all pre-LLM checks run in `Promise.all()` instead of sequentially.
-**Why:** Some checks currently wait on each other unnecessarily.
-**Impact:** ~50-150ms savings
-**Effort:** S
-**Code:** `src/app/api/exam/route.ts:168-240`
+### ~~NOW — Parallel Pre-Checks~~ DONE (2026-02-19)
+**What:** Profile fetch + session enforcement now run in `Promise.all()`.
+**Implemented:** `src/app/api/exam/route.ts:199-233` — profilePromise and enforcementPromise run concurrently, results destructured together.
+**Impact:** ~50-150ms savings per request (profile DB query no longer blocks enforcement check)
 
 ### ~~NEXT → NOW — Embedding Cache~~ DONE (2026-02-19)
 **What:** DB-backed cache `hash(normalized_query) → embedding_vector` in the `embedding_cache` table.
@@ -288,10 +282,10 @@ gantt
     System/prompt/profile caching          :done, n2, 2026-02-19, 1d
     Embedding cache                        :done, n2b, 2026-02-19, 1d
     Fix ingestion page tracking            :done, n2c, 2026-02-19, 1d
-    Parallel pre-checks                    :n3, 2026-02-20, 1d
-    Enable metadata filtering              :n4, 2026-02-21, 2d
-    ACS skeleton in graph                  :n5, 2026-02-21, 1d
-    Regulatory assertion test set          :n6, 2026-02-22, 5d
+    Parallel pre-checks                    :done, n3, 2026-02-19, 1d
+    Enable metadata filtering              :done, n4, 2026-02-19, 1d
+    ACS skeleton in graph                  :done, n5, 2026-02-19, 1d
+    Regulatory assertion test set          :done, n6, 2026-02-19, 1d
 
     section NEXT (2-4 weeks)
     Regulatory claim extraction            :x2, 2026-02-27, 7d
