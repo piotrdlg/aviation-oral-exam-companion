@@ -82,7 +82,8 @@ export interface ExamSession {
   rating: Rating;
   started_at: string;
   ended_at: string | null;
-  status: 'active' | 'paused' | 'completed' | 'abandoned' | 'errored';
+  status: 'active' | 'paused' | 'completed' | 'expired' | 'abandoned';
+  is_onboarding: boolean;
   study_mode: StudyMode;
   difficulty_preference: DifficultyPreference;
   selected_areas: string[];
@@ -93,6 +94,8 @@ export interface ExamSession {
   weak_areas: WeakArea[];
   metadata: Record<string, unknown>;
   exchange_count: number;
+  expires_at: string | null;
+  result: ExamResult | null;
 }
 
 export interface AcsTaskCoverage {
@@ -130,6 +133,26 @@ export interface AssessmentResult {
   feedback: string;
   misconceptions: string[];
   follow_up_needed: boolean;
+}
+
+export type ExamGrade = 'satisfactory' | 'unsatisfactory' | 'incomplete';
+export type CompletionTrigger = 'user_ended' | 'all_tasks_covered' | 'expired';
+
+export interface ExamResult {
+  grade: ExamGrade;
+  total_elements_in_set: number;
+  elements_asked: number;
+  elements_satisfactory: number;
+  elements_unsatisfactory: number;
+  elements_partial: number;
+  elements_not_asked: number;
+  score_by_area: Record<string, {
+    asked: number;
+    satisfactory: number;
+    unsatisfactory: number;
+  }>;
+  completion_trigger: CompletionTrigger;
+  graded_at: string;
 }
 
 export interface SourceDocument {
