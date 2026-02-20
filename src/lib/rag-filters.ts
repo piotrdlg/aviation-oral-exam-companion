@@ -55,10 +55,15 @@ export function inferRagFilters(context: {
   }
 
   // CFR signals: regulatory keywords combined with contextual cues
+  // "certificate" and "endorsement" removed as standalone keywords because they
+  // appear as qualifiers in non-regulatory contexts (e.g., "private pilot certificate"
+  // in airspace descriptions). Compound patterns below catch the regulatory uses.
   const regulatoryKeywords =
-    /\b(regulation|currency|endorsement|medical|logbook|certificate)\b/i.test(text);
+    /\b(regulation|currency|medical|logbook)\b/i.test(text);
+  const regulatoryCompound =
+    /\b(airworthiness|registration)\s+certificate/i.test(text);
 
-  if (regulatoryKeywords) {
+  if (regulatoryKeywords || regulatoryCompound) {
     return { filterDocType: 'cfr' };
   }
 

@@ -191,6 +191,29 @@ describe('inferRagFilters', () => {
     ).toEqual({ filterDocType: 'cfr' });
   });
 
+  // --- Compound "certificate" patterns (standalone removed to fix airspace false-positive) ---
+
+  it('returns filterDocType cfr for "airworthiness certificate"', () => {
+    expect(
+      inferRagFilters({ examinerQuestion: 'An airworthiness certificate must be displayed in the aircraft.' })
+    ).toEqual({ filterDocType: 'cfr' });
+  });
+
+  it('returns filterDocType cfr for "registration certificate"', () => {
+    expect(
+      inferRagFilters({ examinerQuestion: 'Registration certificates must be renewed every 3 years.' })
+    ).toEqual({ filterDocType: 'cfr' });
+  });
+
+  it('does NOT force CFR for "private pilot certificate" alone (airspace-001 fix)', () => {
+    // "certificate" as qualifier in airspace context should not trigger CFR
+    expect(
+      inferRagFilters({
+        examinerQuestion: 'Class B airspace requires a private pilot certificate or student pilot endorsement',
+      })
+    ).toBeNull();
+  });
+
   // --- "AIM" must be word boundary, not substring ---
 
   it('does not match "claim" as AIM', () => {

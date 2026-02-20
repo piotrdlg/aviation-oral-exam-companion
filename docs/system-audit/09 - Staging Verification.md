@@ -160,4 +160,28 @@ npm run eval:regulatory -- --with-filters
 
 ---
 
+## Automated Verification Script
+
+A TypeScript runner automates the SQL checks described above. It connects to Supabase, runs all checks, prints a console summary, and writes a dated markdown report to `docs/staging-reports/`.
+
+```bash
+# Run against staging (requires .env.local with SUPABASE_URL + SERVICE_ROLE_KEY)
+npm run verify:staging
+```
+
+**What it checks:**
+| Check | Section | Criteria |
+|-------|---------|----------|
+| Latency Logs | a | `latency_logs` rows in last hour > 0 |
+| Timing Spans | b | Populated `timings` JSONB with numeric spans |
+| Embedding Cache | c | `embedding_cache` rows > 0 + reuse rate |
+| ACS Graph | d | `concepts` + `concept_relations` populated |
+| Metadata Filter Flag | e | `system_config` key status (informational) |
+
+**Output:** Console summary + `docs/staging-reports/YYYY-MM-DD-phase1-verification.md`
+
+**Exit codes:** `0` = all checks pass (GO), `1` = review required, `2` = fatal error.
+
+---
+
 *See also: [[05 - Latency Audit and Instrumentation Plan]], [[07 - Optimization Roadmap]], [[08 - PAL MCP Research Log]]*

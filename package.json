@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "eval:regulatory": "tsx scripts/eval/run-regulatory-assertions.ts"
+    "eval:regulatory": "tsx scripts/eval/run-regulatory-assertions.ts",
+    "verify:staging": "tsx scripts/staging/verify-phase1.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",
