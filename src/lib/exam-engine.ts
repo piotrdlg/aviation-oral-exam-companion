@@ -350,11 +350,12 @@ export async function generateExaminerTurnStreaming(
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ assessment })}\n\n`));
           } catch (err) {
             clearInterval(keepAlive);
-            console.error('Assessment failed during streaming:', err);
+            const errMsg = err instanceof Error ? err.message : String(err);
+            console.error('Assessment failed during streaming:', errMsg, err);
             // Send fallback assessment so the client always receives grading
             const fallback = {
               score: 'partial' as const,
-              feedback: 'Assessment could not be completed.',
+              feedback: `Assessment error: ${errMsg}`,
               misconceptions: [],
               follow_up_needed: false,
               primary_element: null,
