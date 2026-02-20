@@ -676,6 +676,30 @@ export default function PracticePage() {
           }
         }
 
+        // Flush decoder and process any remaining buffer data (fixes assessment not displaying)
+        buffer += decoder.decode();
+        if (buffer.trim()) {
+          for (const line of buffer.split('\n')) {
+            if (!line.startsWith('data: ')) continue;
+            const payload = line.slice(6);
+            if (payload === '[DONE]') continue;
+            try {
+              const parsed = JSON.parse(payload);
+              if (parsed.assessment) {
+                receivedAssessment = parsed.assessment;
+                receivedSources = parsed.assessment.rag_chunks?.map((c: { doc_abbreviation: string; heading: string | null; content: string; page_start: number | null }) => ({
+                  doc_abbreviation: c.doc_abbreviation,
+                  heading: c.heading,
+                  content: c.content,
+                  page_start: c.page_start,
+                }));
+              }
+            } catch {
+              // Ignore malformed SSE payloads
+            }
+          }
+        }
+
         // Apply assessment to the student message
         if (receivedAssessment) {
           setMessages((prev) => {
