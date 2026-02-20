@@ -134,7 +134,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
       <div className="max-w-lg w-full mx-4">
         {/* Progress dots */}
         <div data-testid="wizard-progress-dots" className="flex justify-center gap-2 mb-6">
-          {[1, 2, 3, 4, 5].map((s) => (
+          {[1, 2, 3, 4, 5, 6].map((s) => (
             <div
               key={s}
               data-testid={`wizard-dot-${s}`}
@@ -369,40 +369,128 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
           </div>
         )}
 
-        {/* Step 5: Confirmation */}
+        {/* Step 5: Free Trial Explanation */}
         {step === 5 && (
           <div data-testid="wizard-step-5" className="bezel rounded-lg border border-c-border p-8">
             <h2 className="font-mono font-bold text-2xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
-              READY TO START?
+              YOUR FREE TRIAL
             </h2>
-            <p className="text-base text-c-muted text-center mb-6">
-              Your AI examiner is standing by
+            <p className="text-base text-c-muted text-center mb-5">
+              You are about to start your free 7-day trial
             </p>
 
-            {/* Summary */}
-            <div className="iframe rounded-lg p-4 mb-6 space-y-2">
-              <p className="text-base text-c-text">
-                <span className="text-c-muted font-mono text-xs uppercase">Preparing for:</span>{' '}
-                <span className="text-c-green font-mono font-semibold glow-g">{RATING_LABELS[rating]?.toUpperCase()}</span>
-                {showClassPicker && (
-                  <>
-                    <span className="text-c-dim mx-1.5">&middot;</span>
-                    <span className="text-c-cyan font-mono font-semibold">{aircraftClass}</span>
-                  </>
-                )}
+            {/* What's included */}
+            <div className="iframe rounded-lg p-4 mb-4">
+              <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-3">WHAT&apos;S INCLUDED</p>
+              <div className="space-y-2">
+                <div className="flex items-start gap-2.5">
+                  <span className="text-c-green text-xs mt-0.5">&#10003;</span>
+                  <div>
+                    <p className="text-xs text-c-text"><span className="text-c-green font-mono font-semibold">1 Onboarding Exam</span> &mdash; pre-configured, starts right away</p>
+                    <p className="text-xs text-c-dim mt-0.5">Does not count toward your trial limit</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <span className="text-c-green text-xs mt-0.5">&#10003;</span>
+                  <div>
+                    <p className="text-xs text-c-text"><span className="text-c-cyan font-mono font-semibold">3 Practice Exams</span> &mdash; full control over settings</p>
+                    <p className="text-xs text-c-dim mt-0.5">Choose your study mode, difficulty, and focus areas</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <span className="text-c-green text-xs mt-0.5">&#10003;</span>
+                  <p className="text-xs text-c-text">Voice mode, FAA source references, ACS scoring &mdash; everything included</p>
+                </div>
+              </div>
+            </div>
+
+            {/* What is an exam */}
+            <div className="iframe rounded-lg p-4 mb-4">
+              <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-2">WHAT IS AN EXAM?</p>
+              <p className="text-xs text-c-muted leading-relaxed">
+                An exam is one practice session with your AI examiner. You choose the rating, study mode
+                (Area by Area, Random, or Weak Areas), and difficulty level. The examiner asks questions,
+                assesses your answers, and grades your performance. You can pause and resume any exam
+                within 7 days.
               </p>
-              {(aircraftType.trim() || homeAirport.trim()) && (
-                <p className="text-base text-c-muted">
-                  {aircraftType.trim() && (
-                    <>Flying a <span className="text-c-text">{aircraftType.trim()}</span></>
-                  )}
-                  {aircraftType.trim() && homeAirport.trim() && ' out of '}
-                  {!aircraftType.trim() && homeAirport.trim() && 'Home airport: '}
-                  {homeAirport.trim() && (
-                    <span className="text-c-text">{homeAirport.trim()}</span>
-                  )}
-                </p>
-              )}
+            </div>
+
+            {/* After the trial */}
+            <div className="iframe rounded-lg p-4 mb-6">
+              <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider mb-2">AFTER THE TRIAL</p>
+              <p className="text-xs text-c-muted leading-relaxed">
+                Each exam stays available for 7 days to pause and resume. After your 3 trial exams,
+                subscribe to continue with unlimited exams. Plans start at <span className="text-c-amber font-mono font-semibold">$39/month</span>.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setStep(4)}
+                className="font-mono text-sm text-c-muted hover:text-c-text transition-colors uppercase"
+              >
+                &larr; BACK
+              </button>
+              <button
+                data-testid="wizard-step5-next"
+                onClick={() => setStep(6)}
+                className="flex-1 py-3 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-base tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
+              >
+                GOT IT
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 6: Pre-configured First Exam + Launch */}
+        {step === 6 && (
+          <div data-testid="wizard-step-6" className="bezel rounded-lg border border-c-border p-8">
+            <h2 className="font-mono font-bold text-2xl text-c-amber glow-a text-center mb-2 tracking-wider uppercase">
+              YOUR FIRST EXAM
+            </h2>
+            <p className="text-base text-c-muted text-center mb-5">
+              We&apos;ve pre-configured this exam so you can jump right in
+            </p>
+
+            {/* Pre-configured exam summary */}
+            <div className="iframe rounded-lg p-4 mb-4">
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[10px] text-c-muted uppercase tracking-wider">Rating</span>
+                  <span className="text-xs text-c-green font-mono font-semibold glow-g">
+                    {RATING_LABELS[rating]?.toUpperCase()}
+                    {showClassPicker && <span className="text-c-cyan ml-1.5">{aircraftClass}</span>}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[10px] text-c-muted uppercase tracking-wider">Study Mode</span>
+                  <span className="text-xs text-c-text font-mono">AREA BY AREA (LINEAR)</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[10px] text-c-muted uppercase tracking-wider">Difficulty</span>
+                  <span className="text-xs text-c-green font-mono font-semibold">EASY</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[10px] text-c-muted uppercase tracking-wider">Focus Area</span>
+                  <span className="text-xs text-c-text font-mono">AREA I &mdash; PREFLIGHT PREPARATION</span>
+                </div>
+                {(aircraftType.trim() || homeAirport.trim()) && (
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[10px] text-c-muted uppercase tracking-wider">Aircraft</span>
+                    <span className="text-xs text-c-text font-mono">
+                      {aircraftType.trim() || ''}{aircraftType.trim() && homeAirport.trim() ? ' / ' : ''}{homeAirport.trim() || ''}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Free badge */}
+            <div className="flex items-center gap-2 mb-5 px-3 py-2 rounded-lg bg-c-green-lo/50 border border-c-green/20">
+              <span className="text-c-green text-xs">&#10003;</span>
+              <p className="text-xs text-c-green font-mono">
+                ONBOARDING EXAM &mdash; FREE, DOES NOT COUNT TOWARD YOUR 3 TRIAL EXAMS
+              </p>
             </div>
 
             {/* Voice toggle */}
@@ -419,7 +507,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
 
             <div className="flex items-center gap-3">
               <button
-                onClick={() => setStep(4)}
+                onClick={() => setStep(5)}
                 className="font-mono text-sm text-c-muted hover:text-c-text transition-colors uppercase"
               >
                 &larr; BACK
