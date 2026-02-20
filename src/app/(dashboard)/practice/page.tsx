@@ -1150,7 +1150,7 @@ export default function PracticePage() {
                 aircraftClass: config.aircraftClass,
                 studyMode: 'linear',
                 difficulty: 'easy',
-                selectedAreas: ['I'],
+                selectedAreas: [],
                 selectedTasks: [],
                 voiceEnabled: config.voiceEnabled,
                 isOnboarding: true,

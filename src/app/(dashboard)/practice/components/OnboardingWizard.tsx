@@ -471,8 +471,8 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
                   <span className="text-xs text-c-green font-mono font-semibold">EASY</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[10px] text-c-muted uppercase tracking-wider">Focus Area</span>
-                  <span className="text-xs text-c-text font-mono">AREA I &mdash; PREFLIGHT PREPARATION</span>
+                  <span className="font-mono text-[10px] text-c-muted uppercase tracking-wider">Coverage</span>
+                  <span className="text-xs text-c-text font-mono">ALL ACS AREAS (FULL CHECKRIDE)</span>
                 </div>
                 {(aircraftType.trim() || homeAirport.trim()) && (
                   <div className="flex items-center justify-between">
