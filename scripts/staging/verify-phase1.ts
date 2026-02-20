@@ -54,42 +54,28 @@ interface CheckResult {
 // ---------------------------------------------------------------------------
 
 async function checkLatencyLogs(sb: SupabaseClient): Promise<CheckResult> {
-  const { data, error } = await sb.rpc('sql', {
-    query: `SELECT count(*) AS cnt FROM latency_logs WHERE created_at > now() - interval '1 hour'`,
-  }).maybeSingle();
+  // Direct query against latency_logs table
+  const { count, error } = await sb
+    .from('latency_logs')
+    .select('*', { count: 'exact', head: true })
+    .gte('created_at', new Date(Date.now() - 3600_000).toISOString());
 
-  // If RPC "sql" doesn't exist, fall back to direct query
   if (error) {
-    // Try direct query
-    const { count, error: e2 } = await sb
-      .from('latency_logs')
-      .select('*', { count: 'exact', head: true })
-      .gte('created_at', new Date(Date.now() - 3600_000).toISOString());
-
-    if (e2) {
-      return {
-        name: 'Latency Logs (1h)',
-        section: 'a',
-        passed: false,
-        summary: `Query error: ${e2.message}`,
-        detail: `Table may not exist yet. Apply migration 20260220100001 first.`,
-      };
-    }
-
-    const cnt = count ?? 0;
+    const msg = error.message || error.code || 'unknown error';
+    // Detect missing table vs missing column
+    const isMissingTable = msg.includes('does not exist') || msg.includes('relation');
     return {
       name: 'Latency Logs (1h)',
       section: 'a',
-      passed: cnt > 0,
-      summary: `${cnt} rows in last hour`,
-      detail:
-        cnt > 0
-          ? `Found ${cnt} latency_logs rows from the last hour.`
-          : `No latency_logs rows found. Run at least one exam exchange first.`,
+      passed: false,
+      summary: `Query error: ${msg}`,
+      detail: isMissingTable
+        ? `Table latency_logs may not exist. Apply migration 20260220100001 first.`
+        : `Query failed: ${msg}. Check that migration 20260220100001 has been applied.`,
     };
   }
 
-  const cnt = Number(data?.cnt ?? 0);
+  const cnt = count ?? 0;
   return {
     name: 'Latency Logs (1h)',
     section: 'a',

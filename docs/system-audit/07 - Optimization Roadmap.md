@@ -52,10 +52,10 @@ quadrantChart
 ### ~~NOW — Enable Metadata Filtering in RAG~~ DONE (2026-02-19)
 **What:** Two-pass RAG search with inferred metadata filters + safe unfiltered fallback.
 **Implemented:**
-- `src/lib/rag-filters.ts` — `inferRagFilters()`: detects CFR/AIM/PHAK/AFH signals (24 unit tests)
+- `src/lib/rag-filters.ts` — `inferRagFilters()`: detects CFR/AIM/PHAK/AFH signals (32 unit tests)
 - `src/lib/rag-search-with-fallback.ts` — `searchWithFallback()`: filtered Pass 1 → unfiltered fallback if <2 results or low scores
-- Feature flag: `rag.metadata_filter.enabled` in `system_config` (default `false`)
-- Not yet wired into exam engine (requires enabling flag + integration in `fetchRagContext`)
+- Feature flag: key `rag.metadata_filter` in `system_config`, value `{"enabled": true}` (default: OFF)
+- Wired into exam engine: `fetchRagContext()` uses `searchWithFallback` when flag enabled. Eval: 25/25 with filters.
 
 ### ~~NOW — Build Regulatory Assertion Test Set (Layer 3)~~ SCAFFOLDED (2026-02-19)
 **What:** Created evaluation harness with 25 initial assertions across 6 regulatory domains.
