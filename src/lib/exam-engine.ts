@@ -355,7 +355,7 @@ export async function generateExaminerTurnStreaming(
             // Send fallback assessment so the client always receives grading
             const fallback = {
               score: 'partial' as const,
-              feedback: `Assessment error: ${errMsg}`,
+              feedback: 'Assessment could not be completed.',
               misconceptions: [],
               follow_up_needed: false,
               primary_element: null,
