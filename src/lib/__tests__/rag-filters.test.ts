@@ -4,9 +4,34 @@ import { inferRagFilters } from '../rag-filters';
 describe('inferRagFilters', () => {
   // --- CFR / FAR / Part signals ---
 
-  it('returns filterDocType cfr for "14 CFR" reference', () => {
+  it('returns filterDocType cfr for "14 CFR" with section number', () => {
     expect(
       inferRagFilters({ examinerQuestion: 'What does 14 CFR 91.155 say about VFR minimums?' })
+    ).toEqual({ filterDocType: 'cfr' });
+  });
+
+  it('does NOT force CFR for bare "14 CFR" without part/section', () => {
+    // airspace-001 regression fix: casual "14 CFR" mention should not force CFR
+    expect(
+      inferRagFilters({ examinerQuestion: 'Under 14 CFR what are the airspace classifications?' })
+    ).toBeNull();
+  });
+
+  it('returns filterDocType cfr for "14 CFR Part 91"', () => {
+    expect(
+      inferRagFilters({ examinerQuestion: 'What does 14 CFR Part 91 require for VFR flight?' })
+    ).toEqual({ filterDocType: 'cfr' });
+  });
+
+  it('returns filterDocType cfr for bare section number "91.155"', () => {
+    expect(
+      inferRagFilters({ examinerQuestion: 'What are VFR minimums per 91.155?' })
+    ).toEqual({ filterDocType: 'cfr' });
+  });
+
+  it('returns filterDocType cfr for bare section number "61.57"', () => {
+    expect(
+      inferRagFilters({ studentAnswer: 'According to 61.57 I need three takeoffs.' })
     ).toEqual({ filterDocType: 'cfr' });
   });
 
@@ -122,9 +147,16 @@ describe('inferRagFilters', () => {
     ).toEqual({ filterAbbreviation: 'aim' });
   });
 
+  it('does not force CFR when AIM airspace content mentions "14 CFR" casually', () => {
+    // AIM reference should take precedence; bare "14 CFR" no longer triggers CFR
+    expect(
+      inferRagFilters({ examinerQuestion: 'The AIM describes airspace under 14 CFR.' })
+    ).toEqual({ filterAbbreviation: 'aim' });
+  });
+
   // --- Multi-field combination ---
 
-  it('matches across combined fields (taskId + examinerQuestion)', () => {
+  it('matches across combined fields (taskId + examinerQuestion with Part number)', () => {
     expect(
       inferRagFilters({
         taskId: 'PA.I.A',

@@ -41,11 +41,14 @@ export function inferRagFilters(context: {
   }
 
   // CFR signals: explicit CFR / FAR references
+  // NOTE: bare "14 CFR" is NOT enough — requires Part/section number to avoid
+  // over-filtering (e.g., airspace questions that casually mention "14 CFR").
   const hasCfrExplicit =
-    /14\s+CFR\b/i.test(text) ||
+    /14\s+CFR\s+(?:Part\s+)?\d{2,3}/i.test(text) ||   // "14 CFR 91" or "14 CFR Part 91"
     /\bFAR\b/i.test(text) ||
-    /Part\s+\d{2,3}\b/.test(text) ||
-    /§\s*\d{2,3}\.\d+/.test(text);
+    /Part\s+\d{2,3}\b/i.test(text) ||
+    /§\s*\d{2,3}\.\d+/.test(text) ||                   // "§ 91.155"
+    /\b\d{2,3}\.\d{2,}\b/.test(text);                  // bare "91.155", "61.57"
 
   if (hasCfrExplicit) {
     return { filterDocType: 'cfr' };

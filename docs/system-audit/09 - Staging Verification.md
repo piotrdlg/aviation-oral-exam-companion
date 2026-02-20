@@ -128,6 +128,12 @@ Run these steps against the staging environment in order. Tick each box only whe
 - [ ] Check that `embedding_cache` has new rows after the `respond` call (if vector search was triggered)
 - [ ] Verify voice TTS still works end-to-end (`POST /api/tts` returns MP3 audio without errors)
 - [ ] Check that `system_config` cache reads do not throw errors and that the kill-switch flag (if present) is respected correctly
+- [ ] **Metadata filter verification:**
+  - [ ] Enable: `INSERT INTO system_config (key, value) VALUES ('rag.metadata_filter', '{"enabled": true}') ON CONFLICT (key) DO UPDATE SET value = '{"enabled": true}';`
+  - [ ] Run exam `respond` action → verify `latency_logs.timings` includes `rag.filters.infer` span
+  - [ ] Ask a question that mentions a specific CFR section (e.g., "What does 91.155 require?") → verify `rag.search.filtered` span appears
+  - [ ] Ask a generic question → verify no `rag.search.filtered` span (inferRagFilters returned null)
+  - [ ] Disable after: `UPDATE system_config SET value = '{"enabled": false}' WHERE key = 'rag.metadata_filter';`
 
 ---
 

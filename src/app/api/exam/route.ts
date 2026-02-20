@@ -380,7 +380,7 @@ export async function POST(request: NextRequest) {
               .select('id')
               .single()
           : Promise.resolve({ data: null }),
-        fetchRagContext(taskData, history, studentAnswer),
+        fetchRagContext(taskData, history, studentAnswer, 5, { systemConfig: config, timing }),
       ]);
       const studentTranscriptId = studentTranscriptResult.data?.id ?? null;
       if (!studentTranscriptId && sessionId) {

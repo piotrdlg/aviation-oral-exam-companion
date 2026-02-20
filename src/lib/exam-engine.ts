@@ -8,6 +8,9 @@ import {
 } from './exam-logic';
 import type { AircraftClass, Rating } from '@/types/database';
 import { searchChunks, formatChunksForPrompt, getImagesForChunks, type ChunkSearchResult, type ImageResult } from './rag-retrieval';
+import { searchWithFallback, inferRagFilters } from './rag-search-with-fallback';
+import type { SystemConfigMap } from './system-config';
+import type { TimingContext } from './timing';
 import { getPromptContent } from './prompts';
 import { TtlCache } from './ttl-cache';
 
@@ -167,19 +170,52 @@ export async function pickNextTask(
 /**
  * Fetch RAG context once for sharing between assessment and examiner generation.
  * Returns both the formatted string and raw chunks.
+ *
+ * When `systemConfig` is provided and `rag.metadata_filter` is enabled,
+ * uses inferRagFilters + searchWithFallback for metadata-aware retrieval.
+ * Otherwise falls back to plain unfiltered searchChunks (default behavior).
  */
 export async function fetchRagContext(
   task: AcsTaskRow,
   history: ExamMessage[],
   studentAnswer?: string,
-  matchCount: number = 5
+  matchCount: number = 5,
+  options?: {
+    systemConfig?: SystemConfigMap;
+    timing?: TimingContext;
+  }
 ): Promise<{ ragContext: string; ragChunks: ChunkSearchResult[]; ragImages: ImageResult[] }> {
   try {
     // Combine task, recent history, and student answer for a comprehensive query
     const recentText = history.slice(-2).map(m => m.text).join(' ');
     const answerText = studentAnswer ? ` ${studentAnswer}` : '';
     const query = `${task.task} ${recentText}${answerText}`.slice(0, 500);
-    const ragChunks = await searchChunks(query, { matchCount });
+
+    const filterEnabled = !!(options?.systemConfig?.['rag.metadata_filter'] as { enabled?: boolean } | undefined)?.enabled;
+
+    let ragChunks: ChunkSearchResult[];
+
+    if (filterEnabled) {
+      // Infer metadata filters from conversation context
+      options?.timing?.start('rag.filters.infer');
+      const lastExaminerMsg = history.slice().reverse().find(m => m.role === 'examiner')?.text;
+      const filterHint = inferRagFilters({
+        taskId: task.id,
+        studentAnswer,
+        examinerQuestion: lastExaminerMsg,
+      });
+      options?.timing?.end('rag.filters.infer');
+
+      ragChunks = await searchWithFallback(query, {
+        matchCount,
+        filterHint,
+        featureEnabled: true,
+        timing: options?.timing,
+      });
+    } else {
+      ragChunks = await searchChunks(query, { matchCount });
+    }
+
     const ragContext = formatChunksForPrompt(ragChunks);
 
     // Fetch linked images for the retrieved chunks

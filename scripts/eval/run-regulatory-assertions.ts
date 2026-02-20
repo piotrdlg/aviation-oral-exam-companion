@@ -21,6 +21,7 @@ import {
   matchesAuthority,
   type DocMeta,
 } from '../../src/lib/eval-helpers';
+import { inferRagFilters as inferRagFiltersShared } from '../../src/lib/rag-filters';
 
 // Load env from project root .env.local
 dotenv.config({ path: path.resolve(__dirname, '../../.env.local') });
@@ -124,38 +125,10 @@ async function searchChunks(
 // Metadata filter inference (mirrors src/lib/rag-filters.ts)
 // ---------------------------------------------------------------------------
 
-interface RagFilterHint {
-  filterDocType?: string;
-  filterAbbreviation?: string;
-}
-
-function inferRagFilters(text: string): RagFilterHint | null {
-  if (!text.trim()) return null;
-
-  if (/\bPHAK\b/i.test(text) || /Pilot['']s Handbook/i.test(text)) {
-    return { filterAbbreviation: 'phak' };
-  }
-  if (/\bAFH\b/i.test(text) || /Airplane Flying Handbook/i.test(text)) {
-    return { filterAbbreviation: 'afh' };
-  }
-  if (/\bAIM\b/i.test(text)) {
-    return { filterAbbreviation: 'aim' };
-  }
-
-  const hasCfrExplicit =
-    /14\s+CFR\b/i.test(text) ||
-    /\bFAR\b/i.test(text) ||
-    /Part\s+\d{2,3}\b/.test(text) ||
-    /§\s*\d{2,3}\.\d+/.test(text);
-
-  if (hasCfrExplicit) return { filterDocType: 'cfr' };
-
-  const regulatoryKeywords =
-    /\b(regulation|currency|endorsement|medical|logbook|certificate)\b/i.test(text);
-
-  if (regulatoryKeywords) return { filterDocType: 'cfr' };
-
-  return null;
+// Uses shared inferRagFilters from src/lib/rag-filters.ts (imported above).
+// Thin wrapper: eval harness passes claim text as examinerQuestion.
+function inferRagFilters(text: string) {
+  return inferRagFiltersShared({ examinerQuestion: text });
 }
 
 // ---------------------------------------------------------------------------

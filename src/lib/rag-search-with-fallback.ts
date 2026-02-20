@@ -1,6 +1,12 @@
 import { searchChunks, type ChunkSearchResult } from './rag-retrieval';
 import { inferRagFilters, type RagFilterHint } from './rag-filters';
 
+/** Minimal timing interface to avoid importing 'server-only' transitively. */
+interface TimingLike {
+  start(name: string): void;
+  end(name: string): void;
+}
+
 /**
  * Two-pass RAG search with metadata filtering and safe fallback.
  *
@@ -15,6 +21,7 @@ export async function searchWithFallback(
     similarityThreshold?: number;
     filterHint?: RagFilterHint | null;
     featureEnabled?: boolean;
+    timing?: TimingLike;
   } = {}
 ): Promise<ChunkSearchResult[]> {
   const {
@@ -22,6 +29,7 @@ export async function searchWithFallback(
     similarityThreshold = 0.3,
     filterHint,
     featureEnabled = false,
+    timing,
   } = options;
 
   // If filtering disabled or no filter hint, just do normal search
@@ -30,12 +38,14 @@ export async function searchWithFallback(
   }
 
   // Pass 1: filtered search
+  timing?.start('rag.search.filtered');
   const filtered = await searchChunks(query, {
     matchCount,
     similarityThreshold,
     filterDocType: filterHint.filterDocType,
     filterAbbreviation: filterHint.filterAbbreviation,
   });
+  timing?.end('rag.search.filtered');
 
   const MIN_RESULTS = 2;
   const MIN_TOP_SCORE = 0.4;
@@ -46,7 +56,9 @@ export async function searchWithFallback(
   }
 
   // Pass 2: unfiltered fallback
+  timing?.start('rag.search.unfiltered_fallback');
   const unfiltered = await searchChunks(query, { matchCount, similarityThreshold });
+  timing?.end('rag.search.unfiltered_fallback');
 
   // Merge + deduplicate by chunk id
   const seen = new Set(filtered.map((c) => c.id));

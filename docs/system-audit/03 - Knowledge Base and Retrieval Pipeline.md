@@ -248,10 +248,11 @@ sequenceDiagram
 **Code touchpoint:** `src/lib/rag-retrieval.ts:39-78` (after `searchChunks`, before `formatChunksForPrompt`)
 
 ### Risk 2: ~~No~~ Metadata Filtering (Implemented, Feature-Flagged)
-**Current state (2026-02-19):** Metadata filtering is now implemented behind a feature flag (`rag.metadata_filter.enabled` in `system_config`, default `false`).
-- `src/lib/rag-filters.ts` — `inferRagFilters()` detects CFR/AIM/PHAK/AFH signals in question text (24 unit tests)
-- `src/lib/rag-search-with-fallback.ts` — Two-pass search: filtered first, unfiltered fallback if <2 results or top score <0.4
-**Impact when enabled:** CFR-specific questions should preferentially retrieve regulatory text over handbook paraphrases.
+**Current state (2026-02-19):** Metadata filtering is implemented and **wired into the runtime RAG path** behind a feature flag (`rag.metadata_filter` key in `system_config`, value `{ "enabled": true }`; default: OFF).
+- `src/lib/rag-filters.ts` — `inferRagFilters()` detects CFR/AIM/PHAK/AFH signals in question context (29 unit tests). "14 CFR" requires a Part/section number to avoid over-filtering; bare section numbers like "91.155" also trigger CFR.
+- `src/lib/rag-search-with-fallback.ts` — Two-pass search: filtered first, unfiltered fallback if <2 results or top score <0.4. Records timing spans (`rag.search.filtered`, `rag.search.unfiltered_fallback`).
+- `src/lib/exam-engine.ts` `fetchRagContext()` — checks the flag and calls `searchWithFallback` when enabled; falls back to plain `searchChunks` when disabled.
+**Impact when enabled:** CFR-specific questions should preferentially retrieve regulatory text over handbook paraphrases. Eval shows +3 assertions (88% → 96%) with 1 known edge case.
 **Risk:** Over-filtering reduces recall. Mitigated by automatic fallback to unfiltered search.
 
 ### Risk 3: No Citation Verification
@@ -286,7 +287,7 @@ sequenceDiagram
 | Modify query construction | `src/lib/exam-engine.ts` | `fetchRagContext():157-180` |
 | Change search parameters (count, threshold) | `src/lib/rag-retrieval.ts` | `searchChunks():39-78` |
 | Add reranking | `src/lib/rag-retrieval.ts` | New function after `searchChunks` |
-| Enable metadata filtering | `src/lib/rag-filters.ts`, `src/lib/rag-search-with-fallback.ts` | `inferRagFilters()`, `searchWithFallback()` (feature-flagged) |
+| Enable metadata filtering | `src/lib/rag-filters.ts`, `src/lib/rag-search-with-fallback.ts`, `src/lib/exam-engine.ts` | **Done** — `fetchRagContext()` wired to `searchWithFallback()` behind `rag.metadata_filter` flag |
 | Modify hybrid search weights | Supabase migration | `chunk_hybrid_search` RPC |
 | Embedding cache | `src/lib/rag-retrieval.ts` | **Done** — DB-backed via `embedding_cache` table |
 | Change chunk size/overlap | `scripts/ingest-sources.ts` | `chunkText():260-309` |
