@@ -124,6 +124,9 @@ async function writeElementAttempts(
 /**
  * GET /api/exam?action=list-tasks — return all ACS tasks for the task picker.
  */
+// Allow up to 60s for streaming responses (examiner generation + assessment)
+export const maxDuration = 60;
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();

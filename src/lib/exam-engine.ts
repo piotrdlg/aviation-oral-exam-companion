@@ -341,15 +341,27 @@ export async function generateExaminerTurnStreaming(
         // If we have a parallel assessment promise, wait for it and send the result.
         // Send keep-alive comments every 2s to prevent proxies from closing the connection.
         if (assessmentPromise) {
+          const keepAlive = setInterval(() => {
+            controller.enqueue(encoder.encode(': keep-alive\n\n'));
+          }, 2000);
           try {
-            const keepAlive = setInterval(() => {
-              controller.enqueue(encoder.encode(': keep-alive\n\n'));
-            }, 2000);
             const assessment = await assessmentPromise;
             clearInterval(keepAlive);
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ assessment })}\n\n`));
           } catch (err) {
+            clearInterval(keepAlive);
             console.error('Assessment failed during streaming:', err);
+            // Send fallback assessment so the client always receives grading
+            const fallback = {
+              score: 'partial' as const,
+              feedback: 'Assessment could not be completed.',
+              misconceptions: [],
+              follow_up_needed: false,
+              primary_element: null,
+              mentioned_elements: [],
+              source_summary: null,
+            };
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ assessment: fallback })}\n\n`));
           }
         }
 
