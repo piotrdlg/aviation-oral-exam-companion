@@ -15,8 +15,19 @@
 import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
+import { getAppEnv, assertNotProduction } from '../src/lib/app-env';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
+
+// --- Environment safety guard ---
+const appEnv = getAppEnv();
+console.log(`\n🌍 Environment: ${appEnv}`);
+assertNotProduction('classify-difficulty', {
+  allow: process.env.ALLOW_PROD_WRITE === '1',
+});
+if (process.env.ALLOW_PROD_WRITE === '1') {
+  console.warn('⚠️  ALLOW_PROD_WRITE=1 — production write override active!');
+}
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

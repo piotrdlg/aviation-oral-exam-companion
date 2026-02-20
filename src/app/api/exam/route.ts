@@ -17,6 +17,7 @@ import { computeExamResult } from '@/lib/exam-logic';
 import { initPlanner, advancePlanner } from '@/lib/exam-planner';
 import { getSystemConfig } from '@/lib/system-config';
 import { checkKillSwitch } from '@/lib/kill-switch';
+import { requireSafeDbTarget } from '@/lib/app-env';
 import { getUserTier } from '@/lib/voice/tier-lookup';
 import { enforceOneActiveExam, getSessionTokenHash } from '@/lib/session-enforcement';
 import type { SessionConfig, PlannerState } from '@/types/database';
@@ -181,6 +182,8 @@ export async function POST(request: NextRequest) {
         { status: 503 }
       );
     }
+
+    requireSafeDbTarget(config, 'exam-api');
 
     const body = await request.json();
     const { action, history, taskData, studentAnswer, coveredTaskIds, sessionId, stream, sessionConfig, plannerState: clientPlannerState } = body as {
