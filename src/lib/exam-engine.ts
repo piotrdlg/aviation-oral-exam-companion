@@ -355,7 +355,7 @@ export async function generateExaminerTurnStreaming(
             // Send fallback assessment so the client always receives grading
             const fallback = {
               score: 'partial' as const,
-              feedback: `[DEBUG] ${errMsg}`,
+              feedback: 'Assessment could not be completed.',
               misconceptions: [],
               follow_up_needed: false,
               primary_element: null,
@@ -464,29 +464,43 @@ OUTPUT FORMAT — Respond in JSON only with this exact schema:
   "source_summary": "1-3 sentences summarizing the key FAA references that apply to this question. Cite specific regulation/document names and section numbers (e.g., '14 CFR 61.23 requires...'). If no FAA source material was provided, set to null."
 }`;
 
+  const textOnlyContent = `Recent conversation:\n${recentContext}\n\nStudent's answer: ${studentAnswer}\n\nAssess this answer.`;
+  const imageContent = questionImages && questionImages.length > 0
+    ? [
+        ...questionImages.map(img => ({
+          type: 'image' as const,
+          source: { type: 'url' as const, url: img.public_url },
+        })),
+        {
+          type: 'text' as const,
+          text: `The applicant was shown the above image(s) during this question.\n\n${textOnlyContent}`,
+        },
+      ]
+    : null;
+
   const startMs = Date.now();
-  const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 400,
-    system: dbPromptContent + dynamicSection,
-    messages: [
-      {
-        role: 'user',
-        content: questionImages && questionImages.length > 0
-          ? [
-              ...questionImages.map(img => ({
-                type: 'image' as const,
-                source: { type: 'url' as const, url: img.public_url },
-              })),
-              {
-                type: 'text' as const,
-                text: `The applicant was shown the above image(s) during this question.\n\nRecent conversation:\n${recentContext}\n\nStudent's answer: ${studentAnswer}\n\nAssess this answer.`,
-              },
-            ]
-          : `Recent conversation:\n${recentContext}\n\nStudent's answer: ${studentAnswer}\n\nAssess this answer.`,
-      },
-    ],
-  });
+  let response;
+  try {
+    response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 400,
+      system: dbPromptContent + dynamicSection,
+      messages: [{ role: 'user', content: imageContent ?? textOnlyContent }],
+    });
+  } catch (err) {
+    // If the error is image-related, retry without images
+    if (imageContent && String(err).includes('Unable to download')) {
+      console.warn('[assessAnswer] Image download failed, retrying without images');
+      response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 400,
+        system: dbPromptContent + dynamicSection,
+        messages: [{ role: 'user', content: textOnlyContent }],
+      });
+    } else {
+      throw err;
+    }
+  }
   const latencyMs = Date.now() - startMs;
 
   const usageData: LlmUsage = {
