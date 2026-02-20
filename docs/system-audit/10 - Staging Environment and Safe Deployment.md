@@ -30,7 +30,7 @@ Production                          Staging
 ┌──────▼──────┐                    ┌──────▼──────┐
 │  Supabase   │                    │  Supabase   │
 │  (prod)     │                    │  (staging)  │
-│  pvuiww...  │                    │  xxxxx...   │
+│  pvuiww...  │                    │  curpdz...  │
 └─────────────┘                    └─────────────┘
 ```
 
@@ -68,38 +68,42 @@ Scripts that write data check both the app env AND the DB env signature, catchin
 
 ---
 
-## A. Create Staging Supabase Project
+## A. Staging Supabase Project
 
-> [!note] Manual Steps
-> These must be performed by a human in the Supabase dashboard.
+> [!success] Completed 2026-02-20
+> Created via Supabase CLI.
 
-- [ ] Go to [supabase.com/dashboard](https://supabase.com/dashboard)
-- [ ] Create a new project (e.g., `heydpe-staging`) in the same organization
-- [ ] Choose the same region as production (East US / North Virginia)
-- [ ] Note the project URL and keys:
-  - `NEXT_PUBLIC_SUPABASE_URL` (project URL)
-  - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (anon/public key)
-  - `SUPABASE_SERVICE_ROLE_KEY` (service role key — Settings > API)
-- [ ] Create required storage buckets:
-  - `source-images` (public)
-  - `avatars` (public)
+| Property | Value |
+|----------|-------|
+| **Name** | `heydpe-staging` |
+| **Ref** | `curpdzczzawpnniaujgq` |
+| **Region** | East US (North Virginia) — same as production |
+| **URL** | `https://curpdzczzawpnniaujgq.supabase.co` |
+| **Status** | ACTIVE_HEALTHY |
+
+- [x] Project created in Imagine Flying org
+- [x] All 36 migrations applied (`supabase db push`)
+- [x] `pg_cron` extension enabled (required by session cron migration)
+- [x] `app.environment` marker set to `{"name":"staging"}`
+- [x] Storage buckets created: `source-images` (public), `avatars` (public)
+- [x] 3 cron jobs active (orphan cleanup, stale session clear, trial expiry)
+- [x] 143 ACS tasks seeded (PA: 61, CA: 60, IR: 22)
+- [x] All system_config flags seeded (kill switches, TTS configs, voice personas)
+
+Credentials stored in `.env.staging` (gitignored). Template in `.env.staging.example`.
 
 ---
 
-## B. Set Environment Marker in Staging DB
+## B. Environment Marker
 
-After creating the project, run this SQL in the Supabase SQL Editor:
+> [!success] Completed 2026-02-20
+> Set via Supabase Management API.
+
+The staging database has `system_config['app.environment'] = {"name":"staging"}`.
+
+For new environments or after a reset, set the marker:
 
 ```sql
--- Create system_config table if running before migrations
-CREATE TABLE IF NOT EXISTS system_config (
-  key TEXT PRIMARY KEY,
-  value JSONB NOT NULL DEFAULT '{}'::jsonb,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-
--- Mark this database as staging
 INSERT INTO system_config (key, value)
 VALUES ('app.environment', '{"name":"staging"}')
 ON CONFLICT (key) DO UPDATE SET value = '{"name":"staging"}';
@@ -146,7 +150,7 @@ cp .env.staging.example .env.local
 Link the Supabase CLI to the staging project:
 
 ```bash
-supabase link --project-ref YOUR_STAGING_PROJECT_REF
+supabase link --project-ref curpdzczzawpnniaujgq
 ```
 
 Apply all migrations in order:
@@ -155,14 +159,18 @@ Apply all migrations in order:
 supabase db push
 ```
 
-This applies all migrations from `supabase/migrations/` including:
-- `20260214000001_initial_schema.sql` — base tables, RLS, RPC
-- `20260214000002_seed_acs_tasks.sql` — Private Pilot ACS tasks
-- `20260214000003_acs_elements.sql` — ACS elements table + seed
-- ... (all subsequent migrations in timestamp order)
+> [!success] All 36 migrations applied as of 2026-02-20.
 
-> [!important] Prerequisites
-> The ACS graph migration (`20260220100002`) depends on `acs_elements` being populated. Ensure `20260214000003` runs first (it does, by timestamp order).
+> [!important] pg_cron Prerequisite
+> Migration `20260219100002_session_cron_jobs.sql` requires the `pg_cron` extension. If not already enabled, enable it via the Supabase Management API or Dashboard before pushing:
+> ```sql
+> CREATE EXTENSION IF NOT EXISTS pg_cron WITH SCHEMA extensions;
+> ```
+
+After pushing, re-link CLI to production for normal development:
+```bash
+supabase link --project-ref pvuiwwqsumoqjepukjhz
+```
 
 ---
 
