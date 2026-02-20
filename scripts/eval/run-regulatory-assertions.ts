@@ -16,6 +16,11 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
+import {
+  resolveChunkAuthority,
+  matchesAuthority,
+  type DocMeta,
+} from '../../src/lib/eval-helpers';
 
 // Load env from project root .env.local
 dotenv.config({ path: path.resolve(__dirname, '../../.env.local') });
@@ -42,7 +47,6 @@ interface ChunkResult {
   page_end: number | null;
   doc_title: string;
   doc_abbreviation: string;
-  doc_type?: string;
   score: number;
 }
 
@@ -155,10 +159,14 @@ function inferRagFilters(text: string): RagFilterHint | null {
 }
 
 // ---------------------------------------------------------------------------
-// Evaluation logic
+// Evaluation logic (uses doc map for authority resolution)
 // ---------------------------------------------------------------------------
 
-function evaluateChunks(assertion: Assertion, chunks: ChunkResult[]): EvalResult {
+function evaluateChunks(
+  assertion: Assertion,
+  chunks: ChunkResult[],
+  docMap: Map<string, DocMeta>
+): EvalResult {
   const topScore = chunks[0]?.score ?? 0;
   const chunksReturned = chunks.length;
 
@@ -174,31 +182,22 @@ function evaluateChunks(assertion: Assertion, chunks: ChunkResult[]): EvalResult
     };
   }
 
-  // Check doc_type / abbreviation match across all returned chunks
+  // Check authority match across all returned chunks using resolved doc_type
   let matchedAbbrev: string | undefined;
   let matchedDocType: string | undefined;
   let docMatchFound = false;
+  let unmappedCount = 0;
 
   for (const chunk of chunks) {
-    if (
-      assertion.expected_abbreviation &&
-      chunk.doc_abbreviation?.toLowerCase() === assertion.expected_abbreviation.toLowerCase()
-    ) {
-      matchedAbbrev = chunk.doc_abbreviation;
+    const resolved = resolveChunkAuthority(chunk, docMap);
+    const result = matchesAuthority(assertion, resolved, chunk.document_id);
+
+    if (result.unmappedDocumentId) unmappedCount++;
+
+    if (result.matched) {
       docMatchFound = true;
-      break;
-    }
-    if (
-      assertion.expected_doc_type &&
-      (chunk.doc_type?.toLowerCase() === assertion.expected_doc_type.toLowerCase())
-    ) {
-      matchedDocType = chunk.doc_type;
-      docMatchFound = true;
-      break;
-    }
-    // If neither expected_abbreviation nor expected_doc_type is set, doc match is always ok
-    if (!assertion.expected_abbreviation && !assertion.expected_doc_type) {
-      docMatchFound = true;
+      if (result.matchedField === 'abbreviation') matchedAbbrev = result.matchedValue ?? undefined;
+      if (result.matchedField === 'doc_type') matchedDocType = result.matchedValue ?? undefined;
       break;
     }
   }
@@ -220,8 +219,13 @@ function evaluateChunks(assertion: Assertion, chunks: ChunkResult[]): EvalResult
   if (pass) {
     reason = `doc match (${matchedAbbrev ?? matchedDocType ?? 'any'}), token "${matchedToken}"`;
   } else if (!docMatchFound) {
-    const found = chunks.map((c) => c.doc_abbreviation).join(', ');
-    reason = `doc mismatch — expected ${assertion.expected_abbreviation ?? assertion.expected_doc_type ?? 'any'}, got [${found}]`;
+    const resolvedTypes = chunks.map((c) => {
+      const r = resolveChunkAuthority(c, docMap);
+      return r.docType ?? c.doc_abbreviation;
+    });
+    const expected = assertion.expected_abbreviation ?? assertion.expected_doc_type ?? 'any';
+    reason = `doc mismatch — expected ${expected}, got [${resolvedTypes.join(', ')}]`;
+    if (unmappedCount > 0) reason += ` (${unmappedCount} unmapped)`;
   } else {
     reason = `no must_contain_any token found in chunks`;
   }
@@ -361,6 +365,27 @@ async function main(): Promise<void> {
   console.log(`Supabase URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL}`);
   console.log();
 
+  // Load source_documents for authority resolution (avoids N+1 per chunk)
+  console.log('Loading source_documents map...');
+  const { data: docs, error: docsErr } = await supabase
+    .from('source_documents')
+    .select('id, document_type, abbreviation');
+
+  if (docsErr) {
+    console.error(`Failed to load source_documents: ${docsErr.message}`);
+    process.exit(1);
+  }
+
+  const docMap = new Map<string, DocMeta>();
+  for (const doc of docs ?? []) {
+    docMap.set(doc.id, {
+      documentType: doc.document_type,
+      abbreviation: doc.abbreviation,
+    });
+  }
+  console.log(`  Loaded ${docMap.size} source documents.`);
+  console.log();
+
   // --- Baseline run (no filters) ---
   console.log('Running baseline (no metadata filters)...');
   const baseResults: EvalResult[] = [];
@@ -374,7 +399,7 @@ async function main(): Promise<void> {
         filterDocType: null,
         filterAbbreviation: null,
       });
-      const result = evaluateChunks(assertion, chunks);
+      const result = evaluateChunks(assertion, chunks, docMap);
       baseResults.push(result);
       console.log(result.pass ? 'PASS' : `FAIL — ${result.reason}`);
     } catch (err) {
@@ -445,7 +470,7 @@ async function main(): Promise<void> {
         process.stdout.write('[no-hint] ');
       }
 
-      const result = evaluateChunks(assertion, chunks);
+      const result = evaluateChunks(assertion, chunks, docMap);
       filteredResults.push(result);
       console.log(result.pass ? 'PASS' : `FAIL — ${result.reason}`);
     } catch (err) {
