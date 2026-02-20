@@ -110,6 +110,7 @@ export async function GET(request: NextRequest) {
 
     // Track login and ensure profile exists
     const { data: { user } } = await supabase.auth.getUser();
+    let redirectTo = next;
     if (user) {
       void trackLogin(user.id, user.app_metadata?.provider);
       const isNewUser = await ensureProfile(user.id);
@@ -117,8 +118,19 @@ export async function GET(request: NextRequest) {
         const name = user.user_metadata?.full_name || user.user_metadata?.name;
         void sendWelcomeEmail(user.email, name ?? undefined);
       }
+      // Send users who haven't completed onboarding to /practice (where the wizard lives)
+      if (redirectTo === '/home') {
+        const { data: profile } = await serviceSupabase
+          .from('user_profiles')
+          .select('onboarding_completed')
+          .eq('user_id', user.id)
+          .single();
+        if (profile && !profile.onboarding_completed) {
+          redirectTo = '/practice';
+        }
+      }
     }
-    return NextResponse.redirect(`${origin}${next}`);
+    return NextResponse.redirect(`${origin}${redirectTo}`);
   }
 
   // Handle OTP / magic link verification via token_hash
@@ -139,6 +151,7 @@ export async function GET(request: NextRequest) {
 
     // Track login and ensure profile exists
     const { data: { user } } = await supabase.auth.getUser();
+    let redirectTo = next;
     if (user) {
       void trackLogin(user.id, user.app_metadata?.provider);
       const isNewUser = await ensureProfile(user.id);
@@ -146,8 +159,19 @@ export async function GET(request: NextRequest) {
         const name = user.user_metadata?.full_name || user.user_metadata?.name;
         void sendWelcomeEmail(user.email, name ?? undefined);
       }
+      // Send users who haven't completed onboarding to /practice (where the wizard lives)
+      if (redirectTo === '/home') {
+        const { data: profile } = await serviceSupabase
+          .from('user_profiles')
+          .select('onboarding_completed')
+          .eq('user_id', user.id)
+          .single();
+        if (profile && !profile.onboarding_completed) {
+          redirectTo = '/practice';
+        }
+      }
     }
-    return NextResponse.redirect(`${origin}${next}`);
+    return NextResponse.redirect(`${origin}${redirectTo}`);
   }
 
   // No code, no token_hash, no error — shouldn't happen

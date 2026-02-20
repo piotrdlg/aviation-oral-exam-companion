@@ -64,14 +64,20 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // Redirect logged-in users away from auth pages to /home
+  // Redirect logged-in users away from auth pages
+  // Send to /practice if onboarding not complete (wizard lives there), else /home
   const isAuthRoute =
     request.nextUrl.pathname === '/login' ||
     request.nextUrl.pathname === '/signup';
 
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = '/home';
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('onboarding_completed')
+      .eq('user_id', user.id)
+      .single();
+    url.pathname = profile?.onboarding_completed ? '/home' : '/practice';
     return NextResponse.redirect(url);
   }
 
