@@ -30,7 +30,7 @@ vi.mock('@/lib/voice/tier-lookup', () => ({
 }));
 
 // Import route handler after mocks are in place
-import { POST } from '@/app/api/session/route';
+import { POST, GET } from '@/app/api/session/route';
 
 // ----------------------------------------------------------------
 // Helpers
@@ -62,6 +62,12 @@ function postReq(body: Record<string, unknown>) {
     body: JSON.stringify(body),
     headers: { 'Content-Type': 'application/json' },
   }) as any;
+}
+
+function getReq(params: Record<string, string>) {
+  const url = new URL('http://localhost/api/session');
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+  return new Request(url.toString(), { method: 'GET' }) as any;
 }
 
 // ----------------------------------------------------------------
@@ -462,5 +468,40 @@ describe('invalid action', () => {
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.error).toBe('Invalid action');
+  });
+});
+
+// ================================================================
+// GET — get-all-resumable
+// ================================================================
+describe('GET — get-all-resumable', () => {
+  it('returns 401 when not authenticated', async () => {
+    mocks.getUser.mockResolvedValue({ data: { user: null } });
+    const res = await GET(getReq({ action: 'get-all-resumable' }));
+    expect(res.status).toBe(401);
+  });
+
+  it('returns all active/paused sessions', async () => {
+    const sessions = [
+      { id: 's1', rating: 'private', status: 'active', started_at: '2026-02-19T10:00:00Z' },
+      { id: 's2', rating: 'instrument', status: 'paused', started_at: '2026-02-18T10:00:00Z' },
+    ];
+    mocks.userFrom.mockReturnValueOnce(q({ data: sessions }));
+
+    const res = await GET(getReq({ action: 'get-all-resumable' }));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.sessions).toHaveLength(2);
+    expect(body.sessions[0].id).toBe('s1');
+    expect(body.sessions[1].id).toBe('s2');
+  });
+
+  it('returns empty array when no open exams', async () => {
+    mocks.userFrom.mockReturnValueOnce(q({ data: [] }));
+
+    const res = await GET(getReq({ action: 'get-all-resumable' }));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.sessions).toEqual([]);
   });
 });

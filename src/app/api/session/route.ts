@@ -265,6 +265,22 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ session: data?.[0] || null });
   }
 
+  // Get ALL resumable sessions (active or paused)
+  if (action === 'get-all-resumable') {
+    const { data, error } = await supabase
+      .from('exam_sessions')
+      .select('id, rating, status, started_at, exchange_count, study_mode, difficulty_preference, aircraft_class, selected_areas, selected_tasks, metadata, acs_tasks_covered')
+      .eq('user_id', user.id)
+      .in('status', ['active', 'paused'])
+      .order('started_at', { ascending: false });
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ sessions: data || [] });
+  }
+
   // Load session transcripts for resume
   if (action === 'transcripts') {
     const sessionId = searchParams.get('sessionId');
