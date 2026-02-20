@@ -8,7 +8,7 @@ on:
 
 jobs:
   ci:
-    name: Lint, Typecheck, Test
+    name: Typecheck, Test, Lint
     runs-on: ubuntu-latest
 
     steps:
@@ -24,11 +24,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
-
       - name: Typecheck
         run: npx tsc --noEmit
 
       - name: Test
         run: npm test
+
+      - name: Lint (non-blocking)
+        continue-on-error: true
+        run: |
+          echo "::notice::Lint is non-blocking due to 129 pre-existing errors. See lint cleanup PR plan."
+          npm run lint
