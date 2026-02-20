@@ -312,7 +312,24 @@ export async function POST(request: NextRequest) {
 
       // Support streaming for start
       if (stream) {
-        const readableStream = await generateExaminerTurnStreaming(task, [], undefined, undefined, undefined, undefined, undefined, undefined, undefined, personaId, studentName);
+        const { stream: readableStream, fullTextPromise: startTextPromise } = await generateExaminerTurnStreaming(task, [], undefined, undefined, undefined, undefined, undefined, undefined, undefined, personaId, studentName);
+
+        after(async () => {
+          try {
+            const fullText = await startTextPromise;
+            if (sessionId && fullText) {
+              const { error } = await serviceSupabase.from('session_transcripts').insert({
+                session_id: sessionId,
+                exchange_number: 0,
+                role: 'examiner',
+                text: fullText,
+              });
+              if (error) console.error('Start examiner transcript write error:', error.message);
+            }
+          } catch (err) {
+            console.error('Start transcript write error:', err);
+          }
+        });
 
         return new Response(readableStream, {
           headers: {
@@ -397,46 +414,47 @@ export async function POST(request: NextRequest) {
         // Streaming path: start assessment in background, stream examiner immediately
         const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty);
 
-        // onComplete callback: persist examiner transcript to DB after stream finishes
-        const onStreamComplete = async (fullText: string) => {
-          if (sessionId && fullText) {
-            const { error } = await supabase.from('session_transcripts').insert({
-              session_id: sessionId,
-              exchange_number: exchangeNumber,
-              role: 'examiner',
-              text: fullText,
-            });
-            if (error) console.error('Examiner transcript write error:', error.message);
-          }
-        };
-
-        const readableStream = await generateExaminerTurnStreaming(
-          taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessmentPromise, onStreamComplete, respondRating, sessionConfig?.studyMode, personaId, studentName
+        const { stream: readableStream, fullTextPromise } = await generateExaminerTurnStreaming(
+          taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessmentPromise, undefined, respondRating, sessionConfig?.studyMode, personaId, studentName
         );
 
-        // Use after() to ensure assessment DB writes complete even after stream closes.
+        // Use after() to ensure ALL DB writes complete even after stream closes.
         // This keeps the serverless function alive until all writes finish.
         after(async () => {
           try {
-            const assessment = await assessmentPromise;
+            const [examinerFullText, assessment] = await Promise.all([
+              fullTextPromise,
+              assessmentPromise,
+            ]);
+
+            // 1. Persist examiner transcript (guaranteed by after(), not fire-and-forget)
+            if (sessionId && examinerFullText) {
+              const { error } = await serviceSupabase.from('session_transcripts').insert({
+                session_id: sessionId,
+                exchange_number: exchangeNumber,
+                role: 'examiner',
+                text: examinerFullText,
+              });
+              if (error) console.error('Examiner transcript write error:', error.message);
+            }
 
             // Log assessment LLM usage
             logLlmUsage(user.id, assessment.usage, tier, sessionId, { action: 'respond', call: 'assessAnswer' });
 
             if (studentTranscriptId && assessment) {
-              // 1. Assessment update on student transcript
+              // 2. Assessment update on student transcript
               const { error: assessErr } = await serviceSupabase
                 .from('session_transcripts')
                 .update({ assessment })
                 .eq('id', studentTranscriptId);
               if (assessErr) console.error('Assessment update error:', assessErr.message);
 
-              // 2. Element attempts
+              // 3. Element attempts
               if (sessionId) {
                 await writeElementAttempts(supabase, sessionId, studentTranscriptId, assessment);
               }
 
-              // 3. Citations
+              // 4. Citations
               if (assessment.rag_chunks && assessment.rag_chunks.length > 0) {
                 const citations = assessment.rag_chunks.map((chunk, idx) => ({
                   transcript_id: studentTranscriptId,
@@ -452,7 +470,7 @@ export async function POST(request: NextRequest) {
               }
             }
           } catch (err) {
-            console.error('Background assessment/DB error:', err);
+            console.error('Background DB write error:', err);
           }
         });
 

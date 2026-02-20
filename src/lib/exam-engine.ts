@@ -266,7 +266,7 @@ export async function generateExaminerTurnStreaming(
   studyMode?: string,
   personaId?: string,
   studentName?: string
-): Promise<ReadableStream> {
+): Promise<{ stream: ReadableStream; fullTextPromise: Promise<string> }> {
   // Load the best-matching prompt from DB (specificity: rating + studyMode + difficulty)
   const { content: dbPromptContent } = await loadPromptFromDB(
     supabase, 'examiner_system', rating, studyMode, difficulty
@@ -309,7 +309,10 @@ export async function generateExaminerTurnStreaming(
 
   const encoder = new TextEncoder();
 
-  return new ReadableStream({
+  let resolveFullText: (text: string) => void;
+  const fullTextPromise = new Promise<string>((resolve) => { resolveFullText = resolve; });
+
+  const readableStream = new ReadableStream({
     async start(controller) {
       let fullText = '';
       try {
@@ -333,7 +336,10 @@ export async function generateExaminerTurnStreaming(
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ images: selectedImages })}\n\n`));
         }
 
-        // Fire onComplete (transcript persistence) without blocking the SSE stream
+        // Resolve full text so after() block can persist reliably
+        resolveFullText(fullText);
+
+        // Legacy onComplete callback (fire-and-forget, non-critical)
         if (onComplete) {
           Promise.resolve(onComplete(fullText)).catch((err: unknown) => console.error('onComplete callback error:', err));
         }
@@ -369,10 +375,13 @@ export async function generateExaminerTurnStreaming(
         controller.enqueue(encoder.encode('data: [DONE]\n\n'));
         controller.close();
       } catch (err) {
+        resolveFullText('');
         controller.error(err);
       }
     },
   });
+
+  return { stream: readableStream, fullTextPromise };
 }
 
 /**
