@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "ingest:staging": "NEXT_PUBLIC_APP_ENV=staging tsx scripts/ingest-sources.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",
