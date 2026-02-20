@@ -383,15 +383,20 @@ export async function generateExaminerTurnStreaming(
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ images: selectedImages })}\n\n`));
         }
 
-        // Trigger onComplete callback for server-side persistence (e.g., writing transcript)
+        // Fire onComplete (transcript persistence) without blocking the SSE stream
         if (onComplete) {
-          try { await onComplete(fullText); } catch (err) { console.error('onComplete callback error:', err); }
+          Promise.resolve(onComplete(fullText)).catch((err: unknown) => console.error('onComplete callback error:', err));
         }
 
-        // If we have a parallel assessment promise, wait for it and send the result
+        // If we have a parallel assessment promise, wait for it and send the result.
+        // Send keep-alive comments every 2s to prevent proxies from closing the connection.
         if (assessmentPromise) {
           try {
+            const keepAlive = setInterval(() => {
+              controller.enqueue(encoder.encode(': keep-alive\n\n'));
+            }, 2000);
             const assessment = await assessmentPromise;
+            clearInterval(keepAlive);
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ assessment })}\n\n`));
           } catch (err) {
             console.error('Assessment failed during streaming:', err);
