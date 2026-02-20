@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { getUserTier } from '@/lib/voice/tier-lookup';
+import { getSystemConfig } from '@/lib/system-config';
+import { requireSafeDbTarget } from '@/lib/app-env';
 
 // Service-role client for tier lookups + grading queries (bypasses RLS)
 const serviceSupabase = createServiceClient(
@@ -26,8 +28,12 @@ export async function POST(request: NextRequest) {
   if (action === 'create') {
     const { study_mode, difficulty_preference, selected_areas, aircraft_class, selected_tasks, rating } = body;
 
-    // Check trial limit for non-paying users
-    const tier = await getUserTier(serviceSupabase, user.id);
+    // Check trial limit + load config for guardrail in parallel
+    const [tier, sessionConfig_guard] = await Promise.all([
+      getUserTier(serviceSupabase, user.id),
+      getSystemConfig(serviceSupabase),
+    ]);
+    requireSafeDbTarget(sessionConfig_guard, 'session-api');
     const isPaying = tier === 'dpe_live';
 
     // Determine is_onboarding server-side (never trust client).

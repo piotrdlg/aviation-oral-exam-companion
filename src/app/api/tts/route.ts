@@ -4,6 +4,7 @@ import { getUserTier, getUserPreferredVoice } from '@/lib/voice/tier-lookup';
 import { createTTSProvider, getTTSProviderName } from '@/lib/voice/provider-factory';
 import { getSystemConfig } from '@/lib/system-config';
 import { checkKillSwitch } from '@/lib/kill-switch';
+import { requireSafeDbTarget } from '@/lib/app-env';
 
 // Service-role client for usage logging (bypasses RLS)
 import { createClient as createServiceClient } from '@supabase/supabase-js';
@@ -45,6 +46,8 @@ export async function POST(request: NextRequest) {
         { status: 503 }
       );
     }
+
+    requireSafeDbTarget(config, 'tts-api');
 
     // If kill switch suggests a fallback tier, we still proceed — the provider factory
     // has its own fallback chain. The kill switch fallback is informational here.

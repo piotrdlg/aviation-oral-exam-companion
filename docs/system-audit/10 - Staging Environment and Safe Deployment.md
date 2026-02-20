@@ -50,6 +50,7 @@ The module `src/lib/app-env.ts` provides:
 | `assertNotProduction(action)` | Throws if running against production |
 | `getDbEnvName(config)` | Reads `system_config['app.environment']` |
 | `assertDbEnvMatchesAppEnv(...)` | Throws on app/DB env mismatch |
+| `requireSafeDbTarget(config, action)` | Runtime DB target guard for API routes (see below) |
 
 **Detection priority:**
 1. `NEXT_PUBLIC_APP_ENV` (explicit override)
@@ -65,6 +66,61 @@ ON CONFLICT (key) DO UPDATE SET value = '{"name":"staging"}';
 ```
 
 Scripts that write data check both the app env AND the DB env signature, catching cases where `.env.local` accidentally points to the wrong project.
+
+### Runtime DB Target Guard
+
+`requireSafeDbTarget(config, actionName)` is called at the top of every write-performing API route. It compares the app environment against `system_config['app.environment']` in the connected database.
+
+| App Env | DB Marker | Behaviour |
+|---------|-----------|-----------|
+| `staging` | `staging` | Pass |
+| `staging` | `production` | **HARD FAIL** (500) |
+| `staging` | missing | **HARD FAIL** (500) |
+| `local` | `local` | Pass |
+| `local` | `production` | **HARD FAIL** (500) |
+| `local` | missing | **HARD FAIL** (500) |
+| `production` | `production` | Pass |
+| `production` | `staging` | Warn (log only) |
+| `production` | missing | Pass (no outage) |
+
+**Design rationale:** Non-production environments fail closed — if the DB marker is missing or wrong, no data is written. Production never self-destructs over a missing config row; it only warns.
+
+**Wired into:**
+- `POST /api/exam` — after kill switch check
+- `POST /api/tts` — after kill switch check
+- `GET /api/stt/token` — after kill switch check
+- `POST /api/session` — before session creation
+
+### Developer Diagnostics
+
+Run the environment doctor to inspect your local configuration:
+
+```bash
+npm run env:doctor
+```
+
+Example output:
+```
+╔══════════════════════════════════════════╗
+║          HeyDPE  Env Doctor              ║
+╚══════════════════════════════════════════╝
+
+App Environment:  staging
+  NEXT_PUBLIC_APP_ENV = staging
+  VERCEL_ENV          = (not set)
+
+Supabase Project:  curpdz
+  URL: https://curpdzczzawpnniaujgq.supabase.co
+
+DB Environment:   staging
+  ✓  App env matches DB env.
+
+Feature Flags / Kill Switches:
+  kill_switch.anthropic = {"disabled":false}
+  ...
+
+Total system_config entries: 15
+```
 
 ---
 
@@ -264,10 +320,10 @@ WHERE key = 'rag.metadata_filter';
 | Script | Writes to DB? | Production Guard |
 |--------|---------------|-----------------|
 | `scripts/ingest-sources.ts` | Yes (source_documents, source_chunks) | `assertNotProduction()` — blocks by default |
-| `scripts/seed-elements.ts` | Yes (acs_elements) | No guard (seed data is idempotent) |
-| `scripts/classify-difficulty.ts` | Yes (acs_elements.difficulty_default) | No guard (classification is idempotent) |
+| `scripts/seed-elements.ts` | Yes (acs_elements) | `assertNotProduction()` — blocks by default |
+| `scripts/classify-difficulty.ts` | Yes (acs_elements.difficulty_default) | `assertNotProduction()` — blocks by default |
 
-Override: set `ALLOW_PROD_WRITE=1` env var (not recommended).
+Override: set `ALLOW_PROD_WRITE=1` env var (not recommended). All three scripts warn loudly when the override is active.
 
 ---
 

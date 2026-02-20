@@ -32,6 +32,9 @@ console.log(`\n🌍 Environment: ${appEnv}`);
 assertNotProduction('ingest-sources', {
   allow: process.env.ALLOW_PROD_WRITE === '1',
 });
+if (process.env.ALLOW_PROD_WRITE === '1') {
+  console.warn('⚠️  ALLOW_PROD_WRITE=1 — production write override active!');
+}
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;

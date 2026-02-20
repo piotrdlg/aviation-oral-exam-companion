@@ -5,6 +5,7 @@ import {
   assertNotProduction,
   getDbEnvName,
   assertDbEnvMatchesAppEnv,
+  requireSafeDbTarget,
 } from '../app-env';
 
 // Save originals so we can restore after each test
@@ -206,6 +207,105 @@ describe('assertDbEnvMatchesAppEnv', () => {
       const msg = (e as Error).message;
       expect(msg).toContain('local');
       expect(msg).toContain('production');
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// requireSafeDbTarget
+// ---------------------------------------------------------------------------
+
+describe('requireSafeDbTarget', () => {
+  // Helper to build a config with the given DB env name
+  const cfg = (name: string) => ({ 'app.environment': { name } });
+  const empty = {};
+
+  // --- Staging (non-production) ---
+  it('staging + staging marker → ok', () => {
+    process.env.NEXT_PUBLIC_APP_ENV = 'staging';
+    expect(() => requireSafeDbTarget(cfg('staging'), 'test')).not.toThrow();
+  });
+
+  it('staging + production marker → throws', () => {
+    process.env.NEXT_PUBLIC_APP_ENV = 'staging';
+    expect(() => requireSafeDbTarget(cfg('production'), 'test')).toThrowError(
+      /DB_TARGET_UNSAFE/,
+    );
+  });
+
+  it('staging + missing marker → throws', () => {
+    process.env.NEXT_PUBLIC_APP_ENV = 'staging';
+    expect(() => requireSafeDbTarget(empty, 'test')).toThrowError(
+      /DB_TARGET_UNSAFE/,
+    );
+  });
+
+  // --- Local (non-production) ---
+  it('local + local marker → ok', () => {
+    delete process.env.NEXT_PUBLIC_APP_ENV;
+    delete process.env.VERCEL_ENV;
+    expect(() => requireSafeDbTarget(cfg('local'), 'test')).not.toThrow();
+  });
+
+  it('local + production marker → throws', () => {
+    delete process.env.NEXT_PUBLIC_APP_ENV;
+    delete process.env.VERCEL_ENV;
+    expect(() => requireSafeDbTarget(cfg('production'), 'test')).toThrowError(
+      /DB_TARGET_UNSAFE/,
+    );
+  });
+
+  it('local + missing marker → throws', () => {
+    delete process.env.NEXT_PUBLIC_APP_ENV;
+    delete process.env.VERCEL_ENV;
+    expect(() => requireSafeDbTarget(empty, 'test')).toThrowError(
+      /DB_TARGET_UNSAFE/,
+    );
+  });
+
+  // --- Production (lenient) ---
+  it('production + production marker → ok', () => {
+    process.env.NEXT_PUBLIC_APP_ENV = 'production';
+    expect(() =>
+      requireSafeDbTarget(cfg('production'), 'test'),
+    ).not.toThrow();
+  });
+
+  it('production + missing marker → does NOT throw', () => {
+    process.env.NEXT_PUBLIC_APP_ENV = 'production';
+    expect(() => requireSafeDbTarget(empty, 'test')).not.toThrow();
+  });
+
+  it('production + staging marker → warns but does NOT throw', () => {
+    process.env.NEXT_PUBLIC_APP_ENV = 'production';
+    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(() => requireSafeDbTarget(cfg('staging'), 'test')).not.toThrow();
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringContaining('DB env mismatch'),
+    );
+    spy.mockRestore();
+  });
+
+  it('includes action name in error', () => {
+    process.env.NEXT_PUBLIC_APP_ENV = 'staging';
+    try {
+      requireSafeDbTarget(empty, 'exam-api');
+      expect.fail('should have thrown');
+    } catch (e) {
+      expect((e as Error).message).toContain('exam-api');
+    }
+  });
+
+  it('error message contains no secrets (keys, URLs)', () => {
+    process.env.NEXT_PUBLIC_APP_ENV = 'staging';
+    try {
+      requireSafeDbTarget(cfg('production'), 'exam-api');
+      expect.fail('should have thrown');
+    } catch (e) {
+      const msg = (e as Error).message;
+      expect(msg).not.toContain('supabase.co');
+      expect(msg).not.toContain('service_role');
+      expect(msg).not.toContain('anon_key');
     }
   });
 });

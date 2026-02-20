@@ -4,6 +4,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { getUserTier } from '@/lib/voice/tier-lookup';
 import { getSystemConfig } from '@/lib/system-config';
 import { checkKillSwitch } from '@/lib/kill-switch';
+import { requireSafeDbTarget } from '@/lib/app-env';
 
 const serviceSupabase = createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -41,6 +42,8 @@ export async function GET() {
         { status: 503 }
       );
     }
+
+    requireSafeDbTarget(config, 'stt-token-api');
 
     // Rate limit: check token issuance in the last minute
     const oneMinuteAgo = new Date(Date.now() - 60_000).toISOString();

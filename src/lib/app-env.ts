@@ -105,6 +105,64 @@ export function assertDbEnvMatchesAppEnv(opts: {
 }
 
 // ---------------------------------------------------------------------------
+// Runtime DB target guard (API routes)
+// ---------------------------------------------------------------------------
+
+/**
+ * Verify that the connected database matches the expected app environment.
+ *
+ * Behaviour is ASYMMETRIC by design:
+ * - **Non-production** (local, staging, preview): HARD-FAIL on missing or
+ *   mismatched `system_config['app.environment']`. This prevents staging code
+ *   from accidentally writing to production.
+ * - **Production**: WARN-ONLY. We never break a live deployment because of a
+ *   missing config row — that would be a self-inflicted outage.
+ *
+ * Call this early in every API route that performs database writes.
+ */
+export function requireSafeDbTarget(
+  systemConfig: Record<string, Record<string, unknown>>,
+  actionName: string,
+): void {
+  const appEnv = getAppEnv();
+  const dbEnv = getDbEnvName(systemConfig);
+
+  if (appEnv === 'production') {
+    // In production, warn but don't break the app
+    if (dbEnv !== null && dbEnv !== appEnv) {
+      console.warn(
+        `[guardrail] DB env mismatch in production: ` +
+          `app=${appEnv}, db=${dbEnv}. Action: "${actionName}". ` +
+          `Check that env vars point to the correct Supabase project.`,
+      );
+    }
+    return;
+  }
+
+  // Non-production: fail closed
+  if (dbEnv === null) {
+    throw new Error(
+      `DB_TARGET_UNSAFE: "${actionName}" cannot proceed — ` +
+        `system_config['app.environment'] is not set in the target database.\n` +
+        `  App env: ${appEnv}\n` +
+        `  This guard prevents non-production code from writing to an unmarked database.\n` +
+        `  Fix: INSERT INTO system_config (key, value) ` +
+        `VALUES ('app.environment', '{"name":"${appEnv}"}');`,
+    );
+  }
+
+  if (dbEnv !== appEnv) {
+    throw new Error(
+      `DB_TARGET_UNSAFE: "${actionName}" detected an environment mismatch.\n` +
+        `  App env: ${appEnv}\n` +
+        `  DB env: ${dbEnv}\n` +
+        `  This guard prevents non-production code from writing to the wrong database.\n` +
+        `  Fix: update your env vars to point to the ${appEnv} Supabase project.`,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
 

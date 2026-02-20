@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "ingest:staging": "NEXT_PUBLIC_APP_ENV=staging tsx scripts/ingest-sources.ts"
+    "ingest:staging": "NEXT_PUBLIC_APP_ENV=staging tsx scripts/ingest-sources.ts",
+    "env:doctor": "tsx scripts/staging/env-doctor.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",
