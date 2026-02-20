@@ -9,6 +9,7 @@ import { getStoredUTMParams } from '@/lib/utm';
 import Footer from '@/components/Footer';
 
 const navItems = [
+  { href: '/home', label: 'Home' },
   { href: '/practice', label: 'Practice' },
   { href: '/progress', label: 'Progress' },
   { href: '/settings', label: 'Settings' },
@@ -56,7 +57,7 @@ export default function DashboardLayout({
       <nav className="border-b border-c-border bg-c-bg/80 backdrop-blur-lg">
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
           <div className="flex items-center gap-6">
-            <Link href="/practice" className="font-mono font-bold text-c-amber glow-a text-base tracking-widest">
+            <Link href="/home" className="font-mono font-bold text-c-amber glow-a text-base tracking-widest">
               HEYDPE
             </Link>
             <div className="flex gap-1">

@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code');
   const tokenHash = searchParams.get('token_hash');
   const type = searchParams.get('type');
-  const next = searchParams.get('next') ?? '/practice';
+  const next = searchParams.get('next') ?? '/home';
   const errorParam = searchParams.get('error');
   const errorDescription = searchParams.get('error_description');
 

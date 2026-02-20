@@ -31,6 +31,7 @@ export async function updateSession(request: NextRequest) {
 
   // Protect dashboard and admin routes
   const isProtectedRoute =
+    request.nextUrl.pathname.startsWith('/home') ||
     request.nextUrl.pathname.startsWith('/practice') ||
     request.nextUrl.pathname.startsWith('/progress') ||
     request.nextUrl.pathname.startsWith('/settings') ||
@@ -63,14 +64,14 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // Redirect logged-in users away from auth pages to /practice
+  // Redirect logged-in users away from auth pages to /home
   const isAuthRoute =
     request.nextUrl.pathname === '/login' ||
     request.nextUrl.pathname === '/signup';
 
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = '/practice';
+    url.pathname = '/home';
     return NextResponse.redirect(url);
   }
 

@@ -89,7 +89,7 @@ function LoginForm() {
   // Redirect if already authenticated
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) router.replace('/practice');
+      if (user) router.replace('/home');
     });
   }, [supabase, router]);
 
@@ -219,7 +219,7 @@ function LoginForm() {
       setLoadingVerify(false);
     } else {
       persistUTMToUser('email_otp');
-      router.push('/practice');
+      router.push('/home');
       router.refresh();
     }
   }
