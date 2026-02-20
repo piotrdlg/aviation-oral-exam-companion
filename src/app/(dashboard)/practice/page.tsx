@@ -129,6 +129,8 @@ export default function PracticePage() {
   // Exam results modal state
   const [examResult, setExamResult] = useState<ExamResult | null>(null);
   const [gradingInProgress, setGradingInProgress] = useState(false);
+  const [allResumableSessions, setAllResumableSessions] = useState<NonNullable<typeof resumableSession>[]>([]);
+  const [showOpenExamsModal, setShowOpenExamsModal] = useState(false);
   // Track per-task assessment scores (ref avoids stale closures in fire-and-forget fetches)
   const taskScoresRef = useRef<Record<string, { score: 'satisfactory' | 'unsatisfactory' | 'partial'; attempts: number }>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -184,16 +186,19 @@ export default function PracticePage() {
       .catch(() => { setPrefsLoaded(true); setOnboardingCompleted(true); }); // Fallback to defaults
   }, []);
 
-  // Check for a resumable session on mount
+  // Check for resumable sessions on mount
   useEffect(() => {
-    fetch('/api/session?action=get-resumable')
+    fetch('/api/session?action=get-all-resumable')
       .then((res) => res.ok ? res.json() : null)
       .then((data) => {
-        if (data?.session) {
-          const meta = data.session.metadata as Record<string, unknown> | null;
-          // Only show resume if planner state exists in metadata
-          if (meta?.plannerState && meta?.sessionConfig) {
-            setResumableSession(data.session);
+        if (data?.sessions?.length) {
+          const valid = data.sessions.filter((s: Record<string, unknown>) => {
+            const meta = s.metadata as Record<string, unknown> | null;
+            return meta?.plannerState && meta?.sessionConfig;
+          });
+          setAllResumableSessions(valid);
+          if (valid.length > 0) {
+            setResumableSession(valid[0]); // most recent
           }
         }
       })
@@ -903,12 +908,17 @@ export default function PracticePage() {
       }
     }
 
-    // Refresh resumable session so the resume card appears
+    // Refresh resumable sessions so the resume card appears
     try {
-      const res = await fetch('/api/session?action=get-resumable');
+      const res = await fetch('/api/session?action=get-all-resumable');
       if (res.ok) {
         const data = await res.json();
-        if (data.session) setResumableSession(data.session);
+        const valid = (data.sessions || []).filter((s: Record<string, unknown>) => {
+          const meta = s.metadata as Record<string, unknown> | null;
+          return meta?.plannerState && meta?.sessionConfig;
+        });
+        setAllResumableSessions(valid);
+        if (valid.length > 0) setResumableSession(valid[0]);
       }
     } catch { /* ignore */ }
 
