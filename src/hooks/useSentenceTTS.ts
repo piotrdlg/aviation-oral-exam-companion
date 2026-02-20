@@ -17,6 +17,8 @@ interface UseSentenceTTSOptions {
 interface UseSentenceTTSReturn {
   /** Feed a new SSE token into the sentence buffer. Automatically queues TTS when a sentence completes. */
   pushToken: (token: string) => void;
+  /** Directly enqueue a complete text chunk for TTS (bypasses sentence boundary detection). */
+  enqueue: (text: string) => void;
   /** Flush any remaining buffer text to TTS (call when SSE stream ends). */
   flush: () => void;
   /** Cancel all pending sentences and stop (call on barge-in, end session, etc). */
@@ -156,5 +158,5 @@ export function useSentenceTTS(options: UseSentenceTTSOptions): UseSentenceTTSRe
     cancelledRef.current = false;
   }, []);
 
-  return { pushToken, flush, cancel, isSpeaking, queueLength };
+  return { pushToken, enqueue: enqueueSentence, flush, cancel, isSpeaking, queueLength };
 }

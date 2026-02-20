@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
     requireSafeDbTarget(config, 'exam-api');
 
     const body = await request.json();
-    const { action, history, taskData, studentAnswer, coveredTaskIds, sessionId, stream, sessionConfig, plannerState: clientPlannerState } = body as {
+    const { action, history, taskData, studentAnswer, coveredTaskIds, sessionId, stream, sessionConfig, plannerState: clientPlannerState, chunkedResponse } = body as {
       action: 'start' | 'respond' | 'next-task' | 'resume-current';
       history?: ExamMessage[];
       taskData?: Awaited<ReturnType<typeof pickStartingTask>>;
@@ -196,6 +196,7 @@ export async function POST(request: NextRequest) {
       stream?: boolean;
       sessionConfig?: SessionConfig;
       plannerState?: PlannerState;
+      chunkedResponse?: boolean;
     };
 
     // Load user profile for persona personality + student name
@@ -415,7 +416,7 @@ export async function POST(request: NextRequest) {
         const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty);
 
         const { stream: readableStream, fullTextPromise } = await generateExaminerTurnStreaming(
-          taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessmentPromise, undefined, respondRating, sessionConfig?.studyMode, personaId, studentName
+          taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessmentPromise, undefined, respondRating, sessionConfig?.studyMode, personaId, studentName, chunkedResponse
         );
 
         // Use after() to ensure ALL DB writes complete even after stream closes.

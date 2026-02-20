@@ -631,6 +631,7 @@ export default function PracticePage() {
           sessionId,
           sessionConfig,
           stream: true,
+          chunkedResponse: voiceEnabledRef.current && sentenceStreamRef.current,
         }),
       });
 
@@ -689,7 +690,11 @@ export default function PracticePage() {
             try {
               const parsed = JSON.parse(payload);
 
-              if (parsed.token) {
+              if (parsed.chunk && parsed.text) {
+                // Server-side chunk event (structured 3-chunk response mode)
+                // Enqueue the complete chunk for TTS — text displayed via onSentenceStart
+                sentenceTTS.enqueue(parsed.text);
+              } else if (parsed.token) {
                 // Incremental token — append to examiner message
                 examinerMsg += parsed.token;
                 if (!voiceEnabledRef.current) {
@@ -702,9 +707,6 @@ export default function PracticePage() {
                     }
                     return updated;
                   });
-                } else if (sentenceStreamRef.current) {
-                  // Sentence streaming: push token to TTS pipeline (text revealed via onSentenceStart)
-                  sentenceTTS.pushToken(parsed.token);
                 }
                 // Voice ON (no sentence stream): accumulate silently, reveal after stream completes
               } else if (parsed.examinerMessage) {

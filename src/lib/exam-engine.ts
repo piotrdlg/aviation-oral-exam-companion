@@ -5,6 +5,7 @@ import {
   type AcsTaskRow,
   selectRandomTask,
   buildSystemPrompt,
+  STRUCTURED_RESPONSE_INSTRUCTION,
 } from './exam-logic';
 import type { AircraftClass, Rating } from '@/types/database';
 import { searchChunks, formatChunksForPrompt, getImagesForChunks, type ChunkSearchResult, type ImageResult } from './rag-retrieval';
@@ -265,7 +266,8 @@ export async function generateExaminerTurnStreaming(
   rating: Rating = 'private',
   studyMode?: string,
   personaId?: string,
-  studentName?: string
+  studentName?: string,
+  structuredResponse?: boolean
 ): Promise<{ stream: ReadableStream; fullTextPromise: Promise<string> }> {
   // Load the best-matching prompt from DB (specificity: rating + studyMode + difficulty)
   const { content: dbPromptContent } = await loadPromptFromDB(
@@ -291,6 +293,9 @@ export async function generateExaminerTurnStreaming(
     ? `\n\nFAA SOURCE MATERIAL (use to ask accurate, specific questions):\n${ragContext}`
     : '';
 
+  // Append structured response instruction when chunked TTS is requested
+  const structuredInstr = structuredResponse ? STRUCTURED_RESPONSE_INSTRUCTION : '';
+
   const messages = history.map((msg) => ({
     role: msg.role === 'examiner' ? 'assistant' as const : 'user' as const,
     content: msg.text,
@@ -298,8 +303,8 @@ export async function generateExaminerTurnStreaming(
 
   const stream = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 500,
-    system: systemPrompt + personaFragment + nameInstruction + ragSection,
+    max_tokens: 600, // Slightly more for JSON overhead
+    system: systemPrompt + personaFragment + nameInstruction + ragSection + structuredInstr,
     stream: true,
     messages:
       messages.length === 0
@@ -315,17 +320,99 @@ export async function generateExaminerTurnStreaming(
   const readableStream = new ReadableStream({
     async start(controller) {
       let fullText = '';
+
+      // Chunk extraction state for structured response mode
+      const CHUNK_FIELDS = ['feedback_quick', 'feedback_detail', 'question'] as const;
+      const emittedChunks = new Set<string>();
+      const chunkTexts: Record<string, string> = {};
+
       try {
         for await (const event of stream) {
           if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
             fullText += event.delta.text;
-            const data = JSON.stringify({ token: event.delta.text });
-            controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+
+            if (structuredResponse) {
+              // Structured mode: detect completed JSON fields, emit chunk events
+              for (const field of CHUNK_FIELDS) {
+                if (emittedChunks.has(field)) continue;
+                // Match a completed JSON string value: "field": "value"
+                // Handles escaped quotes and other escape sequences within the value
+                const regex = new RegExp(`"${field}"\\s*:\\s*"((?:[^"\\\\]|\\\\[\\s\\S])*)"`);
+                const match = fullText.match(regex);
+                if (match) {
+                  // Properly unescape the JSON string value
+                  let value: string;
+                  try {
+                    value = JSON.parse(`"${match[1]}"`);
+                  } catch {
+                    value = match[1].replace(/\\"/g, '"').replace(/\\n/g, '\n').replace(/\\\\/g, '\\');
+                  }
+                  chunkTexts[field] = value;
+                  emittedChunks.add(field);
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: field, text: value })}\n\n`));
+                }
+              }
+            } else {
+              // Traditional mode: emit raw token events
+              const data = JSON.stringify({ token: event.delta.text });
+              controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+            }
           }
         }
 
+        // Build the plain-text examiner message
+        let plainText: string;
+        if (structuredResponse && emittedChunks.size > 0) {
+          // Concatenate chunk texts into readable plain text
+          plainText = CHUNK_FIELDS
+            .map(f => chunkTexts[f])
+            .filter(Boolean)
+            .join('\n\n');
+
+          // If some chunks were not extracted, try full JSON parse as fallback
+          if (emittedChunks.size < 3) {
+            try {
+              const cleaned = fullText.replace(/```json\n?|\n?```/g, '').trim();
+              const parsed = JSON.parse(cleaned);
+              for (const field of CHUNK_FIELDS) {
+                if (!emittedChunks.has(field) && parsed[field]) {
+                  chunkTexts[field] = parsed[field];
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: field, text: parsed[field] })}\n\n`));
+                }
+              }
+              plainText = CHUNK_FIELDS
+                .map(f => chunkTexts[f])
+                .filter(Boolean)
+                .join('\n\n');
+            } catch {
+              // JSON parse failed, use raw text as fallback
+              plainText = fullText;
+            }
+          }
+        } else if (structuredResponse) {
+          // Structured mode but no chunks extracted — try full parse
+          try {
+            const cleaned = fullText.replace(/```json\n?|\n?```/g, '').trim();
+            const parsed = JSON.parse(cleaned);
+            for (const field of CHUNK_FIELDS) {
+              if (parsed[field]) {
+                chunkTexts[field] = parsed[field];
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: field, text: parsed[field] })}\n\n`));
+              }
+            }
+            plainText = CHUNK_FIELDS
+              .map(f => chunkTexts[f])
+              .filter(Boolean)
+              .join('\n\n');
+          } catch {
+            plainText = fullText;
+          }
+        } else {
+          plainText = fullText;
+        }
+
         // Send the full examiner message as a separate event for client-side persistence
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ examinerMessage: fullText })}\n\n`));
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ examinerMessage: plainText })}\n\n`));
 
         // Send linked images (if any) — max 3, filtered by relevance
         const ragImages = prefetchedRag?.ragImages ?? [];
@@ -337,7 +424,7 @@ export async function generateExaminerTurnStreaming(
         }
 
         // Resolve full text so after() block can persist reliably
-        resolveFullText(fullText);
+        resolveFullText(plainText);
 
         // Legacy onComplete callback (fire-and-forget, non-critical)
         if (onComplete) {
