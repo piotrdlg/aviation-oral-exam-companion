@@ -20,6 +20,7 @@ interface Props {
     isOnboarding: boolean;
   }) => void;
   onSkip: () => void;
+  onLearnMore: () => void;
   loading?: boolean;
 }
 
@@ -74,7 +75,7 @@ const RATING_LABELS: Record<string, string> = {
   atp: 'ATP',
 };
 
-export default function OnboardingWizard({ defaultRating, defaultAircraftClass, defaultTheme, onComplete, onSkip, loading }: Props) {
+export default function OnboardingWizard({ defaultRating, defaultAircraftClass, defaultTheme, onComplete, onSkip, onLearnMore, loading }: Props) {
   const [step, setStep] = useState(1);
   const [rating, setRating] = useState<Rating>(defaultRating);
   const [aircraftClass, setAircraftClass] = useState<AircraftClass>(defaultAircraftClass);
@@ -116,6 +117,29 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
       displayName: displayName.trim(),
       isOnboarding: true,
     });
+    setSaving(false);
+  }
+
+  async function handleLearnMore() {
+    setSaving(true);
+    try {
+      await fetch('/api/user/tier', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          preferredRating: rating,
+          preferredAircraftClass: aircraftClass,
+          aircraftType: aircraftType.trim() || null,
+          homeAirport: homeAirport.trim() || null,
+          preferredTheme: selectedTheme,
+          displayName: displayName.trim() || null,
+          onboardingCompleted: true,
+        }),
+      });
+    } catch {
+      // Continue anyway
+    }
+    onLearnMore();
     setSaving(false);
   }
 
@@ -505,20 +529,27 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
               <span className="text-xs text-c-dim font-mono">(MIC + SPEAKER)</span>
             </label>
 
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setStep(5)}
-                className="font-mono text-sm text-c-muted hover:text-c-text transition-colors uppercase"
-              >
-                &larr; BACK
-              </button>
+            <div className="flex flex-col gap-3">
               <button
                 data-testid="wizard-start-button"
                 onClick={handleComplete}
                 disabled={saving || loading}
-                className="flex-1 py-3.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg rounded-lg font-mono font-bold text-base tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
+                className="w-full py-3.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg rounded-lg font-mono font-bold text-base tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
               >
-                {saving || loading ? 'STARTING...' : 'START YOUR FIRST EXAM'}
+                {saving || loading ? 'STARTING...' : 'START EXAM NOW'}
+              </button>
+              <button
+                onClick={handleLearnMore}
+                disabled={saving || loading}
+                className="w-full py-3 bg-c-bezel hover:bg-c-border disabled:opacity-50 text-c-text rounded-lg border border-c-border font-mono font-semibold text-sm tracking-wider uppercase transition-colors"
+              >
+                EXPLORE FIRST
+              </button>
+              <button
+                onClick={() => setStep(5)}
+                className="font-mono text-sm text-c-muted hover:text-c-text transition-colors uppercase mt-1"
+              >
+                &larr; BACK
               </button>
             </div>
           </div>

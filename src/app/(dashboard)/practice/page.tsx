@@ -1160,6 +1160,11 @@ export default function PracticePage() {
               setOnboardingCompleted(true);
               setShowWizard(false);
             }}
+            onLearnMore={() => {
+              setOnboardingCompleted(true);
+              setShowWizard(false);
+              window.location.href = '/home';
+            }}
           />
         ) : (onboardingCompleted === null || (onboardingCompleted === false && practiceStats === null)) ? (
           /* ──────── LOADING: don't show config until we know if onboarding is needed ──────── */
