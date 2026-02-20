@@ -131,6 +131,14 @@ export default function PracticePage() {
   const [gradingInProgress, setGradingInProgress] = useState(false);
   const [allResumableSessions, setAllResumableSessions] = useState<NonNullable<typeof resumableSession>[]>([]);
   const [showOpenExamsModal, setShowOpenExamsModal] = useState(false);
+
+  // Auto-close open exams modal when list empties
+  useEffect(() => {
+    if (showOpenExamsModal && allResumableSessions.length === 0) {
+      setShowOpenExamsModal(false);
+    }
+  }, [allResumableSessions.length, showOpenExamsModal]);
+
   // Track per-task assessment scores (ref avoids stale closures in fire-and-forget fetches)
   const taskScoresRef = useRef<Record<string, { score: 'satisfactory' | 'unsatisfactory' | 'partial'; attempts: number }>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -936,6 +944,18 @@ export default function PracticePage() {
     taskScoresRef.current = {};
   }
 
+  /** Remove a session from the open-exams list (after grade/discard). */
+  function removeFromResumable(sessionId: string) {
+    setAllResumableSessions(prev => {
+      const next = prev.filter(s => s.id !== sessionId);
+      // Update featured session to next most recent, or null
+      if (resumableSession?.id === sessionId) {
+        setResumableSession(next.length > 0 ? next[0] : null);
+      }
+      return next;
+    });
+  }
+
   /** Grade a paused/resumable session from the pre-session screen. */
   async function gradeResumableSession() {
     if (!resumableSession) return;
@@ -947,7 +967,7 @@ export default function PracticePage() {
         body: JSON.stringify({ action: 'update', sessionId: resumableSession.id, status: 'completed' }),
       });
       const data = await res.json();
-      setResumableSession(null);
+      removeFromResumable(resumableSession.id);
       if (data.result) setExamResult(data.result as ExamResult);
     } catch { /* ignore */ }
     setGradingInProgress(false);
@@ -1199,6 +1219,7 @@ export default function PracticePage() {
 
             {/* Resume previous exam card */}
             {resumableSession && (
+              <>
               <div className="iframe rounded-lg p-4 mb-5 border-l-2 border-c-cyan">
                 <div className="flex items-center justify-between">
                   <div>
@@ -1254,7 +1275,7 @@ export default function PracticePage() {
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ action: 'update', sessionId: resumableSession.id, status: 'abandoned' }),
                           });
-                          setResumableSession(null);
+                          removeFromResumable(resumableSession.id);
                         }}
                         className="px-3 py-1.5 text-c-muted hover:text-red-400 font-mono text-xs transition-colors uppercase"
                       >
@@ -1264,6 +1285,15 @@ export default function PracticePage() {
                   </div>
                 </div>
               </div>
+              {allResumableSessions.length > 1 && (
+                <button
+                  onClick={() => setShowOpenExamsModal(true)}
+                  className="w-full text-center py-1.5 text-xs font-mono text-c-muted hover:text-c-cyan transition-colors"
+                >
+                  + {allResumableSessions.length - 1} more open {allResumableSessions.length - 1 === 1 ? 'exam' : 'exams'}
+                </button>
+              )}
+              </>
             )}
 
             {/* Session config form */}
@@ -1783,6 +1813,96 @@ export default function PracticePage() {
           </div>
         </div>
       )}
+
+      {/* Open exams modal */}
+        {showOpenExamsModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowOpenExamsModal(false)} />
+            <div className="relative bg-c-bezel border border-c-border rounded-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-mono text-sm font-semibold text-c-cyan uppercase">OPEN EXAMS</h2>
+                <button
+                  onClick={() => setShowOpenExamsModal(false)}
+                  className="text-c-muted hover:text-c-text text-lg leading-none"
+                >&times;</button>
+              </div>
+              <div className="space-y-3">
+                {allResumableSessions.map((session) => (
+                  <div key={session.id} className="iframe rounded-lg p-3 border border-c-border">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-xs text-c-text font-mono">
+                          {session.rating === 'commercial' ? 'Commercial' : session.rating === 'instrument' ? 'Instrument' : session.rating === 'atp' ? 'ATP' : 'Private'}
+                          {session.aircraft_class ? ` ${session.aircraft_class}` : ''}
+                          , {session.difficulty_preference === 'easy' ? 'Easy' : session.difficulty_preference === 'medium' ? 'Medium' : session.difficulty_preference === 'hard' ? 'Hard' : 'Mixed'}
+                          {' '}&mdash; {session.exchange_count || 0} exchanges
+                        </p>
+                        <p className="text-xs text-c-muted font-mono mt-0.5">
+                          {new Date(session.started_at).toLocaleDateString('en-US', {
+                            month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+                          })}
+                          {' '}&middot; {session.study_mode === 'linear' ? 'Area by Area' : session.study_mode === 'cross_acs' ? 'Across ACS' : 'Weak Areas'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          onClick={() => {
+                            setShowOpenExamsModal(false);
+                            resumeSession(session);
+                          }}
+                          disabled={loading || gradingInProgress}
+                          className="px-2.5 py-1 bg-c-cyan hover:bg-c-cyan/90 text-c-bg rounded font-mono text-xs font-semibold transition-colors disabled:opacity-50 uppercase"
+                        >
+                          CONTINUE
+                        </button>
+                        <button
+                          onClick={async () => {
+                            setGradingInProgress(true);
+                            try {
+                              const res = await fetch('/api/session', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ action: 'update', sessionId: session.id, status: 'completed' }),
+                              });
+                              const data = await res.json();
+                              removeFromResumable(session.id);
+                              if (data.result) {
+                                setShowOpenExamsModal(false);
+                                setExamResult(data.result as ExamResult);
+                              }
+                            } catch { /* ignore */ }
+                            setGradingInProgress(false);
+                          }}
+                          disabled={gradingInProgress}
+                          className="px-2.5 py-1 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded font-mono text-xs font-semibold transition-colors disabled:opacity-50 uppercase"
+                        >
+                          {gradingInProgress ? '...' : 'GRADE'}
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (!confirm('Discard this exam? It will be marked as abandoned.')) return;
+                            await fetch('/api/session', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ action: 'update', sessionId: session.id, status: 'abandoned' }),
+                            });
+                            removeFromResumable(session.id);
+                          }}
+                          className="px-2.5 py-1 text-c-muted hover:text-red-400 font-mono text-xs transition-colors uppercase"
+                        >
+                          DISCARD
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {allResumableSessions.length === 0 && (
+                <p className="text-xs text-c-muted font-mono text-center py-4">No open exams</p>
+              )}
+            </div>
+          </div>
+        )}
 
       {/* Exam results modal */}
       {examResult && (
