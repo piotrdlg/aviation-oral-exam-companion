@@ -182,50 +182,64 @@ body {
   --color-c-red-dim: #5C1A1A;
 }
 
-/* ========== THEME: Radar ========== */
-[data-theme="radar"] {
-  --color-c-bg: #040D04;
-  --color-c-panel: #081208;
-  --color-c-bezel: #0F1E0F;
-  --color-c-elevated: #142814;
-  --color-c-border: #1A3018;
-  --color-c-border-hi: #274027;
-  --color-c-amber: #4ADE80;
-  --color-c-amber-dim: #1A5C2E;
-  --color-c-amber-lo: #0A2E12;
-  --color-c-green: #86EFAC;
-  --color-c-green-dim: #1A5C3A;
-  --color-c-green-lo: #0A2E1E;
-  --color-c-cyan: #A7F3D0;
-  --color-c-cyan-dim: #1A5C4A;
-  --color-c-cyan-lo: #0A2E25;
-  --color-c-red: #FCA5A5;
-  --color-c-red-dim: #5C2A1A;
-  --color-c-text: #D1FAE5;
-  --color-c-muted: #6B8B7B;
-  --color-c-dim: #4A6050;
+/* ========== THEME: Sectional (light — VFR chart paper) ========== */
+[data-theme="sectional"] {
+  --color-c-bg: #F6F1E8;
+  --color-c-panel: #F0EADF;
+  --color-c-bezel: #EBE4D8;
+  --color-c-elevated: #E5DED2;
+  --color-c-border: #D5CCB8;
+  --color-c-border-hi: #C2B9A3;
+  --color-c-amber: #9A4409;
+  --color-c-amber-dim: #D4A070;
+  --color-c-amber-lo: #F2E3D5;
+  --color-c-green: #1B6B35;
+  --color-c-green-dim: #8FC4A0;
+  --color-c-green-lo: #E0F0E5;
+  --color-c-cyan: #1B5E8A;
+  --color-c-cyan-dim: #8CBAD5;
+  --color-c-cyan-lo: #D8EAF5;
+  --color-c-red: #B32028;
+  --color-c-red-dim: #E0A0A5;
+  --color-c-text: #2C2721;
+  --color-c-muted: #5B5245;
+  --color-c-dim: #6B6154;
+  --scanline-tint: rgba(139, 90, 43, 0.015);
+}
+[data-theme="sectional"] .bezel {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 1px 4px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
+}
+[data-theme="sectional"] .iframe {
+  box-shadow: inset 0 0 4px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.05);
 }
 
-/* ========== THEME: Neon ========== */
-[data-theme="neon"] {
-  --color-c-bg: #060812;
-  --color-c-panel: #0A0E1A;
-  --color-c-bezel: #101828;
-  --color-c-elevated: #141E30;
-  --color-c-border: #1A2540;
-  --color-c-border-hi: #253555;
-  --color-c-amber: #22D3EE;
-  --color-c-amber-dim: #0E5C6E;
-  --color-c-amber-lo: #082A35;
-  --color-c-green: #A3E635;
-  --color-c-green-dim: #3A5C0A;
-  --color-c-green-lo: #1E2E0A;
-  --color-c-cyan: #818CF8;
-  --color-c-cyan-dim: #3A3A6E;
-  --color-c-cyan-lo: #1A1A3A;
-  --color-c-red: #FB7185;
-  --color-c-red-dim: #5C1A2A;
-  --color-c-text: #E0E7FF;
-  --color-c-muted: #7B83A0;
-  --color-c-dim: #505870;
+/* ========== THEME: Briefing (light — pre-flight readout) ========== */
+[data-theme="briefing"] {
+  --color-c-bg: #F4F5F7;
+  --color-c-panel: #ECEDF0;
+  --color-c-bezel: #E4E5E9;
+  --color-c-elevated: #DDDEE3;
+  --color-c-border: #CDD0D6;
+  --color-c-border-hi: #B8BCC5;
+  --color-c-amber: #1A56A0;
+  --color-c-amber-dim: #7AADDA;
+  --color-c-amber-lo: #D8E8F5;
+  --color-c-green: #14673E;
+  --color-c-green-dim: #85C4A0;
+  --color-c-green-lo: #DCF0E5;
+  --color-c-cyan: #1E6585;
+  --color-c-cyan-dim: #88BCD5;
+  --color-c-cyan-lo: #D5EAF5;
+  --color-c-red: #B32530;
+  --color-c-red-dim: #E0A0A8;
+  --color-c-text: #1A1D23;
+  --color-c-muted: #555B65;
+  --color-c-dim: #5C6370;
+  --scanline-tint: rgba(26, 86, 160, 0.012);
+}
+[data-theme="briefing"] .bezel {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 1px 4px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.03);
+}
+[data-theme="briefing"] .iframe {
+  box-shadow: inset 0 0 4px rgba(0,0,0,0.03), 0 1px 4px rgba(0,0,0,0.04);
 }

@@ -269,7 +269,7 @@ export interface OffGraphMention {
 export type VoiceTier = 'ground_school' | 'checkride_prep' | 'dpe_live';
 
 export type AccountStatus = 'active' | 'suspended' | 'banned';
-export type Theme = 'cockpit' | 'glass' | 'radar' | 'neon';
+export type Theme = 'cockpit' | 'glass' | 'sectional' | 'briefing';
 
 export interface PersonaConfig {
   persona_id: string;

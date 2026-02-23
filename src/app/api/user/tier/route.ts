@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate theme if provided
-    const VALID_THEMES = ['cockpit', 'glass', 'radar', 'neon'] as const;
+    const VALID_THEMES = ['cockpit', 'glass', 'sectional', 'briefing'] as const;
     if (preferredTheme !== undefined) {
       if (preferredTheme && !(VALID_THEMES as readonly string[]).includes(preferredTheme)) {
         return NextResponse.json({ error: 'Invalid theme' }, { status: 400 });
