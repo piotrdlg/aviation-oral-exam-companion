@@ -43,6 +43,7 @@ interface TierInfo {
   aircraftType: string | null;
   homeAirport: string | null;
   preferredTheme: string;
+  voiceEnabled: boolean;
   voiceOptions: VoiceOption[];
   displayName: string | null;
   avatarUrl: string | null;
@@ -137,6 +138,7 @@ export default function SettingsPage() {
             aircraftType: data.aircraftType || null,
             homeAirport: data.homeAirport || null,
             preferredTheme: data.preferredTheme || 'cockpit',
+            voiceEnabled: data.voiceEnabled ?? true,
             voiceOptions: data.voiceOptions || [],
             displayName: data.displayName || null,
             avatarUrl: data.avatarUrl || null,
@@ -243,6 +245,27 @@ export default function SettingsPage() {
         if (field === 'avatarUrl') return { ...prev, avatarUrl: value || null };
         return prev;
       });
+      setDefaultsMessage({ text: 'Preference saved', type: 'success' });
+      setTimeout(() => setDefaultsMessage(null), 2000);
+    } catch (err) {
+      setDefaultsMessage({ text: err instanceof Error ? err.message : 'Failed to save', type: 'error' });
+    } finally {
+      setDefaultsSaving(false);
+    }
+  }
+
+  async function saveVoiceEnabled(enabled: boolean) {
+    setDefaultsSaving(true);
+    setDefaultsMessage(null);
+    try {
+      const res = await fetch('/api/user/tier', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ voiceEnabled: enabled }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update');
+      setTierInfo((prev) => prev ? { ...prev, voiceEnabled: enabled } : null);
       setDefaultsMessage({ text: 'Preference saved', type: 'success' });
       setTimeout(() => setDefaultsMessage(null), 2000);
     } catch (err) {
@@ -849,6 +872,23 @@ export default function SettingsPage() {
                   maxLength={10}
                   className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim uppercase transition-colors"
                 />
+              </div>
+              <div>
+                <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase">VOICE MODE</label>
+                <label className="flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-lg border border-c-border hover:border-c-border-hi bg-c-panel transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={tierInfo?.voiceEnabled ?? true}
+                    onChange={(e) => saveVoiceEnabled(e.target.checked)}
+                    disabled={defaultsSaving}
+                    className="w-4 h-4 rounded border-c-border bg-c-bezel text-c-green focus:ring-c-green"
+                  />
+                  <span className="font-mono text-sm text-c-text uppercase">ENABLE VOICE MODE</span>
+                  <span className="text-xs text-c-dim font-mono">(MIC + SPEAKER)</span>
+                </label>
+                <p className="font-mono text-xs text-c-dim mt-1.5">
+                  Applied automatically when starting new exams.
+                </p>
               </div>
               {defaultsMessage && (
                 <p data-testid="profile-save-message" className={`font-mono text-xs ${defaultsMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
