@@ -8,7 +8,11 @@ import {
 } from './exam-logic';
 import type { AircraftClass, Rating } from '@/types/database';
 import { searchChunks, formatChunksForPrompt, getImagesForChunks, type ChunkSearchResult, type ImageResult } from './rag-retrieval';
+import { searchWithFallback, inferRagFilters } from './rag-search-with-fallback';
+import type { SystemConfigMap } from './system-config';
+import type { TimingContext } from './timing';
 import { getPromptContent } from './prompts';
+import { TtlCache } from './ttl-cache';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
@@ -50,6 +54,14 @@ export interface ExamTurn {
 export { type AcsTaskRow } from './exam-logic';
 export { type ImageResult } from './rag-retrieval';
 
+// Module-level prompt cache: 5-min TTL. Keyed by promptKey,
+// caches the full candidate list (specificity scoring happens in-memory).
+type PromptCandidate = {
+  id: string; content: string; rating: string | null;
+  study_mode: string | null; difficulty: string | null; version: number;
+};
+const promptCache = new TtlCache<PromptCandidate[]>(5 * 60_000);
+
 /**
  * Load the best-matching prompt version from the DB with specificity scoring.
  * Falls back gracefully via getPromptContent() if no DB rows found.
@@ -66,12 +78,17 @@ export async function loadPromptFromDB(
   studyMode?: string,
   difficulty?: string
 ): Promise<{ content: string; versionId: string | null }> {
-  const { data: candidates } = await supabaseClient
-    .from('prompt_versions')
-    .select('id, content, rating, study_mode, difficulty, version')
-    .eq('prompt_key', promptKey)
-    .eq('status', 'published')
-    .order('version', { ascending: false });
+  let candidates = promptCache.get(promptKey);
+  if (!candidates) {
+    const { data } = await supabaseClient
+      .from('prompt_versions')
+      .select('id, content, rating, study_mode, difficulty, version')
+      .eq('prompt_key', promptKey)
+      .eq('status', 'published')
+      .order('version', { ascending: false });
+    candidates = (data ?? []) as PromptCandidate[];
+    promptCache.set(promptKey, candidates);
+  }
 
   const scored = (candidates ?? [])
     .filter(c =>
@@ -153,19 +170,52 @@ export async function pickNextTask(
 /**
  * Fetch RAG context once for sharing between assessment and examiner generation.
  * Returns both the formatted string and raw chunks.
+ *
+ * When `systemConfig` is provided and `rag.metadata_filter` is enabled,
+ * uses inferRagFilters + searchWithFallback for metadata-aware retrieval.
+ * Otherwise falls back to plain unfiltered searchChunks (default behavior).
  */
 export async function fetchRagContext(
   task: AcsTaskRow,
   history: ExamMessage[],
   studentAnswer?: string,
-  matchCount: number = 5
+  matchCount: number = 5,
+  options?: {
+    systemConfig?: SystemConfigMap;
+    timing?: TimingContext;
+  }
 ): Promise<{ ragContext: string; ragChunks: ChunkSearchResult[]; ragImages: ImageResult[] }> {
   try {
     // Combine task, recent history, and student answer for a comprehensive query
     const recentText = history.slice(-2).map(m => m.text).join(' ');
     const answerText = studentAnswer ? ` ${studentAnswer}` : '';
     const query = `${task.task} ${recentText}${answerText}`.slice(0, 500);
-    const ragChunks = await searchChunks(query, { matchCount });
+
+    const filterEnabled = !!(options?.systemConfig?.['rag.metadata_filter'] as { enabled?: boolean } | undefined)?.enabled;
+
+    let ragChunks: ChunkSearchResult[];
+
+    if (filterEnabled) {
+      // Infer metadata filters from conversation context
+      options?.timing?.start('rag.filters.infer');
+      const lastExaminerMsg = history.slice().reverse().find(m => m.role === 'examiner')?.text;
+      const filterHint = inferRagFilters({
+        taskId: task.id,
+        studentAnswer,
+        examinerQuestion: lastExaminerMsg,
+      });
+      options?.timing?.end('rag.filters.infer');
+
+      ragChunks = await searchWithFallback(query, {
+        matchCount,
+        filterHint,
+        featureEnabled: true,
+        timing: options?.timing,
+      });
+    } else {
+      ragChunks = await searchChunks(query, { matchCount });
+    }
+
     const ragContext = formatChunksForPrompt(ragChunks);
 
     // Fetch linked images for the retrieved chunks
@@ -351,6 +401,9 @@ export async function generateExaminerTurnStreaming(
             controller.enqueue(encoder.encode(': keep-alive\n\n'));
           }, 2000);
           try {
+            const keepAlive = setInterval(() => {
+              controller.enqueue(encoder.encode(': keep-alive\n\n'));
+            }, 2000);
             const assessment = await assessmentPromise;
             clearInterval(keepAlive);
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ assessment })}\n\n`));

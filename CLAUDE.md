@@ -24,7 +24,7 @@
 | Database | Supabase (PostgreSQL) | pgvector, RLS, RPC functions |
 | Auth | Supabase Auth | Email/password, email confirmation |
 | AI Examiner | Claude Sonnet (`claude-sonnet-4-6`) | DPE persona + answer assessment |
-| TTS | OpenAI TTS (`tts-1`, voice: `onyx`) | Deep, authoritative DPE voice |
+| TTS | Multi-provider (Cartesia/Deepgram/OpenAI) | Tier-based voice selection via provider factory |
 | STT | Web Speech API (browser-native) | Chrome only, interim results |
 | Testing | Vitest | Unit tests for pure logic |
 | Deployment | Vercel | Auto-deploy from `main` branch |
@@ -200,11 +200,11 @@ npm test          # Run all tests (Vitest)
 npm run test:watch  # Watch mode
 ```
 
-77 unit tests cover:
-- `ORAL_EXAM_AREA_PREFIXES` — per-rating area inclusion/exclusion
-- `filterEligibleTasks()` — filtering, exclusion, edge cases
-- `selectRandomTask()` — selection with fallback logic
-- `buildSystemPrompt()` — prompt construction with task data
+235+ unit tests across 12 test files covering:
+- `exam-logic.ts` — area filtering, task selection, prompt construction
+- `rag-filters.ts` — metadata filter inference (32 tests)
+- `timing.ts`, `ttl-cache.ts`, `eval-helpers.ts` — observability + caching
+- `session-policy.ts`, `browser-detect.ts`, `email-routing.ts` — runtime logic
 
 ---
 
@@ -221,9 +221,9 @@ npm run test:watch  # Watch mode
 
 ## Known Limitations / Future Work
 
-- **Knowledge graph is empty** — `concepts` and `concept_relations` tables are schemaed but not populated. The exam currently uses ACS tasks directly without graph traversal.
+- **Knowledge graph populated but unused at runtime** — ACS skeleton (areas, tasks, elements + `is_component_of` edges) is populated via migration `20260220100002`. Not yet used by exam engine for graph-enhanced retrieval.
 - **No transcript persistence** — Conversation history is client-side only; `session_transcripts` table exists but isn't written to yet.
-- **No latency logging** — `latency_logs` table exists but isn't populated.
+- **Latency logging implemented** — `latency_logs` table is populated with per-exchange timing spans via `src/lib/timing.ts`. Requires migration `20260220100001`.
 - **Voice mode is Chrome-only** — Web Speech API (`SpeechRecognition`) is not available in Firefox/Safari.
 - **No admin interface** — Admin RLS policies exist but no UI for managing concepts or reviewing off-graph mentions.
 - **Three ratings supported** — Private Pilot (61 tasks), Commercial Pilot (60 tasks), and Instrument Rating (22 tasks) are fully seeded. ATP is schemaed but not yet populated.

@@ -1,5 +1,6 @@
 import 'server-only';
 import OpenAI from 'openai';
+import { createHash } from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
@@ -21,15 +22,64 @@ export interface ChunkSearchResult {
   score: number;
 }
 
+/** Normalize query text for consistent cache keys. */
+function normalizeQuery(text: string): string {
+  return text.toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+/** SHA-256 hex hash of the normalized query. */
+function queryHash(normalized: string): string {
+  return createHash('sha256').update(normalized).digest('hex');
+}
+
 /**
  * Generate an embedding for a text query using OpenAI's text-embedding-3-small.
+ * Checks the DB-backed embedding_cache first to avoid redundant API calls.
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
+  const normalized = normalizeQuery(text);
+  const hash = queryHash(normalized);
+
+  // Check DB cache
+  const { data: cached } = await supabase
+    .from('embedding_cache')
+    .select('embedding')
+    .eq('query_hash', hash)
+    .single();
+
+  if (cached?.embedding) {
+    // Touch last_used_at (non-blocking)
+    supabase
+      .from('embedding_cache')
+      .update({ last_used_at: new Date().toISOString() })
+      .eq('query_hash', hash)
+      .then(({ error }) => {
+        if (error) console.error('embedding_cache touch error:', error.message);
+      });
+    return cached.embedding as unknown as number[];
+  }
+
+  // Cache miss — call OpenAI
   const response = await openai.embeddings.create({
     model: 'text-embedding-3-small',
     input: text,
   });
-  return response.data[0].embedding;
+  const embedding = response.data[0].embedding;
+
+  // Write to cache (non-blocking)
+  supabase
+    .from('embedding_cache')
+    .upsert({
+      query_hash: hash,
+      normalized_query: normalized,
+      embedding: embedding as unknown as string,
+      model: 'text-embedding-3-small',
+    })
+    .then(({ error }) => {
+      if (error) console.error('embedding_cache write error:', error.message);
+    });
+
+  return embedding;
 }
 
 /**

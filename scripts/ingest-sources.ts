@@ -20,9 +20,50 @@ import * as crypto from 'crypto';
 import OpenAI from 'openai';
 import { getAppEnv, assertNotProduction } from '../src/lib/app-env';
 
-// pdf-parse v1.x is a simple function: pdfParse(buffer) -> { text, numpages, ... }
+// pdf-parse v1.x is a simple function: pdfParse(buffer, options?) -> { text, numpages, ... }
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require('pdf-parse') as (buffer: Buffer) => Promise<{ text: string; numpages: number }>;
+const pdfParse = require('pdf-parse') as (buffer: Buffer, options?: Record<string, unknown>) => Promise<{ text: string; numpages: number }>;
+
+/**
+ * Extract per-page text from a PDF buffer.
+ * Returns an array of { pageNumber (1-based), text }.
+ * Uses pdf-parse's custom pagerender option to capture text per page.
+ */
+async function extractPagesText(buffer: Buffer): Promise<Array<{ pageNumber: number; text: string }>> {
+  const pages: Array<{ pageNumber: number; text: string }> = [];
+  // pdf-parse calls pagerender for each page; we collect text from each
+  await pdfParse(buffer, {
+    pagerender: async (pageData: { pageIndex: number; getTextContent: () => Promise<{ items: Array<{ str: string }> }> }) => {
+      const textContent = await pageData.getTextContent();
+      const text = textContent.items.map((item: { str: string }) => item.str).join(' ');
+      pages.push({ pageNumber: pageData.pageIndex + 1, text });
+      return text;
+    },
+  });
+  return pages.sort((a, b) => a.pageNumber - b.pageNumber);
+}
+
+/**
+ * Build a lookup that, given a character offset into the full concatenated text,
+ * returns the 1-based page number.
+ */
+function buildPageOffsetMap(pages: Array<{ pageNumber: number; text: string }>): Array<{ startOffset: number; endOffset: number; pageNumber: number }> {
+  const map: Array<{ startOffset: number; endOffset: number; pageNumber: number }> = [];
+  let offset = 0;
+  for (const p of pages) {
+    const len = p.text.length + 1; // +1 for the inter-page newline/space
+    map.push({ startOffset: offset, endOffset: offset + len, pageNumber: p.pageNumber });
+    offset += len;
+  }
+  return map;
+}
+
+function findPageForOffset(offsetMap: Array<{ startOffset: number; endOffset: number; pageNumber: number }>, charOffset: number): number | null {
+  for (const entry of offsetMap) {
+    if (charOffset >= entry.startOffset && charOffset < entry.endOffset) return entry.pageNumber;
+  }
+  return null;
+}
 
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 
@@ -268,7 +309,12 @@ interface TextChunk {
   page_end: number | null;
 }
 
-function chunkText(text: string, maxTokens: number = 800, overlap: number = 100): TextChunk[] {
+function chunkText(
+  text: string,
+  maxTokens: number = 800,
+  overlap: number = 100,
+  offsetMap?: Array<{ startOffset: number; endOffset: number; pageNumber: number }>
+): TextChunk[] {
   const chunks: TextChunk[] = [];
 
   // Split by double newlines first to preserve paragraph boundaries
@@ -276,43 +322,60 @@ function chunkText(text: string, maxTokens: number = 800, overlap: number = 100)
 
   let currentChunk = '';
   let chunkIndex = 0;
+  let chunkStartOffset = 0; // char offset into `text` where the current chunk starts
+  let runningOffset = 0;    // tracks our position in the full text
 
   for (const para of paragraphs) {
     const trimmed = para.trim();
-    if (!trimmed) continue;
+    if (!trimmed) {
+      runningOffset += para.length + 2; // +2 for the \n\n delimiter
+      continue;
+    }
 
     // Rough token estimate: ~4 chars per token
     const currentTokens = currentChunk.length / 4;
     const paraTokens = trimmed.length / 4;
 
     if (currentTokens + paraTokens > maxTokens && currentChunk.length > 0) {
-      // Save current chunk
+      // Resolve page range for this chunk
+      const pageStart = offsetMap ? findPageForOffset(offsetMap, chunkStartOffset) : null;
+      const pageEnd = offsetMap ? findPageForOffset(offsetMap, chunkStartOffset + currentChunk.length - 1) : null;
+
       chunks.push({
         index: chunkIndex,
         heading: extractHeading(currentChunk),
         content: currentChunk.trim(),
-        page_start: null,
-        page_end: null,
+        page_start: pageStart,
+        page_end: pageEnd,
       });
       chunkIndex++;
 
       // Keep overlap from end of current chunk
       const overlapChars = overlap * 4;
       const overlapText = currentChunk.slice(-overlapChars);
+      chunkStartOffset = runningOffset - overlapChars;
       currentChunk = overlapText + '\n\n' + trimmed;
     } else {
+      if (currentChunk.length === 0) {
+        chunkStartOffset = runningOffset;
+      }
       currentChunk += (currentChunk ? '\n\n' : '') + trimmed;
     }
+
+    runningOffset += para.length + 2; // +2 for the \n\n delimiter
   }
 
   // Save final chunk
   if (currentChunk.trim().length > 50) {
+    const pageStart = offsetMap ? findPageForOffset(offsetMap, chunkStartOffset) : null;
+    const pageEnd = offsetMap ? findPageForOffset(offsetMap, chunkStartOffset + currentChunk.length - 1) : null;
+
     chunks.push({
       index: chunkIndex,
       heading: extractHeading(currentChunk),
       content: currentChunk.trim(),
-      page_start: null,
-      page_end: null,
+      page_start: pageStart,
+      page_end: pageEnd,
     });
   }
 
@@ -413,12 +476,14 @@ async function main() {
       documentId = inserted.id;
     }
 
-    // Extract text from PDF
+    // Extract text from PDF with per-page tracking
     let text: string;
+    let offsetMap: ReturnType<typeof buildPageOffsetMap> | undefined;
     try {
       const buffer = fs.readFileSync(fullPath);
-      const parsed = await pdfParse(buffer);
-      text = parsed.text;
+      const pages = await extractPagesText(buffer);
+      text = pages.map(p => p.text).join('\n');
+      offsetMap = buildPageOffsetMap(pages);
     } catch (err) {
       console.log(` ERROR extracting text: ${err}`);
       continue;
@@ -429,8 +494,8 @@ async function main() {
       continue;
     }
 
-    // Chunk the text
-    const chunks = chunkText(text);
+    // Chunk the text with page offset mapping
+    const chunks = chunkText(text, 800, 100, offsetMap);
 
     // Insert chunks (without embeddings first)
     const chunkRows = chunks.map((chunk) => ({

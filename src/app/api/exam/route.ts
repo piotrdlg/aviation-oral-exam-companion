@@ -20,6 +20,7 @@ import { checkKillSwitch } from '@/lib/kill-switch';
 import { requireSafeDbTarget } from '@/lib/app-env';
 import { getUserTier } from '@/lib/voice/tier-lookup';
 import { enforceOneActiveExam, getSessionTokenHash } from '@/lib/session-enforcement';
+import { createTimingContext, writeTimings } from '@/lib/timing';
 import type { SessionConfig, PlannerState } from '@/types/database';
 
 // Service-role client for usage logging + config lookups (bypasses RLS)
@@ -185,6 +186,10 @@ export async function POST(request: NextRequest) {
 
     requireSafeDbTarget(config, 'exam-api');
 
+    // Latency instrumentation: record spans for key operations
+    const timing = createTimingContext();
+    timing.start('prechecks');
+
     const body = await request.json();
     const { action, history, taskData, studentAnswer, coveredTaskIds, sessionId, stream, sessionConfig, plannerState: clientPlannerState } = body as {
       action: 'start' | 'respond' | 'next-task' | 'resume-current';
@@ -198,13 +203,42 @@ export async function POST(request: NextRequest) {
       plannerState?: PlannerState;
     };
 
-    // Load user profile for persona personality + student name
-    const { data: examUserProfile } = await serviceSupabase
+    // Parallel pre-checks: profile fetch + session enforcement are independent.
+    // Persona resolution depends on the profile result but is fast (cached config).
+    const profilePromise = serviceSupabase
       .from('user_profiles')
       .select('display_name, preferred_voice')
       .eq('user_id', user.id)
       .single();
 
+    const enforcementPromise = (async () => {
+      if (!sessionId) return { rejected: false, pausedSessionId: undefined as string | undefined };
+      try {
+        const { data: { session: authSession } } = await supabase.auth.getSession();
+        if (authSession?.access_token) {
+          const tokenHash = getSessionTokenHash(authSession);
+          return enforceOneActiveExam(serviceSupabase, user.id, sessionId, tokenHash, action);
+        }
+      } catch (err) {
+        console.error('Session enforcement error:', err);
+      }
+      return { rejected: false, pausedSessionId: undefined as string | undefined };
+    })();
+
+    const [{ data: examUserProfile }, enforcementResult] = await Promise.all([
+      profilePromise,
+      enforcementPromise,
+    ]);
+
+    if (enforcementResult.rejected) {
+      return NextResponse.json(
+        { error: 'session_superseded', message: 'This exam session has been superseded by another device. Please end this session.' },
+        { status: 409 }
+      );
+    }
+    const enforcementPausedSessionId = enforcementResult.pausedSessionId;
+
+    // Persona resolution (depends on profile, but voice.user_options is TTL-cached)
     let personaId: string | undefined;
     if (examUserProfile?.preferred_voice) {
       const { data: voiceConfig } = await serviceSupabase
@@ -217,32 +251,7 @@ export async function POST(request: NextRequest) {
     }
     const studentName = examUserProfile?.display_name || undefined;
 
-    // Session enforcement: ensure only one active exam per user
-    let enforcementPausedSessionId: string | undefined;
-    if (sessionId) {
-      try {
-        // Extract token hash from the user's current session
-        const { data: { session: authSession } } = await supabase.auth.getSession();
-        if (authSession?.access_token) {
-          const tokenHash = getSessionTokenHash(authSession);
-          const enforcement = await enforceOneActiveExam(
-            serviceSupabase, user.id, sessionId, tokenHash, action
-          );
-
-          if (enforcement.rejected) {
-            return NextResponse.json(
-              { error: 'session_superseded', message: 'This exam session has been superseded by another device. Please end this session.' },
-              { status: 409 }
-            );
-          }
-
-          enforcementPausedSessionId = enforcement.pausedSessionId;
-        }
-      } catch (err) {
-        // Session enforcement is non-critical — log and continue
-        console.error('Session enforcement error:', err);
-      }
-    }
+    timing.end('prechecks');
 
     if (action === 'start') {
       // Track last active usage
@@ -374,10 +383,13 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      timing.start('exchange.total');
+
       // Calculate exchange number from history length
       const exchangeNumber = Math.floor(history.length / 2) + 1;
 
       // Step 1: Persist student transcript + fetch RAG in parallel
+      timing.start('rag.total');
       const [studentTranscriptResult, rag] = await Promise.all([
         sessionId
           ? supabase
@@ -391,13 +403,15 @@ export async function POST(request: NextRequest) {
               .select('id')
               .single()
           : Promise.resolve({ data: null }),
-        fetchRagContext(taskData, history, studentAnswer),
+        fetchRagContext(taskData, history, studentAnswer, 5, { systemConfig: config, timing }),
       ]);
       const studentTranscriptId = studentTranscriptResult.data?.id ?? null;
       if (!studentTranscriptId && sessionId) {
         const insertErr = 'error' in studentTranscriptResult ? (studentTranscriptResult as { error?: { message?: string } }).error?.message : 'unknown';
         console.error('Student transcript insert failed:', insertErr, '— assessment, element_attempts, and citations will NOT be persisted for this exchange');
       }
+
+      timing.end('rag.total');
 
       // Step 2: Build updated history for examiner
       const updatedHistory: ExamMessage[] = [
@@ -412,7 +426,10 @@ export async function POST(request: NextRequest) {
       const respondDifficulty = sessionConfig?.difficulty || undefined;
       if (stream) {
         // Streaming path: start assessment in background, stream examiner immediately
-        const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty);
+        timing.start('llm.assessment.total');
+        timing.start('llm.examiner.total');
+        const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty)
+          .then(a => { timing.end('llm.assessment.total'); return a; });
 
         const { stream: readableStream, fullTextPromise } = await generateExaminerTurnStreaming(
           taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessmentPromise, undefined, respondRating, sessionConfig?.studyMode, personaId, studentName
@@ -472,6 +489,11 @@ export async function POST(request: NextRequest) {
           } catch (err) {
             console.error('Background DB write error:', err);
           }
+
+          // Write latency instrumentation (non-blocking, best-effort)
+          if (sessionId) {
+            await writeTimings(serviceSupabase, sessionId, exchangeNumber, timing);
+          }
         });
 
         return new Response(readableStream, {
@@ -485,10 +507,15 @@ export async function POST(request: NextRequest) {
       }
 
       // Non-streaming path: run both in parallel, wait for both
+      timing.start('llm.assessment.total');
+      timing.start('llm.examiner.total');
       const [assessment, turn] = await Promise.all([
-        assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty),
-        generateExaminerTurn(taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass as import('@/types/database').AircraftClass | undefined, rag, respondRating, sessionConfig?.studyMode, personaId, studentName),
+        assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty)
+          .then(a => { timing.end('llm.assessment.total'); return a; }),
+        generateExaminerTurn(taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass as import('@/types/database').AircraftClass | undefined, rag, respondRating, sessionConfig?.studyMode, personaId, studentName)
+          .then(t => { timing.end('llm.examiner.total'); return t; }),
       ]);
+      timing.end('exchange.total');
 
       // Log LLM usage for both calls (non-blocking)
       logLlmUsage(user.id, assessment.usage, tier, sessionId, { action: 'respond', call: 'assessAnswer' });
@@ -542,6 +569,11 @@ export async function POST(request: NextRequest) {
           text: turn.examinerMessage,
         });
         if (examErr) console.error('Examiner transcript write error:', examErr.message);
+      }
+
+      // Write latency instrumentation (non-blocking, best-effort)
+      if (sessionId) {
+        writeTimings(serviceSupabase, sessionId, exchangeNumber, timing);
       }
 
       return NextResponse.json({

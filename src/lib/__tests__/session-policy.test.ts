@@ -39,6 +39,7 @@ vi.mock('@/lib/app-env', () => ({
   requireSafeDbTarget: vi.fn(),
 }));
 
+
 // Import route handler after mocks are in place
 import { POST, GET } from '@/app/api/session/route';
 
