@@ -87,4 +87,67 @@ describe('detectSentenceBoundary', () => {
     const result = detectSentenceBoundary('Short text. ');
     expect(result).toBeNull();
   });
+
+  // Additional edge cases for aviation context
+  it('does NOT split on 14 CFR 91.155 mid-sentence', () => {
+    const result = detectSentenceBoundary(
+      'Under 14 CFR 91.155 the basic VFR weather minimums require certain visibility. Know these cold.'
+    );
+    expect(result).not.toBeNull();
+    expect(result!.sentence).toContain('91.155');
+    expect(result!.sentence).toContain('visibility');
+  });
+
+  it('does NOT split on 61.113 with CFR reference', () => {
+    const result = detectSentenceBoundary(
+      'Per 14 CFR 61.113 a private pilot may not act as PIC for compensation. There are exceptions though.'
+    );
+    expect(result).not.toBeNull();
+    expect(result!.sentence).toContain('61.113');
+    expect(result!.sentence).toContain('compensation');
+  });
+
+  it('does NOT split on decimal altitudes like 3.5 degrees', () => {
+    const result = detectSentenceBoundary(
+      'The glide slope angle is typically 3.0 degrees for a standard ILS approach. Maintain it precisely.'
+    );
+    expect(result).not.toBeNull();
+    expect(result!.sentence).toContain('3.0 degrees');
+  });
+
+  it('handles multiple sentences and returns only the first', () => {
+    const result = detectSentenceBoundary(
+      'First sentence is long enough to pass. Second sentence here. Third one too.'
+    );
+    expect(result).not.toBeNull();
+    expect(result!.sentence).toBe('First sentence is long enough to pass.');
+    expect(result!.remainder).toBe('Second sentence here. Third one too.');
+  });
+
+  it('handles streaming scenario: accumulate tokens then detect', () => {
+    // Simulate token-by-token accumulation
+    let buffer = '';
+    const tokens = 'The minimum visibility requirement is three statute miles. '.split(' ');
+    let found: ReturnType<typeof detectSentenceBoundary> = null;
+    for (const token of tokens) {
+      buffer += (buffer ? ' ' : '') + token;
+      found = detectSentenceBoundary(buffer);
+      if (found) break;
+    }
+    expect(found).not.toBeNull();
+    expect(found!.sentence).toContain('three statute miles.');
+  });
+
+  it('handles etc. abbreviation: does not split there, waits for real boundary', () => {
+    // "etc." is an abbreviation so should NOT be a split point.
+    // The real boundary is at "valid." — but the full string is <200 chars.
+    const result = detectSentenceBoundary(
+      'You need your logbook, medical certificate, etc. Make sure everything is current and valid. Next topic.'
+    );
+    expect(result).not.toBeNull();
+    // Should skip "etc." and split at "valid."
+    expect(result!.sentence).toContain('etc.');
+    expect(result!.sentence).toContain('valid.');
+    expect(result!.remainder).toBe('Next topic.');
+  });
 });

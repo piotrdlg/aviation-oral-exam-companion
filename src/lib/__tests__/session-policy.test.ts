@@ -380,7 +380,7 @@ describe('update — grading', () => {
     expect(body.result.grade).toBe('unsatisfactory');
   });
 
-  it('grades as incomplete when fewer elements asked than total', async () => {
+  it('grades user_ended against elements asked (satisfactory with partial coverage)', async () => {
     const attemptsQ = q({
       data: [{ element_code: 'PA.I.A.K1', score: 'satisfactory' }],
     });
@@ -395,13 +395,13 @@ describe('update — grading', () => {
 
     const res = await POST(postReq({ action: 'update', sessionId: 'sess-4', status: 'completed' }));
     const upd = updateQ.update.mock.calls[0][0];
-    expect(upd.result.grade).toBe('incomplete');
+    expect(upd.result.grade).toBe('satisfactory'); // 1/1 asked = 100% >= 70%
     expect(upd.result.elements_asked).toBe(1);
     expect(upd.result.elements_not_asked).toBe(2);
 
     const body = await res.json();
     expect(body.ok).toBe(true);
-    expect(body.result.grade).toBe('incomplete');
+    expect(body.result.grade).toBe('satisfactory');
   });
 
   it('skips grading when attempts query returns null', async () => {

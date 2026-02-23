@@ -1,17 +1,31 @@
 #!/usr/bin/env npx tsx
 /**
- * latency-benchmark.ts — A/B latency comparison between staging and production.
+ * latency-benchmark.ts — Multi-run A/B latency comparison between staging and production.
  *
  * Hits /api/bench on both environments with Bearer token auth.
- * Each call runs: session create → planner init → Claude question → assess + followup → cleanup.
+ * Collects N samples per environment, computes p50/p95/mean/stdev.
  *
  * Usage:
- *   npx tsx scripts/staging/latency-benchmark.ts [--answers 1]
+ *   npx tsx scripts/staging/latency-benchmark.ts [--runs 5] [--answers 1] [--json out.json]
  */
+
+import * as fs from 'fs';
+import * as path from 'path';
+import { computeStepStats, formatMs, generateMarkdownReport, type StepStats } from './bench-stats';
+
+const NUM_RUNS = (() => {
+  const idx = process.argv.indexOf('--runs');
+  return idx >= 0 ? parseInt(process.argv[idx + 1], 10) : 5;
+})();
 
 const NUM_ANSWERS = (() => {
   const idx = process.argv.indexOf('--answers');
   return idx >= 0 ? parseInt(process.argv[idx + 1], 10) : 1;
+})();
+
+const JSON_OUT = (() => {
+  const idx = process.argv.indexOf('--json');
+  return idx >= 0 ? process.argv[idx + 1] : null;
 })();
 
 const STUDENT_ANSWERS = [
@@ -76,7 +90,6 @@ async function getAccessToken(env: EnvConfig): Promise<string> {
 async function runBench(env: EnvConfig, token: string): Promise<BenchResult> {
   const answers = STUDENT_ANSWERS.slice(0, NUM_ANSWERS);
 
-  const start = performance.now();
   const res = await fetch(`${env.appUrl}/api/bench`, {
     method: 'POST',
     headers: {
@@ -88,10 +101,9 @@ async function runBench(env: EnvConfig, token: string): Promise<BenchResult> {
   });
 
   const data = await res.json();
-  const wallMs = Math.round(performance.now() - start);
 
   if (!res.ok) {
-    return { timings: data.timings || [], totalMs: wallMs, error: data.error };
+    return { timings: data.timings || [], totalMs: 0, error: data.error };
   }
 
   return {
@@ -101,18 +113,38 @@ async function runBench(env: EnvConfig, token: string): Promise<BenchResult> {
   };
 }
 
-function formatMs(ms: number): string {
-  if (ms < 1000) return `${ms}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
+function collectStepSamples(results: BenchResult[]): Map<string, number[]> {
+  const samples = new Map<string, number[]>();
+  for (const result of results) {
+    if (result.error) continue;
+    for (const t of result.timings) {
+      if (!samples.has(t.step)) samples.set(t.step, []);
+      samples.get(t.step)!.push(t.ms);
+    }
+    // Add TOTAL pseudo-step
+    if (!samples.has('TOTAL')) samples.set('TOTAL', []);
+    samples.get('TOTAL')!.push(result.totalMs);
+  }
+  return samples;
+}
+
+function samplesToStats(samples: Map<string, number[]>): StepStats[] {
+  const stats: StepStats[] = [];
+  for (const [step, values] of samples) {
+    stats.push(computeStepStats(step, values));
+  }
+  return stats;
 }
 
 async function main() {
-  console.log(`\n╔══════════════════════════════════════════════════╗`);
-  console.log(`║   HeyDPE Latency Benchmark — Staging vs Prod    ║`);
-  console.log(`╚══════════════════════════════════════════════════╝\n`);
-  console.log(`Answers per run: ${NUM_ANSWERS}\n`);
+  const commandUsed = `npx tsx scripts/staging/latency-benchmark.ts --runs ${NUM_RUNS} --answers ${NUM_ANSWERS}${JSON_OUT ? ` --json ${JSON_OUT}` : ''}`;
 
-  // Warm up check — is localhost running?
+  console.log(`\n╔══════════════════════════════════════════════════════╗`);
+  console.log(`║   HeyDPE Latency Benchmark — Multi-Run Comparison   ║`);
+  console.log(`╚══════════════════════════════════════════════════════╝\n`);
+  console.log(`  Runs: ${NUM_RUNS} | Answers per run: ${NUM_ANSWERS}\n`);
+
+  // Warm up check
   try {
     await fetch(`${STAGING.appUrl}`, { signal: AbortSignal.timeout(3000) });
   } catch {
@@ -121,96 +153,139 @@ async function main() {
     process.exit(1);
   }
 
-  // Get tokens for both environments
+  // Authenticate
   console.log(`  Authenticating...`);
   let stagingToken: string;
   let prodToken: string;
   try {
     stagingToken = await getAccessToken(STAGING);
-    console.log(`    ✓ Staging token obtained`);
+    console.log(`    ✓ Staging token`);
   } catch (err) {
     console.error(`    ✗ Staging auth failed:`, err);
     process.exit(1);
   }
   try {
     prodToken = await getAccessToken(PRODUCTION);
-    console.log(`    ✓ Production token obtained`);
+    console.log(`    ✓ Production token`);
   } catch (err) {
     console.error(`    ✗ Production auth failed:`, err);
     process.exit(1);
   }
 
-  // Run staging
-  console.log(`\n▶ Running STAGING benchmark...`);
-  const stagingResult = await runBench(STAGING, stagingToken);
-  if (stagingResult.error) {
-    console.log(`  ✗ Error: ${stagingResult.error}`);
-  } else {
-    console.log(`  ✓ Done in ${formatMs(stagingResult.totalMs)}`);
+  // Collect samples
+  const stagingResults: BenchResult[] = [];
+  const prodResults: BenchResult[] = [];
+
+  for (let i = 0; i < NUM_RUNS; i++) {
+    // Alternate: staging then production each round (reduces ordering bias)
+    console.log(`\n  Run ${i + 1}/${NUM_RUNS}:`);
+
+    console.log(`    ▶ Staging...`);
+    const sResult = await runBench(STAGING, stagingToken);
+    stagingResults.push(sResult);
+    if (sResult.error) {
+      console.log(`      ✗ Error: ${sResult.error}`);
+    } else {
+      console.log(`      ✓ ${formatMs(sResult.totalMs)}`);
+    }
+
+    console.log(`    ▶ Production...`);
+    const pResult = await runBench(PRODUCTION, prodToken);
+    prodResults.push(pResult);
+    if (pResult.error) {
+      console.log(`      ✗ Error: ${pResult.error}`);
+    } else {
+      console.log(`      ✓ ${formatMs(pResult.totalMs)}`);
+    }
   }
 
-  // Run production
-  console.log(`▶ Running PRODUCTION benchmark...`);
-  const prodResult = await runBench(PRODUCTION, prodToken);
-  if (prodResult.error) {
-    console.log(`  ✗ Error: ${prodResult.error}`);
-  } else {
-    console.log(`  ✓ Done in ${formatMs(prodResult.totalMs)}`);
-  }
+  // Compute stats
+  const stagingSamples = collectStepSamples(stagingResults);
+  const prodSamples = collectStepSamples(prodResults);
+  const stagingStats = samplesToStats(stagingSamples);
+  const prodStats = samplesToStats(prodSamples);
 
-  // Build comparison table
-  const allSteps = new Set([
-    ...stagingResult.timings.map((t) => t.step),
-    ...prodResult.timings.map((t) => t.step),
-  ]);
+  const successfulStaging = stagingResults.filter((r) => !r.error).length;
+  const successfulProd = prodResults.filter((r) => !r.error).length;
 
-  console.log(`\n${'─'.repeat(70)}`);
-  console.log(`  ${'Step'.padEnd(22)} ${'Staging'.padStart(10)} ${'Prod'.padStart(10)} ${'Delta'.padStart(10)}  Winner`);
-  console.log(`${'─'.repeat(70)}`);
+  // Print stats table
+  const allSteps = [...new Set([...stagingStats.map((s) => s.step), ...prodStats.map((s) => s.step)])];
+
+  console.log(`\n${'═'.repeat(90)}`);
+  console.log(`  Results: ${successfulStaging}/${NUM_RUNS} staging OK, ${successfulProd}/${NUM_RUNS} production OK`);
+  console.log(`${'═'.repeat(90)}`);
+  console.log(`  ${'Step'.padEnd(22)} ${'STG p50'.padStart(9)} ${'STG p95'.padStart(9)} ${'PRD p50'.padStart(9)} ${'PRD p95'.padStart(9)} ${'Delta p50'.padStart(10)}  Winner`);
+  console.log(`${'─'.repeat(90)}`);
 
   for (const step of allSteps) {
-    const s = stagingResult.timings.find((t) => t.step === step);
-    const p = prodResult.timings.find((t) => t.step === step);
+    const s = stagingStats.find((x) => x.step === step);
+    const p = prodStats.find((x) => x.step === step);
 
-    const sMs = s?.ms ?? -1;
-    const pMs = p?.ms ?? -1;
+    const sp50 = s ? formatMs(s.p50).padStart(9) : '       —';
+    const sp95 = s ? formatMs(s.p95).padStart(9) : '       —';
+    const pp50 = p ? formatMs(p.p50).padStart(9) : '       —';
+    const pp95 = p ? formatMs(p.p95).padStart(9) : '       —';
 
-    const sStr = sMs >= 0 ? formatMs(sMs) : '—';
-    const pStr = pMs >= 0 ? formatMs(pMs) : '—';
-
-    let delta = '';
+    let delta = '         —';
     let winner = '';
-    if (sMs >= 0 && pMs >= 0) {
-      const diff = sMs - pMs;
-      delta = diff > 0 ? `+${formatMs(diff)}` : `-${formatMs(Math.abs(diff))}`;
+    if (s && p) {
+      const diff = s.p50 - p.p50;
+      delta = (diff > 0 ? '+' : '-') + formatMs(Math.abs(diff));
+      delta = delta.padStart(10);
       winner = diff < 0 ? '← STG' : diff > 0 ? 'PRD →' : 'TIE';
     }
 
-    console.log(`  ${step.padEnd(22)} ${sStr.padStart(10)} ${pStr.padStart(10)} ${delta.padStart(10)}  ${winner}`);
+    const name = step === 'TOTAL' ? '▸ TOTAL' : step;
+    console.log(`  ${name.padEnd(22)} ${sp50} ${sp95} ${pp50} ${pp95} ${delta}  ${winner}`);
   }
-
-  const sTotal = stagingResult.totalMs;
-  const pTotal = prodResult.totalMs;
-  const totalDiff = sTotal - pTotal;
-
-  console.log(`${'─'.repeat(70)}`);
-  console.log(`  ${'TOTAL (server-side)'.padEnd(22)} ${formatMs(sTotal).padStart(10)} ${formatMs(pTotal).padStart(10)} ${(totalDiff > 0 ? '+' : '-') + formatMs(Math.abs(totalDiff))}`.padStart(10) + `  ${totalDiff < 0 ? '← STG' : totalDiff > 0 ? 'PRD →' : 'TIE'}`);
-  console.log(`${'─'.repeat(70)}\n`);
+  console.log(`${'═'.repeat(90)}\n`);
 
   // Print errors if any
-  if (stagingResult.error || prodResult.error) {
-    console.log(`⚠ Errors:`);
-    if (stagingResult.error) console.log(`  STAGING: ${stagingResult.error}`);
-    if (prodResult.error) console.log(`  PRODUCTION: ${prodResult.error}`);
+  const allErrors = [
+    ...stagingResults.filter((r) => r.error).map((r) => `STAGING: ${r.error}`),
+    ...prodResults.filter((r) => r.error).map((r) => `PRODUCTION: ${r.error}`),
+  ];
+  if (allErrors.length > 0) {
+    console.log(`⚠ Errors (${allErrors.length}):`);
+    allErrors.forEach((e) => console.log(`  ${e}`));
     console.log('');
   }
 
   console.log(`Notes:`);
-  console.log(`  • Staging: localhost app → staging Supabase (remote) → same Anthropic API`);
-  console.log(`  • Production: Vercel edge → production Supabase (remote) → same Anthropic API`);
-  console.log(`  • "TOTAL" is server-side time (excludes network latency to app)`);
-  console.log(`  • Claude API calls dominate. DB ops are <300ms.`);
-  console.log(`  • Run multiple times for consistent results.\n`);
+  console.log(`  • Staging: localhost app → staging Supabase (remote) → Anthropic API`);
+  console.log(`  • Production: Vercel edge → production Supabase (remote) → Anthropic API`);
+  console.log(`  • Claude API calls dominate. DB ops are <500ms.`);
+  console.log(`  • p50 = median, p95 = tail latency.\n`);
+
+  // Write JSON if requested
+  if (JSON_OUT) {
+    const jsonData = {
+      date: new Date().toISOString(),
+      runs: NUM_RUNS,
+      answers: NUM_ANSWERS,
+      staging: { results: stagingResults, stats: stagingStats },
+      production: { results: prodResults, stats: prodStats },
+    };
+    fs.writeFileSync(JSON_OUT, JSON.stringify(jsonData, null, 2));
+    console.log(`  Raw data written to ${JSON_OUT}\n`);
+  }
+
+  // Write markdown report
+  const today = new Date().toISOString().slice(0, 10);
+  const reportDir = path.resolve(__dirname, '../../docs/staging-reports');
+  if (!fs.existsSync(reportDir)) fs.mkdirSync(reportDir, { recursive: true });
+  const reportPath = path.join(reportDir, `${today}-latency-benchmark.md`);
+
+  const markdown = generateMarkdownReport({
+    date: today,
+    command: commandUsed,
+    runs: NUM_RUNS,
+    answers: NUM_ANSWERS,
+    stagingStats,
+    prodStats,
+  });
+  fs.writeFileSync(reportPath, markdown);
+  console.log(`  Markdown report written to ${reportPath}\n`);
 }
 
 main().catch(console.error);

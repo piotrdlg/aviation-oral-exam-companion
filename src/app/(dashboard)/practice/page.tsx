@@ -8,6 +8,7 @@ import OnboardingWizard from './components/OnboardingWizard';
 import type { PlannerState, SessionConfig as SessionConfigType, Rating, AircraftClass, ExamResult } from '@/types/database';
 import type { VoiceTier } from '@/lib/voice/types';
 import { useVoiceProvider } from '@/hooks/useVoiceProvider';
+import { useSentenceTTS } from '@/hooks/useSentenceTTS';
 import { ExamImages } from '@/components/ui/ExamImages';
 import { setTheme } from '@/lib/theme';
 
@@ -131,6 +132,16 @@ export default function PracticePage() {
   const [gradingInProgress, setGradingInProgress] = useState(false);
   const [allResumableSessions, setAllResumableSessions] = useState<NonNullable<typeof resumableSession>[]>([]);
   const [showOpenExamsModal, setShowOpenExamsModal] = useState(false);
+  // Feature flag: sentence-level TTS streaming (default OFF)
+  const [sentenceStreamEnabled, setSentenceStreamEnabled] = useState(false);
+  // Custom confirmation dialog (replaces browser confirm())
+  const [confirmDialog, setConfirmDialog] = useState<{
+    title: string;
+    message: string;
+    confirmLabel: string;
+    confirmClass: string;
+    onConfirm: () => void;
+  } | null>(null);
 
   // Auto-close open exams modal when list empties
   useEffect(() => {
@@ -154,6 +165,62 @@ export default function PracticePage() {
 
   // Unified voice provider hook (handles STT + TTS for all tiers)
   const voice = useVoiceProvider({ tier, sessionId: sessionId || undefined });
+
+  // Ref to track whether sentence streaming is active (avoids stale closures in SSE loop)
+  const sentenceStreamRef = useRef(false);
+  // Accumulates sentence text revealed so far (for per-sentence sync)
+  const sentenceRevealedRef = useRef('');
+
+  // Sentence-level TTS streaming hook (feature-flagged, default OFF)
+  // Delegates audio playback to voice.speak() (handles Deepgram PCM via AudioWorklet).
+  // Text is revealed per-sentence, synchronized with audio start.
+  const sentenceTTS = useSentenceTTS({
+    speak: (text) => voice.speak(text),
+    onSentenceStart: (sentence) => {
+      const isFirst = !sentenceRevealedRef.current;
+      sentenceRevealedRef.current += sentence;
+      const revealed = sentenceRevealedRef.current;
+
+      if (isFirst) {
+        // First sentence: create examiner message bubble and hide loading
+        setMessages((prev) => [...prev, { role: 'examiner', text: sentence }]);
+        setLoading(false);
+      } else {
+        // Subsequent sentences: append to existing message
+        setMessages((prev) => {
+          const updated = [...prev];
+          const lastIdx = updated.length - 1;
+          if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
+            updated[lastIdx] = { ...updated[lastIdx], text: revealed };
+          }
+          return updated;
+        });
+      }
+    },
+    onAllDone: () => {
+      // All sentences spoken — ensure full text is shown
+      flushReveal();
+      sentenceRevealedRef.current = '';
+    },
+    onError: () => {
+      // TTS error — ensure text is visible
+      flushReveal();
+      sentenceRevealedRef.current = '';
+    },
+  });
+
+  // Fetch feature flags on mount
+  useEffect(() => {
+    fetch('/api/flags')
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data?.tts_sentence_stream) {
+          setSentenceStreamEnabled(true);
+          sentenceStreamRef.current = true;
+        }
+      })
+      .catch(() => {}); // Fail open: flag stays false
+  }, []);
 
   // Fetch user's tier + practice preferences on mount + check quota usage
   useEffect(() => {
@@ -550,7 +617,9 @@ export default function PracticePage() {
     const studentAnswer = overrideText || input.trim();
     if (!studentAnswer || !taskData || loading) return;
 
-    // Stop mic when sending — user is done talking
+    // Stop mic and any in-progress sentence TTS when sending
+    sentenceTTS.cancel();
+    sentenceRevealedRef.current = '';
     if (voice.isListening) {
       voice.stopListening();
     }
@@ -572,6 +641,7 @@ export default function PracticePage() {
           sessionId,
           sessionConfig,
           stream: true,
+          chunkedResponse: voiceEnabledRef.current && sentenceStreamRef.current,
         }),
       });
 
@@ -611,7 +681,8 @@ export default function PracticePage() {
           setMessages((prev) => [...prev, { role: 'examiner', text: '' }]);
           setLoading(false); // Hide typing indicator — we're showing real tokens now
         }
-        // Voice ON: keep loading indicator (typing dots) visible during generation
+        // Voice ON (with or without sentence stream): keep loading indicator visible during generation
+        // Sentence streaming reveals text per-sentence via onSentenceStart callback
 
         while (true) {
           const { done, value } = await reader.read();
@@ -632,11 +703,15 @@ export default function PracticePage() {
             try {
               const parsed = JSON.parse(payload);
 
-              if (parsed.token) {
+              if (parsed.chunk && parsed.text) {
+                // Server-side chunk event (structured 3-chunk response mode)
+                // Enqueue the complete chunk for TTS — text displayed via onSentenceStart
+                sentenceTTS.enqueue(parsed.text);
+              } else if (parsed.token) {
                 // Incremental token — append to examiner message
                 examinerMsg += parsed.token;
                 if (!voiceEnabledRef.current) {
-                  // Voice OFF: update message text in real-time (streaming display)
+                  // Voice OFF: update message text in real-time
                   setMessages((prev) => {
                     const updated = [...prev];
                     const lastIdx = updated.length - 1;
@@ -691,6 +766,7 @@ export default function PracticePage() {
                 // Full message event — use as authoritative final text
                 examinerMsg = parsed.examinerMessage;
                 if (!voiceEnabledRef.current) {
+                  // Voice OFF: update to authoritative final text
                   setMessages((prev) => {
                     const updated = [...prev];
                     const lastIdx = updated.length - 1;
@@ -944,6 +1020,8 @@ export default function PracticePage() {
               status: s.score,
               attempts: s.attempts,
             })),
+            planner_state: plannerState,
+            session_config: sessionConfig,
           }),
         });
         const data = await res.json();
@@ -1356,14 +1434,22 @@ export default function PracticePage() {
                         {gradingInProgress ? 'GRADING...' : 'GRADE'}
                       </button>
                       <button
-                        onClick={async () => {
-                          if (!confirm('Discard this exam? It will be marked as abandoned and won\u2019t count toward your progress.')) return;
-                          await fetch('/api/session', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ action: 'update', sessionId: resumableSession.id, status: 'abandoned' }),
+                        onClick={() => {
+                          const sid = resumableSession.id;
+                          setConfirmDialog({
+                            title: 'DISCARD EXAM',
+                            message: 'Discard this exam? It will be marked as abandoned and won\u2019t count toward your progress.',
+                            confirmLabel: 'DISCARD',
+                            confirmClass: 'bg-red-500/80 hover:bg-red-500 text-white',
+                            onConfirm: async () => {
+                              await fetch('/api/session', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ action: 'update', sessionId: sid, status: 'abandoned' }),
+                              });
+                              removeFromResumable(sid);
+                            },
                           });
-                          removeFromResumable(resumableSession.id);
                         }}
                         className="px-3 py-1.5 text-c-muted hover:text-red-400 font-mono text-xs transition-colors uppercase"
                       >
@@ -1466,8 +1552,17 @@ export default function PracticePage() {
           <button
             data-testid="end-exam-button"
             onClick={() => {
-              if (exchangeCount > 0 && !confirm('Grade and end this exam?')) return;
-              gradeSession();
+              if (exchangeCount > 0) {
+                setConfirmDialog({
+                  title: 'GRADE EXAM',
+                  message: 'Grade and end this exam? Your answers will be scored and you\u2019ll see your results.',
+                  confirmLabel: 'GRADE',
+                  confirmClass: 'bg-c-amber hover:bg-c-amber/90 text-c-bg',
+                  onConfirm: () => gradeSession(),
+                });
+              } else {
+                gradeSession();
+              }
             }}
             disabled={gradingInProgress}
             className="px-2.5 py-1 text-xs font-mono bg-c-amber hover:bg-c-amber/90 text-c-bg rounded font-semibold transition-colors uppercase disabled:opacity-50"
@@ -1717,11 +1812,11 @@ export default function PracticePage() {
             className={`px-4 py-3 rounded-lg font-mono font-medium transition-all uppercase ${
               voice.isListening
                 ? 'bg-c-red hover:bg-c-red/90 text-c-bg ring-2 ring-c-red/50 ring-offset-2 ring-offset-c-bg animate-pulse'
-                : voice.isSpeaking
+                : (voice.isSpeaking || sentenceTTS.isSpeaking)
                 ? 'bg-c-bezel hover:bg-c-border text-c-text border border-dashed border-c-muted'
                 : 'bg-c-bezel hover:bg-c-border text-c-text'
             } disabled:opacity-50`}
-            title={voice.isListening ? 'Stop recording' : voice.isSpeaking ? 'Interrupt & start speaking' : 'Start recording'}
+            title={voice.isListening ? 'Stop recording' : (voice.isSpeaking || sentenceTTS.isSpeaking) ? 'Interrupt & start speaking' : 'Start recording'}
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               {voice.isListening ? (
@@ -1970,14 +2065,22 @@ export default function PracticePage() {
                           {gradingInProgress ? '...' : 'GRADE'}
                         </button>
                         <button
-                          onClick={async () => {
-                            if (!confirm('Discard this exam? It will be marked as abandoned.')) return;
-                            await fetch('/api/session', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ action: 'update', sessionId: session.id, status: 'abandoned' }),
+                          onClick={() => {
+                            const sid = session.id;
+                            setConfirmDialog({
+                              title: 'DISCARD EXAM',
+                              message: 'Discard this exam? It will be marked as abandoned and won\u2019t count toward your progress.',
+                              confirmLabel: 'DISCARD',
+                              confirmClass: 'bg-red-500/80 hover:bg-red-500 text-white',
+                              onConfirm: async () => {
+                                await fetch('/api/session', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ action: 'update', sessionId: sid, status: 'abandoned' }),
+                                });
+                                removeFromResumable(sid);
+                              },
                             });
-                            removeFromResumable(session.id);
                           }}
                           className="px-2.5 py-1 text-c-muted hover:text-red-400 font-mono text-xs transition-colors uppercase"
                         >
@@ -1994,6 +2097,34 @@ export default function PracticePage() {
             </div>
           </div>
         )}
+
+      {/* Confirmation dialog (replaces browser confirm()) */}
+      {confirmDialog && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
+          <div className="bezel rounded-lg border border-c-border p-6 max-w-sm mx-4 shadow-2xl w-full">
+            <h2 className="font-mono font-bold text-lg text-c-text tracking-wider uppercase mb-3">{confirmDialog.title}</h2>
+            <p className="text-sm text-c-muted font-mono leading-relaxed mb-5">{confirmDialog.message}</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDialog(null)}
+                className="flex-1 py-2 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-mono font-semibold text-sm transition-colors border border-c-border uppercase tracking-wider"
+              >
+                CANCEL
+              </button>
+              <button
+                onClick={async () => {
+                  const action = confirmDialog.onConfirm;
+                  setConfirmDialog(null);
+                  await action();
+                }}
+                className={`flex-1 py-2 rounded-lg font-mono font-semibold text-sm transition-colors uppercase tracking-wider ${confirmDialog.confirmClass}`}
+              >
+                {confirmDialog.confirmLabel}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Exam results modal */}
       {examResult && (

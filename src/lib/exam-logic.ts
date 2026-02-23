@@ -198,6 +198,24 @@ IMPORTANT: Respond ONLY as the examiner. Do not include any JSON, metadata, or s
 NEVER include stage directions, action descriptions, or parenthetical comments like *(pauses)*, *(shuffles papers)*, *(waits for response)*, or similar. Your text will be read aloud by a text-to-speech engine — only output words the examiner would actually say.`;
 }
 
+/**
+ * Structured 3-chunk response instruction appended to the system prompt
+ * when chunked TTS streaming is active. Forces Claude to output JSON
+ * with three discrete fields, enabling server-side chunk extraction
+ * for latency-optimized per-chunk TTS playback.
+ */
+export const STRUCTURED_RESPONSE_INSTRUCTION = `
+
+RESPONSE FORMAT — CRITICAL: You MUST respond with a JSON object containing exactly these three fields. Output ONLY the JSON object, no markdown code blocks, no text before or after.
+
+{
+  "feedback_quick": "One sentence of immediate, natural feedback. Examples: 'That\\'s exactly right.' or 'Not quite — let me clarify.' or 'You\\'re on the right track, but missing a key detail.' Keep it to ONE brief sentence that a real DPE would say.",
+  "feedback_detail": "One concise paragraph elaborating on the student\\'s answer. What they got right, what they missed or got wrong, and any relevant regulation references or clarifications. Be specific and educational.",
+  "question": "One paragraph that starts with a brief natural transition connecting to the previous topic (e.g., 'Let\\'s dig deeper into that...' or 'Good — now building on what you said about...') followed by your next examination question. Ask ONE clear question."
+}
+
+All three fields are REQUIRED. Each field value must be a plain text string (no nested JSON, no markdown). The text will be read aloud by TTS — write naturally as a DPE would speak.`;
+
 // ================================================================
 // Planner Pure Functions
 // ================================================================
@@ -403,7 +421,15 @@ export function computeExamResult(
 
   // Determine grade
   let grade: ExamGrade;
-  if (elementsAsked < totalElementsInSet) {
+  if (elementsAsked === 0) {
+    // No elements were scored at all
+    grade = 'incomplete';
+  } else if (completionTrigger === 'user_ended') {
+    // User manually ended the exam — grade against elements actually asked,
+    // not the full ACS element set (which may be 100+ elements).
+    grade = scorePercentage >= 0.70 ? 'satisfactory' : 'unsatisfactory';
+  } else if (elementsAsked < totalElementsInSet) {
+    // Natural/system completion but coverage not reached
     grade = 'incomplete';
   } else if (scorePercentage >= 0.70) {
     grade = 'satisfactory';

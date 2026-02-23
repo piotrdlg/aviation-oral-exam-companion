@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
     timing.start('prechecks');
 
     const body = await request.json();
-    const { action, history, taskData, studentAnswer, coveredTaskIds, sessionId, stream, sessionConfig, plannerState: clientPlannerState } = body as {
+    const { action, history, taskData, studentAnswer, coveredTaskIds, sessionId, stream, sessionConfig, plannerState: clientPlannerState, chunkedResponse } = body as {
       action: 'start' | 'respond' | 'next-task' | 'resume-current';
       history?: ExamMessage[];
       taskData?: Awaited<ReturnType<typeof pickStartingTask>>;
@@ -201,6 +201,7 @@ export async function POST(request: NextRequest) {
       stream?: boolean;
       sessionConfig?: SessionConfig;
       plannerState?: PlannerState;
+      chunkedResponse?: boolean;
     };
 
     // Parallel pre-checks: profile fetch + session enforcement are independent.
@@ -432,7 +433,7 @@ export async function POST(request: NextRequest) {
           .then(a => { timing.end('llm.assessment.total'); return a; });
 
         const { stream: readableStream, fullTextPromise } = await generateExaminerTurnStreaming(
-          taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessmentPromise, undefined, respondRating, sessionConfig?.studyMode, personaId, studentName
+          taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessmentPromise, undefined, respondRating, sessionConfig?.studyMode, personaId, studentName, chunkedResponse
         );
 
         // Use after() to ensure ALL DB writes complete even after stream closes.

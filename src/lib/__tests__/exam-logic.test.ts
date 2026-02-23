@@ -511,13 +511,13 @@ describe('computeExamResult', () => {
     expect(result.score_percentage).toBe(0.6);
   });
 
-  it('returns incomplete when not all elements asked (user ended early)', () => {
+  it('grades user_ended against elements actually asked (not full set)', () => {
     const attempts = makeAttempts([
       { code: 'PA.I.A.K1', score: 'satisfactory' },
     ]);
     const result = computeExamResult(attempts, 5, 'user_ended');
-    expect(result.grade).toBe('incomplete');
-    expect(result.score_percentage).toBe(1.0); // 1/1 = 100% of what was asked
+    expect(result.grade).toBe('satisfactory'); // 1/1 = 100% of asked >= 70%
+    expect(result.score_percentage).toBe(1.0);
     expect(result.elements_asked).toBe(1);
     expect(result.elements_not_asked).toBe(4);
   });
