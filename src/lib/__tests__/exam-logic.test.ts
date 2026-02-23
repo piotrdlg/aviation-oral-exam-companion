@@ -8,6 +8,9 @@ import {
   pickNextElement,
   initPlannerState,
   computeExamResult,
+  extractStructuredChunks,
+  buildPlainTextFromChunks,
+  STRUCTURED_CHUNK_FIELDS,
   type AcsTaskRow,
 } from '../exam-logic';
 import type { AcsElement as AcsElementDB, ElementScore, SessionConfig, CompletionTrigger } from '@/types/database';
@@ -511,15 +514,24 @@ describe('computeExamResult', () => {
     expect(result.score_percentage).toBe(0.6);
   });
 
-  it('grades user_ended against elements actually asked (not full set)', () => {
+  it('grades against elements asked when user ends exam early', () => {
     const attempts = makeAttempts([
       { code: 'PA.I.A.K1', score: 'satisfactory' },
     ]);
     const result = computeExamResult(attempts, 5, 'user_ended');
-    expect(result.grade).toBe('satisfactory'); // 1/1 = 100% of asked >= 70%
-    expect(result.score_percentage).toBe(1.0);
+    // User-ended exams grade against what was asked, not the full set
+    expect(result.grade).toBe('satisfactory');
+    expect(result.score_percentage).toBe(1.0); // 1/1 = 100% of what was asked
     expect(result.elements_asked).toBe(1);
     expect(result.elements_not_asked).toBe(4);
+  });
+
+  it('returns incomplete for natural completion with partial coverage', () => {
+    const attempts = makeAttempts([
+      { code: 'PA.I.A.K1', score: 'satisfactory' },
+    ]);
+    const result = computeExamResult(attempts, 5, 'all_tasks_covered');
+    expect(result.grade).toBe('incomplete');
   });
 
   it('returns incomplete for expired exams', () => {
@@ -619,5 +631,142 @@ describe('computeExamResult', () => {
     const result = computeExamResult(attempts, 4, 'all_tasks_covered');
     expect(result.grade).toBe('unsatisfactory');
     expect(result.score_percentage).toBeCloseTo(0.68, 2);
+  });
+});
+
+// ================================================================
+// Structured Response Chunk Extraction
+// ================================================================
+
+describe('extractStructuredChunks', () => {
+  it('extracts all 3 fields from well-formed JSON', () => {
+    const json = `{"feedback_quick": "That's right.", "feedback_detail": "You covered the key points.", "question": "Let's move on. What about VFR minimums?"}`;
+    const chunks = extractStructuredChunks(json, new Set());
+    expect(chunks).toHaveLength(3);
+    expect(chunks[0]).toEqual({ field: 'feedback_quick', text: "That's right." });
+    expect(chunks[1]).toEqual({ field: 'feedback_detail', text: 'You covered the key points.' });
+    expect(chunks[2]).toEqual({ field: 'question', text: "Let's move on. What about VFR minimums?" });
+    expect(chunks.map(c => c.field)).toEqual(['feedback_quick', 'feedback_detail', 'question']);
+  });
+
+  it('skips already-emitted fields', () => {
+    const json = `{"feedback_quick": "Good.", "feedback_detail": "Nice.", "question": "Next?"}`;
+    const already = new Set(['feedback_quick', 'feedback_detail']);
+    const chunks = extractStructuredChunks(json, already);
+    expect(chunks).toHaveLength(1);
+    expect(chunks[0].field).toBe('question');
+    expect(chunks[0].text).toBe('Next?');
+  });
+
+  it('handles escaped quotes inside values', () => {
+    const json = `{"feedback_quick": "He said \\"good job\\" to you.", "feedback_detail": "Detail.", "question": "Question?"}`;
+    const chunks = extractStructuredChunks(json, new Set());
+    expect(chunks[0].text).toBe('He said "good job" to you.');
+  });
+
+  it('handles escaped newlines inside values', () => {
+    const json = `{"feedback_quick": "Line 1.\\nLine 2.", "feedback_detail": "Ok.", "question": "Q?"}`;
+    const chunks = extractStructuredChunks(json, new Set());
+    expect(chunks[0].text).toBe('Line 1.\nLine 2.');
+  });
+
+  it('handles escaped backslashes inside values', () => {
+    const json = `{"feedback_quick": "Path is C:\\\\Users\\\\test.", "feedback_detail": "Ok.", "question": "Q?"}`;
+    const chunks = extractStructuredChunks(json, new Set());
+    expect(chunks[0].text).toBe('Path is C:\\Users\\test.');
+  });
+
+  it('returns empty array for partial JSON with no complete field', () => {
+    const partial = `{"feedback_quick": "This is not fini`;
+    const chunks = extractStructuredChunks(partial, new Set());
+    expect(chunks).toHaveLength(0);
+  });
+
+  it('extracts only completed fields from partial streaming JSON', () => {
+    const partial = `{"feedback_quick": "Done.", "feedback_detail": "Also done.", "question": "Not fini`;
+    const chunks = extractStructuredChunks(partial, new Set());
+    expect(chunks).toHaveLength(2);
+    expect(chunks[0].field).toBe('feedback_quick');
+    expect(chunks[1].field).toBe('feedback_detail');
+  });
+
+  it('handles model output that is not JSON at all', () => {
+    const nonJson = 'Sure, let me ask you about VFR weather minimums...';
+    const chunks = extractStructuredChunks(nonJson, new Set());
+    expect(chunks).toHaveLength(0);
+  });
+
+  it('handles JSON with extra whitespace between field and value', () => {
+    const json = `{  "feedback_quick"  :  "Spaced."  , "feedback_detail":"Tight.","question"  :  "Q?" }`;
+    const chunks = extractStructuredChunks(json, new Set());
+    expect(chunks).toHaveLength(3);
+    expect(chunks[0].text).toBe('Spaced.');
+    expect(chunks[1].text).toBe('Tight.');
+  });
+});
+
+describe('buildPlainTextFromChunks', () => {
+  it('joins all 3 chunks with double newline', () => {
+    const chunkTexts: Record<string, string> = {
+      feedback_quick: 'Good.',
+      feedback_detail: 'You got it right.',
+      question: 'What about Class B airspace?',
+    };
+    const result = buildPlainTextFromChunks('{}', chunkTexts);
+    expect(result).toBe('Good.\n\nYou got it right.\n\nWhat about Class B airspace?');
+  });
+
+  it('fills missing chunks from full JSON parse', () => {
+    const fullJson = `{"feedback_quick": "Nice.", "feedback_detail": "Detail text.", "question": "Next question?"}`;
+    const chunkTexts: Record<string, string> = { feedback_quick: 'Nice.' };
+    const result = buildPlainTextFromChunks(fullJson, chunkTexts);
+    expect(result).toBe('Nice.\n\nDetail text.\n\nNext question?');
+    expect(chunkTexts.feedback_detail).toBe('Detail text.');
+    expect(chunkTexts.question).toBe('Next question?');
+  });
+
+  it('does full JSON parse when no chunks were extracted', () => {
+    const fullJson = `{"feedback_quick": "A.", "feedback_detail": "B.", "question": "C?"}`;
+    const chunkTexts: Record<string, string> = {};
+    const result = buildPlainTextFromChunks(fullJson, chunkTexts);
+    expect(result).toBe('A.\n\nB.\n\nC?');
+  });
+
+  it('strips markdown code blocks before parsing', () => {
+    const wrapped = '```json\n{"feedback_quick": "A.", "feedback_detail": "B.", "question": "C?"}\n```';
+    const chunkTexts: Record<string, string> = {};
+    const result = buildPlainTextFromChunks(wrapped, chunkTexts);
+    expect(result).toBe('A.\n\nB.\n\nC?');
+  });
+
+  it('falls back to raw fullText when JSON is completely malformed', () => {
+    const garbage = 'This is not JSON at all, just the examiner talking.';
+    const chunkTexts: Record<string, string> = {};
+    const result = buildPlainTextFromChunks(garbage, chunkTexts);
+    expect(result).toBe(garbage);
+  });
+
+  it('falls back to raw fullText when partial chunks exist and JSON parse fails', () => {
+    const malformed = '{"feedback_quick": "Good." broken json here';
+    const chunkTexts: Record<string, string> = { feedback_quick: 'Good.' };
+    const result = buildPlainTextFromChunks(malformed, chunkTexts);
+    // Only has feedback_quick, JSON parse fails for rest
+    expect(result).toBe('Good.');
+  });
+
+  it('returns all 3 chunks when all were already extracted (no parse needed)', () => {
+    const chunkTexts: Record<string, string> = {
+      feedback_quick: 'X.',
+      feedback_detail: 'Y.',
+      question: 'Z?',
+    };
+    const result = buildPlainTextFromChunks('irrelevant', chunkTexts);
+    expect(result).toBe('X.\n\nY.\n\nZ?');
+  });
+});
+
+describe('STRUCTURED_CHUNK_FIELDS', () => {
+  it('contains exactly 3 fields in the correct order', () => {
+    expect(STRUCTURED_CHUNK_FIELDS).toEqual(['feedback_quick', 'feedback_detail', 'question']);
   });
 });

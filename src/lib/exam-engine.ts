@@ -6,6 +6,9 @@ import {
   selectRandomTask,
   buildSystemPrompt,
   STRUCTURED_RESPONSE_INSTRUCTION,
+  STRUCTURED_CHUNK_FIELDS,
+  extractStructuredChunks,
+  buildPlainTextFromChunks,
 } from './exam-logic';
 import type { AircraftClass, Rating } from '@/types/database';
 import { searchChunks, formatChunksForPrompt, getImagesForChunks, type ChunkSearchResult, type ImageResult } from './rag-retrieval';
@@ -346,6 +349,20 @@ export async function generateExaminerTurnStreaming(
   // Append structured response instruction when chunked TTS is requested
   const structuredInstr = structuredResponse ? STRUCTURED_RESPONSE_INSTRUCTION : '';
 
+  // When structured JSON response is requested, remove the conflicting free-form-only instructions.
+  // The prompt ends with TWO lines that contradict JSON output:
+  //   1. "IMPORTANT: Respond ONLY as the examiner. No JSON, metadata, or system text."
+  //   2. "NEVER include stage directions... only output words the examiner would actually say."
+  // Both lines must be stripped — they tell Claude to avoid JSON and output only spoken words,
+  // which directly contradicts the STRUCTURED_RESPONSE_INSTRUCTION requiring JSON output.
+  let composedSystem = systemPrompt + personaFragment + nameInstruction + ragSection + structuredInstr;
+  if (structuredResponse) {
+    composedSystem = composedSystem.replace(
+      /IMPORTANT: Respond ONLY as the examiner\.[^\n]*\n?NEVER include stage directions[^\n]*\n?/,
+      ''
+    );
+  }
+
   const messages = history.map((msg) => ({
     role: msg.role === 'examiner' ? 'assistant' as const : 'user' as const,
     content: msg.text,
@@ -353,8 +370,8 @@ export async function generateExaminerTurnStreaming(
 
   const stream = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 600, // Slightly more for JSON overhead
-    system: systemPrompt + personaFragment + nameInstruction + ragSection + structuredInstr,
+    max_tokens: 800, // Extra headroom for JSON framing + escaped characters
+    system: composedSystem,
     stream: true,
     messages:
       messages.length === 0
@@ -372,7 +389,6 @@ export async function generateExaminerTurnStreaming(
       let fullText = '';
 
       // Chunk extraction state for structured response mode
-      const CHUNK_FIELDS = ['feedback_quick', 'feedback_detail', 'question'] as const;
       const emittedChunks = new Set<string>();
       const chunkTexts: Record<string, string> = {};
 
@@ -383,24 +399,11 @@ export async function generateExaminerTurnStreaming(
 
             if (structuredResponse) {
               // Structured mode: detect completed JSON fields, emit chunk events
-              for (const field of CHUNK_FIELDS) {
-                if (emittedChunks.has(field)) continue;
-                // Match a completed JSON string value: "field": "value"
-                // Handles escaped quotes and other escape sequences within the value
-                const regex = new RegExp(`"${field}"\\s*:\\s*"((?:[^"\\\\]|\\\\[\\s\\S])*)"`);
-                const match = fullText.match(regex);
-                if (match) {
-                  // Properly unescape the JSON string value
-                  let value: string;
-                  try {
-                    value = JSON.parse(`"${match[1]}"`);
-                  } catch {
-                    value = match[1].replace(/\\"/g, '"').replace(/\\n/g, '\n').replace(/\\\\/g, '\\');
-                  }
-                  chunkTexts[field] = value;
-                  emittedChunks.add(field);
-                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: field, text: value })}\n\n`));
-                }
+              const newChunks = extractStructuredChunks(fullText, emittedChunks);
+              for (const chunk of newChunks) {
+                chunkTexts[chunk.field] = chunk.text;
+                emittedChunks.add(chunk.field);
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: chunk.field, text: chunk.text })}\n\n`));
               }
             } else {
               // Traditional mode: emit raw token events
@@ -412,51 +415,22 @@ export async function generateExaminerTurnStreaming(
 
         // Build the plain-text examiner message
         let plainText: string;
-        if (structuredResponse && emittedChunks.size > 0) {
-          // Concatenate chunk texts into readable plain text
-          plainText = CHUNK_FIELDS
-            .map(f => chunkTexts[f])
-            .filter(Boolean)
-            .join('\n\n');
-
-          // If some chunks were not extracted, try full JSON parse as fallback
-          if (emittedChunks.size < 3) {
-            try {
-              const cleaned = fullText.replace(/```json\n?|\n?```/g, '').trim();
-              const parsed = JSON.parse(cleaned);
-              for (const field of CHUNK_FIELDS) {
-                if (!emittedChunks.has(field) && parsed[field]) {
-                  chunkTexts[field] = parsed[field];
-                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: field, text: parsed[field] })}\n\n`));
-                }
-              }
-              plainText = CHUNK_FIELDS
-                .map(f => chunkTexts[f])
-                .filter(Boolean)
-                .join('\n\n');
-            } catch {
-              // JSON parse failed, use raw text as fallback
-              plainText = fullText;
+        if (structuredResponse) {
+          // Emit any chunks missed during streaming (fallback full JSON parse)
+          const missingChunks = buildPlainTextFromChunks(fullText, chunkTexts);
+          // Emit late-discovered chunks that weren't sent during streaming
+          for (const field of STRUCTURED_CHUNK_FIELDS) {
+            if (!emittedChunks.has(field) && chunkTexts[field]) {
+              emittedChunks.add(field);
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: field, text: chunkTexts[field] })}\n\n`));
             }
           }
-        } else if (structuredResponse) {
-          // Structured mode but no chunks extracted — try full parse
-          try {
-            const cleaned = fullText.replace(/```json\n?|\n?```/g, '').trim();
-            const parsed = JSON.parse(cleaned);
-            for (const field of CHUNK_FIELDS) {
-              if (parsed[field]) {
-                chunkTexts[field] = parsed[field];
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: field, text: parsed[field] })}\n\n`));
-              }
-            }
-            plainText = CHUNK_FIELDS
-              .map(f => chunkTexts[f])
-              .filter(Boolean)
-              .join('\n\n');
-          } catch {
-            plainText = fullText;
+          // Safety net: if NO chunks were extracted at all (model ignored JSON instruction),
+          // emit the entire plain text as a single feedback_quick chunk so the client still receives it.
+          if (emittedChunks.size === 0 && missingChunks) {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: 'feedback_quick', text: missingChunks })}\n\n`));
           }
+          plainText = missingChunks;
         } else {
           plainText = fullText;
         }
@@ -478,7 +452,7 @@ export async function generateExaminerTurnStreaming(
 
         // Legacy onComplete callback (fire-and-forget, non-critical)
         if (onComplete) {
-          Promise.resolve(onComplete(fullText)).catch((err: unknown) => console.error('onComplete callback error:', err));
+          Promise.resolve(onComplete(plainText)).catch((err: unknown) => console.error('onComplete callback error:', err));
         }
 
         // If we have a parallel assessment promise, wait for it and send the result.

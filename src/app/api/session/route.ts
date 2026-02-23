@@ -148,13 +148,15 @@ export async function POST(request: NextRequest) {
         const plannerState = (examRow?.metadata as Record<string, unknown>)?.plannerState as { queue: string[] } | undefined;
         const totalElements = plannerState?.queue?.length || 0;
 
-        if (attempts && totalElements > 0) {
+        if (attempts && attempts.length > 0) {
           const attemptData = attempts.map(a => ({
             element_code: a.element_code,
             score: a.score as 'satisfactory' | 'unsatisfactory' | 'partial',
             area: a.element_code.split('.')[1],
           }));
-          const result = computeExamResult(attemptData, totalElements, 'user_ended');
+          // Use planner queue length if available, otherwise fall back to number of attempts
+          const effectiveTotal = totalElements > 0 ? totalElements : attemptData.length;
+          const result = computeExamResult(attemptData, effectiveTotal, 'user_ended');
           updateData.result = result;
         } else {
           console.warn(`Exam grading skipped for session ${sessionId}: attempts=${attempts?.length ?? 'null'}, totalElements=${totalElements}`);

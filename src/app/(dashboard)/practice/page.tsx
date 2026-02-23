@@ -178,7 +178,7 @@ export default function PracticePage() {
     speak: (text) => voice.speak(text),
     onSentenceStart: (sentence) => {
       const isFirst = !sentenceRevealedRef.current;
-      sentenceRevealedRef.current += sentence;
+      sentenceRevealedRef.current += (isFirst ? '' : '\n\n') + sentence;
       const revealed = sentenceRevealedRef.current;
 
       if (isFirst) {
@@ -670,6 +670,7 @@ export default function PracticePage() {
         const decoder = new TextDecoder();
         let buffer = '';
         let examinerMsg = '';
+        let chunksReceived = 0;
         let receivedAssessment: Assessment | null = null;
         let receivedSources: Source[] | undefined;
         let paragraphsReceived = 0;
@@ -707,6 +708,9 @@ export default function PracticePage() {
                 // Server-side chunk event (structured 3-chunk response mode)
                 // Enqueue the complete chunk for TTS — text displayed via onSentenceStart
                 sentenceTTS.enqueue(parsed.text);
+                chunksReceived++;
+                // Also accumulate into examinerMsg for fallback if stream drops before examinerMessage event
+                examinerMsg += (examinerMsg ? '\n\n' : '') + parsed.text;
               } else if (parsed.token) {
                 // Incremental token — append to examiner message
                 examinerMsg += parsed.token;

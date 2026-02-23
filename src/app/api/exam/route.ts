@@ -320,7 +320,8 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Support streaming for start
+      // Support streaming for start — no chunkedResponse here intentionally:
+      // the opening examiner question has no student feedback to split into 3 chunks.
       if (stream) {
         const { stream: readableStream, fullTextPromise: startTextPromise } = await generateExaminerTurnStreaming(task, [], undefined, undefined, undefined, undefined, undefined, undefined, undefined, personaId, studentName);
 

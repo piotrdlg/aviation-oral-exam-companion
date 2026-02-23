@@ -57,6 +57,14 @@ HeyDPE is a production-quality FAA oral exam simulator built on Next.js 16 + Sup
 
 ---
 
+## Staging Test Status
+
+| Date | Report | Result |
+|------|--------|--------|
+| 2026-02-20 | [[2026-02-20-staging-e2e-smoke]] | REVIEW — 4/5 automated checks pass, awaiting human smoke test |
+
+---
+
 ## Notes
 
 | # | Title | Description |

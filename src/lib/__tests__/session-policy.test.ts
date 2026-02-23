@@ -380,7 +380,7 @@ describe('update — grading', () => {
     expect(body.result.grade).toBe('unsatisfactory');
   });
 
-  it('grades user_ended against elements asked (satisfactory with partial coverage)', async () => {
+  it('grades against elements asked when user ends exam early', async () => {
     const attemptsQ = q({
       data: [{ element_code: 'PA.I.A.K1', score: 'satisfactory' }],
     });
@@ -395,7 +395,8 @@ describe('update — grading', () => {
 
     const res = await POST(postReq({ action: 'update', sessionId: 'sess-4', status: 'completed' }));
     const upd = updateQ.update.mock.calls[0][0];
-    expect(upd.result.grade).toBe('satisfactory'); // 1/1 asked = 100% >= 70%
+    // User-ended exams grade against what was asked, not the full set
+    expect(upd.result.grade).toBe('satisfactory');
     expect(upd.result.elements_asked).toBe(1);
     expect(upd.result.elements_not_asked).toBe(2);
 
@@ -426,7 +427,7 @@ describe('update — grading', () => {
     expect(body.result).toBeNull();
   });
 
-  it('skips grading when planner state is missing', async () => {
+  it('grades using attempt count as fallback when planner state is missing', async () => {
     const attemptsQ = q({
       data: [{ element_code: 'PA.I.A.K1', score: 'satisfactory' }],
     });
@@ -439,11 +440,14 @@ describe('update — grading', () => {
 
     const res = await POST(postReq({ action: 'update', sessionId: 'sess-3', status: 'completed' }));
     const upd = updateQ.update.mock.calls[0][0];
-    expect(upd.result).toBeUndefined();
+    // Falls back to attempts.length as totalElements
+    expect(upd.result).toBeDefined();
+    expect(upd.result.grade).toBe('satisfactory');
+    expect(upd.result.elements_asked).toBe(1);
 
     const body = await res.json();
     expect(body.ok).toBe(true);
-    expect(body.result).toBeNull();
+    expect(body.result.grade).toBe('satisfactory');
   });
 
   it('returns result: null for non-completion updates', async () => {

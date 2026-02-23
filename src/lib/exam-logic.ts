@@ -217,6 +217,104 @@ RESPONSE FORMAT — CRITICAL: You MUST respond with a JSON object containing exa
 All three fields are REQUIRED. Each field value must be a plain text string (no nested JSON, no markdown). The text will be read aloud by TTS — write naturally as a DPE would speak.`;
 
 // ================================================================
+// Structured Response Chunk Extraction
+// ================================================================
+
+export const STRUCTURED_CHUNK_FIELDS = ['feedback_quick', 'feedback_detail', 'question'] as const;
+export type StructuredChunkField = typeof STRUCTURED_CHUNK_FIELDS[number];
+
+export interface ExtractedChunk {
+  field: StructuredChunkField;
+  text: string;
+}
+
+/**
+ * Extract completed JSON string fields from a partially-streamed JSON buffer.
+ * Uses regex to detect `"field": "value"` patterns with proper escape handling.
+ *
+ * @param fullText - The accumulated streaming text so far (raw JSON being built)
+ * @param alreadyEmitted - Fields already extracted in previous calls (skipped)
+ * @returns Array of newly extracted chunks (may be empty)
+ */
+export function extractStructuredChunks(
+  fullText: string,
+  alreadyEmitted: Set<string>
+): ExtractedChunk[] {
+  const results: ExtractedChunk[] = [];
+
+  for (const field of STRUCTURED_CHUNK_FIELDS) {
+    if (alreadyEmitted.has(field)) continue;
+
+    // Match a completed JSON string value: "field": "value"
+    // Handles escaped quotes and other escape sequences within the value
+    const regex = new RegExp(`"${field}"\\s*:\\s*"((?:[^"\\\\]|\\\\[\\s\\S])*)"`);
+    const match = fullText.match(regex);
+    if (match) {
+      let value: string;
+      try {
+        value = JSON.parse(`"${match[1]}"`);
+      } catch {
+        // Manual unescape fallback for malformed escape sequences
+        value = match[1].replace(/\\"/g, '"').replace(/\\n/g, '\n').replace(/\\\\/g, '\\');
+      }
+      results.push({ field, text: value });
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Build plain text from extracted chunk texts, joining with paragraph separators.
+ * Falls back to full JSON parse if some chunks were missed during streaming.
+ *
+ * @param fullText - The complete raw JSON text from the model
+ * @param chunkTexts - Already-extracted chunk texts (may be incomplete)
+ * @returns Plain text suitable for display and transcript persistence
+ */
+export function buildPlainTextFromChunks(
+  fullText: string,
+  chunkTexts: Record<string, string>
+): string {
+  const emittedCount = Object.keys(chunkTexts).length;
+
+  if (emittedCount > 0 && emittedCount < 3) {
+    // Some chunks extracted — try full JSON parse for the rest
+    try {
+      const cleaned = fullText.replace(/```json\n?|\n?```/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+      for (const field of STRUCTURED_CHUNK_FIELDS) {
+        if (!chunkTexts[field] && parsed[field]) {
+          chunkTexts[field] = parsed[field];
+        }
+      }
+    } catch {
+      // JSON parse failed — use what we have
+    }
+  } else if (emittedCount === 0) {
+    // No chunks extracted during streaming — try full parse
+    try {
+      const cleaned = fullText.replace(/```json\n?|\n?```/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+      for (const field of STRUCTURED_CHUNK_FIELDS) {
+        if (parsed[field]) {
+          chunkTexts[field] = parsed[field];
+        }
+      }
+    } catch {
+      return fullText; // Total fallback: raw text
+    }
+  }
+
+  const text = STRUCTURED_CHUNK_FIELDS
+    .map(f => chunkTexts[f])
+    .filter(Boolean)
+    .join('\n\n');
+
+  return text || fullText;
+}
+
+// ================================================================
 // Planner Pure Functions
 // ================================================================
 
