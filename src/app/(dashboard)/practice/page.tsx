@@ -1233,6 +1233,7 @@ export default function PracticePage() {
             onComplete={(config) => {
               setPreferredRating(config.rating);
               setPreferredAircraftClass(config.aircraftClass);
+              setPreferredVoiceEnabled(config.voiceEnabled);
               if (config.displayName) setUserName(config.displayName);
               setOnboardingCompleted(true);
               setShowWizard(false);
