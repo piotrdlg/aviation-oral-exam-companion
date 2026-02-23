@@ -9,6 +9,7 @@ import {
   STRUCTURED_CHUNK_FIELDS,
   extractStructuredChunks,
   buildPlainTextFromChunks,
+  PARAGRAPH_STRUCTURE_INSTRUCTION,
 } from './exam-logic';
 import type { AircraftClass, Rating } from '@/types/database';
 import { searchChunks, formatChunksForPrompt, getImagesForChunks, type ChunkSearchResult, type ImageResult } from './rag-retrieval';
@@ -368,10 +369,17 @@ export async function generateExaminerTurnStreaming(
     content: msg.text,
   }));
 
+  // Append paragraph structure instruction when responding to student answers
+  // (not on opening questions where messages is empty).
+  // Placed BEFORE ragSection so it's not buried after thousands of tokens of reference material.
+  // When NOT in structured JSON mode, append brevity instruction for paragraph TTS streaming
+  const paragraphInstruction = (!structuredResponse && messages.length > 0) ? PARAGRAPH_STRUCTURE_INSTRUCTION : '';
+  const finalSystem = composedSystem + paragraphInstruction;
+
   const stream = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 800, // Extra headroom for JSON framing + escaped characters
-    system: composedSystem,
+    max_tokens: structuredResponse ? 800 : (messages.length > 0 ? 250 : 500),
+    system: finalSystem,
     stream: true,
     messages:
       messages.length === 0
@@ -392,6 +400,15 @@ export async function generateExaminerTurnStreaming(
       const emittedChunks = new Set<string>();
       const chunkTexts: Record<string, string> = {};
 
+      // Exactly-3-paragraph detection for per-paragraph TTS:
+      //   P1 = first sentence (force-split via regex)
+      //   P2 = content up to first \n\n after P1
+      //   P3 = everything remaining (emitted when stream ends)
+      let p1Emitted = false;
+      let p2Emitted = false;
+      let lastEmitBoundary = 0;
+      const isResponseToStudent = messages.length > 0;
+
       try {
         for await (const event of stream) {
           if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
@@ -409,7 +426,43 @@ export async function generateExaminerTurnStreaming(
               // Traditional mode: emit raw token events
               const data = JSON.stringify({ token: event.delta.text });
               controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+
+              // Paragraph detection (only when responding to student answers)
+              if (isResponseToStudent) {
+                // Phase 1: Force-split first sentence as P1 (quick reaction)
+                if (!p1Emitted && fullText.length >= 10) {
+                  const match = fullText.match(/^(.{10,}?[.!?])(\s)/);
+                  if (match) {
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ paragraph: match[1].trim() })}\n\n`));
+                    p1Emitted = true;
+                    lastEmitBoundary = match[1].length + match[2].length;
+                  }
+                }
+
+                // Phase 2: Detect FIRST \n\n after P1 → emit as P2 (only one)
+                if (p1Emitted && !p2Emitted) {
+                  const remaining = fullText.slice(lastEmitBoundary);
+                  const idx = remaining.indexOf('\n\n');
+                  if (idx !== -1) {
+                    const para = remaining.slice(0, idx).trim();
+                    if (para) {
+                      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ paragraph: para })}\n\n`));
+                    }
+                    p2Emitted = true;
+                    lastEmitBoundary += idx + 2;
+                  }
+                }
+                // After P2, stop detecting — P3 is emitted when stream ends
+              }
             }
+          }
+        }
+
+        // After stream ends: emit everything remaining as P3 (non-structured mode only)
+        if (!structuredResponse && isResponseToStudent) {
+          const finalPara = fullText.slice(lastEmitBoundary).trim();
+          if (finalPara) {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ paragraph: finalPara })}\n\n`));
           }
         }
 

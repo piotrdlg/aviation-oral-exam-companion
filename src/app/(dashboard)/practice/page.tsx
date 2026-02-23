@@ -891,12 +891,13 @@ export default function PracticePage() {
 
         if (voiceEnabledRef.current && examinerMsg) {
           if (paragraphsReceived > 0) {
-            // Paragraphs already displayed + TTS queued — just ensure final authoritative text is set
+            // Paragraphs already displayed + TTS queued — use paragraphText (which preserves
+            // the force-split paragraph structure) instead of raw examinerMsg
             setMessages((prev) => {
               const updated = [...prev];
               const lastIdx = updated.length - 1;
               if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
-                updated[lastIdx] = { ...updated[lastIdx], text: examinerMsg };
+                updated[lastIdx] = { ...updated[lastIdx], text: paragraphText };
               }
               return updated;
             });
@@ -1676,7 +1677,11 @@ export default function PracticePage() {
                   </button>
                 )}
               </div>
-              <p className="text-base text-c-text leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+              <div className="text-base text-c-text leading-relaxed">
+                {msg.text.split('\n\n').map((para, idx) => (
+                  <p key={idx} className={idx > 0 ? 'mt-3' : ''}>{para}</p>
+                ))}
+              </div>
 
               {/* Reference images (feature-flagged) */}
               {msg.images && msg.images.length > 0 && (

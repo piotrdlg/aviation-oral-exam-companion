@@ -216,6 +216,15 @@ RESPONSE FORMAT — CRITICAL: You MUST respond with a JSON object containing exa
 
 All three fields are REQUIRED. Each field value must be a plain text string (no nested JSON, no markdown). The text will be read aloud by TTS — write naturally as a DPE would speak.`;
 
+/**
+ * Paragraph structure instruction appended to the system prompt when responding
+ * to student answers (not on opening questions) in non-structured mode.
+ * Enforces brevity for per-paragraph TTS streaming.
+ */
+export const PARAGRAPH_STRUCTURE_INSTRUCTION = `
+
+RESPONSE LENGTH LIMIT: Maximum 60 words. React in one sentence, give 1-2 sentences of feedback, end with one question. Do not teach, list, or lecture — a DPE probes.`;
+
 // ================================================================
 // Structured Response Chunk Extraction
 // ================================================================
