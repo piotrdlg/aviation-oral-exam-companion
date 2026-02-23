@@ -3,8 +3,8 @@ import type { Theme } from '@/types/database';
 export const THEMES: { id: Theme; label: string; desc: string; accent: string }[] = [
   { id: 'cockpit', label: 'Cockpit', desc: 'Amber instruments on dark panel', accent: '#f5a623' },
   { id: 'glass', label: 'Glass Cockpit', desc: 'Cool blue modern avionics', accent: '#3B82F6' },
-  { id: 'radar', label: 'Radar', desc: 'Green phosphor night scope', accent: '#4ADE80' },
-  { id: 'neon', label: 'Neon', desc: 'Cyan glow cyberpunk edge', accent: '#22D3EE' },
+  { id: 'sectional', label: 'Sectional', desc: 'Warm VFR chart tones', accent: '#9A4409' },
+  { id: 'briefing', label: 'Briefing', desc: 'Cool pre-flight readout', accent: '#1A56A0' },
 ];
 
 export function setTheme(theme: Theme): void {
@@ -23,12 +23,12 @@ export function setTheme(theme: Theme): void {
 
 export function getTheme(): Theme {
   const attr = document.documentElement.dataset.theme;
-  if (attr && ['cockpit', 'glass', 'radar', 'neon'].includes(attr)) {
+  if (attr && ['cockpit', 'glass', 'sectional', 'briefing'].includes(attr)) {
     return attr as Theme;
   }
   try {
     const stored = localStorage.getItem('theme');
-    if (stored && ['cockpit', 'glass', 'radar', 'neon'].includes(stored)) {
+    if (stored && ['cockpit', 'glass', 'sectional', 'briefing'].includes(stored)) {
       return stored as Theme;
     }
   } catch {
