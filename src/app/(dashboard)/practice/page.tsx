@@ -125,7 +125,7 @@ export default function PracticePage() {
     aircraft_class: string;
     metadata: Record<string, unknown>;
   } | null>(null);
-  const [resumeVoiceToggle, setResumeVoiceToggle] = useState(true);
+  const [preferredVoiceEnabled, setPreferredVoiceEnabled] = useState(true);
   // Exam results modal state
   const [examResult, setExamResult] = useState<ExamResult | null>(null);
   const [gradingInProgress, setGradingInProgress] = useState(false);
@@ -148,6 +148,9 @@ export default function PracticePage() {
   const pendingFullTextRef = useRef<string | null>(null);
   // When true, user is manually editing the textarea — don't overwrite with STT transcript
   const userEditingRef = useRef(false);
+  // TTS paragraph queue for per-paragraph playback during streaming
+  const ttsQueueRef = useRef<string[]>([]);
+  const ttsQueueActiveRef = useRef(false);
 
   // Unified voice provider hook (handles STT + TTS for all tiers)
   const voice = useVoiceProvider({ tier, sessionId: sessionId || undefined });
@@ -165,6 +168,7 @@ export default function PracticePage() {
         if (data?.preferredTheme && data.preferredTheme !== 'cockpit') {
           setTheme(data.preferredTheme);
         }
+        if (data?.voiceEnabled !== undefined) setPreferredVoiceEnabled(data.voiceEnabled);
         setPrefsLoaded(true);
         // Populate avatar + persona for message bubbles (Task 18)
         if (data?.displayName) setUserName(data.displayName);
@@ -397,6 +401,12 @@ export default function PracticePage() {
     }
   }, [voice.error, voiceEnabled, sessionActive, flushReveal]);
 
+  // Cancel any in-progress paragraph TTS queue (barge-in, end session, etc.)
+  const cancelTTSQueue = useCallback(() => {
+    ttsQueueRef.current = [];
+    ttsQueueActiveRef.current = false;
+  }, []);
+
   // Play examiner's message via the voice provider
   const speakText = useCallback(async (text: string) => {
     if (!voiceEnabledRef.current) return;
@@ -592,6 +602,9 @@ export default function PracticePage() {
         let examinerMsg = '';
         let receivedAssessment: Assessment | null = null;
         let receivedSources: Source[] | undefined;
+        let paragraphsReceived = 0;
+        let paragraphText = '';
+        ttsQueueRef.current = []; // Reset queue for new response
 
         if (!voiceEnabledRef.current) {
           // Voice OFF: show placeholder and stream tokens visually
@@ -633,7 +646,47 @@ export default function PracticePage() {
                     return updated;
                   });
                 }
-                // Voice ON: accumulate silently, reveal after stream completes
+                // Voice ON: accumulate silently; paragraphs handle display + TTS
+              } else if (parsed.paragraph && voiceEnabledRef.current) {
+                // Paragraph-level TTS: display + queue TTS immediately per paragraph
+                paragraphsReceived++;
+                paragraphText += (paragraphText ? '\n\n' : '') + parsed.paragraph;
+
+                if (paragraphsReceived === 1) {
+                  // First paragraph: show message, hide loading, stop listening
+                  if (voice.isListening) voice.stopListening();
+                  setMessages((prev) => [...prev, { role: 'examiner', text: paragraphText }]);
+                  setLoading(false);
+                } else {
+                  // Subsequent paragraphs: update message text
+                  const currentText = paragraphText;
+                  setMessages((prev) => {
+                    const updated = [...prev];
+                    const lastIdx = updated.length - 1;
+                    if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
+                      updated[lastIdx] = { ...updated[lastIdx], text: currentText };
+                    }
+                    return updated;
+                  });
+                }
+
+                // Queue paragraph for sequential TTS playback
+                ttsQueueRef.current.push(parsed.paragraph);
+                if (!ttsQueueActiveRef.current) {
+                  ttsQueueActiveRef.current = true;
+                  (async () => {
+                    while (ttsQueueRef.current.length > 0) {
+                      const text = ttsQueueRef.current.shift()!;
+                      try {
+                        await voice.speak(text);
+                      } catch (err) {
+                        console.error('Paragraph TTS error:', err);
+                        break; // Stop queue on error (likely barge-in abort)
+                      }
+                    }
+                    ttsQueueActiveRef.current = false;
+                  })();
+                }
               } else if (parsed.examinerMessage) {
                 // Full message event — use as authoritative final text
                 examinerMsg = parsed.examinerMessage;
@@ -757,11 +810,23 @@ export default function PracticePage() {
         }
 
         if (voiceEnabledRef.current && examinerMsg) {
-          // Voice ON: add placeholder with empty text, reveal when audio starts
-          setMessages((prev) => [...prev, { role: 'examiner', text: '' }]);
-          setLoading(false);
-          pendingFullTextRef.current = examinerMsg;
-          speakText(examinerMsg);
+          if (paragraphsReceived > 0) {
+            // Paragraphs already displayed + TTS queued — just ensure final authoritative text is set
+            setMessages((prev) => {
+              const updated = [...prev];
+              const lastIdx = updated.length - 1;
+              if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
+                updated[lastIdx] = { ...updated[lastIdx], text: examinerMsg };
+              }
+              return updated;
+            });
+          } else {
+            // No paragraphs received (single-paragraph response) — fallback to full-text TTS
+            setMessages((prev) => [...prev, { role: 'examiner', text: '' }]);
+            setLoading(false);
+            pendingFullTextRef.current = examinerMsg;
+            speakText(examinerMsg);
+          }
         }
       } else {
         // Fallback: non-streaming JSON response
@@ -858,6 +923,7 @@ export default function PracticePage() {
   /** Grade and end the current in-session exam, showing the results modal. */
   async function gradeSession() {
     flushReveal();
+    cancelTTSQueue();
     voice.stopSpeaking();
     voice.stopListening();
     setGradingInProgress(true);
@@ -911,6 +977,7 @@ export default function PracticePage() {
   /** Pause the current exam — saves state and returns to pre-session. */
   async function pauseSession() {
     flushReveal();
+    cancelTTSQueue();
     voice.stopSpeaking();
     voice.stopListening();
 
@@ -1004,9 +1071,9 @@ export default function PracticePage() {
     };
     if (!metadata.plannerState || !metadata.sessionConfig) return;
 
-    // Use the voice toggle from the resume card
-    setVoiceEnabled(resumeVoiceToggle);
-    voiceEnabledRef.current = resumeVoiceToggle;
+    // Use the persistent voice preference from Settings
+    setVoiceEnabled(preferredVoiceEnabled);
+    voiceEnabledRef.current = preferredVoiceEnabled;
 
     setSessionActive(true);
     setLoading(true);
@@ -1090,7 +1157,7 @@ export default function PracticePage() {
           if (data.elementCode) setCurrentElement(data.elementCode);
           if (data.plannerState) setPlannerState(data.plannerState);
           const examinerMsg = data.examinerMessage;
-          if (resumeVoiceToggle) {
+          if (preferredVoiceEnabled) {
             setMessages((prev) => [...prev, { role: 'examiner', text: '' }]);
             pendingFullTextRef.current = examinerMsg;
             speakText(examinerMsg);
@@ -1116,7 +1183,7 @@ export default function PracticePage() {
       difficulty: 'mixed',
       selectedAreas: [],
       selectedTasks: [],
-      voiceEnabled: false,
+      voiceEnabled: preferredVoiceEnabled,
     });
   }
 
@@ -1271,15 +1338,6 @@ export default function PracticePage() {
                   </div>
                   <div className="flex flex-col gap-2 items-end">
                     <div className="flex items-center gap-3">
-                      <label className="flex items-center gap-1.5 text-xs text-c-muted font-mono cursor-pointer select-none uppercase">
-                        <input
-                          type="checkbox"
-                          checked={resumeVoiceToggle}
-                          onChange={(e) => setResumeVoiceToggle(e.target.checked)}
-                          className="rounded border-c-border bg-c-bezel text-c-cyan focus:ring-c-cyan w-3.5 h-3.5"
-                        />
-                        VOICE
-                      </label>
                       <button
                         onClick={() => resumeSession(resumableSession)}
                         disabled={loading || gradingInProgress}
@@ -1332,6 +1390,7 @@ export default function PracticePage() {
               preferredRating={preferredRating}
               preferredAircraftClass={preferredAircraftClass}
               prefsLoaded={prefsLoaded}
+              preferredVoiceEnabled={preferredVoiceEnabled}
             />
 
             {/* Disclaimer — always visible but low visual weight */}
@@ -1646,6 +1705,7 @@ export default function PracticePage() {
               } else {
                 // Barge-in: if TTS is playing, stop it immediately
                 if (voice.isSpeaking) {
+                  cancelTTSQueue();
                   voice.stopSpeaking();
                   flushReveal();
                 }
@@ -1680,6 +1740,7 @@ export default function PracticePage() {
               setInput(e.target.value);
               // Barge-in: stop TTS if user starts typing
               if (voice.isSpeaking) {
+                cancelTTSQueue();
                 voice.stopSpeaking();
                 flushReveal();
               }

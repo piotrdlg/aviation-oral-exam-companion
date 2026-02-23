@@ -41,19 +41,27 @@ interface Props {
   preferredRating?: Rating;
   preferredAircraftClass?: AircraftClass;
   prefsLoaded?: boolean;
+  preferredVoiceEnabled?: boolean;
 }
 
-export default function SessionConfig({ onStart, loading, preferredRating, preferredAircraftClass, prefsLoaded }: Props) {
+export default function SessionConfig({ onStart, loading, preferredRating, preferredAircraftClass, prefsLoaded, preferredVoiceEnabled }: Props) {
   const rating = preferredRating || 'private';
   const aircraftClass = preferredAircraftClass || 'ASEL';
   const prefsLoading = prefsLoaded === undefined ? false : !prefsLoaded;
   const [studyMode, setStudyMode] = useState<SessionConfigData['studyMode']>('linear');
   const [difficulty, setDifficulty] = useState<SessionConfigData['difficulty']>('mixed');
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
-  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [voiceEnabled, setVoiceEnabled] = useState(preferredVoiceEnabled ?? true);
   const [showTaskPicker, setShowTaskPicker] = useState(false);
   const [allTasks, setAllTasks] = useState<AcsTaskItem[]>([]);
   const [tasksLoading, setTasksLoading] = useState(false);
+
+  // Sync voice preference when it loads from the API
+  useEffect(() => {
+    if (preferredVoiceEnabled !== undefined) {
+      setVoiceEnabled(preferredVoiceEnabled);
+    }
+  }, [preferredVoiceEnabled]);
 
   // Fetch tasks from DB when rating changes (wait for prefs to load)
   useEffect(() => {
@@ -275,18 +283,6 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
             </button>
           )}
         </div>
-
-        {/* Voice Toggle */}
-        <label className="flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-lg border border-c-border hover:border-c-border-hi bg-c-panel transition-colors">
-          <input
-            type="checkbox"
-            checked={voiceEnabled}
-            onChange={(e) => setVoiceEnabled(e.target.checked)}
-            className="w-4 h-4 rounded border-c-border bg-c-bezel text-c-green focus:ring-c-green"
-          />
-          <span className="font-mono text-sm text-c-text uppercase">ENABLE VOICE MODE</span>
-          <span className="text-xs text-c-dim font-mono">(MIC + SPEAKER)</span>
-        </label>
 
         {/* Start Button */}
         <button
