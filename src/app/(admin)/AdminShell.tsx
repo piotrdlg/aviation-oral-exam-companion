@@ -23,6 +23,7 @@ const navSections = [
       { href: '/admin/tts', label: 'Voice / TTS', icon: '\u266B' },
       { href: '/admin/voicelab', label: 'Voice Lab', icon: '\u2697' },
       { href: '/admin/moderation', label: 'Moderation', icon: '\u2691' },
+      { href: '/admin/graph', label: 'Graph', icon: '\u2B21' },
     ],
   },
 ];
