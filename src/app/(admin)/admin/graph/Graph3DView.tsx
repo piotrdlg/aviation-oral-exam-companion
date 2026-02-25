@@ -268,7 +268,7 @@ export default function Graph3DView() {
     [],
   );
 
-  // ---- Node label ----
+  // ---- Node label (tooltip on hover) ----
   const nodeLabel = useCallback(
     (node: any): string => { // eslint-disable-line @typescript-eslint/no-explicit-any
       const gNode = node as GraphNode;
@@ -276,6 +276,138 @@ export default function Graph3DView() {
       return `${gNode.name} (${catLabel}) \u2014 ${gNode.edgeCount} edges`;
     },
     [],
+  );
+
+  // ---- Word-wrap helper ----
+  const wrapTextToLines = useCallback(
+    (text: string, maxChars: number): string[] => {
+      const words = text.split(' ');
+      const lines: string[] = [];
+      let currentLine = '';
+      for (const word of words) {
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        if (testLine.length > maxChars && currentLine) {
+          lines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
+      }
+      if (currentLine) lines.push(currentLine);
+      return lines;
+    },
+    [],
+  );
+
+  // ---- 3D node object: extend default sphere with text sprite ----
+  const nodeThreeObject = useCallback(
+    (node: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+      // Lazy-import three (bundled with react-force-graph-3d)
+      const THREE = require('three'); // eslint-disable-line @typescript-eslint/no-require-imports
+      const gNode = node as GraphNode;
+      const catColor = resolvedColors[`cat:${gNode.category}`] ?? '#888';
+      const catLabel = CATEGORY_LABELS[gNode.category] ?? gNode.category;
+
+      // Create canvas for text label
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
+      const dpr = 2; // retina
+      const maxChars = 22;
+      const lines = wrapTextToLines(gNode.name, maxChars);
+      const fontSize = 14 * dpr;
+      const tagFontSize = 11 * dpr;
+      const lineHeight = fontSize * 1.3;
+      const pad = 8 * dpr;
+      const accentW = 3 * dpr;
+      const cornerR = 4 * dpr;
+
+      // Measure text to size canvas
+      ctx.font = `${fontSize}px monospace`;
+      let maxWidth = 0;
+      for (const line of lines) {
+        const w = ctx.measureText(line).width;
+        if (w > maxWidth) maxWidth = w;
+      }
+      ctx.font = `${tagFontSize}px monospace`;
+      const tagW = ctx.measureText(catLabel.toUpperCase()).width;
+      if (tagW > maxWidth) maxWidth = tagW;
+
+      const cw = maxWidth + pad * 2 + accentW;
+      const ch = lines.length * lineHeight + tagFontSize * 1.4 + pad * 3;
+      canvas.width = cw;
+      canvas.height = ch;
+
+      // Draw rounded background
+      ctx.fillStyle = 'rgba(10, 14, 20, 0.9)';
+      ctx.beginPath();
+      ctx.moveTo(cornerR, 0);
+      ctx.lineTo(cw - cornerR, 0);
+      ctx.quadraticCurveTo(cw, 0, cw, cornerR);
+      ctx.lineTo(cw, ch - cornerR);
+      ctx.quadraticCurveTo(cw, ch, cw - cornerR, ch);
+      ctx.lineTo(cornerR, ch);
+      ctx.quadraticCurveTo(0, ch, 0, ch - cornerR);
+      ctx.lineTo(0, cornerR);
+      ctx.quadraticCurveTo(0, 0, cornerR, 0);
+      ctx.closePath();
+      ctx.fill();
+
+      // Left accent bar
+      ctx.fillStyle = catColor;
+      ctx.fillRect(0, cornerR, accentW, ch - cornerR * 2);
+
+      // Name text (wrapped)
+      ctx.font = `${fontSize}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = '#e5e5e5';
+      for (let i = 0; i < lines.length; i++) {
+        ctx.fillText(lines[i], cw / 2, pad + i * lineHeight);
+      }
+
+      // Category tag
+      ctx.font = `${tagFontSize}px monospace`;
+      ctx.fillStyle = catColor;
+      ctx.fillText(
+        catLabel.toUpperCase(),
+        cw / 2,
+        pad + lines.length * lineHeight + pad * 0.5,
+      );
+
+      // Sprite from canvas
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.needsUpdate = true;
+      const spriteMat = new THREE.SpriteMaterial({
+        map: texture,
+        transparent: true,
+        depthTest: false,
+      });
+      const sprite = new THREE.Sprite(spriteMat);
+
+      const spriteScale = 0.15;
+      sprite.scale.set(cw * spriteScale / dpr, ch * spriteScale / dpr, 1);
+
+      // Position below the sphere
+      const baseSize = CATEGORY_SIZE_3D[gNode.category] ?? 2.1;
+      const nodeSize = baseSize + Math.min(gNode.edgeCount * 0.5, 6) * 0.7;
+      const sphereR = Math.cbrt(nodeSize) * 1.2;
+      sprite.position.set(0, -(sphereR + ch * spriteScale / dpr / 2 + 1), 0);
+
+      // Group: default sphere + label sprite
+      const group = new THREE.Group();
+
+      const geometry = new THREE.SphereGeometry(sphereR, 16, 12);
+      const material = new THREE.MeshLambertMaterial({
+        color: catColor,
+        transparent: gNode.validationStatus === 'pending',
+        opacity: gNode.validationStatus === 'pending' ? 0.5 : 1,
+      });
+      group.add(new THREE.Mesh(geometry, material));
+      group.add(sprite);
+
+      return group;
+    },
+    [resolvedColors, wrapTextToLines],
   );
 
   // ---- Node size (0.7x of 2D) ----
@@ -471,8 +603,7 @@ export default function Graph3DView() {
               graphData={graphData as any} // eslint-disable-line @typescript-eslint/no-explicit-any
               nodeId="id"
               nodeLabel={nodeLabel}
-              nodeVal={nodeVal}
-              nodeColor={nodeColor}
+              nodeThreeObject={nodeThreeObject as any} // eslint-disable-line @typescript-eslint/no-explicit-any
               linkColor={linkColor}
               linkWidth={linkWidth}
               linkDirectionalArrowLength={3}

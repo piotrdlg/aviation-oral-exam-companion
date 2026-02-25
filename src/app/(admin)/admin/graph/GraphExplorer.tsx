@@ -302,7 +302,30 @@ export default function GraphExplorer() {
   // ---- Node canvas object mode — draw labels after default circle ----
   const nodeCanvasObjectMode = useCallback((): string => 'after', []);
 
-  // ---- Node canvas object — label at high zoom + root ring ----
+  // ---- Word-wrap helper for canvas text ----
+  const wrapText = useCallback(
+    (ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] => {
+      const words = text.split(' ');
+      const lines: string[] = [];
+      let currentLine = '';
+
+      for (const word of words) {
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && currentLine) {
+          lines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
+      }
+      if (currentLine) lines.push(currentLine);
+      return lines;
+    },
+    [],
+  );
+
+  // ---- Node canvas object — label block at high zoom + root ring ----
   const nodeCanvasObject = useCallback(
     (node: any, ctx: CanvasRenderingContext2D, globalScale: number) => { // eslint-disable-line @typescript-eslint/no-explicit-any
       const gNode = node as GraphNode;
@@ -319,18 +342,76 @@ export default function GraphExplorer() {
         ctx.stroke();
       }
 
-      // Draw label text at high zoom
+      // Draw multi-line label block at high zoom
       if (globalScale > 1.5) {
-        const label = gNode.name;
         const fontSize = Math.max(10 / globalScale, 1.5);
+        const lineHeight = fontSize * 1.4;
+        const maxLabelWidth = 120 / globalScale;
+        const padding = 3 / globalScale;
+        const radius = 2 / globalScale;
+
+        ctx.font = `${fontSize}px monospace`;
+        const lines = wrapText(ctx, gNode.name, maxLabelWidth);
+        const catLabel = CATEGORY_LABELS[gNode.category] ?? gNode.category;
+
+        // Measure block dimensions
+        let blockWidth = 0;
+        for (const line of lines) {
+          const w = ctx.measureText(line).width;
+          if (w > blockWidth) blockWidth = w;
+        }
+        // Also measure the category tag
+        const tagFontSize = fontSize * 0.8;
+        ctx.font = `${tagFontSize}px monospace`;
+        const tagWidth = ctx.measureText(catLabel).width;
+        if (tagWidth + padding * 2 > blockWidth) blockWidth = tagWidth + padding * 2;
+
+        blockWidth += padding * 2;
+        const blockHeight =
+          lines.length * lineHeight + tagFontSize * 1.4 + padding * 3;
+        const blockX = x - blockWidth / 2;
+        const blockY = y + 8 / globalScale;
+
+        // Draw rounded background
+        ctx.fillStyle = 'rgba(10, 14, 20, 0.85)';
+        ctx.beginPath();
+        ctx.moveTo(blockX + radius, blockY);
+        ctx.lineTo(blockX + blockWidth - radius, blockY);
+        ctx.quadraticCurveTo(blockX + blockWidth, blockY, blockX + blockWidth, blockY + radius);
+        ctx.lineTo(blockX + blockWidth, blockY + blockHeight - radius);
+        ctx.quadraticCurveTo(blockX + blockWidth, blockY + blockHeight, blockX + blockWidth - radius, blockY + blockHeight);
+        ctx.lineTo(blockX + radius, blockY + blockHeight);
+        ctx.quadraticCurveTo(blockX, blockY + blockHeight, blockX, blockY + blockHeight - radius);
+        ctx.lineTo(blockX, blockY + radius);
+        ctx.quadraticCurveTo(blockX, blockY, blockX + radius, blockY);
+        ctx.closePath();
+        ctx.fill();
+
+        // Draw category border accent on left edge
+        const catColor = resolvedColors[`cat:${gNode.category}`] ?? '#888';
+        ctx.fillStyle = catColor;
+        ctx.fillRect(blockX, blockY + radius, 2 / globalScale, blockHeight - radius * 2);
+
+        // Draw name lines
         ctx.font = `${fontSize}px monospace`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
-        ctx.fillStyle = resolvedColors['cat:acs_element'] ?? '#e5e5e5';
-        ctx.fillText(label, x, y + 6);
+        ctx.fillStyle = '#e5e5e5';
+        for (let i = 0; i < lines.length; i++) {
+          ctx.fillText(lines[i], x, blockY + padding + i * lineHeight);
+        }
+
+        // Draw category tag below name
+        ctx.font = `${tagFontSize}px monospace`;
+        ctx.fillStyle = catColor;
+        ctx.fillText(
+          catLabel.toUpperCase(),
+          x,
+          blockY + padding + lines.length * lineHeight + padding,
+        );
       }
     },
-    [selectedElement, resolvedColors],
+    [selectedElement, resolvedColors, wrapText],
   );
 
   // ---- Link color ----
