@@ -54,10 +54,16 @@ export async function GET(request: NextRequest) {
       const depthParam = parseInt(url.searchParams.get('depth') ?? '2', 10);
       const depth = Math.min(Math.max(depthParam, 1), 3); // clamp 1..3
 
+      // The RPC expects a bare element code (e.g. "PA.III.B.K1") and
+      // internally prepends "acs_element:" to match the slug column.
+      // The search UI passes full slugs (e.g. "acs_element:PA.III.B.K1"),
+      // so strip any known category prefix.
+      const elementCode = element.replace(/^(acs_element|acs_task|acs_area):/, '');
+
       // 1. Call get_concept_bundle RPC
       const { data: rpcData, error: rpcError } = await serviceSupabase
         .rpc('get_concept_bundle', {
-          p_element_code: element,
+          p_element_code: elementCode,
           p_max_depth: depth,
         })
         .limit(200);
