@@ -19,6 +19,30 @@ export type DocumentType = 'handbook' | 'ac' | 'cfr' | 'aim' | 'other';
 export type TagType = 'attempt' | 'mention';
 export type AircraftClass = 'ASEL' | 'AMEL' | 'ASES' | 'AMES';
 
+export type ConceptCategory =
+  | 'acs_area'
+  | 'acs_task'
+  | 'acs_element'
+  | 'topic'
+  | 'definition'
+  | 'procedure'
+  | 'regulatory_claim'
+  | 'artifact';
+
+export type EvidenceType = 'primary' | 'secondary' | 'example' | 'counterexample';
+
+export interface ConceptChunkEvidence {
+  id: string;
+  concept_id: string;
+  chunk_id: string;
+  evidence_type: EvidenceType;
+  quote: string | null;
+  page_ref: string | null;
+  confidence: number;
+  created_by: string;
+  created_at: string;
+}
+
 export interface Concept {
   id: string;
   name: string;
