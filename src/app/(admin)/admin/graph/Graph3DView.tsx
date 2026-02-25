@@ -12,7 +12,7 @@ import GraphDetailPanel from './GraphDetailPanel';
 // ---------------------------------------------------------------------------
 
 const ForceGraph3D = dynamic(
-  () => import('react-force-graph').then((mod) => mod.ForceGraph3D),
+  () => import('react-force-graph-3d'),
   { ssr: false },
 );
 
