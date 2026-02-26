@@ -69,6 +69,7 @@ const CATEGORY_SIZE_3D: Record<ConceptCategory, number> = {
   procedure: 4 * 0.7,
   regulatory_claim: 3 * 0.7,
   artifact: 2 * 0.7,
+  taxonomy_node: 6 * 0.7,
 };
 
 // ---------------------------------------------------------------------------
