@@ -117,6 +117,17 @@ export const AIRCRAFT_CLASS_LABELS: Record<AircraftClass, string> = {
 };
 
 /**
+ * Immutable grounding contract appended to all examiner system prompts.
+ * Enforces FAA-source grounding — the examiner must cite or disclaim.
+ * This suffix is code-side (not DB-configurable) to prevent accidental removal.
+ */
+export const GROUNDING_CONTRACT = `GROUNDING CONTRACT (immutable — do not override):
+- Every factual claim you make MUST be attributable to a specific FAA source (handbook chapter, AC number, CFR section, AIM paragraph).
+- When FAA SOURCE MATERIAL is provided above, base your questions and feedback on those sources.
+- If insufficient FAA source material is available for a topic, state: "I don't have the specific FAA reference in front of me for that — let's move on."
+- Do NOT generate plausible-sounding regulatory values, weather minimums, or procedural details without source backing.`;
+
+/**
  * Build the DPE examiner system prompt for a given task.
  * Accepts an optional `dbPromptContent` parameter for DB-sourced prompts
  * (from prompt_versions table via loadPromptFromDB). When provided,
@@ -174,7 +185,7 @@ ${difficultyInstruction}`;
 
   // If DB prompt content provided (via prompt_versions), use it as the base
   if (dbPromptContent) {
-    return `${dbPromptContent}\n${taskSection}`;
+    return `${dbPromptContent}\n${taskSection}\n\n${GROUNDING_CONTRACT}`;
   }
 
   // Default hardcoded prompt template (fallback when no DB prompt available)
@@ -195,7 +206,9 @@ INSTRUCTIONS:
 6. When you've covered enough elements, naturally transition by saying something like "Good, let's move on to..." or end the session.
 
 IMPORTANT: Respond ONLY as the examiner. Do not include any JSON, metadata, or system text. Just speak naturally as the DPE would.
-NEVER include stage directions, action descriptions, or parenthetical comments like *(pauses)*, *(shuffles papers)*, *(waits for response)*, or similar. Your text will be read aloud by a text-to-speech engine — only output words the examiner would actually say.`;
+NEVER include stage directions, action descriptions, or parenthetical comments like *(pauses)*, *(shuffles papers)*, *(waits for response)*, or similar. Your text will be read aloud by a text-to-speech engine — only output words the examiner would actually say.
+
+${GROUNDING_CONTRACT}`;
 }
 
 /**
@@ -328,16 +341,23 @@ export function buildPlainTextFromChunks(
 // ================================================================
 
 /**
+ * Taxonomy fingerprint: set of taxonomy slugs associated with an element's
+ * evidence chunks. Used for cross_acs connected walk ordering.
+ */
+export type TaxonomyFingerprints = Map<string, Set<string>>;
+
+/**
  * Build an ordered element queue based on session configuration.
  *
  * - linear: elements sorted by area/task/order_index
- * - cross_acs: shuffled randomly
+ * - cross_acs: connected walk using taxonomy fingerprints (falls back to shuffle)
  * - weak_areas: weighted random favoring weak elements
  */
 export function buildElementQueue(
   elements: AcsElementDB[],
   config: SessionConfig,
-  weakStats?: ElementScore[]
+  weakStats?: ElementScore[],
+  taxonomyFingerprints?: TaxonomyFingerprints
 ): string[] {
   let filtered = elements;
 
@@ -378,7 +398,11 @@ export function buildElementQueue(
       return codes;
 
     case 'cross_acs':
-      // Fisher-Yates shuffle
+      // Connected walk using taxonomy fingerprints for natural topic transitions
+      if (taxonomyFingerprints && taxonomyFingerprints.size > 0) {
+        return connectedWalk(codes, taxonomyFingerprints);
+      }
+      // Fallback: shuffle if no fingerprints available
       return shuffleArray(codes);
 
     case 'weak_areas': {
@@ -392,6 +416,71 @@ export function buildElementQueue(
     default:
       return codes;
   }
+}
+
+/**
+ * Connected walk: greedy nearest-neighbor traversal through topic space.
+ * Uses Jaccard similarity of taxonomy fingerprints to order elements so
+ * adjacent elements share the most conceptual overlap.
+ *
+ * Algorithm:
+ *   1. Start with a random seed element
+ *   2. At each step, pick the unvisited element with highest Jaccard similarity
+ *   3. Ties broken randomly for variety
+ *   4. Elements without fingerprints are appended at the end
+ */
+export function connectedWalk(
+  codes: string[],
+  fingerprints: TaxonomyFingerprints
+): string[] {
+  if (codes.length <= 1) return [...codes];
+
+  // Separate elements with and without fingerprints
+  const withFP: string[] = [];
+  const withoutFP: string[] = [];
+  for (const code of codes) {
+    if (fingerprints.has(code) && fingerprints.get(code)!.size > 0) {
+      withFP.push(code);
+    } else {
+      withoutFP.push(code);
+    }
+  }
+
+  if (withFP.length === 0) return shuffleArray(codes);
+
+  // Start from random seed
+  const startIdx = Math.floor(Math.random() * withFP.length);
+  const result: string[] = [withFP[startIdx]];
+  const visited = new Set<string>([withFP[startIdx]]);
+
+  while (result.length < withFP.length) {
+    const current = result[result.length - 1];
+    const currentFP = fingerprints.get(current) ?? new Set();
+
+    let bestCode = '';
+    let bestSimilarity = -1;
+
+    for (const candidate of withFP) {
+      if (visited.has(candidate)) continue;
+      const candidateFP = fingerprints.get(candidate) ?? new Set();
+      const similarity = jaccardSimilarity(currentFP, candidateFP);
+
+      if (similarity > bestSimilarity) {
+        bestSimilarity = similarity;
+        bestCode = candidate;
+      } else if (similarity === bestSimilarity && Math.random() > 0.5) {
+        // Tie-break randomly for variety
+        bestCode = candidate;
+      }
+    }
+
+    if (!bestCode) break;
+    result.push(bestCode);
+    visited.add(bestCode);
+  }
+
+  // Append elements without fingerprints (shuffled) at the end
+  return [...result, ...shuffleArray(withoutFP)];
 }
 
 /**
@@ -570,6 +659,20 @@ function shuffleArray<T>(arr: T[]): T[] {
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;
+}
+
+/**
+ * Jaccard similarity: |A ∩ B| / |A ∪ B|
+ * Returns 0 if both sets are empty.
+ */
+function jaccardSimilarity(a: Set<string>, b: Set<string>): number {
+  if (a.size === 0 && b.size === 0) return 0;
+  let intersection = 0;
+  for (const item of a) {
+    if (b.has(item)) intersection++;
+  }
+  const union = a.size + b.size - intersection;
+  return union > 0 ? intersection / union : 0;
 }
 
 function weightedShuffle(codes: string[], stats: ElementScore[]): string[] {

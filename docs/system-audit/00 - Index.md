@@ -24,6 +24,16 @@ evidence_level: high
 | 07 | [[07 - Optimization Roadmap]] | Living |
 | 09 | [[09 - Staging Verification]] | Draft |
 | 10 | [[10 - Staging Environment and Safe Deployment]] | Final |
+| 11 | [[11 - Production Reality Audit Refresh]] | Final |
+| 12 | [[12 - Knowledge Graph Quality Audit and Refactor Plan]] | Living |
+| 13 | [[13 - Unified Topic Taxonomy v0]] | Draft |
+| 14 | [[14 - ACS Source Coverage Gaps]] | Final |
+| 15 | [[15 - Chunk Taxonomy Classification Pilot]] | Draft |
+| 16 | [[16 - Taxonomy Scaffold Audit and Edge Quality Report]] | Final |
+| 17 | [[17 - Multi-Hub KG Architecture]] | Draft |
+| 18 | [[18 - Multi-Hub KG Phase 2 — Taxonomy Attachment]] | Draft |
+| 19 | [[19 - Multi-Hub KG Phase 3 — Regulatory Anchoring]] | Draft |
+| 20 | [[20 - ExamPlan and Planner v1]] | Draft |
 
 ---
 
@@ -33,15 +43,15 @@ HeyDPE is a production-quality FAA oral exam simulator built on Next.js 16 + Sup
 
 ### Key Findings
 
-1. **The knowledge graph is the biggest untapped asset.** The `concepts` and `concept_relations` tables + RPC functions are fully schemaed but contain zero rows. Populating them — especially with structured `regulatory_claim` nodes — would be the single highest-impact change for accuracy.
+1. ~~**The knowledge graph is the biggest untapped asset.**~~ **UPDATE (2026-02-25):** The knowledge graph is now **populated and active in production** — 22,084 concepts, 49,351 relations, 30,689 evidence links. `graph.enhanced_retrieval` is enabled. See [[11 - Production Reality Audit Refresh]] and [[12 - Knowledge Graph Quality Audit and Refactor Plan]].
 
-2. **Zero observability.** The `latency_logs` table exists but is never populated. There is no APM, no distributed tracing, and no way to measure performance. This must be fixed before any optimization work can be validated.
+2. ~~**Zero observability.**~~ **UPDATE (2026-02-19):** Latency instrumentation added via `src/lib/timing.ts` → `latency_logs` table. DB-backed embedding cache added.
 
-3. **Caching is completely absent.** Embeddings, system config, prompts, and user profiles are fetched fresh on every request. Simple module-level caches with short TTLs would save 100-300ms per exchange with minimal risk.
+3. ~~**Caching is completely absent.**~~ **UPDATE (2026-02-19):** Module-level TTL caches added for system config, prompts, and embeddings.
 
-4. **The exam flow is quiz-like, not DPE-like.** The cursor-based planner moves linearly through elements without adaptive follow-ups, prerequisite probing, or natural topic transitions. Graph-enhanced navigation could transform this into a realistic oral exam.
+4. ~~**The exam flow is quiz-like, not DPE-like.**~~ **UPDATE (2026-02-26):** Phase 4 adds `ExamPlanV1` — predetermined exam shape with scope-sensitive question count, bounded bonus questions, follow-up limits, mention credit, and cross-ACS connected walk using taxonomy fingerprints. Grounding Contract enforced code-side. See [[20 - ExamPlan and Planner v1]].
 
-5. **Hallucination of FAA regulations is the highest-risk failure mode.** Both external models agreed: structured regulatory claim nodes + citation verification are the primary mitigations.
+5. **Hallucination of FAA regulations is the highest-risk failure mode.** **MITIGATED (2026-02-25):** Graph bundle injects verified `regulatory_claim` nodes with exact CFR references into the system prompt. No post-hoc verification yet, but context quality greatly improved.
 
 ### Recommended Immediate Actions (This Sprint)
 
@@ -51,9 +61,11 @@ HeyDPE is a production-quality FAA oral exam simulator built on Next.js 16 + Sup
 | 2 | Add module-level caches (system config, prompts, profiles) | S | -100-300ms/request | **DONE** (2026-02-19) |
 | 2b | Add DB-backed embedding cache | S | -150-300ms on cache hit | **DONE** (2026-02-19) |
 | 2c | Fix ingestion page_start/page_end population | S | Enables image linking | **DONE** (2026-02-19) |
-| 3 | Enable metadata filtering in hybrid search | S | Better regulatory retrieval | Planned |
-| 4 | Populate ACS skeleton in knowledge graph | S | Enables all graph features | Planned |
+| 3 | Enable metadata filtering in hybrid search | S | Better regulatory retrieval | Code ready, flag not set |
+| 4 | Populate ACS skeleton in knowledge graph | S | Enables all graph features | **DONE** (2026-02-20) |
 | 5 | Start building regulatory assertion test set | M | Validates accuracy improvements | Planned |
+| 6 | Backbone repair — reduce orphan rate | S | Graph connectivity + bundle quality | **DONE** (2026-02-25) |
+| 7 | Edge type diversification (LLM inference) | M | 3/6 → 5/6+ relation types | Planned |
 
 ---
 
@@ -77,6 +89,18 @@ HeyDPE is a production-quality FAA oral exam simulator built on Next.js 16 + Sup
 | [[06 - GraphRAG Proposal for Oral Exam Flow]] | **GraphRAG** | Schema design, population strategy (4 phases), traversal algorithms, planner integration, migration plan |
 | [[07 - Optimization Roadmap]] | **Roadmap** | Prioritized NOW/NEXT/LATER plan across 3 tracks (correctness, flow, latency), impact/effort matrix, rollout strategy |
 | [[08 - PAL MCP Research Log]] | **Research** | Verbatim model responses (Gemini 3.0 Pro + GPT-5.2), synthesis, cross-model consensus |
+| [[09 - Staging Verification]] | **Staging** | E2E smoke test results for staging environment |
+| [[10 - Staging Environment and Safe Deployment]] | **Deployment** | Staging setup, safe deployment procedures |
+| [[11 - Production Reality Audit Refresh]] | **Prod Audit** | RAG grounding path, exam flow, grading pipeline, prompting architecture, stop-the-line risks |
+| [[12 - Knowledge Graph Quality Audit and Refactor Plan]] | **Graph Quality** | Before/after metrics, root cause analysis, backbone repair, edge gap taxonomy, next steps |
+| [[13 - Unified Topic Taxonomy v0]] | **Taxonomy v0** | 3-level taxonomy from FAA PDF TOCs: 9 L1 + 701 L2 + 990 L3 nodes |
+| [[14 - ACS Source Coverage Gaps]] | **Source Gaps** | 90% ACS source coverage, 3 critical gaps (AC 61-107, AC 90-107, AC 91.21-1) |
+| [[15 - Chunk Taxonomy Classification Pilot]] | **Classification** | 200-chunk pilot with Anthropic prompt caching, 99.5% rate |
+| [[16 - Taxonomy Scaffold Audit and Edge Quality Report]] | **Edge Quality** | Claims→airspace 0%→45.8%, largest component 60%→74.2%, 1,060 new edges |
+| [[17 - Multi-Hub KG Architecture]] | **Multi-Hub** | 4-hub scaffold (knowledge/acs/regulations/aircraft), 100% chunk assignment, Phase 1 structural only |
+| [[18 - Multi-Hub KG Phase 2 — Taxonomy Attachment]] | **Phase 2** | Chunk classification + taxonomy promotion + evidence-based concept attachment |
+| [[19 - Multi-Hub KG Phase 3 — Regulatory Anchoring]] | **Phase 3** | Regulations taxonomy expansion + regulatory_claim CFR-parsed attachment + artifact anchoring |
+| [[20 - ExamPlan and Planner v1]] | **ExamPlan** | Predetermined exam shape, scope-sensitive question count, mention credit, connected walk, grounding contract |
 
 ---
 
