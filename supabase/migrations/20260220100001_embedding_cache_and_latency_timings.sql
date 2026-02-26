@@ -38,5 +38,4 @@ ALTER TABLE latency_logs ADD COLUMN IF NOT EXISTS timings JSONB;
 -- 3. Allow service role to insert latency_logs (existing RLS only allows via session ownership)
 CREATE POLICY "latency_service_insert" ON latency_logs
   FOR INSERT TO service_role
-  USING (true)
   WITH CHECK (true);

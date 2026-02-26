@@ -34,7 +34,7 @@ export async function searchWithFallback(
 
   // If filtering disabled or no filter hint, just do normal search
   if (!featureEnabled || !filterHint) {
-    return searchChunks(query, { matchCount, similarityThreshold });
+    return searchChunks(query, { matchCount, similarityThreshold, timing });
   }
 
   // Pass 1: filtered search
@@ -44,6 +44,7 @@ export async function searchWithFallback(
     similarityThreshold,
     filterDocType: filterHint.filterDocType,
     filterAbbreviation: filterHint.filterAbbreviation,
+    timing,
   });
   timing?.end('rag.search.filtered');
 
@@ -57,7 +58,7 @@ export async function searchWithFallback(
 
   // Pass 2: unfiltered fallback
   timing?.start('rag.search.unfiltered_fallback');
-  const unfiltered = await searchChunks(query, { matchCount, similarityThreshold });
+  const unfiltered = await searchChunks(query, { matchCount, similarityThreshold, timing });
   timing?.end('rag.search.unfiltered_fallback');
 
   // Merge + deduplicate by chunk id
