@@ -3,6 +3,12 @@ import OpenAI from 'openai';
 import { createHash } from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 
+/** Minimal timing interface to avoid coupling to timing.ts imports. */
+interface TimingLike {
+  start(name: string): void;
+  end(name: string): void;
+}
+
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
 const supabase = createClient(
@@ -36,16 +42,18 @@ function queryHash(normalized: string): string {
  * Generate an embedding for a text query using OpenAI's text-embedding-3-small.
  * Checks the DB-backed embedding_cache first to avoid redundant API calls.
  */
-export async function generateEmbedding(text: string): Promise<number[]> {
+export async function generateEmbedding(text: string, timing?: TimingLike): Promise<number[]> {
   const normalized = normalizeQuery(text);
   const hash = queryHash(normalized);
 
   // Check DB cache
+  timing?.start('rag.embedding.cache_check');
   const { data: cached } = await supabase
     .from('embedding_cache')
     .select('embedding')
     .eq('query_hash', hash)
     .single();
+  timing?.end('rag.embedding.cache_check');
 
   if (cached?.embedding) {
     // Touch last_used_at (non-blocking)
@@ -60,11 +68,13 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   }
 
   // Cache miss — call OpenAI
+  timing?.start('rag.embedding.openai');
   const response = await openai.embeddings.create({
     model: 'text-embedding-3-small',
     input: text,
   });
   const embedding = response.data[0].embedding;
+  timing?.end('rag.embedding.openai');
 
   // Write to cache (non-blocking)
   supabase
@@ -93,6 +103,7 @@ export async function searchChunks(
     similarityThreshold?: number;
     filterDocType?: string;
     filterAbbreviation?: string;
+    timing?: TimingLike;
   } = {}
 ): Promise<ChunkSearchResult[]> {
   const {
@@ -100,13 +111,17 @@ export async function searchChunks(
     similarityThreshold = 0.3,
     filterDocType,
     filterAbbreviation,
+    timing,
   } = options;
 
   // Skip embedding calls for trivially short queries
   if (query.trim().length < 3) return [];
 
-  const queryEmbedding = await generateEmbedding(query);
+  timing?.start('rag.embedding');
+  const queryEmbedding = await generateEmbedding(query, timing);
+  timing?.end('rag.embedding');
 
+  timing?.start('rag.hybridSearch');
   const { data, error } = await supabase.rpc('chunk_hybrid_search', {
     query_text: query,
     query_embedding: queryEmbedding,
@@ -115,6 +130,7 @@ export async function searchChunks(
     filter_doc_type: filterDocType ?? null,
     filter_abbreviation: filterAbbreviation ?? null,
   });
+  timing?.end('rag.hybridSearch');
 
   if (error) {
     console.error('RAG search error:', error.message);
@@ -168,14 +184,18 @@ export interface ImageResult {
  * Uses the get_images_for_chunks RPC (returns deduplicated, priority-ordered images).
  */
 export async function getImagesForChunks(
-  chunkIds: string[]
+  chunkIds: string[],
+  timing?: TimingLike
 ): Promise<ImageResult[]> {
   if (chunkIds.length === 0) return [];
 
+  timing?.start('rag.imageSearch');
   const { data, error } = await supabase.rpc('get_images_for_chunks', {
     chunk_ids: chunkIds,
     supabase_url: process.env.NEXT_PUBLIC_SUPABASE_URL,
   });
+
+  timing?.end('rag.imageSearch');
 
   if (error) {
     console.error('getImagesForChunks RPC failed:', error.message, { chunkCount: chunkIds.length });

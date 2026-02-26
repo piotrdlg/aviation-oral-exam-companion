@@ -1,0 +1,364 @@
+{
+  "timestamp": "2026-02-25T21:18:40.320Z",
+  "environment": "production",
+  "counts": {
+    "concepts_total": 22084,
+    "concepts_by_category": {
+      "acs_element": 2174,
+      "acs_area": 31,
+      "acs_task": 143,
+      "regulatory_claim": 8417,
+      "procedure": 3350,
+      "topic": 5001,
+      "definition": 2850,
+      "artifact": 118
+    },
+    "relations_total": 50411,
+    "relations_by_type": {
+      "is_component_of": 2953,
+      "applies_in_scenario": 26997,
+      "leads_to_discussion_of": 20461
+    },
+    "evidence_total": 30689,
+    "concepts_with_evidence": 21783,
+    "evidence_coverage_pct": 98.64
+  },
+  "orphans": {
+    "total": 196,
+    "by_category": {
+      "definition": 69,
+      "artifact": 4,
+      "topic": 81,
+      "procedure": 42
+    },
+    "top_50": [
+      {
+        "name": "Chart Supplement SE",
+        "category": "artifact",
+        "slug": "artifact:other"
+      },
+      {
+        "name": "FAA-S-ACS-7B Commercial Pilot ACS",
+        "category": "artifact",
+        "slug": "artifact:acs"
+      },
+      {
+        "name": "PHAK 22 phak index",
+        "category": "artifact",
+        "slug": "artifact:phak"
+      },
+      {
+        "name": "Seaplane Handbook FAA-H-8083-23-4 Ch7-9",
+        "category": "artifact",
+        "slug": "artifact:seaplane"
+      },
+      {
+        "name": "Abeam Fix — Definition and Positional Reference",
+        "category": "definition",
+        "slug": "definition:abeam-fix-definition-and-positional-reference"
+      },
+      {
+        "name": "Air as a Fluid — Properties and Definition",
+        "category": "definition",
+        "slug": "definition:air-as-a-fluid-properties-and-definition"
+      },
+      {
+        "name": "Aircraft Owner/Information Manual — Limitations and Purpose",
+        "category": "definition",
+        "slug": "definition:aircraft-ownerinformation-manual-limitations-and-purpose"
+      },
+      {
+        "name": "Airplane Upset — Definition and Parameters",
+        "category": "definition",
+        "slug": "definition:airplane-upset-definition-and-parameters"
+      },
+      {
+        "name": "Automation Management (AM) — Component of SRM",
+        "category": "definition",
+        "slug": "definition:automation-management-am-component-of-srm"
+      },
+      {
+        "name": "AWOS Ownership: Federal vs. Non-Federal",
+        "category": "definition",
+        "slug": "definition:awos-ownership-federal-vs-non-federal"
+      },
+      {
+        "name": "Back Taxi — Definition and Purpose",
+        "category": "definition",
+        "slug": "definition:back-taxi-definition-and-purpose"
+      },
+      {
+        "name": "Can Buoys vs. Nun Buoys — Shape and Meaning",
+        "category": "definition",
+        "slug": "definition:can-buoys-vs-nun-buoys-shape-and-meaning"
+      },
+      {
+        "name": "Cardinal Compass Directions — Wind Reporting",
+        "category": "definition",
+        "slug": "definition:cardinal-compass-directions-wind-reporting"
+      },
+      {
+        "name": "Collision Course Detection — No Relative Motion Rule",
+        "category": "definition",
+        "slug": "definition:collision-course-detection-no-relative-motion-rule"
+      },
+      {
+        "name": "Coordination — Definition as a Flight Skill",
+        "category": "definition",
+        "slug": "definition:coordination-definition-as-a-flight-skill"
+      },
+      {
+        "name": "Course to an Intercept (CI) Leg — ARINC 424 Leg Type",
+        "category": "definition",
+        "slug": "definition:course-to-an-intercept-ci-leg-arinc-424-leg-type"
+      },
+      {
+        "name": "Cupola — Function in Angular Motion Detection",
+        "category": "definition",
+        "slug": "definition:cupola-function-in-angular-motion-detection"
+      },
+      {
+        "name": "Dryline — Definition and Location",
+        "category": "definition",
+        "slug": "definition:dryline-definition-and-location"
+      },
+      {
+        "name": "Energy State Matrix — Translating Altitude-Speed Deviations to Energy Errors",
+        "category": "definition",
+        "slug": "definition:energy-state-matrix-translating-altitude-speed-deviations-to-energy-errors"
+      },
+      {
+        "name": "Environmental Systems: Aircraft Life Support Systems",
+        "category": "definition",
+        "slug": "definition:environmental-systems-aircraft-life-support-systems"
+      },
+      {
+        "name": "Flap Types: Four Basic Trailing Edge Flap Designs",
+        "category": "definition",
+        "slug": "definition:flap-types-four-basic-trailing-edge-flap-designs"
+      },
+      {
+        "name": "Flight Director: Autopilot Coupling vs. Pilot Following",
+        "category": "definition",
+        "slug": "definition:flight-director-autopilot-coupling-vs-pilot-following"
+      },
+      {
+        "name": "Float Deck — Access and Features",
+        "category": "definition",
+        "slug": "definition:float-deck-access-and-features"
+      },
+      {
+        "name": "FRAT Risk Color Coding — Red, Yellow, Green, White",
+        "category": "definition",
+        "slug": "definition:frat-risk-color-coding-red-yellow-green-white"
+      },
+      {
+        "name": "Friction — Effect on Airflow Over Surfaces",
+        "category": "definition",
+        "slug": "definition:friction-effect-on-airflow-over-surfaces"
+      },
+      {
+        "name": "From a Fix to Manual Termination (FM) Leg — ARINC 424 Leg Type",
+        "category": "definition",
+        "slug": "definition:from-a-fix-to-manual-termination-fm-leg-arinc-424-leg-type"
+      },
+      {
+        "name": "Fuel Tanks — Location and Construction",
+        "category": "definition",
+        "slug": "definition:fuel-tanks-location-and-construction"
+      },
+      {
+        "name": "General Aviation Airports — Largest Airport Category",
+        "category": "definition",
+        "slug": "definition:general-aviation-airports-largest-airport-category"
+      },
+      {
+        "name": "Groundwater Flow — Underground Water Movement",
+        "category": "definition",
+        "slug": "definition:groundwater-flow-underground-water-movement"
+      },
+      {
+        "name": "Gyroscope Mounting Types — Freely Mounted vs. Restricted",
+        "category": "definition",
+        "slug": "definition:gyroscope-mounting-types-freely-mounted-vs-restricted"
+      },
+      {
+        "name": "Hydrologic Cycle — Definition and Overview",
+        "category": "definition",
+        "slug": "definition:hydrologic-cycle-definition-and-overview"
+      },
+      {
+        "name": "Ignition Switch — Five Positions and Function",
+        "category": "definition",
+        "slug": "definition:ignition-switch-five-positions-and-function"
+      },
+      {
+        "name": "Inbound Direction Convention for Coastal Waterways",
+        "category": "definition",
+        "slug": "definition:inbound-direction-convention-for-coastal-waterways"
+      },
+      {
+        "name": "Infiltration — Water Movement into the Ground",
+        "category": "definition",
+        "slug": "definition:infiltration-water-movement-into-the-ground"
+      },
+      {
+        "name": "Information Signs — Appearance and Purpose",
+        "category": "definition",
+        "slug": "definition:information-signs-appearance-and-purpose"
+      },
+      {
+        "name": "Jet Fuel Truck Markings — Identification Standard",
+        "category": "definition",
+        "slug": "definition:jet-fuel-truck-markings-identification-standard"
+      },
+      {
+        "name": "Kinetic Energy — Definition and Formula",
+        "category": "definition",
+        "slug": "definition:kinetic-energy-definition-and-formula"
+      },
+      {
+        "name": "Location Signs — Appearance and Purpose",
+        "category": "definition",
+        "slug": "definition:location-signs-appearance-and-purpose"
+      },
+      {
+        "name": "Mandatory Instruction Signs — Appearance and Purpose",
+        "category": "definition",
+        "slug": "definition:mandatory-instruction-signs-appearance-and-purpose"
+      },
+      {
+        "name": "Marker Beacon Receiver: Fixed Frequency Operation",
+        "category": "definition",
+        "slug": "definition:marker-beacon-receiver-fixed-frequency-operation"
+      },
+      {
+        "name": "Mid-Channel Buoys — Black and White Vertical Stripes",
+        "category": "definition",
+        "slug": "definition:mid-channel-buoys-black-and-white-vertical-stripes"
+      },
+      {
+        "name": "Minimum Sink Speed — Definition and Use",
+        "category": "definition",
+        "slug": "definition:minimum-sink-speed-definition-and-use"
+      },
+      {
+        "name": "Nighttime Buoy Light Colors and Significance",
+        "category": "definition",
+        "slug": "definition:nighttime-buoy-light-colors-and-significance"
+      },
+      {
+        "name": "Nosewheel Types — Steerable vs. Castering",
+        "category": "definition",
+        "slug": "definition:nosewheel-types-steerable-vs-castering"
+      },
+      {
+        "name": "Planetary Boundary Layer: Definition and Role",
+        "category": "definition",
+        "slug": "definition:planetary-boundary-layer-definition-and-role"
+      },
+      {
+        "name": "Plant Uptake — Groundwater Absorption by Vegetation",
+        "category": "definition",
+        "slug": "definition:plant-uptake-groundwater-absorption-by-vegetation"
+      },
+      {
+        "name": "Potential Energy — Definition and Formula",
+        "category": "definition",
+        "slug": "definition:potential-energy-definition-and-formula"
+      },
+      {
+        "name": "Pulse Oximeter — Function and Operation",
+        "category": "definition",
+        "slug": "definition:pulse-oximeter-function-and-operation"
+      },
+      {
+        "name": "Reliever Airports — Purpose and Ownership",
+        "category": "definition",
+        "slug": "definition:reliever-airports-purpose-and-ownership"
+      },
+      {
+        "name": "Rhodopsin — Role in Photopic and Scotopic Vision",
+        "category": "definition",
+        "slug": "definition:rhodopsin-role-in-photopic-and-scotopic-vision"
+      }
+    ]
+  },
+  "components": {
+    "total": 1484,
+    "largest_size": 16395,
+    "largest_pct": 74.24,
+    "sizes": [
+      16395,
+      111,
+      53,
+      53,
+      48,
+      45,
+      45,
+      37,
+      34,
+      33,
+      30,
+      29,
+      28,
+      27,
+      27,
+      24,
+      23,
+      23,
+      23,
+      22
+    ]
+  },
+  "root_reachability": [
+    {
+      "root_name": "National Airspace System (NAS) Plan — Origin and Goals",
+      "root_slug": "topic:national-airspace-system-nas-plan-origin-and-goals",
+      "reachable_count": 2,
+      "reachable_pct": 0.01,
+      "max_hops": 6
+    },
+    {
+      "root_name": "Private Pilot Area I",
+      "root_slug": "acs_area:private:I",
+      "reachable_count": 12759,
+      "reachable_pct": 57.77,
+      "max_hops": 6
+    },
+    {
+      "root_name": "Private Pilot Area II",
+      "root_slug": "acs_area:private:II",
+      "reachable_count": 11322,
+      "reachable_pct": 51.27,
+      "max_hops": 6
+    },
+    {
+      "root_name": "Commercial Pilot Area I",
+      "root_slug": "acs_area:commercial:I",
+      "reachable_count": 12488,
+      "reachable_pct": 56.55,
+      "max_hops": 6
+    },
+    {
+      "root_name": "Instrument Pilot Area I",
+      "root_slug": "acs_area:instrument:I",
+      "reachable_count": 12237,
+      "reachable_pct": 55.41,
+      "max_hops": 6
+    },
+    {
+      "root_name": "AIM aim 01 ch1",
+      "root_slug": "artifact:aim",
+      "reachable_count": 12,
+      "reachable_pct": 0.05,
+      "max_hops": 6
+    }
+  ],
+  "edge_sanity": {
+    "dangling_edges": 0,
+    "self_loops": 0,
+    "duplicate_edges": 0,
+    "dangling_details": []
+  }
+}

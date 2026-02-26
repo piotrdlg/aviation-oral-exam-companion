@@ -18,6 +18,7 @@ import type { SystemConfigMap } from './system-config';
 import type { TimingContext } from './timing';
 import { getPromptContent } from './prompts';
 import { TtlCache } from './ttl-cache';
+import { fetchConceptBundle, formatBundleForPrompt } from './graph-retrieval';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
@@ -38,7 +39,8 @@ export interface AssessmentData {
   follow_up_needed: boolean;
   primary_element: string | null;
   mentioned_elements: string[];
-  source_summary: string | null;
+  /** Always populated — cites FAA sources or states "Insufficient FAA sources" */
+  source_summary: string;
   rag_chunks?: ChunkSearchResult[];
   usage?: LlmUsage;
 }
@@ -188,8 +190,9 @@ export async function fetchRagContext(
   options?: {
     systemConfig?: SystemConfigMap;
     timing?: TimingContext;
+    elementCode?: string;
   }
-): Promise<{ ragContext: string; ragChunks: ChunkSearchResult[]; ragImages: ImageResult[] }> {
+): Promise<{ ragContext: string; ragChunks: ChunkSearchResult[]; ragImages: ImageResult[]; graphContext: string }> {
   try {
     // Combine task, recent history, and student answer for a comprehensive query
     const recentText = history.slice(-2).map(m => m.text).join(' ');
@@ -197,8 +200,25 @@ export async function fetchRagContext(
     const query = `${task.task} ${recentText}${answerText}`.slice(0, 500);
 
     const filterEnabled = !!(options?.systemConfig?.['rag.metadata_filter'] as { enabled?: boolean } | undefined)?.enabled;
+    const graphEnabled = !!(options?.systemConfig?.['graph.enhanced_retrieval'] as { enabled?: boolean } | undefined)?.enabled;
+    const shadowMode = !!(options?.systemConfig?.['graph.shadow_mode'] as { enabled?: boolean } | undefined)?.enabled;
 
     let ragChunks: ChunkSearchResult[];
+
+    // Start graph retrieval in parallel if enabled or in shadow mode
+    let graphPromise: Promise<string> | null = null;
+    if ((graphEnabled || shadowMode) && options?.elementCode) {
+      graphPromise = (async () => {
+        options?.timing?.start('rag.graph.bundle');
+        try {
+          const bundle = await fetchConceptBundle(options.elementCode!);
+          const formatted = formatBundleForPrompt(bundle);
+          return formatted;
+        } finally {
+          options?.timing?.end('rag.graph.bundle');
+        }
+      })();
+    }
 
     if (filterEnabled) {
       // Infer metadata filters from conversation context
@@ -218,19 +238,39 @@ export async function fetchRagContext(
         timing: options?.timing,
       });
     } else {
-      ragChunks = await searchChunks(query, { matchCount });
+      ragChunks = await searchChunks(query, { matchCount, timing: options?.timing });
     }
 
-    const ragContext = formatChunksForPrompt(ragChunks);
+    let ragContext = formatChunksForPrompt(ragChunks);
+
+    // Resolve graph context
+    let graphContext = '';
+    if (graphPromise) {
+      try {
+        graphContext = await graphPromise;
+      } catch (err) {
+        console.error('Graph retrieval failed (non-critical):', err instanceof Error ? err.message : err);
+      }
+    }
+
+    // Prepend graph context to RAG when graph.enhanced_retrieval is enabled
+    if (graphEnabled && graphContext) {
+      ragContext = `KNOWLEDGE GRAPH CONTEXT:\n${graphContext}\n\nCHUNK-BASED RETRIEVAL:\n${ragContext}`;
+    }
+
+    // Shadow mode: log graph context without injecting into prompt
+    if (shadowMode && !graphEnabled && graphContext) {
+      console.log(`[graph.shadow_mode] Element ${options?.elementCode}: ${graphContext.length} chars, ${graphContext.split('\n').length} lines`);
+    }
 
     // Fetch linked images for the retrieved chunks
     const chunkIds = ragChunks.map(c => c.id);
-    const ragImages = await getImagesForChunks(chunkIds);
+    const ragImages = await getImagesForChunks(chunkIds, options?.timing);
 
-    return { ragContext, ragChunks, ragImages };
+    return { ragContext, ragChunks, ragImages, graphContext };
   } catch (err) {
     console.error('fetchRagContext failed:', err instanceof Error ? err.message : err);
-    return { ragContext: '', ragChunks: [], ragImages: [] };
+    return { ragContext: '', ragChunks: [], ragImages: [], graphContext: '' };
   }
 }
 
@@ -321,7 +361,8 @@ export async function generateExaminerTurnStreaming(
   studyMode?: string,
   personaId?: string,
   studentName?: string,
-  structuredResponse?: boolean
+  structuredResponse?: boolean,
+  timing?: TimingContext
 ): Promise<{ stream: ReadableStream; fullTextPromise: Promise<string> }> {
   // Load the best-matching prompt from DB (specificity: rating + studyMode + difficulty)
   const { content: dbPromptContent } = await loadPromptFromDB(
@@ -409,9 +450,16 @@ export async function generateExaminerTurnStreaming(
       let lastEmitBoundary = 0;
       const isResponseToStudent = messages.length > 0;
 
+      let firstTokenRecorded = false;
+
       try {
         for await (const event of stream) {
           if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+            if (!firstTokenRecorded) {
+              // Matches timing.start('llm.examiner.ttft') in api/exam/route.ts
+              timing?.end('llm.examiner.ttft');
+              firstTokenRecorded = true;
+            }
             fullText += event.delta.text;
 
             if (structuredResponse) {
@@ -515,9 +563,6 @@ export async function generateExaminerTurnStreaming(
             controller.enqueue(encoder.encode(': keep-alive\n\n'));
           }, 2000);
           try {
-            const keepAlive = setInterval(() => {
-              controller.enqueue(encoder.encode(': keep-alive\n\n'));
-            }, 2000);
             const assessment = await assessmentPromise;
             clearInterval(keepAlive);
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ assessment })}\n\n`));
@@ -533,7 +578,7 @@ export async function generateExaminerTurnStreaming(
               follow_up_needed: false,
               primary_element: null,
               mentioned_elements: [],
-              source_summary: null,
+              source_summary: 'Insufficient FAA sources to verify this answer.',
             };
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ assessment: fallback })}\n\n`));
           }
@@ -562,7 +607,7 @@ export async function assessAnswer(
   task: AcsTaskRow,
   history: ExamMessage[],
   studentAnswer: string,
-  prefetchedRag?: { ragContext: string; ragChunks: ChunkSearchResult[] },
+  prefetchedRag?: { ragContext: string; ragChunks: ChunkSearchResult[]; graphContext?: string },
   questionImages?: ImageResult[],
   rating: Rating = 'private',
   studyMode?: string,
@@ -611,6 +656,11 @@ export async function assessAnswer(
     ? `\n\nFAA SOURCE MATERIAL (use to validate the answer):\n${ragContext}`
     : '';
 
+  // Inject verified regulatory claims from graph if available
+  const graphSection = prefetchedRag?.graphContext
+    ? `\n\nVERIFIED REGULATORY CLAIMS (check student answers against these known-correct values):\n${prefetchedRag.graphContext}`
+    : '';
+
   // Load the best-matching assessment prompt from DB (specificity: rating + studyMode + difficulty)
   const { content: dbPromptContent } = await loadPromptFromDB(
     supabase, 'assessment_system', rating, studyMode, difficulty
@@ -627,7 +677,7 @@ EXAM CONTEXT:
 Certificate: ${ratingLabel}
 ACS Task: ${task.id} - ${task.task}
 All elements for this task:
-${elementList}${ragSection}
+${elementList}${ragSection}${graphSection}
 
 OUTPUT FORMAT — Respond in JSON only with this exact schema:
 {
@@ -637,7 +687,7 @@ OUTPUT FORMAT — Respond in JSON only with this exact schema:
   "follow_up_needed": true | false,
   "primary_element": "the ACS element code (e.g., PA.I.A.K1) most directly addressed by this answer, or null",
   "mentioned_elements": ["other element codes touched on in the answer"],
-  "source_summary": "1-3 sentences summarizing the key FAA references that apply to this question. Cite specific regulation/document names and section numbers (e.g., '14 CFR 61.23 requires...'). If no FAA source material was provided, set to null."
+  "source_summary": "1-3 sentences summarizing the key FAA references that apply to this question. Cite specific regulation/document names and section numbers (e.g., '14 CFR 61.23 requires...'). If no FAA source material was provided, set to: 'Insufficient FAA sources to verify this answer.'"
 }`;
 
   const textOnlyContent = `Recent conversation:\n${recentContext}\n\nStudent's answer: ${studentAnswer}\n\nAssess this answer.`;
@@ -698,7 +748,7 @@ OUTPUT FORMAT — Respond in JSON only with this exact schema:
       follow_up_needed: parsed.follow_up_needed ?? false,
       primary_element: parsed.primary_element || null,
       mentioned_elements: parsed.mentioned_elements || [],
-      source_summary: parsed.source_summary || null,
+      source_summary: parsed.source_summary || 'Insufficient FAA sources to verify this answer.',
       rag_chunks: ragChunks.length > 0 ? ragChunks : undefined,
       usage: usageData,
     };
@@ -710,7 +760,7 @@ OUTPUT FORMAT — Respond in JSON only with this exact schema:
       follow_up_needed: false,
       primary_element: null,
       mentioned_elements: [],
-      source_summary: null,
+      source_summary: 'Insufficient FAA sources to verify this answer.',
       rag_chunks: ragChunks.length > 0 ? ragChunks : undefined,
       usage: usageData,
     };

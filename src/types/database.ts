@@ -27,7 +27,8 @@ export type ConceptCategory =
   | 'definition'
   | 'procedure'
   | 'regulatory_claim'
-  | 'artifact';
+  | 'artifact'
+  | 'taxonomy_node';
 
 export type EvidenceType = 'primary' | 'secondary' | 'example' | 'counterexample';
 

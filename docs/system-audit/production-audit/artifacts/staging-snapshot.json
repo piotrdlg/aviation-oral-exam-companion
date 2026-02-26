@@ -1,0 +1,589 @@
+{
+  "meta": {
+    "environment": "staging",
+    "supabase_url": "https://curpdzczzawpnniaujgq.supabase.co",
+    "project_ref": "curpdzczzawpnniaujgq",
+    "snapshot_at": "2026-02-25T01:57:35.008Z"
+  },
+  "system_config": [
+    {
+      "key": "kill_switch.anthropic",
+      "value": {
+        "enabled": false
+      },
+      "description": "Disable Anthropic API calls",
+      "updated_at": "2026-02-20T04:02:24.519233+00:00"
+    },
+    {
+      "key": "kill_switch.openai",
+      "value": {
+        "enabled": false
+      },
+      "description": "Disable OpenAI API calls",
+      "updated_at": "2026-02-20T04:02:24.519233+00:00"
+    },
+    {
+      "key": "kill_switch.deepgram",
+      "value": {
+        "enabled": false
+      },
+      "description": "Disable Deepgram API calls",
+      "updated_at": "2026-02-20T04:02:24.519233+00:00"
+    },
+    {
+      "key": "kill_switch.cartesia",
+      "value": {
+        "enabled": false
+      },
+      "description": "Disable Cartesia API calls",
+      "updated_at": "2026-02-20T04:02:24.519233+00:00"
+    },
+    {
+      "key": "kill_switch.tier.ground_school",
+      "value": {
+        "enabled": false
+      },
+      "description": "Disable ground_school tier",
+      "updated_at": "2026-02-20T04:02:24.519233+00:00"
+    },
+    {
+      "key": "kill_switch.tier.checkride_prep",
+      "value": {
+        "enabled": false
+      },
+      "description": "Disable checkride_prep tier",
+      "updated_at": "2026-02-20T04:02:24.519233+00:00"
+    },
+    {
+      "key": "kill_switch.tier.dpe_live",
+      "value": {
+        "enabled": false
+      },
+      "description": "Disable dpe_live tier",
+      "updated_at": "2026-02-20T04:02:24.519233+00:00"
+    },
+    {
+      "key": "maintenance_mode",
+      "value": {
+        "enabled": false,
+        "message": ""
+      },
+      "description": "Global maintenance mode",
+      "updated_at": "2026-02-20T04:02:24.519233+00:00"
+    },
+    {
+      "key": "user_hard_caps",
+      "value": {
+        "daily_tts_chars": 50000,
+        "daily_llm_tokens": 100000,
+        "daily_stt_seconds": 3600
+      },
+      "description": "Per-user daily hard caps",
+      "updated_at": "2026-02-20T04:02:24.519233+00:00"
+    },
+    {
+      "key": "tts.openai",
+      "value": {
+        "model": "tts-1",
+        "speed": 1,
+        "voice": "onyx"
+      },
+      "description": "OpenAI TTS settings (Tier 1: Ground School). Voice: onyx/alloy/echo/fable/nova/shimmer. Model: tts-1/tts-1-hd. Speed: 0.25-4.0.",
+      "updated_at": "2026-02-20T04:02:24.978741+00:00"
+    },
+    {
+      "key": "tts.deepgram",
+      "value": {
+        "model": "aura-2-orion-en",
+        "encoding": "linear16",
+        "sample_rate": 48000
+      },
+      "description": "Deepgram Aura-2 TTS settings (Tier 2: Checkride Prep). Model = voice selection. Encoding: linear16/mp3/opus/flac/aac.",
+      "updated_at": "2026-02-20T04:02:24.978741+00:00"
+    },
+    {
+      "key": "tts.cartesia",
+      "value": {
+        "model": "sonic-3",
+        "speed": 0.95,
+        "volume": 1,
+        "emotion": "confident",
+        "voice_id": "95856005-0332-41b0-935f-352e296aa0df",
+        "voice_name": "Hugo — Teatime Friend (British)",
+        "sample_rate": 48000
+      },
+      "description": "Cartesia Sonic 3 TTS settings (Tier 3: DPE Live). Speed: 0.6-1.5. Volume: 0.5-2.0. Emotion: confident/calm/neutral/determined/etc.",
+      "updated_at": "2026-02-20T04:02:24.978741+00:00"
+    },
+    {
+      "key": "voice.user_options",
+      "value": [
+        {
+          "desc": "Friendly veteran DPE everyone recommends",
+          "image": "/personas/bob-mitchell.webp",
+          "label": "Bob Mitchell",
+          "model": "aura-2-orion-en",
+          "gender": "M",
+          "persona_id": "bob_mitchell"
+        },
+        {
+          "desc": "Younger examiner, methodical",
+          "image": "/personas/jim-hayes.webp",
+          "label": "Jim Hayes",
+          "model": "aura-2-zeus-en",
+          "gender": "M",
+          "persona_id": "jim_hayes"
+        },
+        {
+          "desc": "Warm but thorough, catches everything",
+          "image": "/personas/karen-sullivan.webp",
+          "label": "Karen Sullivan",
+          "model": "aura-2-athena-en",
+          "gender": "F",
+          "persona_id": "karen_sullivan"
+        },
+        {
+          "desc": "Precise and efficient",
+          "image": "/personas/maria-torres.webp",
+          "label": "Maria Torres",
+          "model": "aura-2-luna-en",
+          "gender": "F",
+          "persona_id": "maria_torres"
+        }
+      ],
+      "description": "Admin-curated Deepgram voice options shown to users. Array of {model, label}.",
+      "updated_at": "2026-02-20T04:02:25.133795+00:00"
+    },
+    {
+      "key": "app.environment",
+      "value": {
+        "name": "staging"
+      },
+      "description": null,
+      "updated_at": "2026-02-20T04:08:55.969616+00:00"
+    },
+    {
+      "key": "tts_sentence_stream",
+      "value": {
+        "enabled": true
+      },
+      "description": null,
+      "updated_at": "2026-02-20T18:28:00.825043+00:00"
+    },
+    {
+      "key": "graph.enhanced_retrieval",
+      "value": {
+        "enabled": false
+      },
+      "description": "Merge graph concept bundle into RAG context",
+      "updated_at": "2026-02-25T01:07:52.643719+00:00"
+    },
+    {
+      "key": "graph.shadow_mode",
+      "value": {
+        "enabled": false
+      },
+      "description": "Log graph retrieval in parallel without affecting output",
+      "updated_at": "2026-02-25T01:07:52.643719+00:00"
+    }
+  ],
+  "schema": {
+    "exam_sessions": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "session_transcripts": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "element_attempts": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "prompt_versions": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "system_config": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "source_documents": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "source_chunks": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "source_images": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "chunk_image_links": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "embedding_cache": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "latency_logs": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "concepts": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "concept_relations": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "concept_chunk_evidence": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "acs_tasks": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "acs_elements": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "user_profiles": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "usage_logs": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "transcript_citations": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "active_sessions": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "moderation_queue": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "support_tickets": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ]
+  },
+  "row_counts": {
+    "source_documents": 172,
+    "source_chunks": 4674,
+    "source_images": 0,
+    "chunk_image_links": 0,
+    "embedding_cache": 0,
+    "latency_logs": 0,
+    "concepts": 2348,
+    "concept_relations": 2317,
+    "concept_chunk_evidence": 0,
+    "acs_tasks": 143,
+    "acs_elements": 2174,
+    "exam_sessions": 13,
+    "session_transcripts": 76,
+    "element_attempts": 34,
+    "prompt_versions": 23,
+    "user_profiles": 3,
+    "usage_logs": 211,
+    "transcript_citations": 185,
+    "active_sessions": 2,
+    "off_graph_mentions": 0,
+    "admin_users": 1
+  },
+  "coverage_metrics": {
+    "chunks_with_embedding": 4619,
+    "chunks_with_page_start": 0,
+    "embedding_cache_reused": 0,
+    "concepts_with_embedding": 2348,
+    "sessions_active": 1,
+    "sessions_completed": 7,
+    "sessions_paused": 0,
+    "sessions_expired": 0,
+    "sessions_abandoned": 5,
+    "prompt_versions_detail": [
+      {
+        "prompt_key": "assessment_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": null,
+        "difficulty": null,
+        "version": 2
+      },
+      {
+        "prompt_key": "assessment_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "linear",
+        "difficulty": "medium",
+        "version": 1
+      },
+      {
+        "prompt_key": "assessment_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "cross_acs",
+        "difficulty": "medium",
+        "version": 1
+      },
+      {
+        "prompt_key": "assessment_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "linear",
+        "difficulty": "hard",
+        "version": 1
+      },
+      {
+        "prompt_key": "assessment_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "cross_acs",
+        "difficulty": "hard",
+        "version": 1
+      },
+      {
+        "prompt_key": "assessment_system",
+        "status": "archived",
+        "rating": null,
+        "study_mode": null,
+        "difficulty": null,
+        "version": 1
+      },
+      {
+        "prompt_key": "assessment_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "linear",
+        "difficulty": "mixed",
+        "version": 1
+      },
+      {
+        "prompt_key": "assessment_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "cross_acs",
+        "difficulty": "mixed",
+        "version": 1
+      },
+      {
+        "prompt_key": "assessment_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "cross_acs",
+        "difficulty": "easy",
+        "version": 1
+      },
+      {
+        "prompt_key": "assessment_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "linear",
+        "difficulty": "easy",
+        "version": 1
+      },
+      {
+        "prompt_key": "examiner_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": null,
+        "difficulty": null,
+        "version": 1
+      },
+      {
+        "prompt_key": "examiner_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "linear",
+        "difficulty": "easy",
+        "version": 1
+      },
+      {
+        "prompt_key": "examiner_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "cross_acs",
+        "difficulty": "easy",
+        "version": 1
+      },
+      {
+        "prompt_key": "examiner_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "linear",
+        "difficulty": "medium",
+        "version": 1
+      },
+      {
+        "prompt_key": "examiner_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "cross_acs",
+        "difficulty": "medium",
+        "version": 1
+      },
+      {
+        "prompt_key": "examiner_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "linear",
+        "difficulty": "hard",
+        "version": 1
+      },
+      {
+        "prompt_key": "examiner_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "cross_acs",
+        "difficulty": "hard",
+        "version": 1
+      },
+      {
+        "prompt_key": "examiner_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "linear",
+        "difficulty": "mixed",
+        "version": 1
+      },
+      {
+        "prompt_key": "examiner_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "cross_acs",
+        "difficulty": "mixed",
+        "version": 1
+      },
+      {
+        "prompt_key": "persona_bob_mitchell",
+        "status": "published",
+        "rating": null,
+        "study_mode": null,
+        "difficulty": null,
+        "version": 1
+      },
+      {
+        "prompt_key": "persona_jim_hayes",
+        "status": "published",
+        "rating": null,
+        "study_mode": null,
+        "difficulty": null,
+        "version": 1
+      },
+      {
+        "prompt_key": "persona_karen_sullivan",
+        "status": "published",
+        "rating": null,
+        "study_mode": null,
+        "difficulty": null,
+        "version": 1
+      },
+      {
+        "prompt_key": "persona_maria_torres",
+        "status": "published",
+        "rating": null,
+        "study_mode": null,
+        "difficulty": null,
+        "version": 1
+      }
+    ]
+  },
+  "rpc_presence": {
+    "chunk_hybrid_search": false,
+    "get_images_for_chunks": false,
+    "get_element_scores": false,
+    "get_session_element_scores": false,
+    "get_related_concepts": false,
+    "hybrid_search": false,
+    "get_concept_bundle": false,
+    "get_uncovered_acs_tasks": false,
+    "get_orphan_concepts": false
+  },
+  "latency_stats": {
+    "total_count": 0,
+    "recent_20": []
+  },
+  "concepts_by_category": {
+    "acs_area": 31,
+    "acs_element": 969
+  },
+  "relations_by_type": {
+    "is_component_of": 1000
+  },
+  "errors": []
+}

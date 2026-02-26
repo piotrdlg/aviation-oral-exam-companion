@@ -1,0 +1,946 @@
+{
+  "meta": {
+    "environment": "prod",
+    "supabase_url": "https://pvuiwwqsumoqjepukjhz.supabase.co",
+    "project_ref": "pvuiwwqsumoqjepukjhz",
+    "snapshot_at": "2026-02-25T01:58:03.482Z"
+  },
+  "system_config": [
+    {
+      "key": "kill_switch.anthropic",
+      "value": {
+        "enabled": false
+      },
+      "description": "Disable Anthropic API calls",
+      "updated_at": "2026-02-17T00:24:40.548271+00:00"
+    },
+    {
+      "key": "kill_switch.openai",
+      "value": {
+        "enabled": false
+      },
+      "description": "Disable OpenAI API calls",
+      "updated_at": "2026-02-17T00:24:40.548271+00:00"
+    },
+    {
+      "key": "kill_switch.deepgram",
+      "value": {
+        "enabled": false
+      },
+      "description": "Disable Deepgram API calls",
+      "updated_at": "2026-02-17T00:24:40.548271+00:00"
+    },
+    {
+      "key": "kill_switch.cartesia",
+      "value": {
+        "enabled": false
+      },
+      "description": "Disable Cartesia API calls",
+      "updated_at": "2026-02-17T00:24:40.548271+00:00"
+    },
+    {
+      "key": "kill_switch.tier.ground_school",
+      "value": {
+        "enabled": false
+      },
+      "description": "Disable ground_school tier",
+      "updated_at": "2026-02-17T00:24:40.548271+00:00"
+    },
+    {
+      "key": "kill_switch.tier.checkride_prep",
+      "value": {
+        "enabled": false
+      },
+      "description": "Disable checkride_prep tier",
+      "updated_at": "2026-02-17T00:24:40.548271+00:00"
+    },
+    {
+      "key": "kill_switch.tier.dpe_live",
+      "value": {
+        "enabled": false
+      },
+      "description": "Disable dpe_live tier",
+      "updated_at": "2026-02-17T00:24:40.548271+00:00"
+    },
+    {
+      "key": "maintenance_mode",
+      "value": {
+        "enabled": false,
+        "message": ""
+      },
+      "description": "Global maintenance mode",
+      "updated_at": "2026-02-17T00:24:40.548271+00:00"
+    },
+    {
+      "key": "user_hard_caps",
+      "value": {
+        "daily_tts_chars": 50000,
+        "daily_llm_tokens": 100000,
+        "daily_stt_seconds": 3600
+      },
+      "description": "Per-user daily hard caps",
+      "updated_at": "2026-02-17T00:24:40.548271+00:00"
+    },
+    {
+      "key": "app.environment",
+      "value": {
+        "name": "production"
+      },
+      "description": null,
+      "updated_at": "2026-02-20T04:52:12.814429+00:00"
+    },
+    {
+      "key": "voice.user_options",
+      "value": [
+        {
+          "desc": "Younger examiner, methodical",
+          "image": "/personas/jim-hayes.webp",
+          "label": "Jim Hayes",
+          "model": "aura-2-zeus-en",
+          "gender": "M",
+          "persona_id": "jim_hayes"
+        },
+        {
+          "desc": "Warm but thorough, catches everything",
+          "image": "/personas/karen-sullivan.webp",
+          "label": "Karen Sullivan",
+          "model": "aura-2-athena-en",
+          "gender": "F",
+          "persona_id": "karen_sullivan"
+        },
+        {
+          "desc": "Precise and efficient",
+          "image": "/personas/maria-torres.webp",
+          "label": "Maria Torres",
+          "model": "aura-2-luna-en",
+          "gender": "F",
+          "persona_id": "maria_torres"
+        },
+        {
+          "label": "Mars — Patient, baritone (M, American)",
+          "model": "aura-2-mars-en"
+        }
+      ],
+      "description": "Admin-curated Deepgram voice options shown to users. Array of {model, label}.",
+      "updated_at": "2026-02-20T05:14:33.79+00:00"
+    },
+    {
+      "key": "graph.shadow_mode",
+      "value": {
+        "enabled": true
+      },
+      "description": "Log graph retrieval in parallel without affecting output",
+      "updated_at": "2026-02-23T12:53:48.711403+00:00"
+    },
+    {
+      "key": "graph.enhanced_retrieval",
+      "value": {
+        "enabled": true
+      },
+      "description": "Merge graph concept bundle into RAG context",
+      "updated_at": "2026-02-23T12:53:48.711403+00:00"
+    },
+    {
+      "key": "tts.openai",
+      "value": {
+        "model": "tts-1",
+        "speed": 1,
+        "voice": "onyx"
+      },
+      "description": "OpenAI TTS settings (Tier 1: Ground School). Voice: onyx/alloy/echo/fable/nova/shimmer. Model: tts-1/tts-1-hd. Speed: 0.25-4.0.",
+      "updated_at": "2026-02-17T16:38:00.265+00:00"
+    },
+    {
+      "key": "tts.deepgram",
+      "value": {
+        "model": "aura-2-orion-en",
+        "encoding": "linear16",
+        "sample_rate": 48000
+      },
+      "description": "Deepgram Aura-2 TTS settings (Tier 2: Checkride Prep). Model = voice selection. Encoding: linear16/mp3/opus/flac/aac.",
+      "updated_at": "2026-02-17T16:38:00.265+00:00"
+    },
+    {
+      "key": "tts.cartesia",
+      "value": {
+        "model": "sonic-3",
+        "speed": 0.95,
+        "volume": 1,
+        "emotion": "confident",
+        "voice_id": "95856005-0332-41b0-935f-352e296aa0df",
+        "voice_name": "Hugo — Teatime Friend (British)",
+        "sample_rate": 48000
+      },
+      "description": "Cartesia Sonic 3 TTS settings (Tier 3: DPE Live). Speed: 0.6-1.5. Volume: 0.5-2.0. Emotion: confident/calm/neutral/determined/etc.",
+      "updated_at": "2026-02-17T16:38:00.265+00:00"
+    }
+  ],
+  "schema": {
+    "exam_sessions": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "session_transcripts": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "element_attempts": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "prompt_versions": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "system_config": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "source_documents": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "source_chunks": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "source_images": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "chunk_image_links": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "embedding_cache": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "latency_logs": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "concepts": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "concept_relations": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "concept_chunk_evidence": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "acs_tasks": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "acs_elements": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "user_profiles": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "usage_logs": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "transcript_citations": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "active_sessions": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "moderation_queue": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ],
+    "support_tickets": [
+      {
+        "column_name": "(schema query failed)",
+        "data_type": "Could not find the table 'public.information_schema.columns' in the schema cache",
+        "is_nullable": ""
+      }
+    ]
+  },
+  "row_counts": {
+    "source_documents": 172,
+    "source_chunks": 4674,
+    "source_images": 1596,
+    "chunk_image_links": 7460,
+    "embedding_cache": 84,
+    "latency_logs": 83,
+    "concepts": 22075,
+    "concept_relations": 45728,
+    "concept_chunk_evidence": 30689,
+    "acs_tasks": 143,
+    "acs_elements": 2174,
+    "exam_sessions": 70,
+    "session_transcripts": 720,
+    "element_attempts": 306,
+    "prompt_versions": 24,
+    "user_profiles": 11,
+    "usage_logs": 1355,
+    "transcript_citations": 1555,
+    "active_sessions": 19,
+    "off_graph_mentions": 0,
+    "admin_users": 1
+  },
+  "coverage_metrics": {
+    "chunks_with_embedding": 4624,
+    "chunks_with_page_start": 0,
+    "embedding_cache_reused": 0,
+    "concepts_with_embedding": 22075,
+    "sessions_active": 21,
+    "sessions_completed": 14,
+    "sessions_paused": 8,
+    "sessions_expired": 0,
+    "sessions_abandoned": 27,
+    "prompt_versions_detail": [
+      {
+        "prompt_key": "assessment_system",
+        "status": "draft",
+        "rating": null,
+        "study_mode": "linear",
+        "difficulty": "easy",
+        "version": 2
+      },
+      {
+        "prompt_key": "assessment_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": null,
+        "difficulty": null,
+        "version": 2
+      },
+      {
+        "prompt_key": "assessment_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "linear",
+        "difficulty": "hard",
+        "version": 1
+      },
+      {
+        "prompt_key": "assessment_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "cross_acs",
+        "difficulty": "hard",
+        "version": 1
+      },
+      {
+        "prompt_key": "assessment_system",
+        "status": "archived",
+        "rating": null,
+        "study_mode": null,
+        "difficulty": null,
+        "version": 1
+      },
+      {
+        "prompt_key": "assessment_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "linear",
+        "difficulty": "mixed",
+        "version": 1
+      },
+      {
+        "prompt_key": "assessment_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "cross_acs",
+        "difficulty": "mixed",
+        "version": 1
+      },
+      {
+        "prompt_key": "assessment_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "linear",
+        "difficulty": "easy",
+        "version": 1
+      },
+      {
+        "prompt_key": "assessment_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "linear",
+        "difficulty": "medium",
+        "version": 1
+      },
+      {
+        "prompt_key": "assessment_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "cross_acs",
+        "difficulty": "easy",
+        "version": 1
+      },
+      {
+        "prompt_key": "assessment_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "cross_acs",
+        "difficulty": "medium",
+        "version": 1
+      },
+      {
+        "prompt_key": "examiner_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": null,
+        "difficulty": null,
+        "version": 1
+      },
+      {
+        "prompt_key": "examiner_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "linear",
+        "difficulty": "easy",
+        "version": 1
+      },
+      {
+        "prompt_key": "examiner_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "cross_acs",
+        "difficulty": "easy",
+        "version": 1
+      },
+      {
+        "prompt_key": "examiner_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "linear",
+        "difficulty": "medium",
+        "version": 1
+      },
+      {
+        "prompt_key": "examiner_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "cross_acs",
+        "difficulty": "medium",
+        "version": 1
+      },
+      {
+        "prompt_key": "examiner_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "linear",
+        "difficulty": "hard",
+        "version": 1
+      },
+      {
+        "prompt_key": "examiner_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "cross_acs",
+        "difficulty": "hard",
+        "version": 1
+      },
+      {
+        "prompt_key": "examiner_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "linear",
+        "difficulty": "mixed",
+        "version": 1
+      },
+      {
+        "prompt_key": "examiner_system",
+        "status": "published",
+        "rating": null,
+        "study_mode": "cross_acs",
+        "difficulty": "mixed",
+        "version": 1
+      },
+      {
+        "prompt_key": "persona_bob_mitchell",
+        "status": "published",
+        "rating": null,
+        "study_mode": null,
+        "difficulty": null,
+        "version": 1
+      },
+      {
+        "prompt_key": "persona_jim_hayes",
+        "status": "published",
+        "rating": null,
+        "study_mode": null,
+        "difficulty": null,
+        "version": 1
+      },
+      {
+        "prompt_key": "persona_karen_sullivan",
+        "status": "published",
+        "rating": null,
+        "study_mode": null,
+        "difficulty": null,
+        "version": 1
+      },
+      {
+        "prompt_key": "persona_maria_torres",
+        "status": "published",
+        "rating": null,
+        "study_mode": null,
+        "difficulty": null,
+        "version": 1
+      }
+    ]
+  },
+  "rpc_presence": {
+    "chunk_hybrid_search": false,
+    "get_images_for_chunks": false,
+    "get_element_scores": false,
+    "get_session_element_scores": false,
+    "get_related_concepts": false,
+    "hybrid_search": false,
+    "get_concept_bundle": false,
+    "get_uncovered_acs_tasks": false,
+    "get_orphan_concepts": false
+  },
+  "latency_stats": {
+    "total_count": 83,
+    "recent_20": [
+      {
+        "session_id": "6e830d88-d772-4219-9fb5-676818044be3",
+        "exchange_number": 80,
+        "timestamp": "2026-02-24T11:48:35.244964+00:00",
+        "timings": {
+          "prechecks": 139,
+          "rag.total": 683,
+          "rag.embedding": 380,
+          "exchange.total": null,
+          "rag.imageSearch": 46,
+          "rag.hybridSearch": 256,
+          "llm.examiner.ttft": 1177,
+          "llm.examiner.total": null,
+          "llm.assessment.total": 2843,
+          "rag.embedding.openai": 340,
+          "rag.embedding.cache_check": 40
+        }
+      },
+      {
+        "session_id": "6e830d88-d772-4219-9fb5-676818044be3",
+        "exchange_number": 79,
+        "timestamp": "2026-02-24T11:48:01.879628+00:00",
+        "timings": {
+          "prechecks": 171,
+          "rag.total": 980,
+          "rag.embedding": 721,
+          "exchange.total": null,
+          "rag.imageSearch": 50,
+          "rag.hybridSearch": 209,
+          "llm.examiner.ttft": 1015,
+          "llm.examiner.total": null,
+          "llm.assessment.total": 8988,
+          "rag.embedding.openai": 664,
+          "rag.embedding.cache_check": 56
+        }
+      },
+      {
+        "session_id": "6e830d88-d772-4219-9fb5-676818044be3",
+        "exchange_number": 78,
+        "timestamp": "2026-02-24T11:44:19.724979+00:00",
+        "timings": {
+          "prechecks": 148,
+          "rag.total": 758,
+          "rag.embedding": 454,
+          "exchange.total": null,
+          "rag.imageSearch": 61,
+          "rag.hybridSearch": 242,
+          "llm.examiner.ttft": 1254,
+          "llm.examiner.total": null,
+          "llm.assessment.total": 8606,
+          "rag.embedding.openai": 384,
+          "rag.embedding.cache_check": 69
+        }
+      },
+      {
+        "session_id": "6e830d88-d772-4219-9fb5-676818044be3",
+        "exchange_number": 77,
+        "timestamp": "2026-02-24T11:41:53.949786+00:00",
+        "timings": {
+          "prechecks": 167,
+          "rag.total": 487,
+          "rag.embedding": 210,
+          "exchange.total": null,
+          "rag.imageSearch": 51,
+          "rag.hybridSearch": 226,
+          "llm.examiner.ttft": 881,
+          "llm.examiner.total": null,
+          "llm.assessment.total": 5652,
+          "rag.embedding.openai": 155,
+          "rag.embedding.cache_check": 54
+        }
+      },
+      {
+        "session_id": "6e830d88-d772-4219-9fb5-676818044be3",
+        "exchange_number": 76,
+        "timestamp": "2026-02-24T11:39:53.357286+00:00",
+        "timings": {
+          "prechecks": 147,
+          "rag.total": 813,
+          "rag.embedding": 488,
+          "exchange.total": null,
+          "rag.imageSearch": 91,
+          "rag.hybridSearch": 233,
+          "llm.examiner.ttft": 1109,
+          "llm.examiner.total": null,
+          "llm.assessment.total": 5984,
+          "rag.embedding.openai": 438,
+          "rag.embedding.cache_check": 49
+        }
+      },
+      {
+        "session_id": "6e830d88-d772-4219-9fb5-676818044be3",
+        "exchange_number": 75,
+        "timestamp": "2026-02-24T11:38:19.561407+00:00",
+        "timings": {
+          "prechecks": 137,
+          "rag.total": 662,
+          "rag.embedding": 259,
+          "exchange.total": null,
+          "rag.imageSearch": 58,
+          "rag.hybridSearch": 345,
+          "llm.examiner.ttft": 780,
+          "llm.examiner.total": null,
+          "llm.assessment.total": 3065,
+          "rag.embedding.openai": 220,
+          "rag.embedding.cache_check": 39
+        }
+      },
+      {
+        "session_id": "6e830d88-d772-4219-9fb5-676818044be3",
+        "exchange_number": 74,
+        "timestamp": "2026-02-24T11:37:49.282951+00:00",
+        "timings": {
+          "prechecks": 126,
+          "rag.total": 2198,
+          "rag.embedding": 820,
+          "exchange.total": null,
+          "rag.imageSearch": 59,
+          "rag.hybridSearch": 1318,
+          "llm.examiner.ttft": 1904,
+          "llm.examiner.total": null,
+          "llm.assessment.total": 5007,
+          "rag.embedding.openai": 748,
+          "rag.embedding.cache_check": 71
+        }
+      },
+      {
+        "session_id": "6e830d88-d772-4219-9fb5-676818044be3",
+        "exchange_number": 73,
+        "timestamp": "2026-02-24T11:27:51.487239+00:00",
+        "timings": {
+          "prechecks": 163,
+          "rag.total": 845,
+          "rag.embedding": 647,
+          "exchange.total": null,
+          "rag.imageSearch": 41,
+          "rag.hybridSearch": 157,
+          "llm.examiner.ttft": 3432,
+          "llm.examiner.total": null,
+          "llm.assessment.total": 7474,
+          "rag.embedding.openai": 605,
+          "rag.embedding.cache_check": 41
+        }
+      },
+      {
+        "session_id": "6e830d88-d772-4219-9fb5-676818044be3",
+        "exchange_number": 72,
+        "timestamp": "2026-02-24T11:25:28.042304+00:00",
+        "timings": {
+          "prechecks": 208,
+          "rag.total": 1527,
+          "rag.embedding": 235,
+          "exchange.total": null,
+          "rag.imageSearch": 42,
+          "rag.hybridSearch": 1249,
+          "llm.examiner.ttft": 2203,
+          "llm.examiner.total": null,
+          "llm.assessment.total": 5330,
+          "rag.embedding.openai": 169,
+          "rag.embedding.cache_check": 65
+        }
+      },
+      {
+        "session_id": "6e830d88-d772-4219-9fb5-676818044be3",
+        "exchange_number": 71,
+        "timestamp": "2026-02-24T11:23:21.354861+00:00",
+        "timings": {
+          "prechecks": 178,
+          "rag.total": 4929,
+          "rag.embedding": 1022,
+          "exchange.total": null,
+          "rag.imageSearch": 67,
+          "rag.hybridSearch": 3839,
+          "llm.examiner.ttft": 2153,
+          "llm.examiner.total": null,
+          "llm.assessment.total": 5816,
+          "rag.embedding.openai": 972,
+          "rag.embedding.cache_check": 50
+        }
+      },
+      {
+        "session_id": "127c6fcf-33a0-4439-adea-957fc376c688",
+        "exchange_number": 4,
+        "timestamp": "2026-02-23T18:51:33.786493+00:00",
+        "timings": {
+          "prechecks": 160,
+          "rag.total": 996,
+          "rag.embedding": 719,
+          "exchange.total": null,
+          "rag.imageSearch": 83,
+          "rag.hybridSearch": 194,
+          "llm.examiner.ttft": 982,
+          "llm.examiner.total": null,
+          "llm.assessment.total": 6789,
+          "rag.embedding.openai": 631,
+          "rag.embedding.cache_check": 87
+        }
+      },
+      {
+        "session_id": "127c6fcf-33a0-4439-adea-957fc376c688",
+        "exchange_number": 3,
+        "timestamp": "2026-02-23T18:50:40.393193+00:00",
+        "timings": {
+          "prechecks": 169,
+          "rag.total": 1101,
+          "rag.embedding": 817,
+          "exchange.total": null,
+          "rag.imageSearch": 40,
+          "rag.hybridSearch": 243,
+          "llm.examiner.ttft": 795,
+          "llm.examiner.total": null,
+          "llm.assessment.total": 6016,
+          "rag.embedding.openai": 753,
+          "rag.embedding.cache_check": 63
+        }
+      },
+      {
+        "session_id": "127c6fcf-33a0-4439-adea-957fc376c688",
+        "exchange_number": 2,
+        "timestamp": "2026-02-23T18:49:36.866427+00:00",
+        "timings": {
+          "prechecks": 154,
+          "rag.total": 619,
+          "rag.embedding": 368,
+          "exchange.total": null,
+          "rag.imageSearch": 51,
+          "rag.hybridSearch": 201,
+          "llm.examiner.ttft": 1498,
+          "llm.examiner.total": null,
+          "llm.assessment.total": 6171,
+          "rag.embedding.openai": 304,
+          "rag.embedding.cache_check": 63
+        }
+      },
+      {
+        "session_id": "127c6fcf-33a0-4439-adea-957fc376c688",
+        "exchange_number": 1,
+        "timestamp": "2026-02-23T18:48:52.196215+00:00",
+        "timings": {
+          "prechecks": 116,
+          "rag.total": 528,
+          "rag.embedding": 254,
+          "exchange.total": null,
+          "rag.imageSearch": 45,
+          "rag.hybridSearch": 228,
+          "llm.examiner.ttft": 1381,
+          "llm.examiner.total": null,
+          "llm.assessment.total": 4184,
+          "rag.embedding.openai": 193,
+          "rag.embedding.cache_check": 60
+        }
+      },
+      {
+        "session_id": "6e830d88-d772-4219-9fb5-676818044be3",
+        "exchange_number": 70,
+        "timestamp": "2026-02-23T18:04:57.614512+00:00",
+        "timings": {
+          "prechecks": 166,
+          "rag.total": 642,
+          "rag.embedding": 449,
+          "exchange.total": null,
+          "rag.imageSearch": 44,
+          "rag.hybridSearch": 148,
+          "llm.examiner.ttft": 1066,
+          "llm.examiner.total": null,
+          "llm.assessment.total": 4294,
+          "rag.embedding.openai": 388,
+          "rag.embedding.cache_check": 60
+        }
+      },
+      {
+        "session_id": "6e830d88-d772-4219-9fb5-676818044be3",
+        "exchange_number": 69,
+        "timestamp": "2026-02-23T18:04:22.256166+00:00",
+        "timings": {
+          "prechecks": 129,
+          "rag.total": 475,
+          "rag.embedding": 229,
+          "exchange.total": null,
+          "rag.imageSearch": 72,
+          "rag.hybridSearch": 173,
+          "llm.examiner.ttft": 1566,
+          "llm.examiner.total": null,
+          "llm.assessment.total": 6321,
+          "rag.embedding.openai": 177,
+          "rag.embedding.cache_check": 52
+        }
+      },
+      {
+        "session_id": "6e830d88-d772-4219-9fb5-676818044be3",
+        "exchange_number": 68,
+        "timestamp": "2026-02-23T18:03:39.722222+00:00",
+        "timings": {
+          "prechecks": 172,
+          "rag.total": 505,
+          "rag.embedding": 268,
+          "exchange.total": null,
+          "rag.imageSearch": 45,
+          "rag.hybridSearch": 192,
+          "llm.examiner.ttft": 1049,
+          "llm.examiner.total": null,
+          "llm.assessment.total": 9940,
+          "rag.embedding.openai": 217,
+          "rag.embedding.cache_check": 50
+        }
+      },
+      {
+        "session_id": "6e830d88-d772-4219-9fb5-676818044be3",
+        "exchange_number": 67,
+        "timestamp": "2026-02-23T17:59:16.36093+00:00",
+        "timings": {
+          "prechecks": 149,
+          "rag.total": 591,
+          "rag.embedding": 363,
+          "exchange.total": null,
+          "rag.imageSearch": 65,
+          "rag.hybridSearch": 162,
+          "llm.examiner.ttft": 1862,
+          "llm.examiner.total": null,
+          "llm.assessment.total": 6160,
+          "rag.embedding.openai": 290,
+          "rag.embedding.cache_check": 72
+        }
+      },
+      {
+        "session_id": "6e830d88-d772-4219-9fb5-676818044be3",
+        "exchange_number": 66,
+        "timestamp": "2026-02-23T17:58:26.449693+00:00",
+        "timings": {
+          "prechecks": 134,
+          "rag.total": 661,
+          "rag.embedding": 425,
+          "exchange.total": null,
+          "rag.imageSearch": 68,
+          "rag.hybridSearch": 167,
+          "llm.examiner.ttft": 1457,
+          "llm.examiner.total": null,
+          "llm.assessment.total": 5766,
+          "rag.embedding.openai": 377,
+          "rag.embedding.cache_check": 48
+        }
+      },
+      {
+        "session_id": "6e830d88-d772-4219-9fb5-676818044be3",
+        "exchange_number": 65,
+        "timestamp": "2026-02-23T17:57:53.008584+00:00",
+        "timings": {
+          "prechecks": 160,
+          "rag.total": 722,
+          "rag.embedding": 465,
+          "exchange.total": null,
+          "rag.imageSearch": 76,
+          "rag.hybridSearch": 181,
+          "llm.examiner.ttft": 1093,
+          "llm.examiner.total": null,
+          "llm.assessment.total": 5572,
+          "rag.embedding.openai": 421,
+          "rag.embedding.cache_check": 43
+        }
+      }
+    ]
+  },
+  "concepts_by_category": {
+    "acs_area": 31,
+    "acs_element": 969
+  },
+  "relations_by_type": {
+    "is_component_of": 1000
+  },
+  "errors": []
+}

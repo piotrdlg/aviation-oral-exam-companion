@@ -14,7 +14,15 @@ import {
   type LlmUsage,
 } from '@/lib/exam-engine';
 import { computeExamResult } from '@/lib/exam-logic';
-import { initPlanner, advancePlanner } from '@/lib/exam-planner';
+import {
+  initPlanner,
+  advancePlanner,
+  isExamComplete,
+  useBonusQuestion,
+  creditMentionedElements,
+  canFollowUp,
+  type ExamPlanV1,
+} from '@/lib/exam-planner';
 import { getSystemConfig } from '@/lib/system-config';
 import { checkKillSwitch } from '@/lib/kill-switch';
 import { requireSafeDbTarget } from '@/lib/app-env';
@@ -191,7 +199,7 @@ export async function POST(request: NextRequest) {
     timing.start('prechecks');
 
     const body = await request.json();
-    const { action, history, taskData, studentAnswer, coveredTaskIds, sessionId, stream, sessionConfig, plannerState: clientPlannerState, chunkedResponse } = body as {
+    const { action, history, taskData, studentAnswer, coveredTaskIds, sessionId, stream, sessionConfig, plannerState: clientPlannerState, chunkedResponse, examPlan: clientExamPlan } = body as {
       action: 'start' | 'respond' | 'next-task' | 'resume-current';
       history?: ExamMessage[];
       taskData?: Awaited<ReturnType<typeof pickStartingTask>>;
@@ -202,6 +210,7 @@ export async function POST(request: NextRequest) {
       sessionConfig?: SessionConfig;
       plannerState?: PlannerState;
       chunkedResponse?: boolean;
+      examPlan?: ExamPlanV1;
     };
 
     // Parallel pre-checks: profile fetch + session enforcement are independent.
@@ -291,11 +300,11 @@ export async function POST(request: NextRequest) {
           if (openErr) console.error('Opening examiner transcript write error:', openErr.message);
         }
 
-        // Persist planner state + session config + taskData to metadata for resume
+        // Persist planner state + session config + taskData + examPlan to metadata for resume
         if (sessionId) {
           const { error: metaErr } = await serviceSupabase
             .from('exam_sessions')
-            .update({ metadata: { plannerState: plannerResult.plannerState, sessionConfig, taskData: plannerResult.task } })
+            .update({ metadata: { plannerState: plannerResult.plannerState, sessionConfig, taskData: plannerResult.task, examPlan: plannerResult.examPlan } })
             .eq('id', sessionId);
           if (metaErr) console.error('Planner state persist error:', metaErr.message);
         }
@@ -306,6 +315,7 @@ export async function POST(request: NextRequest) {
           examinerMessage: turn.examinerMessage,
           elementCode: plannerResult.elementCode,
           plannerState: plannerResult.plannerState,
+          examPlan: plannerResult.examPlan,
           ...(enforcementPausedSessionId ? { pausedSessionId: enforcementPausedSessionId } : {}),
         });
       }
@@ -405,7 +415,11 @@ export async function POST(request: NextRequest) {
               .select('id')
               .single()
           : Promise.resolve({ data: null }),
-        fetchRagContext(taskData, history, studentAnswer, 5, { systemConfig: config, timing }),
+        fetchRagContext(taskData, history, studentAnswer, 5, {
+          systemConfig: config,
+          timing,
+          elementCode: clientPlannerState?.queue?.[clientPlannerState?.cursor] ?? undefined,
+        }),
       ]);
       const studentTranscriptId = studentTranscriptResult.data?.id ?? null;
       if (!studentTranscriptId && sessionId) {
@@ -430,11 +444,12 @@ export async function POST(request: NextRequest) {
         // Streaming path: start assessment in background, stream examiner immediately
         timing.start('llm.assessment.total');
         timing.start('llm.examiner.total');
+        timing.start('llm.examiner.ttft');
         const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty)
           .then(a => { timing.end('llm.assessment.total'); return a; });
 
         const { stream: readableStream, fullTextPromise } = await generateExaminerTurnStreaming(
-          taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessmentPromise, undefined, respondRating, sessionConfig?.studyMode, personaId, studentName, chunkedResponse
+          taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessmentPromise, undefined, respondRating, sessionConfig?.studyMode, personaId, studentName, chunkedResponse, timing
         );
 
         // Use after() to ensure ALL DB writes complete even after stream closes.
@@ -487,6 +502,30 @@ export async function POST(request: NextRequest) {
                   .insert(citations);
                 if (citErr) console.error('Citation write error:', citErr.message);
               }
+            }
+
+            // 5. ExamPlan updates (mention credit + bonus) — streaming path
+            if (clientExamPlan && assessment && sessionId) {
+              let streamPlan = clientExamPlan;
+              if (assessment.mentioned_elements.length > 0) {
+                streamPlan = creditMentionedElements(streamPlan, assessment.mentioned_elements);
+              }
+              if (assessment.score === 'unsatisfactory') {
+                const bonusPlan = useBonusQuestion(streamPlan);
+                if (bonusPlan) streamPlan = bonusPlan;
+              }
+              const { error: metaErr } = await serviceSupabase
+                .from('exam_sessions')
+                .update({
+                  metadata: {
+                    plannerState: clientPlannerState,
+                    sessionConfig,
+                    taskData,
+                    examPlan: streamPlan,
+                  },
+                })
+                .eq('id', sessionId);
+              if (metaErr) console.error('ExamPlan stream persist error:', metaErr.message);
             }
           } catch (err) {
             console.error('Background DB write error:', err);
@@ -578,11 +617,41 @@ export async function POST(request: NextRequest) {
         writeTimings(serviceSupabase, sessionId, exchangeNumber, timing);
       }
 
+      // Apply ExamPlan updates based on assessment
+      let updatedExamPlan = clientExamPlan;
+      if (updatedExamPlan && assessment) {
+        // Credit mentioned elements
+        if (assessment.mentioned_elements.length > 0) {
+          updatedExamPlan = creditMentionedElements(updatedExamPlan, assessment.mentioned_elements);
+        }
+        // Bonus question on unsatisfactory
+        if (assessment.score === 'unsatisfactory') {
+          const bonusPlan = useBonusQuestion(updatedExamPlan);
+          if (bonusPlan) updatedExamPlan = bonusPlan;
+        }
+        // Persist updated plan to metadata
+        if (sessionId) {
+          const { error: metaErr } = await serviceSupabase
+            .from('exam_sessions')
+            .update({
+              metadata: {
+                plannerState: clientPlannerState,
+                sessionConfig,
+                taskData,
+                examPlan: updatedExamPlan,
+              },
+            })
+            .eq('id', sessionId);
+          if (metaErr) console.error('ExamPlan persist error:', metaErr.message);
+        }
+      }
+
       return NextResponse.json({
         taskId: taskData.id,
         taskData,
         examinerMessage: turn.examinerMessage,
         assessment,
+        ...(updatedExamPlan ? { examPlan: updatedExamPlan } : {}),
       });
     }
 
@@ -642,7 +711,7 @@ export async function POST(request: NextRequest) {
 
       // If planner state provided, advance via planner
       if (clientPlannerState && sessionConfig) {
-        const plannerResult = await advancePlanner(clientPlannerState, sessionConfig);
+        const plannerResult = await advancePlanner(clientPlannerState, sessionConfig, undefined, clientExamPlan);
         if (!plannerResult) {
           // All elements exhausted — auto-complete with grading
           if (sessionId) {
@@ -715,11 +784,11 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        // Persist updated planner state + taskData to metadata for resume
+        // Persist updated planner state + taskData + examPlan to metadata for resume
         if (sessionId) {
           const { error: metaErr } = await serviceSupabase
             .from('exam_sessions')
-            .update({ metadata: { plannerState: plannerResult.plannerState, sessionConfig, taskData: plannerResult.task } })
+            .update({ metadata: { plannerState: plannerResult.plannerState, sessionConfig, taskData: plannerResult.task, examPlan: plannerResult.examPlan } })
             .eq('id', sessionId);
           if (metaErr) console.error('Planner state persist error:', metaErr.message);
         }
@@ -730,6 +799,7 @@ export async function POST(request: NextRequest) {
           examinerMessage: turn.examinerMessage,
           elementCode: plannerResult.elementCode,
           plannerState: plannerResult.plannerState,
+          examPlan: plannerResult.examPlan,
         });
       }
 

@@ -132,6 +132,7 @@ export const CATEGORY_COLORS: Record<ConceptCategory, string> = {
   procedure: 'var(--color-c-cyan-dim)',
   regulatory_claim: 'var(--color-c-red)',
   artifact: 'var(--color-c-dim)',
+  taxonomy_node: 'var(--color-c-amber-dim)',
 };
 
 /**
@@ -156,6 +157,7 @@ export const CATEGORY_LABELS: Record<ConceptCategory, string> = {
   procedure: 'Procedure',
   regulatory_claim: 'Regulatory Claim',
   artifact: 'Artifact',
+  taxonomy_node: 'Taxonomy Node',
 };
 
 /** Relation type labels for display */
