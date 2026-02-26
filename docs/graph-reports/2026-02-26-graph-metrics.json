@@ -1,0 +1,181 @@
+{
+  "timestamp": "2026-02-26T13:34:54.657Z",
+  "environment": "production",
+  "counts": {
+    "concepts_total": 24613,
+    "concepts_by_category": {
+      "acs_element": 2174,
+      "acs_area": 31,
+      "acs_task": 143,
+      "regulatory_claim": 8417,
+      "procedure": 3350,
+      "topic": 5005,
+      "definition": 2850,
+      "taxonomy_node": 2525,
+      "artifact": 118
+    },
+    "relations_total": 74271,
+    "relations_by_type": {
+      "is_component_of": 26813,
+      "applies_in_scenario": 26997,
+      "leads_to_discussion_of": 20461
+    },
+    "evidence_total": 30689,
+    "concepts_with_evidence": 21783,
+    "evidence_coverage_pct": 88.5
+  },
+  "orphans": {
+    "total": 0,
+    "by_category": {},
+    "top_50": []
+  },
+  "components": {
+    "total": 3,
+    "largest_size": 24587,
+    "largest_pct": 99.89,
+    "sizes": [
+      24587,
+      13,
+      13
+    ]
+  },
+  "root_reachability": [
+    {
+      "root_name": "National Airspace System (NAS) Plan — Origin and Goals",
+      "root_slug": "topic:national-airspace-system-nas-plan-origin-and-goals",
+      "reachable_count": 24398,
+      "reachable_pct": 99.13,
+      "max_hops": 6
+    },
+    {
+      "root_name": "Private Pilot Area I",
+      "root_slug": "acs_area:private:I",
+      "reachable_count": 24514,
+      "reachable_pct": 99.6,
+      "max_hops": 6
+    },
+    {
+      "root_name": "Private Pilot Area II",
+      "root_slug": "acs_area:private:II",
+      "reachable_count": 24499,
+      "reachable_pct": 99.54,
+      "max_hops": 6
+    },
+    {
+      "root_name": "Commercial Pilot Area I",
+      "root_slug": "acs_area:commercial:I",
+      "reachable_count": 24514,
+      "reachable_pct": 99.6,
+      "max_hops": 6
+    },
+    {
+      "root_name": "Instrument Pilot Area I",
+      "root_slug": "acs_area:instrument:I",
+      "reachable_count": 24497,
+      "reachable_pct": 99.53,
+      "max_hops": 6
+    },
+    {
+      "root_name": "AIM aim 01 ch1",
+      "root_slug": "artifact:aim",
+      "reachable_count": 24376,
+      "reachable_pct": 99.04,
+      "max_hops": 6
+    },
+    {
+      "root_name": "Knowledge Hub",
+      "root_slug": "hub:knowledge",
+      "reachable_count": 24413,
+      "reachable_pct": 99.19,
+      "max_hops": 6
+    },
+    {
+      "root_name": "ACS Hub",
+      "root_slug": "hub:acs",
+      "reachable_count": 24526,
+      "reachable_pct": 99.65,
+      "max_hops": 6
+    },
+    {
+      "root_name": "Regulations Hub",
+      "root_slug": "hub:regulations",
+      "reachable_count": 21672,
+      "reachable_pct": 88.05,
+      "max_hops": 6
+    },
+    {
+      "root_name": "Aircraft Hub",
+      "root_slug": "hub:aircraft",
+      "reachable_count": 13,
+      "reachable_pct": 0.05,
+      "max_hops": 6
+    }
+  ],
+  "edge_sanity": {
+    "dangling_edges": 0,
+    "self_loops": 0,
+    "duplicate_edges": 0,
+    "dangling_details": []
+  },
+  "hub_traceability": {
+    "traceable_count": 24343,
+    "total_count": 24613,
+    "traceable_pct": 98.9,
+    "by_category": {
+      "acs_element": {
+        "traceable": 2174,
+        "total": 2174,
+        "pct": 100
+      },
+      "acs_area": {
+        "traceable": 31,
+        "total": 31,
+        "pct": 100
+      },
+      "acs_task": {
+        "traceable": 143,
+        "total": 143,
+        "pct": 100
+      },
+      "regulatory_claim": {
+        "traceable": 8203,
+        "total": 8417,
+        "pct": 97.46
+      },
+      "procedure": {
+        "traceable": 3337,
+        "total": 3350,
+        "pct": 99.61
+      },
+      "topic": {
+        "traceable": 4985,
+        "total": 5005,
+        "pct": 99.6
+      },
+      "definition": {
+        "traceable": 2840,
+        "total": 2850,
+        "pct": 99.65
+      },
+      "taxonomy_node": {
+        "traceable": 2512,
+        "total": 2525,
+        "pct": 99.49
+      },
+      "artifact": {
+        "traceable": 118,
+        "total": 118,
+        "pct": 100
+      }
+    }
+  },
+  "chunk_triage": {
+    "per_hub": {
+      "knowledge": {
+        "triage": 644,
+        "total": 4674,
+        "triage_pct": 13.78
+      }
+    }
+  }
+}

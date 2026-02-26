@@ -1,0 +1,311 @@
+---
+title: HeyDPE — Knowledge-Grounded Oral Exam Flow Requirements
+date: 2026-02-23
+status: draft
+tags:
+  - heydpe
+  - requirements
+  - rag
+  - exam-flow
+  - acs
+  - grounding
+  - grading
+  - prompts
+---
+
+# Purpose
+
+This note captures (without loss of detail) the current product/engineering intent for HeyDPE’s **RAG + exam flow + feedback** subsystem, organized into explicit requirements, constraints, and open design decisions.
+
+It is intended to be the “memory” that we build and validate against before moving to other workstreams (e.g., deeper latency optimization).
+
+---
+
+# Current Situation
+
+## What’s working / promising
+- The system’s direction on **RAG**, **latency control**, and **response chunking** is *extremely promising*.
+- We already have a credible approach for latency and will go deeper later.
+
+## What’s risky / unstable right now
+- Parallel agent work introduced conflicts between:
+  - the latency optimization stream, and
+  - other development streams.
+- The project is not public yet and not fully operational; therefore:
+  - you chose to merge work into **main** (GitHub + Vercel tree) rather than keep separate branches,
+  - but merges/conflict resolution may have caused incomplete or incorrect integrations.
+
+## Immediate priority
+Before moving on, the immediate priority is to **fully solve the RAG + exam flow + feedback system**, meaning:
+- questions and follow-ups are asked at the right **ACS scope**,
+- at the right **depth** for the certificate/rating and difficulty,
+- and are **strictly grounded** in FAA sources,
+- with **grading feedback** that drives future study/exams.
+
+---
+
+# Core Definitions
+
+These terms are used precisely in the requirements below:
+
+- **ACS**: Airman Certification Standards (the blueprint for what must be tested).
+- **Area / Task / Element**:
+  - *Area* = top-level ACS category (e.g., “Weather Information”).
+  - *Task* = within an area (e.g., “Weather Reports and Forecasts”).
+  - *Element* = assessable item (knowledge/risk/skill). For oral, primarily knowledge + risk.
+- **Exam**: A session that has a predetermined scope and completion criteria.
+- **Exchange**: One student response and the examiner’s evaluation + next question.
+- **Grounding**: Any factual claim must be attributable to official FAA sources (manuals/handbooks/advisories/regulations).
+- **Difficulty**: A session parameter controlling depth/complexity of questioning (easy/medium/difficult/mixed).
+- **Examiner personality**: A parameter controlling style, probing behavior, and phrasing—not factual content.
+
+---
+
+# Goal Statement
+
+Build an oral exam simulator where the “examiner”:
+1. follows a **predetermined exam plan** (scope + target length + completion rules),
+2. remains **ACS compliant** and **FAA-source grounded**,
+3. adapts within controlled boundaries (difficulty + certificate level + examiner personality),
+4. grades accurately and produces **actionable weak-area feedback**, and
+5. supports both **full exams** and **targeted weak-area drills**.
+
+---
+
+# Requirements
+
+## R1 — Knowledge Grounding (Non-Negotiable)
+The system must be grounded in official FAA knowledge sources:
+- FAA manuals
+- FAA handbooks
+- FAA advisories
+- CFR/regs when applicable
+
+Implications:
+- The examiner’s questions and feedback must not drift into plausible-sounding but unverified claims.
+- The system must prefer authoritative sources when the topic demands it (e.g., regulations, numeric limits, weather minimums).
+
+---
+
+## R2 — Predetermined Exam Shape (Start + End Defined Upfront)
+Each exam must have an anticipated end condition defined at **start**.
+
+### R2.1 — Question-count planning
+At exam start, the system must commit to a planned length:
+- Example lengths: **60 / 75 / 100** questions (examples only).
+- If the student answers incorrectly, the system may add **+1–2** additional questions (a controlled penalty/probing extension).
+- The examiner leads the exam; it must *not* be hijacked by every wrong answer into an unbounded rabbit hole.
+- The system must be able to recognize that the user while answering one question might deliver the answer to some other topics thta were planned to follow (i.e. currency requirements -> "3 takeoff and landing at the same category, class and type if type is required, but at night to full stop" actually replies to general currency questions and specific currency requirement that typically follows the first one. In such situation both questions should be considered answered without asking the second one. 
+
+### R2.2 — Admin configurable
+The “planned number of questions” and the “add-on rules” must be configurable parameters in the **Admin panel**.
+
+### R2.3 — Scope-sensitive values
+The target counts are not universal; they depend on exam scope:
+- Full exam across entire ACS ⇒ larger planned count
+- Exam restricted to selected areas/tasks ⇒ smaller planned count
+- Weak-area drills ⇒ separate logic (see R8)
+
+---
+
+## R3 — ACS Compliance With Certificate-Level Depth Control
+Even when topics sound similar across certificates/ratings, the *expected depth differs*.
+
+Example (stated intent):
+- “Pilot qualifications” for Private vs Commercial:
+  - same “theme” but different depth expectations.
+
+Therefore, the exam generator must:
+- anchor each question to the **ACS scope** (area/task/element),
+- apply a **certificate/rating profile** that changes depth and expectation.
+
+---
+
+## R4 — Difficulty as a Second, Independent Control Layer
+Within the chosen certificate/rating scope, the system must also support:
+- **easy**
+- **medium**
+- **difficult**
+- **mixed**
+
+Difficulty impacts:
+- question complexity,
+- required precision,
+- tolerance for partial answers,
+- how probing follow-ups are structured.
+
+Constraint:
+- Difficulty cannot override ACS compliance; it only changes “how deep/how tricky” within permitted scope.
+
+---
+
+## R5 — Flow Modes: Linear vs Across-ACS (But Never Random Whiplash)
+
+### R5.1 — Linear mode
+Step-by-step through ACS tasks/elements in a predictable progression.
+
+### R5.2 — Across-ACS mode
+Across-ACS does **not** mean random jumps.
+It must still feel like a real oral exam where topics connect naturally.
+
+### R5.3 — Graph- and RAG-assisted bridging (desired)
+There is a strong hypothesis that RAG + graph-based approaches can pre-create or dynamically generate **logically connected flows**.
+
+Example flow intent:
+- design speed → turbulence penetration speed → stall concepts → what stall depends on → sources of turbulence → etc.
+
+Key idea:
+- Across-ACS should behave like “conceptual navigation,” not “shuffle mode.”
+
+---
+
+## R6 — Examiner Personality (Style Layer)
+Different examiners behave differently:
+- how they phrase questions,
+- how patient they are,
+- how quickly they drill down,
+- how they transition topics,
+- how strict they are on precision.
+
+Status:
+- Not implemented (or not fully implemented) yet.
+
+Requirement:
+- Personality modifies *style and probing strategy*, not factual content.
+- Personality must remain bounded by:
+  - ACS scope
+  - planned exam length rules
+  - grounding requirements
+
+---
+
+## R7 — Multimodal Questions (Text + Pictures)
+Some questions must be asked with:
+- a picture displayed, or
+- specific text presented (e.g., METAR interpretation).
+
+Constraints:
+- Images extracted from manuals exist, but must be linked to **topics/concepts**, not just PDF page numbers.
+- The system must reliably pick the right artifact for the question.
+
+---
+
+## R8 — Prompt Governance (Admin-Tunable Prompts)
+Prompts used across the system must be:
+- accessible in an Admin interface,
+- versioned/tunable (so you can iterate safely),
+- targetable by context (certificate/rating, difficulty, mode, personality).
+
+Implication:
+- Prompt selection must be deterministic and debuggable (“why did this prompt run?”).
+
+---
+
+## R9 — Grading Plumbing + Actionable Weak-Area Feedback
+Grading must be a first-class subsystem, not an afterthought.
+
+### R9.1 — Per-exchange evaluation
+Each answer should produce:
+- a score / category (e.g., satisfactory/partial/unsatisfactory),
+- specific feedback on what was missing/wrong,
+- a mapping back to the ACS element(s) involved.
+
+### R9.2 — Weak-area synthesis
+At session end (and potentially during), the system must:
+- identify weak areas precisely,
+- produce a review plan,
+- enable targeted follow-up exams.
+
+### R9.3 - Mutiple questions answered at once
+The system must be able to recognize that the user while answering one question might deliver the answer to some other topics thta were planned to follow (i.e. currency requirements -> "3 takeoff and landing at the same category, class and type if type is required, but at night to full stop" actually replies to general currency questions and specific currency requirement that typically follows the first one. In such situation both questions should be considered answered without asking the second one.
+
+---
+
+## R10 — Alternate Exam Generator: Weak-Area “Quick Drill”
+A distinct mode must exist where the system:
+- asks a small number of focused questions in weak areas,
+- explicitly **skips** the normal full-exam logic and flow constraints.
+
+This introduces a second “exam generator type”:
+- **Full/structured exam** (planned length + ACS coverage flow)
+- **Targeted drill** (short, weak-area driven)
+
+---
+
+# Key Design Constraints (Implicit, But Important)
+
+## C1 — Examiner leads, not the student’s errors
+Wrong answers should trigger controlled probing, but the exam cannot become:
+- unbounded,
+- overly student-directed,
+- or derailed from its planned completion criteria.
+
+## C2 — Multiple axes of configuration must compose cleanly
+At minimum, these axes must combine without contradictions:
+- certificate/rating scope
+- difficulty
+- study mode (linear/across-ACS/weak-areas)
+- examiner personality
+- multimodal requirements
+- prompt version selection
+- exam length targets
+
+This is a combinatorial explosion risk unless the system has a clear hierarchy of decisions.
+
+---
+
+# Suggested “Hierarchy of Control” (Organizing Principle)
+
+To prevent chaos, the system should behave as if it follows this priority order:
+
+1. **Safety + Grounding** (never violate)
+2. **ACS scope compliance**
+3. **Planned exam structure** (target length + allowed extensions)
+4. **Mode logic** (linear / across-ACS / weak-areas)
+5. **Difficulty shaping**
+6. **Personality/style shaping**
+7. **Multimodal asset selection**
+8. **Prompt selection (implementation mechanism for 4–7)**
+
+This hierarchy is not implementation—just a governance model that keeps the system coherent.
+
+---
+
+# Open Questions / Decisions to Make Next (Not Yet Solved)
+
+These are not requests—just the unresolved design decisions implied by the requirements:
+
+1. **What is the canonical unit of “question count”?**
+   - per element? per task? per exchange? per graded attempt?
+2. **How do we compute planned length for arbitrary scope selection?**
+   - selecting one task vs multiple tasks vs entire area(s)
+3. **What are the explicit rules for “+1–2 questions on incorrect”?**
+   - per incorrect answer? capped per session? only for certain categories?
+4. **How do we formally define “difficulty” so it’s consistent?**
+   - what changes: prompts, required detail, follow-up depth, scenario complexity?
+5. **How do we define “personality” as stable parameters, not just adjectives?**
+   - e.g., strictness, verbosity, drilldown probability, transition style
+6. **How should multimodal assets be indexed and retrieved by concept?**
+   - image-to-concept linking and validation workflow
+7. **How do we guarantee grounding in numeric/regulatory domains?**
+   - especially where hallucination risk is highest
+
+---
+
+# Success Criteria (What “Done” Looks Like)
+A session is “working” when:
+
+- The exam clearly has a **planned length** and reaches a believable end.
+- Questions feel **ACS-aligned** and consistently match:
+  - certificate/rating depth, and
+  - chosen difficulty.
+- Across-ACS mode feels **logically connected** (not random).
+- Examiner behavior is clearly distinct across personalities (style), while content stays grounded.
+- When the student is weak, the examiner:
+  - probes appropriately,
+  - records it correctly,
+  - and generates a useful weak-area plan.
+- Multimodal questions appear when appropriate and with the correct artifact.
+- Admin can tune prompts without code changes and changes are trackable.
+
+---
