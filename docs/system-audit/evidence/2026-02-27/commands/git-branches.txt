@@ -1,0 +1,6 @@
+  feat/light-themes-sectional-briefing   4fbe61b [origin/feat/light-themes-sectional-briefing] Replace Radar and Neon themes with light-background Sectional and Briefing
+  feat/voice-enabled-setting             b5fa3c5 [origin/feat/voice-enabled-setting] Move voice mode toggle from practice page to Settings as persistent preference
+* inventory-verification-sprint-20260227 8dab6d3 Merge prod-reality-audit-20260224: KG infrastructure + ExamPlan Phase 4
+  main                                   8dab6d3 [origin/main] Merge prod-reality-audit-20260224: KG infrastructure + ExamPlan Phase 4
+  phase5-grading-v2-quick-drill          8e165c5 [origin/phase5-grading-v2-quick-drill] feat(exam): grading v2 + weak-area summary + quick drill
+  prod-reality-audit-20260224            b920534 Add design/implementation plans, staging tools, and dev utilities

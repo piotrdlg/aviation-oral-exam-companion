@@ -1,0 +1,56 @@
+title:	feat(exam): Phase 5 — Grading V2 + Quick Drill
+state:	OPEN
+author:	piotrdlg
+labels:	
+assignees:	
+reviewers:	
+projects:	
+milestone:	
+number:	3
+url:	https://github.com/piotrdlg/aviation-oral-exam-companion/pull/3
+additions:	1944
+deletions:	14
+auto-merge:	disabled
+--
+## Summary
+
+- **ExamResultV2** — plan-based grading with per-area breakdown, credited mentions, and weak element tracking
+- **Per-area gating** — configurable thresholds (overall >= 0.70, per-area >= 0.60), critical area enforcement (any unsat = fail)
+- **Weak-area synthesis** — grounded citations from FAA sources via transcript + evidence chain (new API: `GET /api/exam?action=summary&sessionId=...`)
+- **Quick Drill mode (R10)** — 10-20 focused questions targeting weak/untouched elements only, excludes satisfactory
+- **DB migration** — adds `quick_drill` to `exam_sessions_study_mode_check` CHECK constraint
+
+## Details
+
+| Deliverable | File(s) | Notes |
+|-------------|---------|-------|
+| ExamResultV2 + Gating | `src/lib/exam-result.ts` (NEW, 412 lines) | Pure function, zero deps |
+| Weak-area synthesis | `src/lib/weak-area-report.ts` (NEW, 393 lines) | Service-role Supabase for joins |
+| Quick Drill | `database.ts`, `exam-logic.ts`, `exam-planner.ts` | New StudyMode + queue builder |
+| Integration | `exam/route.ts`, `session/route.ts` | V2 in both completion paths |
+| Tests | `exam-result.test.ts` (NEW, 27 tests) | 522 total, all passing |
+| Audit script | `scripts/exam/result-audit.ts` | `npm run exam:result-audit` |
+| Migration | `20260226100001_add_quick_drill_study_mode.sql` | CHECK constraint update |
+| Docs | `21 - Grading and Quick Drill v1.md` | System audit doc |
+
+## DB Migration Required
+
+The migration `20260226100001_add_quick_drill_study_mode.sql` must be applied before Quick Drill can be used:
+```sql
+ALTER TABLE exam_sessions DROP CONSTRAINT exam_sessions_study_mode_check;
+ALTER TABLE exam_sessions ADD CONSTRAINT exam_sessions_study_mode_check
+  CHECK (study_mode IN ('linear', 'cross_acs', 'weak_areas', 'quick_drill'));
+```
+
+Rollback SQL included in the migration file.
+
+## Test plan
+
+- [ ] `npm run typecheck` — clean
+- [ ] `npm test` — 522 passing
+- [ ] Apply migration to staging DB
+- [ ] Test Quick Drill session creation (study_mode = 'quick_drill')
+- [ ] Run `npm run exam:result-audit` against existing sessions
+- [ ] Verify V2 in metadata after auto-complete and user-ended sessions
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)

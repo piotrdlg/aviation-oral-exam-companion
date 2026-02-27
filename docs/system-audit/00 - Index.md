@@ -34,6 +34,11 @@ evidence_level: high
 | 18 | [[18 - Multi-Hub KG Phase 2 — Taxonomy Attachment]] | Draft |
 | 19 | [[19 - Multi-Hub KG Phase 3 — Regulatory Anchoring]] | Draft |
 | 20 | [[20 - ExamPlan and Planner v1]] | Draft |
+| 22 | [[22 - System State Inventory]] | Final |
+| 23 | [[23 - Feature Matrix vs Oral Exam Problem Statement]] | Final |
+| 24 | [[24 - Test Matrix and Evidence Pack]] | Final |
+| 25 | [[25 - Docs Restructure Plan and Moves]] | Final |
+| 26 | [[26 - Deployment and PR Status]] | Final |
 
 ---
 
@@ -101,6 +106,11 @@ HeyDPE is a production-quality FAA oral exam simulator built on Next.js 16 + Sup
 | [[18 - Multi-Hub KG Phase 2 — Taxonomy Attachment]] | **Phase 2** | Chunk classification + taxonomy promotion + evidence-based concept attachment |
 | [[19 - Multi-Hub KG Phase 3 — Regulatory Anchoring]] | **Phase 3** | Regulations taxonomy expansion + regulatory_claim CFR-parsed attachment + artifact anchoring |
 | [[20 - ExamPlan and Planner v1]] | **ExamPlan** | Predetermined exam shape, scope-sensitive question count, mention credit, connected walk, grounding contract |
+| [[22 - System State Inventory]] | **Inventory** | Full codebase + DB inventory: 33 API routes, 29+ lib modules, 49 scripts, 48 migrations, 24K concepts, 74K relations |
+| [[23 - Feature Matrix vs Oral Exam Problem Statement]] | **Requirements** | R1–R10 evidence-based matrix mapping requirements against implementation evidence |
+| [[24 - Test Matrix and Evidence Pack]] | **Tests** | 495 tests across 25 files mapped to features, 9 known test gaps identified |
+| [[25 - Docs Restructure Plan and Moves]] | **Docs** | 22 doc files git-mv'd to canonical structure (system-audit, build-reports, runbooks, plans, archive) |
+| [[26 - Deployment and PR Status]] | **Deployment** | Branch status, 3 PRs, DB migration readiness, pre-merge checklist for PR #3 |
 
 ---
 
