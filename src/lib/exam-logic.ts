@@ -413,6 +413,30 @@ export function buildElementQueue(
       return weightedShuffle(codes, weakStats);
     }
 
+    case 'quick_drill': {
+      // Quick Drill: prioritize weak elements from prior sessions.
+      // No connected walk — just weighted shuffle of weak elements only.
+      if (!weakStats || weakStats.length === 0) {
+        return shuffleArray(codes);
+      }
+      // Filter to only weak elements (unsatisfactory or partial), then untouched
+      const weakCodes = new Set<string>();
+      const statsMap = new Map(weakStats.map(s => [s.element_code, s]));
+      for (const code of codes) {
+        const stat = statsMap.get(code);
+        if (!stat || stat.total_attempts === 0) {
+          weakCodes.add(code); // Untouched — include
+        } else if (stat.latest_score === 'unsatisfactory' || stat.latest_score === 'partial') {
+          weakCodes.add(code); // Weak — include
+        }
+        // Satisfactory elements excluded from Quick Drill
+      }
+      const drillCodes = weakCodes.size > 0
+        ? codes.filter(c => weakCodes.has(c))
+        : codes; // Fallback: all codes if no weak elements found
+      return weightedShuffle(drillCodes, weakStats);
+    }
+
     default:
       return codes;
   }
