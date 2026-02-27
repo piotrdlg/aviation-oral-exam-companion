@@ -43,6 +43,7 @@
     "graph:attach:artifacts": "tsx scripts/graph/attach_artifacts_to_hub_root.ts",
     "graph:attach:regulatory-claims": "tsx scripts/graph/attach_regulatory_claims_to_sections.ts",
     "exam:plan-audit": "tsx scripts/exam/plan-audit.ts",
+    "exam:result-audit": "tsx scripts/exam/result-audit.ts",
     "audit:snapshot:staging": "dotenv -e .env.local -- tsx scripts/audit/db-snapshot.ts --env staging",
     "audit:snapshot:prod": "tsx scripts/audit/db-snapshot.ts --env prod"
   },
