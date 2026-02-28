@@ -1,0 +1,1225 @@
+[dotenv@17.3.1] injecting env (17) from .env.local -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+# Database Introspection Report
+Generated: 2026-02-27T23:36:16.734Z
+Supabase URL: https://pvuiwwqsumoqjepukjhz.supabase.co
+
+## Table Row Counts
+
+| Table | Rows | Status |
+|-------|------|--------|
+| acs_tasks | 143 | OK |
+| acs_elements | 2174 | OK |
+| admin_users | 1 | OK |
+| concepts | 24613 | OK |
+| concept_relations | 74271 | OK |
+| concept_chunk_evidence | 30689 | OK |
+| exam_sessions | 73 | OK |
+| session_transcripts | 955 | OK |
+| latency_logs | 199 | OK |
+| off_graph_mentions | 0 | OK |
+| source_documents | 172 | OK |
+| source_chunks | 4674 | OK |
+| source_images | 1596 | OK |
+| image_chunk_mappings | null | OK |
+| user_profiles | 11 | OK |
+| system_flags | null | OK |
+| system_prompts | null | OK |
+| support_tickets | 0 | OK |
+| ticket_messages | null | OK |
+| voice_usage_logs | null | OK |
+| embedding_cache | 200 | OK |
+| kb_hubs | 4 | OK |
+| kb_taxonomy_nodes | 2529 | OK |
+| kb_chunk_taxonomy | 4674 | OK |
+| transcript_citations | 2135 | OK |
+| voice_configs | null | OK |
+
+## exam_sessions — Latest Row
+
+```json
+{
+  "id": "88c21391-d427-4be3-acfd-9919f62263d7",
+  "user_id": "02fcb051-6f15-49a5-a92e-ae91d8932088",
+  "status": "paused",
+  "study_mode": "linear",
+  "difficulty_preference": "mixed",
+  "rating": "private",
+  "started_at": "2026-02-27T10:37:20.641195+00:00",
+  "metadata": "(JSONB present)"
+}
+```
+
+## study_mode Constraint Check
+
+- `linear`: Error (23503): insert or update on table "exam_sessions" violates foreign key constraint "exam_
+- `cross_acs`: Error (23503): insert or update on table "exam_sessions" violates foreign key constraint "exam_
+- `weak_areas`: Error (23503): insert or update on table "exam_sessions" violates foreign key constraint "exam_
+- `quick_drill`: **BLOCKED** by CHECK constraint
+
+## system_flags (Feature Flags)
+
+Error: Could not find the table 'public.system_flags' in the schema cache
+
+## Concept Category Distribution
+
+| Category | Count |
+|----------|-------|
+| acs_element | 969 |
+| acs_area | 31 |
+
+## Concept Relation Type Distribution
+
+| Relation Type | Count |
+|---------------|-------|
+| is_component_of | 1000 |
+
+## Source Documents
+
+No source_documents found.
+
+## ACS Tasks by Rating
+
+| Rating | Task Count |
+|--------|------------|
+| commercial | 60 |
+| instrument | 22 |
+| private | 61 |
+
+## Knowledge Base Hubs
+
+```json
+[
+  {
+    "hub_slug": "knowledge",
+    "name": "Knowledge Hub",
+    "description": "FAA handbooks, AIM, advisory circulars — general aviation knowledge",
+    "created_at": "2026-02-26T01:30:52.863281+00:00"
+  },
+  {
+    "hub_slug": "acs",
+    "name": "ACS Hub",
+    "description": "Airman Certification Standards — structured exam requirements by rating/area/task",
+    "created_at": "2026-02-26T01:30:52.863281+00:00"
+  },
+  {
+    "hub_slug": "regulations",
+    "name": "Regulations Hub",
+    "description": "14 CFR regulatory framework — federal aviation regulations",
+    "created_at": "2026-02-26T01:30:52.863281+00:00"
+  },
+  {
+    "hub_slug": "aircraft",
+    "name": "Aircraft Hub",
+    "description": "Aircraft-specific systems, limitations, performance, and procedures",
+    "created_at": "2026-02-26T01:30:52.863281+00:00"
+  }
+]
+```
+
+## Taxonomy Nodes
+
+Total: 2529 nodes
+
+Sample (first 5):
+```json
+[
+  {
+    "id": "3f1efd66-a12a-48ca-a241-1d4e6067e389",
+    "slug": "knowledge:triage-unclassified",
+    "title": "Triage / Unclassified (Knowledge)",
+    "level": 1,
+    "parent_id": null,
+    "source_provenance": [],
+    "synonyms": [],
+    "created_at": "2026-02-26T01:30:52.863281+00:00",
+    "updated_at": "2026-02-26T01:30:52.863281+00:00",
+    "hub_slug": "knowledge",
+    "taxonomy_slug": "default"
+  },
+  {
+    "id": "a77070d5-6942-4290-b450-2e0bbe90276d",
+    "slug": "acs:triage-unclassified",
+    "title": "Triage / Unclassified (ACS)",
+    "level": 1,
+    "parent_id": null,
+    "source_provenance": [],
+    "synonyms": [],
+    "created_at": "2026-02-26T01:30:52.863281+00:00",
+    "updated_at": "2026-02-26T01:30:52.863281+00:00",
+    "hub_slug": "acs",
+    "taxonomy_slug": "default"
+  },
+  {
+    "id": "20c948c5-3a93-411d-a400-36ca5b891790",
+    "slug": "regulations:triage-unclassified",
+    "title": "Triage / Unclassified (Regulations)",
+    "level": 1,
+    "parent_id": null,
+    "source_provenance": [],
+    "synonyms": [],
+    "created_at": "2026-02-26T01:30:52.863281+00:00",
+    "updated_at": "2026-02-26T01:30:52.863281+00:00",
+    "hub_slug": "regulations",
+    "taxonomy_slug": "default"
+  },
+  {
+    "id": "f002d92a-d0ce-46a6-8bb9-656c661ff1f6",
+    "slug": "aircraft:triage-unclassified",
+    "title": "Triage / Unclassified (Aircraft)",
+    "level": 1,
+    "parent_id": null,
+    "source_provenance": [],
+    "synonyms": [],
+    "created_at": "2026-02-26T01:30:52.863281+00:00",
+    "updated_at": "2026-02-26T01:30:52.863281+00:00",
+    "hub_slug": "aircraft",
+    "taxonomy_slug": "default"
+  },
+  {
+    "id": "e6b77214-b7cf-4e41-a9ef-85a2bb87683b",
+    "slug": "tax:national-airspace-system",
+    "title": "National Airspace System",
+    "level": 1,
+    "parent_id": null,
+    "source_provenance": [
+      {
+        "page": 4,
+        "toc_path": "CHAPTER 1. GENERAL",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 6,
+        "toc_path": "CHAPTER 2. BACKGROUND",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 8,
+        "toc_path": "CHAPTER 3. OPERATIONAL PROCEDURES AND FLIGHT TECHNIQUES",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 20,
+        "toc_path": "CHAPTER 4. FLIGHTCREW TRAINING",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 6,
+        "toc_path": "Chapter 1. BACKGROUND INFORMATION",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 9,
+        "toc_path": "Chapter 2. DETERMINING WHEN PROCEDURES NEED TO BE DESIGNED OR MODIFIED",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 10,
+        "toc_path": "Chapter 3. CREATING A PROCEDURE DEVELOPMENT PROCESS",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 11,
+        "toc_path": "Chapter 4. WRITING PROCEDURES",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 23,
+        "toc_path": "Chapter 6. Pilot Monitoring",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 1,
+        "toc_path": "AC 60-28B_FAA Web",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 11,
+        "toc_path": "AC 60-28B_Feedback Form",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 5,
+        "toc_path": "CONTENTS",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 21,
+        "toc_path": "CHAPTER 4. AIRWORTHINESS STANDARDS",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 2,
+        "toc_path": "1. PURPOSE",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 5,
+        "toc_path": "5. REFERENCES (current editions)",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 10,
+        "toc_path": "9. OPERATOR APPROVAL PROCESS",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 18,
+        "toc_path": "12. AC FEEDBACK FORM. For your convenience, the AC Feedback Form is the last page of this AC. Note any deficiencies found, clarifications needed, or suggested improvements regarding the contents of this AC on the Feedback Form",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 1,
+        "toc_path": "AC_90-105A_FAA_Web",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 129,
+        "toc_path": "AC 90-105A_Feedback Form",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 1,
+        "toc_path": "John Barbagallo",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 1,
+        "toc_path": "Deputy Director, Flight Standards Service",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 5,
+        "toc_path": "Chapter 1. INTRODUCTION",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 55,
+        "toc_path": "Chapter 6. SUMMARY",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 1,
+        "toc_path": "AC_91-78A_FAA_Web",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 5,
+        "toc_path": "AC 91-78A_Feedback Form",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 1,
+        "toc_path": "2 AUDIENCE. This AC applies to all pilots, flight instructors, and operators, with emphasis on operations conducted under part 91",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 1,
+        "toc_path": "4 DEFINITIONS",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 4,
+        "toc_path": "5 RELATED READING MATERIAL",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 6,
+        "toc_path": "6 BACKGROUND AND SCOPE",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 6,
+        "toc_path": "7 GENERAL OPERATING PRACTICES",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 14,
+        "toc_path": "8 SAFETY-RELATED DO’S AND DON’TS",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 15,
+        "toc_path": "9 AC FEEDBACK FORM. For your convenience, the AC Feedback Form is the last page of this AC. Note any deficiencies found, clarifications needed, or suggested improvements regarding the contents of this AC on the Feedback Form",
+        "doc_abbrev": "ac"
+      },
+      {
+        "page": 9,
+        "toc_path": "Introduction",
+        "doc_abbrev": "acs"
+      },
+      {
+        "page": 24,
+        "toc_path": "Area of Operation III. Airport and Seaplane Base Operations",
+        "doc_abbrev": "acs"
+      },
+      {
+        "page": 74,
+        "toc_path": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes",
+        "doc_abbrev": "acs"
+      },
+      {
+        "page": 83,
+        "toc_path": "Appendix 2: Safety of Flight",
+        "doc_abbrev": "acs"
+      },
+      {
+        "page": 85,
+        "toc_path": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations",
+        "doc_abbrev": "acs"
+      },
+      {
+        "page": 8,
+        "toc_path": "Introduction",
+        "doc_abbrev": "acs"
+      },
+      {
+        "page": 23,
+        "toc_path": "Area of Operation III. Airport and Seaplane Base Operations",
+        "doc_abbrev": "acs"
+      },
+      {
+        "page": 57,
+        "toc_path": "Area of Operation VIII. High-Altitude Operations",
+        "doc_abbrev": "acs"
+      },
+      {
+        "page": 73,
+        "toc_path": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes",
+        "doc_abbrev": "acs"
+      },
+      {
+        "page": 82,
+        "toc_path": "Appendix 2: Safety of Flight",
+        "doc_abbrev": "acs"
+      },
+      {
+        "page": 84,
+        "toc_path": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations",
+        "doc_abbrev": "acs"
+      },
+      {
+        "page": 7,
+        "toc_path": "Introduction",
+        "doc_abbrev": "acs"
+      },
+      {
+        "page": 14,
+        "toc_path": "Area of Operation III. Air Traffic Control (ATC) Clearances and Procedures",
+        "doc_abbrev": "acs"
+      },
+      {
+        "page": 31,
+        "toc_path": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes",
+        "doc_abbrev": "acs"
+      },
+      {
+        "page": 37,
+        "toc_path": "Appendix 2: Safety of Flight",
+        "doc_abbrev": "acs"
+      },
+      {
+        "page": 39,
+        "toc_path": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations",
+        "doc_abbrev": "acs"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "afh"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "afh"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "afh"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "afh"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "afh"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "afh"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "afh"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "afh"
+      },
+      {
+        "page": 1,
+        "toc_path": "AIM-Basic dated February 20,",
+        "doc_abbrev": "aim"
+      },
+      {
+        "page": 3,
+        "toc_path": "Explanation of Changes",
+        "doc_abbrev": "aim"
+      },
+      {
+        "page": 13,
+        "toc_path": "Subscription Information",
+        "doc_abbrev": "aim"
+      },
+      {
+        "page": 15,
+        "toc_path": "Comments/Corrections",
+        "doc_abbrev": "aim"
+      },
+      {
+        "page": 17,
+        "toc_path": "Publication Schedule",
+        "doc_abbrev": "aim"
+      },
+      {
+        "page": 23,
+        "toc_path": "Table of Contents",
+        "doc_abbrev": "aim"
+      },
+      {
+        "page": 91,
+        "toc_path": "Chapter 2. Aeronautical Lighting and Other Airport Visual Aids",
+        "doc_abbrev": "aim"
+      },
+      {
+        "page": 143,
+        "toc_path": "Chapter 3. Airspace",
+        "doc_abbrev": "aim"
+      },
+      {
+        "page": 177,
+        "toc_path": "Chapter 4. Air Traffic Control",
+        "doc_abbrev": "aim"
+      },
+      {
+        "page": 297,
+        "toc_path": "Chapter 5. Air Traffic Procedures",
+        "doc_abbrev": "aim"
+      },
+      {
+        "page": 491,
+        "toc_path": "Chapter 7. Safety of Flight",
+        "doc_abbrev": "aim"
+      },
+      {
+        "page": 639,
+        "toc_path": "Chapter 10. Helicopter Operations",
+        "doc_abbrev": "aim"
+      },
+      {
+        "page": 667,
+        "toc_path": "Chapter 11. Unmanned Aircraft Systems (UAS)",
+        "doc_abbrev": "aim"
+      },
+      {
+        "page": 701,
+        "toc_path": "Appendices",
+        "doc_abbrev": "aim"
+      },
+      {
+        "page": 739,
+        "toc_path": "Pilot/Controller Glossary",
+        "doc_abbrev": "aim"
+      },
+      {
+        "page": 1,
+        "toc_path": "Index",
+        "doc_abbrev": "aim"
+      },
+      {
+        "page": 25,
+        "toc_path": "Introduction",
+        "doc_abbrev": "awh"
+      },
+      {
+        "page": 70,
+        "toc_path": "The Earth’s Atmosphere",
+        "doc_abbrev": "awh"
+      },
+      {
+        "page": 89,
+        "toc_path": "Water Vapor",
+        "doc_abbrev": "awh"
+      },
+      {
+        "page": 118,
+        "toc_path": "Global Circulations and Jet Streams",
+        "doc_abbrev": "awh"
+      },
+      {
+        "page": 142,
+        "toc_path": "Air Masses, Fronts, and the Wave Cyclone Model",
+        "doc_abbrev": "awh"
+      },
+      {
+        "page": 174,
+        "toc_path": "Precipitation",
+        "doc_abbrev": "awh"
+      },
+      {
+        "page": 180,
+        "toc_path": "Weather Radar",
+        "doc_abbrev": "awh"
+      },
+      {
+        "page": 293,
+        "toc_path": "Observations",
+        "doc_abbrev": "awh"
+      },
+      {
+        "page": 354,
+        "toc_path": "Analysis",
+        "doc_abbrev": "awh"
+      },
+      {
+        "page": 381,
+        "toc_path": "Advisories",
+        "doc_abbrev": "awh"
+      },
+      {
+        "page": 416,
+        "toc_path": "Forecasts",
+        "doc_abbrev": "awh"
+      },
+      {
+        "page": 5,
+        "toc_path": "Preface",
+        "doc_abbrev": "iph"
+      },
+      {
+        "page": 6,
+        "toc_path": "Acknowledgments",
+        "doc_abbrev": "iph"
+      },
+      {
+        "page": 8,
+        "toc_path": "Summary of Changes",
+        "doc_abbrev": "iph"
+      },
+      {
+        "page": 12,
+        "toc_path": "Table of Contents",
+        "doc_abbrev": "iph"
+      },
+      {
+        "page": 233,
+        "toc_path": "Chapter 5 - Improvement Plans",
+        "doc_abbrev": "iph"
+      },
+      {
+        "page": 293,
+        "toc_path": "Appendix B - Acronyms",
+        "doc_abbrev": "iph"
+      },
+      {
+        "page": 301,
+        "toc_path": "Glossary",
+        "doc_abbrev": "iph"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "phak"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "phak"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "phak"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "phak"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "phak"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "phak"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "phak"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "phak"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "phak"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "phak"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "phak"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "phak"
+      },
+      {
+        "page": null,
+        "toc_path": "Structure Bookmarks",
+        "doc_abbrev": "phak"
+      },
+      {
+        "page": 3,
+        "toc_path": "Preface",
+        "doc_abbrev": "rmh"
+      },
+      {
+        "page": 4,
+        "toc_path": "Introduction",
+        "doc_abbrev": "rmh"
+      },
+      {
+        "page": 5,
+        "toc_path": "Major Enhancements",
+        "doc_abbrev": "rmh"
+      },
+      {
+        "page": 44,
+        "toc_path": "Chapter 6: Threat and Error Management",
+        "doc_abbrev": "rmh"
+      },
+      {
+        "page": 50,
+        "toc_path": "Chapter 7: Automation & Flight Path Management",
+        "doc_abbrev": "rmh"
+      },
+      {
+        "page": 58,
+        "toc_path": "Appendix Introduction",
+        "doc_abbrev": "rmh"
+      },
+      {
+        "page": 64,
+        "toc_path": "Appendix C: Accident Case Studies",
+        "doc_abbrev": "rmh"
+      },
+      {
+        "page": 73,
+        "toc_path": "Glossary",
+        "doc_abbrev": "rmh"
+      },
+      {
+        "page": 77,
+        "toc_path": "Index",
+        "doc_abbrev": "rmh"
+      },
+      {
+        "page": 5,
+        "toc_path": "Preface",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 7,
+        "toc_path": "Introduction",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 9,
+        "toc_path": "Acknowledgments",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 11,
+        "toc_path": "Table of Contents",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 15,
+        "toc_path": "Chapter",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 15,
+        "toc_path": "Introduction",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 16,
+        "toc_path": "Terminology",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 20,
+        "toc_path": "Powered Parachutes",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 20,
+        "toc_path": "Balloons",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 21,
+        "toc_path": "Chapter",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 21,
+        "toc_path": "Introduction",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 22,
+        "toc_path": "Arm",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 22,
+        "toc_path": "Moment",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 22,
+        "toc_path": "The Law of the Lever",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 25,
+        "toc_path": "Solution by Formula",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 25,
+        "toc_path": "Mean Aerodynamic Chord",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 26,
+        "toc_path": "CG Range",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 26,
+        "toc_path": "Number of Seats",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 26,
+        "toc_path": "Maximum Baggage",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 30,
+        "toc_path": "Data Pertinent to all Models",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 30,
+        "toc_path": "Manufacturer-Furnished Information",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 33,
+        "toc_path": "Chapter",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 33,
+        "toc_path": "Introduction",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 34,
+        "toc_path": "Requirements",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 34,
+        "toc_path": "Equipment for Weighing",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 35,
+        "toc_path": "Preparation for Weighing",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 35,
+        "toc_path": "Scale Preparation",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 36,
+        "toc_path": "Equipment List",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 36,
+        "toc_path": "Ballast",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 36,
+        "toc_path": "Other Fluids",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 37,
+        "toc_path": "Configuration of the Aircraft",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 37,
+        "toc_path": "Jacking the Aircraft",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 37,
+        "toc_path": "Leveling the Aircraft",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 37,
+        "toc_path": "Determining the CG",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 38,
+        "toc_path": "EWCG Formulas",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 39,
+        "toc_path": "Location of Datum",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 40,
+        "toc_path": "Mean Aerodynamic Chord (MAC)",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 43,
+        "toc_path": "Chapter",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 43,
+        "toc_path": "Introduction",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 44,
+        "toc_path": "LSA Definition of Terms",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 45,
+        "toc_path": "WSC Aircraft",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 46,
+        "toc_path": "Powered Parachutes",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 49,
+        "toc_path": "Chapter",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 49,
+        "toc_path": "Introduction",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 50,
+        "toc_path": "Manual Computational Method",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 52,
+        "toc_path": "Loading Graph Method",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 52,
+        "toc_path": "Moment Indexes",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 52,
+        "toc_path": "Loading Graph",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 55,
+        "toc_path": "Chapter",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 55,
+        "toc_path": "Introduction",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 56,
+        "toc_path": "Determine the Loaded CG",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 57,
+        "toc_path": "Determining the CG in Percentage of Mean Aerodynamic Chord (MAC)",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 61,
+        "toc_path": "Chapter",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 61,
+        "toc_path": "Introduction",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 62,
+        "toc_path": "Equipment List",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 63,
+        "toc_path": "Major Alteration and Repair",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 66,
+        "toc_path": "Determining the CG in Percentage of Mean Aerodynamic Chord (Percent MAC)",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 66,
+        "toc_path": "Adverse-Load CG Checks",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 67,
+        "toc_path": "Forward Adverse-Load CG Check",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 67,
+        "toc_path": "Aft Adverse-Load CG Check",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 67,
+        "toc_path": "Ballast",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 68,
+        "toc_path": "Temporary Ballast",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 68,
+        "toc_path": "Temporary Ballast Formula",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 68,
+        "toc_path": "Permanent Ballast",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 69,
+        "toc_path": "Chapter",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 69,
+        "toc_path": "Introduction",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 71,
+        "toc_path": "Determining the Loaded CG of a Helicopter",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 73,
+        "toc_path": "Chapter",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 73,
+        "toc_path": "Large Aircraft",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 73,
+        "toc_path": "Introduction",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 75,
+        "toc_path": "Determining the Loaded CG of the Airplane in Percent MAC",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 77,
+        "toc_path": "Reestablishing the OEW",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 77,
+        "toc_path": "Onboard Aircraft Weighing System",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 78,
+        "toc_path": "Determining the Correct Stabilizer Trim Setting",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 82,
+        "toc_path": "Determining the Maximum Amount of Payload That Can Be Carried",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 90,
+        "toc_path": "Determining Which Limits Are Exceeded",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 93,
+        "toc_path": "Chapter",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 93,
+        "toc_path": "Introduction",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 94,
+        "toc_path": "Electronic Calculator",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 94,
+        "toc_path": "E6-B Flight Computer",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 95,
+        "toc_path": "Dedicated Electronic Flight Computer",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 96,
+        "toc_path": "Determining CG in Inches From the Datum",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 96,
+        "toc_path": "Nosewheel Airplane With Datum Ahead of the Main Wheels",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 96,
+        "toc_path": "Nosewheel Airplane With Datum Behind the Main Wheels",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 96,
+        "toc_path": "Tailwheel Airplane With Datum Ahead of the Main Wheels",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 96,
+        "toc_path": "Tailwheel Airplane With Datum Behind the Main Wheels",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 97,
+        "toc_path": "Determining CG in Percent Mean Aerodynamic Chord (MAC)",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 97,
+        "toc_path": "Determining Lateral CG of a Helicopter",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 99,
+        "toc_path": "Determining Amount of Ballast Needed to Move CG to a Desired Location",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 101,
+        "toc_path": "Appendix A",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 103,
+        "toc_path": "Appendix B",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 105,
+        "toc_path": "Glossary",
+        "doc_abbrev": "wbh"
+      },
+      {
+        "page": 111,
+        "toc_path": "Index",
+        "doc_abbrev": "wbh"
+      }
+    ],
+    "synonyms": [],
+    "created_at": "2026-02-26T03:55:38.024183+00:00",
+    "updated_at": "2026-02-26T03:55:38.024183+00:00",
+    "hub_slug": "knowledge",
+    "taxonomy_slug": "default"
+  }
+]
+```
+
+Written to docs/system-audit/evidence/2026-02-27/sql/db-introspection.md

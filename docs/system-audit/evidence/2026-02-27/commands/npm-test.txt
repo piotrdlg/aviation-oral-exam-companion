@@ -1,0 +1,96 @@
+
+> aviation-oral-exam-companion@0.1.0 test
+> vitest run
+
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion[39m
+
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts [2m([22m[2m32 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/chunk-utils.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts [2m([22m[2m35 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts [2m([22m[2m31 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts [2m([22m[2m76 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/voice-usage.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts [2m([22m[2m25 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/image-retrieval.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/sentence-boundary.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/ttl-cache.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts [2m([22m[2m31 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/timing.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/utm.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/graph-retrieval.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+[90mstderr[2m | src/lib/__tests__/session-policy.test.ts[2m > [22m[2mupdate — grading[2m > [22m[2mskips grading when attempts query returns null
+[22m[39mExam grading skipped for session sess-2: attempts=null, totalElements=1
+
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts [2m([22m[2m26 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email-routing.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/eval-helpers.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+[90mstdout[2m | scripts/__tests__/extract-topics.test.ts
+[22m[39m[dotenv@17.3.1] injecting env (17) from .env.local -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+Environment: local
+
+Topic Extraction Pipeline
+=========================
+Mode: LIVE
+Document type: handbook
+Chunk limit: none
+
+Fetching handbook documents...
+
+[90mstdout[2m | scripts/__tests__/extract-regulatory-claims.test.ts
+[22m[39m[dotenv@17.3.1] injecting env (17) from .env.local -- tip: 🤖 agentic secret storage: https://dotenvx.com/as2
+
+Environment: local
+
+Extract Regulatory Claims Pipeline
+===================================
+Mode: LIVE
+
+
+ [32m✓[39m src/lib/__tests__/provider-factory.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-regulatory-claims.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-topics.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+[90mstdout[2m | scripts/__tests__/infer-edges.test.ts
+[22m[39m[dotenv@17.3.1] injecting env (17) from .env.local -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+Environment: local
+
+Embed Concepts Pipeline
+=======================
+Mode: LIVE
+
+
+[90mstdout[2m | scripts/__tests__/embed-concepts.test.ts
+[22m[39m[dotenv@17.3.1] injecting env (17) from .env.local -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+
+Environment: local
+
+Embed Concepts Pipeline
+=======================
+Mode: LIVE
+
+
+[90mstdout[2m | scripts/__tests__/infer-edges.test.ts
+[22m[39m[dotenv@17.3.1] injecting env (0) from .env.local -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+
+Environment: local
+
+Infer Edges Pipeline
+====================
+Strategy: all
+Mode:     LIVE
+
+--- Strategy A: LLM-based Edge Inference ---
+
+ [32m✓[39m scripts/__tests__/embed-concepts.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m25 passed[39m[22m[90m (25)[39m
+[2m      Tests [22m [1m[32m495 passed[39m[22m[90m (495)[39m
+[2m   Start at [22m 18:36:43
+[2m   Duration [22m 1.14s[2m (transform 1.32s, setup 0ms, import 3.42s, tests 165ms, environment 2ms)[22m
+

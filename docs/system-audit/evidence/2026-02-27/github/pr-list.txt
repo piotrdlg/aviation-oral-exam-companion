@@ -1,0 +1,3 @@
+3	feat(exam): Phase 5 — Grading V2 + Quick Drill	phase5-grading-v2-quick-drill	OPEN	2026-02-27T03:48:38Z
+2	Move voice mode toggle to Settings as persistent preference	feat/voice-enabled-setting	MERGED	2026-02-23T00:50:54Z
+1	Replace Radar/Neon with light-background Sectional and Briefing themes	feat/light-themes-sectional-briefing	MERGED	2026-02-23T00:11:07Z
