@@ -14,6 +14,7 @@ import {
   type LlmUsage,
 } from '@/lib/exam-engine';
 import { computeExamResult } from '@/lib/exam-logic';
+import { computeExamResultV2 } from '@/lib/exam-result';
 import {
   initPlanner,
   advancePlanner,
@@ -161,6 +162,38 @@ export async function GET(request: NextRequest) {
       }
 
       return NextResponse.json({ tasks: data || [] });
+    }
+
+    // Weak-area summary with grounded citations
+    if (action === 'summary') {
+      const sessionId = searchParams.get('sessionId');
+      if (!sessionId) {
+        return NextResponse.json({ error: 'sessionId required' }, { status: 400 });
+      }
+
+      // Verify user owns this session
+      const { data: session } = await supabase
+        .from('exam_sessions')
+        .select('id')
+        .eq('id', sessionId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (!session) {
+        return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+      }
+
+      const { buildWeakAreaReport } = await import('@/lib/weak-area-report');
+      const report = await buildWeakAreaReport(sessionId);
+
+      if (!report) {
+        return NextResponse.json(
+          { error: 'No ExamResultV2 available for this session. Was the exam completed?' },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({ report });
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
@@ -742,9 +775,27 @@ export async function POST(request: NextRequest) {
                 }));
                 const result = computeExamResult(attemptData, totalElements, 'all_tasks_covered');
 
+                // V2 grading: plan-based denominator + per-area gating
+                const serverExamPlan = (examRow?.metadata as Record<string, unknown>)?.examPlan as ExamPlanV1 | undefined;
+                const serverSessionConfig = (examRow?.metadata as Record<string, unknown>)?.sessionConfig as SessionConfig | undefined;
+                const effectivePlan = serverExamPlan || clientExamPlan;
+                let examResultV2: Record<string, unknown> | undefined;
+                if (effectivePlan) {
+                  examResultV2 = computeExamResultV2(
+                    attemptData,
+                    effectivePlan,
+                    'all_tasks_covered',
+                    serverSessionConfig?.rating || sessionConfig?.rating || 'private',
+                  ) as unknown as Record<string, unknown>;
+                }
+
+                // Merge V2 into existing metadata (preserve plannerState, sessionConfig, etc.)
+                const existingMetadata = (examRow?.metadata as Record<string, unknown>) || {};
+                const updatedMetadata = { ...existingMetadata, ...(examResultV2 ? { examResultV2 } : {}) };
+
                 const { error: completeErr } = await serviceSupabase
                   .from('exam_sessions')
-                  .update({ status: 'completed', ended_at: new Date().toISOString(), result })
+                  .update({ status: 'completed', ended_at: new Date().toISOString(), result, metadata: updatedMetadata })
                   .eq('id', sessionId);
                 if (completeErr) console.error('Auto-complete session update error:', completeErr.message);
               } else {

@@ -34,6 +34,7 @@ evidence_level: high
 | 18 | [[18 - Multi-Hub KG Phase 2 — Taxonomy Attachment]] | Draft |
 | 19 | [[19 - Multi-Hub KG Phase 3 — Regulatory Anchoring]] | Draft |
 | 20 | [[20 - ExamPlan and Planner v1]] | Draft |
+| 21 | [[21 - Grading and Quick Drill v1]] | Draft |
 | 22 | [[22 - System State Inventory]] | Final |
 | 23 | [[23 - Feature Matrix vs Oral Exam Problem Statement]] | Final |
 | 24 | [[24 - Test Matrix and Evidence Pack]] | Final |
@@ -54,7 +55,7 @@ HeyDPE is a production-quality FAA oral exam simulator built on Next.js 16 + Sup
 
 3. ~~**Caching is completely absent.**~~ **UPDATE (2026-02-19):** Module-level TTL caches added for system config, prompts, and embeddings.
 
-4. ~~**The exam flow is quiz-like, not DPE-like.**~~ **UPDATE (2026-02-26):** Phase 4 adds `ExamPlanV1` — predetermined exam shape with scope-sensitive question count, bounded bonus questions, follow-up limits, mention credit, and cross-ACS connected walk using taxonomy fingerprints. Grounding Contract enforced code-side. See [[20 - ExamPlan and Planner v1]].
+4. ~~**The exam flow is quiz-like, not DPE-like.**~~ **UPDATE (2026-02-26):** Phase 4 adds `ExamPlanV1` — predetermined exam shape with scope-sensitive question count, bounded bonus questions, follow-up limits, mention credit, and cross-ACS connected walk using taxonomy fingerprints. Grounding Contract enforced code-side. **Phase 5** adds `ExamResultV2` — plan-based grading denominator, per-area gating, weak-area synthesis with grounded citations, and Quick Drill mode. See [[20 - ExamPlan and Planner v1]] and [[21 - Grading and Quick Drill v1]].
 
 5. **Hallucination of FAA regulations is the highest-risk failure mode.** **MITIGATED (2026-02-25):** Graph bundle injects verified `regulatory_claim` nodes with exact CFR references into the system prompt. No post-hoc verification yet, but context quality greatly improved.
 
@@ -106,6 +107,7 @@ HeyDPE is a production-quality FAA oral exam simulator built on Next.js 16 + Sup
 | [[18 - Multi-Hub KG Phase 2 — Taxonomy Attachment]] | **Phase 2** | Chunk classification + taxonomy promotion + evidence-based concept attachment |
 | [[19 - Multi-Hub KG Phase 3 — Regulatory Anchoring]] | **Phase 3** | Regulations taxonomy expansion + regulatory_claim CFR-parsed attachment + artifact anchoring |
 | [[20 - ExamPlan and Planner v1]] | **ExamPlan** | Predetermined exam shape, scope-sensitive question count, mention credit, connected walk, grounding contract |
+| [[21 - Grading and Quick Drill v1]] | **Grading V2** | ExamResultV2 with plan-based denominator, per-area gating, weak-area synthesis with citations, Quick Drill mode |
 | [[22 - System State Inventory]] | **Inventory** | Full codebase + DB inventory: 33 API routes, 29+ lib modules, 49 scripts, 48 migrations, 24K concepts, 74K relations |
 | [[23 - Feature Matrix vs Oral Exam Problem Statement]] | **Requirements** | R1–R10 evidence-based matrix mapping requirements against implementation evidence |
 | [[24 - Test Matrix and Evidence Pack]] | **Tests** | 495 tests across 25 files mapped to features, 9 known test gaps identified |

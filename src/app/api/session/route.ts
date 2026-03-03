@@ -158,6 +158,21 @@ export async function POST(request: NextRequest) {
           const effectiveTotal = totalElements > 0 ? totalElements : attemptData.length;
           const result = computeExamResult(attemptData, effectiveTotal, 'user_ended');
           updateData.result = result;
+
+          // V2 grading: plan-based denominator + per-area gating
+          const examPlan = (examRow?.metadata as Record<string, unknown>)?.examPlan as import('@/lib/exam-plan').ExamPlanV1 | undefined;
+          const examSessionConfig = (examRow?.metadata as Record<string, unknown>)?.sessionConfig as { rating?: string } | undefined;
+          if (examPlan) {
+            const { computeExamResultV2 } = await import('@/lib/exam-result');
+            const examResultV2 = computeExamResultV2(
+              attemptData,
+              examPlan,
+              'user_ended',
+              examSessionConfig?.rating || 'private',
+            );
+            // Will be merged into metadata below
+            (updateData as Record<string, unknown>)._examResultV2 = examResultV2;
+          }
         } else {
           console.warn(`Exam grading skipped for session ${sessionId}: attempts=${attempts?.length ?? 'null'}, totalElements=${totalElements}`);
         }
@@ -167,21 +182,38 @@ export async function POST(request: NextRequest) {
     }
 
     // Persist planner state, session config, task data, and voice pref in metadata for session resume
-    if (planner_state || session_config || task_data || voice_enabled !== undefined) {
-      const { data: existing } = await supabase
-        .from('exam_sessions')
-        .select('metadata')
-        .eq('id', sessionId)
-        .eq('user_id', user.id)
-        .single();
+    const pendingV2 = (updateData as Record<string, unknown>)._examResultV2;
+    delete (updateData as Record<string, unknown>)._examResultV2;
 
-      const currentMetadata = (existing?.metadata as Record<string, unknown>) || {};
+    if (planner_state || session_config || task_data || voice_enabled !== undefined || pendingV2) {
+      // Only re-fetch metadata if we don't already have it from the grading block above
+      let currentMetadata: Record<string, unknown>;
+      if (status === 'completed') {
+        // Already fetched examRow above — reuse its metadata
+        const { data: existing } = await supabase
+          .from('exam_sessions')
+          .select('metadata')
+          .eq('id', sessionId)
+          .eq('user_id', user.id)
+          .single();
+        currentMetadata = (existing?.metadata as Record<string, unknown>) || {};
+      } else {
+        const { data: existing } = await supabase
+          .from('exam_sessions')
+          .select('metadata')
+          .eq('id', sessionId)
+          .eq('user_id', user.id)
+          .single();
+        currentMetadata = (existing?.metadata as Record<string, unknown>) || {};
+      }
+
       updateData.metadata = {
         ...currentMetadata,
         ...(planner_state ? { plannerState: planner_state } : {}),
         ...(session_config ? { sessionConfig: session_config } : {}),
         ...(task_data ? { taskData: task_data } : {}),
         ...(voice_enabled !== undefined ? { voiceEnabled: voice_enabled } : {}),
+        ...(pendingV2 ? { examResultV2: pendingV2 } : {}),
       };
     }
 

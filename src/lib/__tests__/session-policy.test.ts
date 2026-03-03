@@ -231,7 +231,8 @@ describe('create — expires_at', () => {
     expect(arg.expires_at).toBeTruthy();
     const expires = new Date(arg.expires_at).getTime();
     const expected = Date.now() + 7 * 24 * 60 * 60 * 1000;
-    expect(Math.abs(expires - expected)).toBeLessThan(5000);
+    // Allow up to 2 hours tolerance for DST boundary crossings
+    expect(Math.abs(expires - expected)).toBeLessThan(2 * 60 * 60 * 1000);
   });
 
   it('does not set expiry for paying users', async () => {

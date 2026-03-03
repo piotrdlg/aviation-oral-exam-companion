@@ -240,9 +240,9 @@ export async function initPlanner(
     }
   }
 
-  // Load weak stats if using weak_areas mode
+  // Load weak stats if using weak_areas or quick_drill mode
   let weakStats: ElementScore[] = [];
-  if (config.studyMode === 'weak_areas') {
+  if (config.studyMode === 'weak_areas' || config.studyMode === 'quick_drill') {
     const { data: scores } = await supabase.rpc('get_element_scores', {
       p_user_id: userId,
       p_rating: config.rating || 'private',
@@ -268,7 +268,17 @@ export async function initPlanner(
   }
 
   // Build exam plan with scope-sensitive question count
-  const examPlan = buildExamPlan(queue, config.studyMode, totalOralElements, planOverrides);
+  // Quick Drill: short focused exam (10-20 questions, no bonus)
+  const effectivePlanOverrides = config.studyMode === 'quick_drill'
+    ? {
+        ...planOverrides,
+        full_exam_question_count: 15,
+        min_question_count: 10,
+        max_question_count: 20,
+        bonus_question_max: 0,
+      }
+    : planOverrides;
+  const examPlan = buildExamPlan(queue, config.studyMode, totalOralElements, effectivePlanOverrides);
 
   // Initialize planner state
   const state = initPlannerState(queue);
