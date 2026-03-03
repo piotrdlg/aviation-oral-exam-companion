@@ -1,0 +1,20 @@
+8dab6d3 (HEAD -> inventory-verification-sprint-20260227, origin/main, main) Merge prod-reality-audit-20260224: KG infrastructure + ExamPlan Phase 4
+b920534 (prod-reality-audit-20260224) Add design/implementation plans, staging tools, and dev utilities
+9e50c41 Update graph explorer with taxonomy node support and UI fixes
+5a47e80 Add knowledge graph infrastructure: migrations, scripts, taxonomy pipeline
+99a125c Add system audit docs 11-19, production audit, and graph reports
+c09c5a2 Add ExamPlanV1: predetermined exam shape with grounding enforcement
+6b82b95 Add multi-line label blocks to 2D and 3D graph views
+e2b3896 Fix AFRAME not defined error by using standalone force-graph packages
+62d0fc0 Fix graph explorer "No nodes found" by stripping slug prefix before RPC
+007d569 Add ConceptCategory, EvidenceType, ConceptChunkEvidence types to database.ts
+bb6611e fix: lazy-init Stripe client to prevent build crash when key is unset
+640d903 feat: add graph page with Explorer, 3D, Health, and Coverage tabs
+648cd89 feat: add graph coverage treemap visualization
+a620237 feat: add graph health audit dashboard
+965b5aa feat: add 3D WebGL graph view
+998e028 feat: add 2D graph explorer with search, zoom, and detail panel
+f657428 feat: add graph detail panel for concept inspection
+def63a7 feat: add graph coverage API for treemap visualization
+5f3339f feat: add graph health API and orphan concepts RPC
+0700fac feat: add graph bundle API with element search

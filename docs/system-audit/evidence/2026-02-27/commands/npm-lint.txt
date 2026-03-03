@@ -1,0 +1,464 @@
+
+> aviation-oral-exam-companion@0.1.0 lint
+> eslint
+
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/e2e/admin/login.spec.ts
+  35:9  warning  'oauthUrl' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/e2e/analytics/posthog.spec.ts
+  72:70  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/e2e/auth/signup.spec.ts
+  96:63  warning  'page' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/e2e/billing/webhook.spec.ts
+  21:11  warning  'firstResponse' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/e2e/consent/customize.spec.ts
+  119:59  warning  'page' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/e2e/cross-browser/voice.spec.ts
+  145:11  warning  'hasFallbackMessage' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/e2e/helpers/storage.ts
+  38:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  43:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  43:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  50:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  51:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/e2e/integration/utm-consent-flow.spec.ts
+  124:70  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/e2e/onboarding/wizard-name-step.spec.ts
+  116:56  warning  'page' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/e2e/practice/message-avatars.spec.ts
+  3:30  warning  'makeTierResponse' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/e2e/rate-limiting/api.spec.ts
+  35:11  warning  'rateLimited' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/e2e/support/report-answer.spec.ts
+  76:56  warning  'page' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/scripts/_reload-schema2.ts
+   7:7  warning  'dbPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  15:9  warning  'endpoints' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/scripts/audit/db-snapshot.ts
+  135:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  139:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  146:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  329:65  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  357:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/scripts/extract-artifacts.ts
+  73:11  warning  'EdgeInsert' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/scripts/extract-regulatory-claims.ts
+  234:7  error  'totalChunksSkipped' is never reassigned. Use 'const' instead  prefer-const
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/scripts/graph/attach_concepts_to_taxonomy_from_evidence.ts
+  256:9  warning  'existingComponentEdges' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  312:7  error    'skippedTaxonomyNode' is never reassigned. Use 'const' instead  prefer-const
+  313:7  error    'skippedHub' is never reassigned. Use 'const' instead           prefer-const
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/scripts/graph/attach_hub_scaffold.ts
+  543:9  warning  'envName' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/scripts/graph/attach_regulatory_claims_to_sections.ts
+  163:9  warning  'existingEdges' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/scripts/graph/expected-path-audit.ts
+  79:16  warning  'fetchAll' is defined but never used     @typescript-eslint/no-unused-vars
+  98:3   warning  'namePattern' is defined but never used  @typescript-eslint/no-unused-vars
+  99:3   warning  'categories' is defined but never used   @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/scripts/graph/graph-metrics.ts
+  317:9  warning  'conceptMap' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/scripts/graph/sync_taxonomy_to_concepts.ts
+  345:7  warning  'skippedTriage' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/scripts/infer-edges.ts
+  143:11  warning  'EdgeInsert' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/scripts/taxonomy/build_multi_hub_taxonomy.ts
+  302:7   warning  'RATING_PREFIXES' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  355:11  warning  'parentSlug' is assigned a value but never used       @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/scripts/taxonomy/build_unified_taxonomy.ts
+  314:15  warning  'key' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  320:15  warning  'key' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/scripts/taxonomy/classify_chunks.ts
+  351:23  warning  'error' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/scripts/taxonomy/expand_regulations_taxonomy.ts
+  209:9  warning  'claims' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/scripts/taxonomy/validate_multi_hub_phase1.ts
+  291:9  warning  'hubRootSlugs' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/scripts/verify-graph-health.ts
+  154:18  warning  'totalCount' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(admin)/AdminShell.tsx
+   95:89   error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  101:100  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(admin)/admin/analytics/page.tsx
+  129:91  error    Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  174:91  error    Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  208:91  error    Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  237:91  error    Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  298:91  error    Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  445:65  warning  'detail' is defined but never used                                      @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(admin)/admin/config/page.tsx
+   40:10  warning  'configs' is assigned a value but never used                            @typescript-eslint/no-unused-vars
+  190:93  error    Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  207:93  error    Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  223:95  error    Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  246:87  error    Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  265:87  error    Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  286:89  error    Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  322:95  error    Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(admin)/admin/graph/Graph3DView.tsx
+  415:9   warning  'nodeVal' is assigned a value but never used                            @typescript-eslint/no-unused-vars
+  425:9   warning  'nodeColor' is assigned a value but never used                          @typescript-eslint/no-unused-vars
+  549:92  error    Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(admin)/admin/graph/GraphDetailPanel.tsx
+  55:83  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(admin)/admin/graph/GraphExplorer.tsx
+    7:32  warning  'RelationType' is defined but never used                                @typescript-eslint/no-unused-vars
+  532:92  error    Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(admin)/admin/graph/GraphHealth.tsx
+  139:87  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  176:87  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  206:89  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  233:84  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  273:84  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(admin)/admin/moderation/page.tsx
+  114:95  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(admin)/admin/page.tsx
+  148:91  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  184:91  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  226:91  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  305:91  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(admin)/admin/prompts/page.tsx
+   82:22  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  178:95  error    Comments inside children section of tag should be placed inside braces                          react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(admin)/admin/support/page.tsx
+  336:86  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  567:89  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  598:89  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  629:89  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(admin)/admin/tts/page.tsx
+  349:93   error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  366:93   error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  382:95   error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  403:99   error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  461:100  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  505:100  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  552:100  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(admin)/admin/users/[id]/page.tsx
+  205:95  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(admin)/admin/users/page.tsx
+  125:93  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(auth)/login/page.tsx
+   62:10  warning  'loadingVerify' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+   84:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(auth)/login/page.tsx:84:7
+  82 |     const msg = getErrorMessage(errorCode, errorDetail);
+  83 |     if (msg) {
+> 84 |       setError(msg);
+     |       ^^^^^^^^ Avoid calling setState() directly within an effect
+  85 |       window.history.replaceState({}, '', '/login');
+  86 |     }
+  87 |   }, [searchParams]);  react-hooks/set-state-in-effect
+  281:97  error    Comments inside children section of tag should be placed inside braces                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(dashboard)/home/page.tsx
+  135:93  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  192:94  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  325:93  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  377:94  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(dashboard)/practice/components/SessionConfig.tsx
+  62:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(dashboard)/practice/components/SessionConfig.tsx:62:7
+  60 |   useEffect(() => {
+  61 |     if (preferredVoiceEnabled !== undefined) {
+> 62 |       setVoiceEnabled(preferredVoiceEnabled);
+     |       ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  63 |     }
+  64 |   }, [preferredVoiceEnabled]);
+  65 |                                            react-hooks/set-state-in-effect
+  69:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(dashboard)/practice/components/SessionConfig.tsx:69:5
+  67 |   useEffect(() => {
+  68 |     if (prefsLoading) return;
+> 69 |     setTasksLoading(true);
+     |     ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  70 |     setSelectedTasks([]);
+  71 |     fetch(`/api/exam?action=list-tasks&rating=${rating}`)
+  72 |       .then((res) => res.json())  react-hooks/set-state-in-effect
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(dashboard)/practice/page.tsx
+    87:10  warning  'coveredTaskIds' is assigned a value but never used                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+   136:10  warning  'sentenceStreamEnabled' is assigned a value but never used                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+   711:17  warning  'chunksReceived' is assigned a value but never used                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+  1259:9   warning  'ratingLabel' is assigned a value but never used                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  1642:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  1765:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(dashboard)/progress/page.tsx
+  123:5  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(dashboard)/progress/page.tsx:123:5
+  121 |   useEffect(() => {
+  122 |     if (!prefsLoaded) return;
+> 123 |     setLoading(true);
+      |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  124 |     setSelectedSessionId(null);
+  125 |     setSessionScores([]);
+  126 |     Promise.all([                                                          react-hooks/set-state-in-effect
+  149:7  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(dashboard)/progress/page.tsx:149:7
+  147 |   useEffect(() => {
+  148 |     if (filteredSessions.length > 0 && selectedSessionId === null) {
+> 149 |       setSelectedSessionId(filteredSessions[0].id);
+      |       ^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  150 |     }
+  151 |   }, [filteredSessions, selectedSessionId]);
+  152 |  react-hooks/set-state-in-effect
+  156:7  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(dashboard)/progress/page.tsx:156:7
+  154 |   useEffect(() => {
+  155 |     if (!selectedSessionId) {
+> 156 |       setSessionScores([]);
+      |       ^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  157 |       return;
+  158 |     }
+  159 |     setSessionScoresLoading(true);                                                                 react-hooks/set-state-in-effect
+  197:9  warning  'uniqueTasksCovered' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/(dashboard)/settings/page.tsx
+   718:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+   752:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  1090:29  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/admin/login/page.tsx
+  44:95  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/api/admin/dashboard/route.ts
+  162:9  error  'anomalyEmails' is never reassigned. Use 'const' instead  prefer-const
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/api/admin/graph/coverage/route.ts
+  29:3  warning  Unused eslint-disable directive (no problems were reported from 'no-constant-condition')
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/api/admin/moderation/route.ts
+  47:19  warning  'count' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  62:9   error    'emailMap' is never reassigned. Use 'const' instead  prefer-const
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/api/admin/sessions/[id]/transcript/route.ts
+  66:59  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  76:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/api/admin/users/[id]/route.ts
+   22:7  warning  'elementScoresResult' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  177:9  error    'elementsMap' is never reassigned. Use 'const' instead    prefer-const
+  247:9  error    'adminEmailMap' is never reassigned. Use 'const' instead  prefer-const
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/api/admin/users/route.ts
+  87:9  error  'sessionCounts' is never reassigned. Use 'const' instead  prefer-const
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/api/bench/route.ts
+  95:7  error  'history' is never reassigned. Use 'const' instead  prefer-const
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/api/exam/route.ts
+   20:3   warning  'isExamComplete' is defined but never used                                                                                                                                                          @typescript-eslint/no-unused-vars
+   23:3   warning  'canFollowUp' is defined but never used                                                                                                                                                             @typescript-eslint/no-unused-vars
+  514:35  error    React Hook "useBonusQuestion" cannot be called inside a callback. React Hooks must be called in a React function component or a custom React Hook function                                          react-hooks/rules-of-hooks
+  629:29  error    React Hook "useBonusQuestion" cannot be called in an async function                                                                                                                                 react-hooks/rules-of-hooks
+  629:29  error    React Hook "useBonusQuestion" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/api/user/sessions/route.ts
+  1:10  warning  'NextRequest' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/page.tsx
+   54:99   error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  151:107  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  195:108  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  271:107  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/pricing/page.tsx
+  151:107  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  248:107  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  286:107  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  314:107  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  333:107  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/privacy/page.tsx
+  50:95  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/terms/page.tsx
+  50:95  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/try/page.tsx
+   26:99   error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+   69:107  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  113:107  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+  236:96   error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/components/CookieConsent.tsx
+  25:34  error  Prefer using the primitive `object` as a type name, rather than the upper-cased `Object`  @typescript-eslint/no-wrapper-object-types
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/components/ui/ExamImages.tsx
+  59:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  79:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/components/ui/ImageLightbox.tsx
+  94:9  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/components/voice/VoiceLab.tsx
+  333:13  warning  'tokenPreview' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/hooks/useSentenceTTS.ts
+  102:7  error  Error: Cannot access variable before it is declared
+
+`startDraining` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/hooks/useSentenceTTS.ts:102:7
+  100 |     // Check if more sentences arrived during the last speak()
+  101 |     if (queueRef.current.length > 0) {
+> 102 |       startDraining(); // Restart
+      |       ^^^^^^^^^^^^^ `startDraining` accessed before it is declared
+  103 |       return;
+  104 |     }
+  105 |
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/hooks/useSentenceTTS.ts:63:3
+   61 |
+   62 |   // Drain loop: processes sentences sequentially via speak()
+>  63 |   const startDraining = useCallback(async () => {
+      |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  64 |     if (drainingRef.current) return; // Already draining
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  65 |
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 112 |     }
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 113 |   }, []);
+      | ^^^^^^^^^^ `startDraining` is declared here
+  114 |
+  115 |   const enqueueSentence = useCallback((sentence: string) => {
+  116 |     if (cancelledRef.current) return;  react-hooks/immutability
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/lib/__tests__/analytics.test.ts
+  17:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  31:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  47:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  54:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  56:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  63:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  64:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  65:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  66:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/lib/__tests__/exam-logic.test.ts
+  16:43  warning  'ElementScore' is defined but never used       @typescript-eslint/no-unused-vars
+  16:72  warning  'CompletionTrigger' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/lib/__tests__/sentence-boundary.test.ts
+  58:11  warning  'result' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/lib/__tests__/session-policy.test.ts
+  61:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  65:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  65:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  65:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  65:66  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  75:9   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  81:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/lib/__tests__/utm.test.ts
+  34:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  39:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  45:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  58:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  70:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  81:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  89:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/lib/admin-guard.ts
+  20:36  warning  'request' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/lib/exam-logic.ts
+  491:3  warning  'config' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/types/speech.d.ts
+  41:1  error  Unexpected var, use let or const instead  no-var
+
+✖ 183 problems (122 errors, 61 warnings)
+  10 errors and 2 warnings potentially fixable with the `--fix` option.
+

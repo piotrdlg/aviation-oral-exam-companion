@@ -1,0 +1,101 @@
+
+> aviation-oral-exam-companion@0.1.0 build
+> next build
+
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/piotrdlugiewicz/package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * /Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/package-lock.json
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+✓ Compiled successfully in 4.7s
+  Running TypeScript ...
+  Collecting page data using 9 workers ...
+⚠ Using edge runtime on a page currently disables static generation for that page
+  Generating static pages using 9 workers (0/59) ...
+  Generating static pages using 9 workers (14/59) 
+  Generating static pages using 9 workers (29/59) 
+  Generating static pages using 9 workers (44/59) 
+✓ Generating static pages using 9 workers (59/59) in 203.9ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /admin
+├ ƒ /admin/analytics
+├ ƒ /admin/config
+├ ƒ /admin/graph
+├ ƒ /admin/login
+├ ƒ /admin/moderation
+├ ƒ /admin/prompts
+├ ƒ /admin/support
+├ ƒ /admin/tts
+├ ƒ /admin/users
+├ ƒ /admin/users/[id]
+├ ƒ /admin/voicelab
+├ ƒ /api/admin/analytics/overview
+├ ƒ /api/admin/config
+├ ƒ /api/admin/dashboard
+├ ƒ /api/admin/graph
+├ ƒ /api/admin/graph/coverage
+├ ƒ /api/admin/graph/health
+├ ƒ /api/admin/moderation
+├ ƒ /api/admin/moderation/[id]
+├ ƒ /api/admin/prompts
+├ ƒ /api/admin/prompts/[id]/publish
+├ ƒ /api/admin/prompts/[id]/rollback
+├ ƒ /api/admin/sessions/[id]/transcript
+├ ƒ /api/admin/support
+├ ƒ /api/admin/users
+├ ƒ /api/admin/users/[id]
+├ ƒ /api/admin/users/[id]/actions
+├ ƒ /api/bench
+├ ƒ /api/exam
+├ ƒ /api/flags
+├ ƒ /api/report
+├ ƒ /api/session
+├ ƒ /api/stripe/checkout
+├ ƒ /api/stripe/portal
+├ ƒ /api/stripe/status
+├ ƒ /api/stripe/webhook
+├ ƒ /api/stt/test
+├ ƒ /api/stt/token
+├ ƒ /api/stt/usage
+├ ƒ /api/tts
+├ ƒ /api/user/avatar
+├ ƒ /api/user/sessions
+├ ƒ /api/user/tier
+├ ƒ /api/webhooks/resend-inbound
+├ ○ /apple-icon
+├ ƒ /auth/callback
+├ ƒ /banned
+├ ƒ /home
+├ ○ /icon.svg
+├ ƒ /login
+├ ƒ /opengraph-image
+├ ƒ /practice
+├ ƒ /pricing
+├ ƒ /privacy
+├ ƒ /progress
+├ ○ /robots.txt
+├ ƒ /settings
+├ ƒ /signup
+├ ○ /sitemap.xml
+├ ƒ /staging-auth
+├ ƒ /suspended
+├ ƒ /terms
+└ ƒ /try
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
