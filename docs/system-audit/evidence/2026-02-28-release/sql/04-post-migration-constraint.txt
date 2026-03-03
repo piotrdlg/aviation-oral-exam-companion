@@ -1,0 +1,5 @@
+            conname             |                                                   definition                                                   
+--------------------------------+----------------------------------------------------------------------------------------------------------------
+ exam_sessions_study_mode_check | CHECK ((study_mode = ANY (ARRAY['linear'::text, 'cross_acs'::text, 'weak_areas'::text, 'quick_drill'::text])))
+(1 row)
+

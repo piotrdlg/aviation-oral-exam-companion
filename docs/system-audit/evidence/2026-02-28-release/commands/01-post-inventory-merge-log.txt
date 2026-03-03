@@ -1,0 +1,10 @@
+3bb19f8 Merge pull request #4 from piotrdlg/inventory-verification-sprint-20260227
+476a426 chore(audit): inventory + evidence pack + docs normalization
+8dab6d3 Merge prod-reality-audit-20260224: KG infrastructure + ExamPlan Phase 4
+b920534 Add design/implementation plans, staging tools, and dev utilities
+9e50c41 Update graph explorer with taxonomy node support and UI fixes
+5a47e80 Add knowledge graph infrastructure: migrations, scripts, taxonomy pipeline
+99a125c Add system audit docs 11-19, production audit, and graph reports
+c09c5a2 Add ExamPlanV1: predetermined exam shape with grounding enforcement
+6b82b95 Add multi-line label blocks to 2D and 3D graph views
+e2b3896 Fix AFRAME not defined error by using standalone force-graph packages

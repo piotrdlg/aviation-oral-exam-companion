@@ -1,0 +1,119 @@
+
+> aviation-oral-exam-companion@0.1.0 exam:result-audit
+> tsx scripts/exam/result-audit.ts
+
+[dotenv@17.3.1] injecting env (17) from .env.local -- tip: ⚙️  suppress all logs with { quiet: true }
+=== Exam Result Audit ===
+
+Found 16 completed session(s)
+
+─── Session ef2798fe... ───
+  Rating: private | Exchanges: 60
+  Started: 2026-02-25T20:29:21.900222+00:00 | Ended: 2026-02-27T10:37:19.867+00:00
+  V1 Grade: unsatisfactory (62%)
+    Asked: 10/385 | Sat: 2 Partial: 6 Unsat: 2
+  V2 Result: NOT PRESENT (pre-Phase 5 session)
+
+─── Session 431d1227... ───
+  Rating: private | Exchanges: 46
+  Started: 2026-02-27T08:35:09.26269+00:00 | Ended: 2026-02-27T10:33:20.813+00:00
+  V1 Grade: satisfactory (96%)
+    Asked: 8/385 | Sat: 7 Partial: 1 Unsat: 0
+  V2 Result: NOT PRESENT (pre-Phase 5 session)
+  Plan: 1 asked, 0 credited, 384 pending of 385 total
+
+─── Session 6e830d88... ───
+  Rating: private | Exchanges: 79
+  Started: 2026-02-19T22:09:48.310812+00:00 | Ended: 2026-02-27T08:35:09.164+00:00
+  V1 Grade: satisfactory (87%)
+    Asked: 9/9 | Sat: 5 Partial: 4 Unsat: 0
+  V2 Result: NOT PRESENT (pre-Phase 5 session)
+
+─── Session cc8b4c63... ───
+  Rating: private | Exchanges: 91
+  Started: 2026-02-20T22:17:23.315396+00:00 | Ended: 2026-02-27T08:33:21.101+00:00
+  V1 Grade: satisfactory (76%)
+    Asked: 9/385 | Sat: 4 Partial: 4 Unsat: 1
+  V2 Result: NOT PRESENT (pre-Phase 5 session)
+
+─── Session d2470050... ───
+  Rating: private | Exchanges: 0
+  Started: 2026-02-20T16:08:45.988829+00:00 | Ended: 2026-02-20T16:09:04.66+00:00
+  V1 Result: MISSING
+  V2 Result: NOT PRESENT (pre-Phase 5 session)
+
+─── Session 44d62c4c... ───
+  Rating: private | Exchanges: 0
+  Started: 2026-02-20T13:09:01.362119+00:00 | Ended: 2026-02-20T13:09:21.197+00:00
+  V1 Result: MISSING
+  V2 Result: NOT PRESENT (pre-Phase 5 session)
+
+─── Session 2f989ffb... ───
+  Rating: private | Exchanges: 0
+  Started: 2026-02-20T13:08:05.193106+00:00 | Ended: 2026-02-20T13:08:29.516+00:00
+  V1 Result: MISSING
+  V2 Result: NOT PRESENT (pre-Phase 5 session)
+
+─── Session 4ea990da... ───
+  Rating: private | Exchanges: 0
+  Started: 2026-02-20T13:07:12.899005+00:00 | Ended: 2026-02-20T13:07:33.199+00:00
+  V1 Result: MISSING
+  V2 Result: NOT PRESENT (pre-Phase 5 session)
+
+─── Session 0e81ed10... ───
+  Rating: private | Exchanges: 0
+  Started: 2026-02-20T13:04:19.174991+00:00 | Ended: 2026-02-20T13:04:44.764+00:00
+  V1 Result: MISSING
+  V2 Result: NOT PRESENT (pre-Phase 5 session)
+
+─── Session 5c103771... ───
+  Rating: private | Exchanges: 2
+  Started: 2026-02-20T01:47:54.547072+00:00 | Ended: 2026-02-20T02:01:35.285+00:00
+  V1 Grade: incomplete (0%)
+    Asked: 0/5 | Sat: 0 Partial: 0 Unsat: 0
+  V2 Result: NOT PRESENT (pre-Phase 5 session)
+
+─── Session 1ef9ce08... ───
+  Rating: private | Exchanges: 3
+  Started: 2026-02-20T01:44:22.341693+00:00 | Ended: 2026-02-20T01:47:54.517+00:00
+  V1 Grade: incomplete (0%)
+    Asked: 0/5 | Sat: 0 Partial: 0 Unsat: 0
+  V2 Result: NOT PRESENT (pre-Phase 5 session)
+
+─── Session e63409e6... ───
+  Rating: private | Exchanges: 3
+  Started: 2026-02-20T01:23:14.44874+00:00 | Ended: 2026-02-20T01:44:22.236+00:00
+  V1 Grade: incomplete (70%)
+    Asked: 1/13 | Sat: 0 Partial: 1 Unsat: 0
+  V2 Result: NOT PRESENT (pre-Phase 5 session)
+
+─── Session ae411072... ───
+  Rating: private | Exchanges: 3
+  Started: 2026-02-19T22:01:08.485206+00:00 | Ended: 2026-02-19T22:09:48.139+00:00
+  V1 Grade: incomplete (50%)
+    Asked: 2/13 | Sat: 1 Partial: 0 Unsat: 1
+  V2 Result: NOT PRESENT (pre-Phase 5 session)
+
+─── Session d730c551... ───
+  Rating: private | Exchanges: 5
+  Started: 2026-02-18T02:35:13.605426+00:00 | Ended: 2026-02-18T02:56:05.243+00:00
+  V1 Result: MISSING
+  V2 Result: NOT PRESENT (pre-Phase 5 session)
+
+─── Session fb2bbd96... ───
+  Rating: private | Exchanges: 0
+  Started: 2026-02-17T21:10:00.644831+00:00 | Ended: 2026-02-17T21:11:21.533+00:00
+  V1 Result: MISSING
+  V2 Result: NOT PRESENT (pre-Phase 5 session)
+
+─── Session 9c6a27cd... ───
+  Rating: commercial | Exchanges: 0
+  Started: 2026-02-16T12:35:06.113367+00:00 | Ended: 2026-02-16T12:35:24.892+00:00
+  V1 Result: MISSING
+  V2 Result: NOT PRESENT (pre-Phase 5 session)
+
+=== Summary ===
+Total sessions: 16
+V2 present: 0 | V1-only: 16
+Total weak elements: 0
+Total failed areas: 0

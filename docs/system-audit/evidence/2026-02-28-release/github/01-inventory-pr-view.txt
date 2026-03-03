@@ -1,0 +1,28 @@
+title:	Inventory + verification sprint (docs + evidence + structure)
+state:	MERGED
+author:	piotrdlg
+labels:	
+assignees:	
+reviewers:	
+projects:	
+milestone:	
+number:	4
+url:	https://github.com/piotrdlg/aviation-oral-exam-companion/pull/4
+additions:	5245
+deletions:	0
+auto-merge:	disabled
+--
+## Summary
+- 5 new system audit docs (22–26): inventory, feature matrix, test matrix, docs restructure, deployment status
+- Evidence pack: `docs/system-audit/evidence/2026-02-27/` with CLI outputs, DB introspection, GitHub snapshots
+- 22 doc files `git mv`'d to canonical structure (`runbooks/`, `plans/`, `build-reports/`)
+- New DB introspection script: `scripts/audit/db-introspect.ts`
+- Updated Index (doc 00) with docs 22–26
+
+## Verification
+- 495 tests passing
+- Typecheck clean
+- Build succeeds
+- No code changes — strictly inventory, evidence, and doc hygiene
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)

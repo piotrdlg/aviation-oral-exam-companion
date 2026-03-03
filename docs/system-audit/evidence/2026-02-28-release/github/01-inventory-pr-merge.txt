@@ -1,0 +1,91 @@
+From https://github.com/piotrdlg/aviation-oral-exam-companion
+ * branch            main       -> FETCH_HEAD
+   8dab6d3..3bb19f8  main       -> origin/main
+Updating 8dab6d3..3bb19f8
+Fast-forward
+ .../2026-02-19-phase1-verification.md              |    0
+ .../2026-02-20-chunked-tts-generation.md           |    0
+ .../2026-02-20-phase1-verification.md              |    0
+ .../2026-02-20-staging-e2e-smoke.md                |    0
+ ...20-tts-sentence-stream-and-latency-benchmark.md |    0
+ .../2026-02-25-expected-path-audit.md              |    0
+ .../2026-02-25-graph-metrics.md                    |    0
+ .../2026-02-25-graph-validation.md                 |    0
+ .../2026-02-25-taxonomy-attachment.md              |    0
+ .../2026-02-26-chunk-classification-knowledge.md   |    0
+ .../2026-02-26-concept-taxonomy-attachment.md      |    0
+ .../2026-02-26-graph-metrics.md                    |    0
+ .../2026-02-26-graph-validation.md                 |    0
+ .../2026-02-26-hub-scaffold.md                     |    0
+ .../2026-02-26-multi-hub-chunk-assignment.md       |    0
+ .../2026-02-26-multi-hub-phase1-validation.md      |    0
+ .../2026-02-26-multi-hub-taxonomy-build.md         |    0
+ .../2026-02-26-taxonomy-concept-sync.md            |    0
+ .../cockpit-design-system.md}                      |    0
+ docs/{ => runbooks}/API.md                         |    0
+ docs/{ => runbooks}/DATABASE.md                    |    0
+ docs/{ => runbooks}/cross-browser-test-matrix.md   |    0
+ docs/{ => runbooks}/stripe-branding-guide.md       |    0
+ docs/system-audit/00 - Index.md                    |   10 +
+ docs/system-audit/22 - System State Inventory.md   |  747 ++++++++++++
+ ...eature Matrix vs Oral Exam Problem Statement.md |  618 ++++++++++
+ .../24 - Test Matrix and Evidence Pack.md          |  139 +++
+ .../25 - Docs Restructure Plan and Moves.md        |  121 ++
+ docs/system-audit/26 - Deployment and PR Status.md |  133 +++
+ .../evidence/2026-02-27/commands/git-branches.txt  |    6 +
+ .../evidence/2026-02-27/commands/git-diff-stat.txt |    0
+ .../evidence/2026-02-27/commands/git-log-20.txt    |   20 +
+ .../evidence/2026-02-27/commands/git-status.txt    |   47 +
+ .../evidence/2026-02-27/commands/npm-build.txt     |  101 ++
+ .../evidence/2026-02-27/commands/npm-lint.txt      |  464 ++++++++
+ .../evidence/2026-02-27/commands/npm-test.txt      |   96 ++
+ .../evidence/2026-02-27/commands/npm-typecheck.txt |    0
+ .../evidence/2026-02-27/github/pr-3-view.txt       |   56 +
+ .../evidence/2026-02-27/github/pr-list.txt         |    3 +
+ .../2026-02-27/sql/db-introspection-raw.txt        | 1225 ++++++++++++++++++++
+ .../evidence/2026-02-27/sql/db-introspection.md    | 1222 +++++++++++++++++++
+ .../evidence/2026-02-27/sql/db-introspection.txt   |   27 +
+ scripts/audit/db-introspect.ts                     |  210 ++++
+ 43 files changed, 5245 insertions(+)
+ rename docs/{staging-reports => build-reports}/2026-02-19-phase1-verification.md (100%)
+ rename docs/{reports => build-reports}/2026-02-20-chunked-tts-generation.md (100%)
+ rename docs/{staging-reports => build-reports}/2026-02-20-phase1-verification.md (100%)
+ rename docs/{staging-reports => build-reports}/2026-02-20-staging-e2e-smoke.md (100%)
+ rename docs/{reports => build-reports}/2026-02-20-tts-sentence-stream-and-latency-benchmark.md (100%)
+ rename docs/{graph-reports => build-reports}/2026-02-25-expected-path-audit.md (100%)
+ rename docs/{graph-reports => build-reports}/2026-02-25-graph-metrics.md (100%)
+ rename docs/{graph-reports => build-reports}/2026-02-25-graph-validation.md (100%)
+ rename docs/{graph-reports => build-reports}/2026-02-25-taxonomy-attachment.md (100%)
+ rename docs/{graph-reports => build-reports}/2026-02-26-chunk-classification-knowledge.md (100%)
+ rename docs/{graph-reports => build-reports}/2026-02-26-concept-taxonomy-attachment.md (100%)
+ rename docs/{graph-reports => build-reports}/2026-02-26-graph-metrics.md (100%)
+ rename docs/{graph-reports => build-reports}/2026-02-26-graph-validation.md (100%)
+ rename docs/{graph-reports => build-reports}/2026-02-26-hub-scaffold.md (100%)
+ rename docs/{graph-reports => build-reports}/2026-02-26-multi-hub-chunk-assignment.md (100%)
+ rename docs/{graph-reports => build-reports}/2026-02-26-multi-hub-phase1-validation.md (100%)
+ rename docs/{graph-reports => build-reports}/2026-02-26-multi-hub-taxonomy-build.md (100%)
+ rename docs/{graph-reports => build-reports}/2026-02-26-taxonomy-concept-sync.md (100%)
+ rename docs/{COCKPIT-DESIGN-SYSTEM.md => plans/cockpit-design-system.md} (100%)
+ rename docs/{ => runbooks}/API.md (100%)
+ rename docs/{ => runbooks}/DATABASE.md (100%)
+ rename docs/{ => runbooks}/cross-browser-test-matrix.md (100%)
+ rename docs/{ => runbooks}/stripe-branding-guide.md (100%)
+ create mode 100644 docs/system-audit/22 - System State Inventory.md
+ create mode 100644 docs/system-audit/23 - Feature Matrix vs Oral Exam Problem Statement.md
+ create mode 100644 docs/system-audit/24 - Test Matrix and Evidence Pack.md
+ create mode 100644 docs/system-audit/25 - Docs Restructure Plan and Moves.md
+ create mode 100644 docs/system-audit/26 - Deployment and PR Status.md
+ create mode 100644 docs/system-audit/evidence/2026-02-27/commands/git-branches.txt
+ create mode 100644 docs/system-audit/evidence/2026-02-27/commands/git-diff-stat.txt
+ create mode 100644 docs/system-audit/evidence/2026-02-27/commands/git-log-20.txt
+ create mode 100644 docs/system-audit/evidence/2026-02-27/commands/git-status.txt
+ create mode 100644 docs/system-audit/evidence/2026-02-27/commands/npm-build.txt
+ create mode 100644 docs/system-audit/evidence/2026-02-27/commands/npm-lint.txt
+ create mode 100644 docs/system-audit/evidence/2026-02-27/commands/npm-test.txt
+ create mode 100644 docs/system-audit/evidence/2026-02-27/commands/npm-typecheck.txt
+ create mode 100644 docs/system-audit/evidence/2026-02-27/github/pr-3-view.txt
+ create mode 100644 docs/system-audit/evidence/2026-02-27/github/pr-list.txt
+ create mode 100644 docs/system-audit/evidence/2026-02-27/sql/db-introspection-raw.txt
+ create mode 100644 docs/system-audit/evidence/2026-02-27/sql/db-introspection.md
+ create mode 100644 docs/system-audit/evidence/2026-02-27/sql/db-introspection.txt
+ create mode 100644 scripts/audit/db-introspect.ts

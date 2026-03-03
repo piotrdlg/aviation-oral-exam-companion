@@ -40,6 +40,7 @@ evidence_level: high
 | 24 | [[24 - Test Matrix and Evidence Pack]] | Final |
 | 25 | [[25 - Docs Restructure Plan and Moves]] | Final |
 | 26 | [[26 - Deployment and PR Status]] | Final |
+| 27 | [[27 - Release Verification — Phase 5]] | Final |
 
 ---
 
@@ -113,6 +114,7 @@ HeyDPE is a production-quality FAA oral exam simulator built on Next.js 16 + Sup
 | [[24 - Test Matrix and Evidence Pack]] | **Tests** | 495 tests across 25 files mapped to features, 9 known test gaps identified |
 | [[25 - Docs Restructure Plan and Moves]] | **Docs** | 22 doc files git-mv'd to canonical structure (system-audit, build-reports, runbooks, plans, archive) |
 | [[26 - Deployment and PR Status]] | **Deployment** | Branch status, 3 PRs, DB migration readiness, pre-merge checklist for PR #3 |
+| [[27 - Release Verification — Phase 5]] | **Release** | PR #3+#4 merge evidence, DB migration proof, 522 tests, rollback steps |
 
 ---
 

@@ -1,0 +1,26 @@
+From https://github.com/piotrdlg/aviation-oral-exam-companion
+ * branch            main       -> FETCH_HEAD
+   3bb19f8..39fc159  main       -> origin/main
+Updating 3bb19f8..39fc159
+Fast-forward
+ docs/system-audit/00 - Index.md                    |   4 +-
+ .../21 - Grading and Quick Drill v1.md             | 302 +++++++++++++
+ package.json                                       |   1 +
+ scripts/exam/result-audit.ts                       | 181 ++++++++
+ src/app/api/exam/route.ts                          |  53 ++-
+ src/app/api/session/route.ts                       |  48 +-
+ src/lib/__tests__/exam-result.test.ts              | 500 +++++++++++++++++++++
+ src/lib/__tests__/session-policy.test.ts           |   3 +-
+ src/lib/exam-logic.ts                              |  24 +
+ src/lib/exam-planner.ts                            |  16 +-
+ src/lib/exam-result.ts                             | 412 +++++++++++++++++
+ src/lib/weak-area-report.ts                        | 393 ++++++++++++++++
+ src/types/database.ts                              |   2 +-
+ .../20260226100001_add_quick_drill_study_mode.sql  |  22 +
+ 14 files changed, 1946 insertions(+), 15 deletions(-)
+ create mode 100644 docs/system-audit/21 - Grading and Quick Drill v1.md
+ create mode 100644 scripts/exam/result-audit.ts
+ create mode 100644 src/lib/__tests__/exam-result.test.ts
+ create mode 100644 src/lib/exam-result.ts
+ create mode 100644 src/lib/weak-area-report.ts
+ create mode 100644 supabase/migrations/20260226100001_add_quick_drill_study_mode.sql
