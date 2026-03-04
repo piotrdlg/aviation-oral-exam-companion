@@ -18,6 +18,8 @@ export type DifficultyPreference = Difficulty;
 export type DocumentType = 'handbook' | 'ac' | 'cfr' | 'aim' | 'other';
 export type TagType = 'attempt' | 'mention';
 export type AircraftClass = 'ASEL' | 'AMEL' | 'ASES' | 'AMES';
+export type PersonaKey = 'supportive_coach' | 'strict_dpe' | 'quiet_methodical' | 'scenario_challenger';
+export type ExaminerProfileKey = 'maria_methodical' | 'bob_supportive' | 'jim_strict' | 'karen_scenario';
 
 export type ConceptCategory =
   | 'acs_area'
@@ -264,6 +266,8 @@ export interface SessionConfig {
   difficulty: DifficultyPreference;
   selectedAreas: string[];
   selectedTasks: string[];
+  persona?: PersonaKey;
+  examinerProfileKey?: ExaminerProfileKey;
 }
 
 export interface LatencyLog {

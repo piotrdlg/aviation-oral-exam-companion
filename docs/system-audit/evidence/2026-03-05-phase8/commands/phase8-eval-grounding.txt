@@ -1,0 +1,40 @@
+[dotenv@17.3.1] injecting env (17) from .env.local -- tip: ⚙️  override existing env vars with { override: true }
+=== Grounding / Citation Accuracy Audit (Phase 8) ===
+
+Runtime filter threshold: 0.2
+Max candidates per element: 20
+Max kept per element: 4
+
+Found 3 session(s) with V2 data (limit: 10)
+
+Session 3754ebb2... | instrument | weak_areas | 135 weak elements
+  Grounded: 124/135 (91.9%) | Insufficient: 11 | Kept citations: S=124 WS=194 | Filtered: 313
+Session 6cc31bb3... | instrument | linear | 14 weak elements
+  Grounded: 13/14 (92.9%) | Insufficient: 1 | Kept citations: S=13 WS=25 | Filtered: 34
+Session 3564331f... | private | linear | 10 weak elements
+  Grounded: 10/10 (100.0%) | Insufficient: 0 | Kept citations: S=9 WS=26 | Filtered: 21
+
+=== AGGREGATE RESULTS ===
+Total weak elements audited: 159
+Grounded (≥1 citation after filter): 147 (92.5%)
+Insufficient sources (0 after filter): 12 (7.5%)
+
+Post-filter citation quality:
+  Total kept: 391 (from 1066 raw candidates)
+  SUPPORTS: 146 (37.3%)
+  WEAK_SUPPORT: 245 (62.7%)
+  Filtered out: 368
+  Avg relevance score (kept): 39.4%
+
+Insufficient sources rate: 7.5% (threshold: <=10%)
+
+Insufficient sources by area:
+  Area V: 4 element(s) with no grounded citations
+  Area VI: 4 element(s) with no grounded citations
+  Area VII: 2 element(s) with no grounded citations
+  Area I: 1 element(s) with no grounded citations
+  Area IV: 1 element(s) with no grounded citations
+
+Evidence saved to /Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/docs/system-audit/evidence/2026-03-05-phase8/eval/grounding-citation-audit.{json,md}
+
+✅ PASS: Insufficient sources rate within threshold

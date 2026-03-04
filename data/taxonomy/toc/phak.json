@@ -1,0 +1,340 @@
+{
+  "doc_abbrev": "phak",
+  "doc_title": "Pilot's Handbook of Aeronautical Knowledge (FAA-H-8083-25B)",
+  "faa_number": "FAA-H-8083-25B",
+  "files_processed": [
+    "03_phak_ch1.pdf",
+    "04_phak_ch2.pdf",
+    "07_phak_ch5.pdf",
+    "09_phak_ch7.pdf",
+    "10_phak_ch8.pdf",
+    "13_phak_ch11.pdf",
+    "14_phak_ch12.pdf",
+    "15_phak_ch13.pdf",
+    "16_phak_ch14.pdf",
+    "18_phak_ch16.pdf",
+    "19_phak_ch17.pdf",
+    "20_phak_appendices.pdf",
+    "21_phak_glossary.pdf"
+  ],
+  "total_entries": 39,
+  "level_counts": {
+    "level_1": 13,
+    "level_2": 13,
+    "level_3": 13
+  },
+  "entries": [
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "03_phak_ch1.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Document",
+      "page": 1,
+      "raw_title": "Document",
+      "source_file": "03_phak_ch1.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 3,
+      "title": "Article",
+      "page": 1,
+      "raw_title": "Article",
+      "source_file": "03_phak_ch1.pdf",
+      "parent_title": "Document"
+    },
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "04_phak_ch2.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Document",
+      "page": 1,
+      "raw_title": "Document",
+      "source_file": "04_phak_ch2.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 3,
+      "title": "Article",
+      "page": 1,
+      "raw_title": "Article",
+      "source_file": "04_phak_ch2.pdf",
+      "parent_title": "Document"
+    },
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "07_phak_ch5.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Document",
+      "page": 1,
+      "raw_title": "Document",
+      "source_file": "07_phak_ch5.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 3,
+      "title": "Article",
+      "page": 1,
+      "raw_title": "Article",
+      "source_file": "07_phak_ch5.pdf",
+      "parent_title": "Document"
+    },
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "09_phak_ch7.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Document",
+      "page": 1,
+      "raw_title": "Document",
+      "source_file": "09_phak_ch7.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 3,
+      "title": "Article",
+      "page": 1,
+      "raw_title": "Article",
+      "source_file": "09_phak_ch7.pdf",
+      "parent_title": "Document"
+    },
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "10_phak_ch8.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Document",
+      "page": 2,
+      "raw_title": "Document",
+      "source_file": "10_phak_ch8.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 3,
+      "title": "Article",
+      "page": 2,
+      "raw_title": "Article",
+      "source_file": "10_phak_ch8.pdf",
+      "parent_title": "Document"
+    },
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "13_phak_ch11.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Document",
+      "page": 1,
+      "raw_title": "Document",
+      "source_file": "13_phak_ch11.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 3,
+      "title": "Article",
+      "page": 1,
+      "raw_title": "Article",
+      "source_file": "13_phak_ch11.pdf",
+      "parent_title": "Document"
+    },
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "14_phak_ch12.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Document",
+      "page": 1,
+      "raw_title": "Document",
+      "source_file": "14_phak_ch12.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 3,
+      "title": "Article",
+      "page": 1,
+      "raw_title": "Article",
+      "source_file": "14_phak_ch12.pdf",
+      "parent_title": "Document"
+    },
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "15_phak_ch13.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Document",
+      "page": 1,
+      "raw_title": "Document",
+      "source_file": "15_phak_ch13.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 3,
+      "title": "Article",
+      "page": 1,
+      "raw_title": "Article",
+      "source_file": "15_phak_ch13.pdf",
+      "parent_title": "Document"
+    },
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "16_phak_ch14.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Document",
+      "page": 1,
+      "raw_title": "Document",
+      "source_file": "16_phak_ch14.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 3,
+      "title": "Article",
+      "page": 1,
+      "raw_title": "Article",
+      "source_file": "16_phak_ch14.pdf",
+      "parent_title": "Document"
+    },
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "18_phak_ch16.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Document",
+      "page": 1,
+      "raw_title": "Document",
+      "source_file": "18_phak_ch16.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 3,
+      "title": "Article",
+      "page": 1,
+      "raw_title": "Article",
+      "source_file": "18_phak_ch16.pdf",
+      "parent_title": "Document"
+    },
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "19_phak_ch17.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Document",
+      "page": 1,
+      "raw_title": "Document",
+      "source_file": "19_phak_ch17.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 3,
+      "title": "Article",
+      "page": 1,
+      "raw_title": "Article",
+      "source_file": "19_phak_ch17.pdf",
+      "parent_title": "Document"
+    },
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "20_phak_appendices.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Document",
+      "page": 1,
+      "raw_title": "Document",
+      "source_file": "20_phak_appendices.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 3,
+      "title": "Article",
+      "page": 1,
+      "raw_title": "Article",
+      "source_file": "20_phak_appendices.pdf",
+      "parent_title": "Document"
+    },
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "21_phak_glossary.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Document",
+      "page": 1,
+      "raw_title": "Document",
+      "source_file": "21_phak_glossary.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 3,
+      "title": "Article",
+      "page": 1,
+      "raw_title": "Article",
+      "source_file": "21_phak_glossary.pdf",
+      "parent_title": "Document"
+    }
+  ]
+}

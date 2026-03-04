@@ -386,10 +386,10 @@ export function isExamComplete(plan: ExamPlanV1): boolean {
 
 | Attribute | Detail |
 |-----------|--------|
-| **Status** | **Partial (V1 on main, V2 in PR #3)** |
-| **On Main** | V1 assessment + basic scoring |
-| **Tests** | V1: in exam-logic tests; V2: 27 tests in PR #3 (`exam-result.test.ts`) |
-| **UI** | No results display UI |
+| **Status** | **Implemented (V1 + V2 on main, Results UI in Phase 6)** |
+| **On Main** | Yes (V1 + V2 grading, results display UI) |
+| **Tests** | V1: in exam-logic tests; V2: 27 tests in `exam-result.test.ts` |
+| **UI** | Yes (results modal with V2 per-area breakdown, weak elements, FAA citations) |
 
 **Evidence on `main`:**
 
@@ -400,31 +400,32 @@ export function isExamComplete(plan: ExamPlanV1): boolean {
 | Basic scoring | `computeExamResult()` computes overall exam grade from attempt data | `src/lib/exam-logic.ts:564-567` |
 | R9.3 Mention credit | `creditMentionedElements()` in exam-plan.ts marks pending elements as `credited_by_mention` | `src/lib/exam-plan.ts:172-183` |
 
-**Evidence in PR #3** (not merged):
+**Evidence on main (after Phase 5 merge + Phase 6 UI):**
 
 | Component | File | Detail |
 |-----------|------|--------|
 | ExamResultV2 | `src/lib/exam-result.ts` (412 lines) | Per-area gating (overall >= 0.70, per-area >= 0.60), critical area enforcement, weak element identification |
 | Weak-area synthesis | `src/lib/weak-area-report.ts` (393 lines) | Grounded citations from FAA sources via transcript + evidence chain |
 | Summary API | `GET /api/exam?action=summary&sessionId=...` | Returns V2 result + weak-area report |
+| Results display UI | `src/app/(dashboard)/practice/page.tsx` | Modal with V2 per-area breakdown, gating status (FAIL markers), weak elements (severity badges), FAA citations, V1 fallback |
+| V2 return to client | `src/app/api/session/route.ts:229-235` | `resultV2` returned alongside V1 `result` on session completion |
 | Tests | `src/lib/__tests__/exam-result.test.ts` (27 tests) | 522 total tests passing |
 
-**Gaps:**
+> **UPDATE (2026-03-03, Phase 6):** PR #3 merged into main at `39fc159`. Results display UI implemented in Phase 6 sprint. Smoke test confirms 1 production session with examResultV2 data. See [[27 - Release Verification --- Phase 5]] and [[28 - Results UI and Quick Drill Entry]].
 
-- **V2 grading not on main.** The comprehensive grading system (per-area gating, weak element identification, grounded weak-area report) exists only in PR #3.
-- **No results display UI.** Even V1 scoring has no user-facing display. The student finishes an exam and sees no summary, no score, no weak areas.
-- **R9.2 weak-area synthesis is PR-only.** The synthesized review plan with grounded citations is not available in production.
+**Remaining Gaps:**
+
+- **Weak-area report accuracy untested.** No manual evaluation of whether citations are actually relevant to identified weak elements.
+- **V2 depends on evidence chain quality.** If `concept_chunk_evidence` links are incorrect, weak-area citations will be misleading.
 
 **Risks:**
 
-1. Students complete exams with no actionable feedback --- defeating the core purpose of exam preparation.
-2. V2 depends on evidence chain quality (`concept_chunk_evidence`). If evidence links are incorrect, weak-area citations will be misleading.
+1. V2 depends on evidence chain quality (`concept_chunk_evidence`). If evidence links are incorrect, weak-area citations will be misleading.
 
 **Next Steps:**
 
-1. Merge PR #3 (`phase5-grading-v2-quick-drill`).
-2. Build results display UI: session summary with per-area breakdown, weak elements, and FAA citations.
-3. Test weak-area report accuracy against manually evaluated sessions.
+1. Test weak-area report accuracy against manually evaluated sessions.
+2. Add post-hoc citation relevance scoring.
 
 ---
 
@@ -434,40 +435,32 @@ export function isExamComplete(plan: ExamPlanV1): boolean {
 
 | Attribute | Detail |
 |-----------|--------|
-| **Status** | **PR Only (not on main)** |
-| **On Main** | No |
-| **Tests** | Yes (in PR #3) |
-| **UI** | No |
+| **Status** | **Implemented (on main, UI added in Phase 6)** |
+| **On Main** | Yes |
+| **Tests** | Yes (in exam-logic + exam-result tests) |
+| **UI** | Yes (study mode selector, 4th button) |
 
-**Evidence in PR #3:**
+**Evidence on main (after Phase 5 merge + Phase 6 UI):**
 
 | Component | File | Detail |
 |-----------|------|--------|
 | StudyMode extension | `src/types/database.ts` | `'quick_drill'` added to `StudyMode` type |
 | Queue builder | `src/lib/exam-logic.ts` | `buildElementQueue` case `'quick_drill'` targeting weak/untouched elements only |
 | Planner overrides | `src/lib/exam-planner.ts` | 10-20 questions, excludes satisfactory elements |
-| DB migration | `supabase/migrations/20260226100001_add_quick_drill_study_mode.sql` | Updates CHECK constraint on `exam_sessions.study_mode` |
+| DB migration | `supabase/migrations/20260226100001_add_quick_drill_study_mode.sql` | Applied to production 2026-03-02 |
+| UI selector | `src/app/(dashboard)/practice/components/SessionConfig.tsx` | 4th button in 2x2 grid, locked until user has completed exams |
+| Eligibility check | `src/app/(dashboard)/practice/page.tsx` | Fetches session history on mount, sets `hasCompletedExams` |
 
-**Current DB State:**
+> **UPDATE (2026-03-03, Phase 6):** PR #3 merged at `39fc159`. Migration applied to production DB (constraint now includes `quick_drill`). UI selector added with lock/unlock gating. See [[27 - Release Verification --- Phase 5]] and [[28 - Results UI and Quick Drill Entry]].
 
-The DB introspection confirms `quick_drill` is **blocked by CHECK constraint**: attempting to insert `study_mode = 'quick_drill'` fails. The migration must be applied before use.
+**Remaining Gaps:**
 
-**Gaps:**
-
-- **Not merged.** The entire feature is in PR #3.
-- **No UI.** No "Quick Drill" option exists in the practice page configuration.
-- **Migration required.** DB schema change must be applied before the feature can function.
-
-**Risks:**
-
-1. Migration ordering: if the code is deployed before the migration, quick drill requests will fail with constraint violations.
-2. No UI means the feature is API-only even after merge.
+- **No dedicated Quick Drill smoke test.** A full end-to-end Quick Drill session has not been run in production yet.
 
 **Next Steps:**
 
-1. Merge PR #3.
-2. Apply migration `20260226100001` to production.
-3. Add Quick Drill option to practice page study mode selector.
+1. Run a full Quick Drill session in production and verify element targeting.
+2. Validate that Quick Drill correctly excludes satisfactory elements.
 
 ---
 
@@ -475,16 +468,16 @@ The DB introspection confirms `quick_drill` is **blocked by CHECK constraint**: 
 
 | Req | Description | Status | On Main? | Tests | UI | Priority Gap |
 |-----|-------------|--------|----------|-------|----|-------------|
-| **R1** | Knowledge Grounding | Partial | Yes | 64 (RAG + graph + image) | Implicit | Post-hoc verification |
+| **R1** | Knowledge Grounding | Partial | Yes | 64 (RAG + graph + image) | Implicit | Citation relevance filtering (Phase 7: 35.9% unsupported) |
 | **R2** | Predetermined Exam Shape | Implemented | Yes | 31 | No admin config | Admin UI |
 | **R3** | Certificate-Level Depth | Implemented | Yes | 80 | Yes (rating selector) | Depth differentiation |
-| **R4** | Difficulty Control | Partial | Yes | 0 dedicated | Yes (difficulty selector) | Measurement + validation |
-| **R5** | Flow Modes | Partial | Yes | In exam-logic (80) | Yes (mode selector) | Transition explanation |
+| **R4** | Difficulty Control | Partial | Yes | 0 dedicated | Yes (difficulty selector) | Transcript comparison (Phase 7: instruction injection PASS) |
+| **R5** | Flow Modes | Partial | Yes | In exam-logic (80) | Yes (mode selector) | Taxonomy fingerprints (Phase 7: function PASS, no FP data) |
 | **R6** | Examiner Personality | Partial | Yes (infra) | 0 | No | Entire user experience |
 | **R7** | Multimodal Questions | Partial | Yes (infra) | 15 | Untested | Semantic image linking |
-| **R8** | Prompt Governance | Partial | Yes | 0 | Admin API exists | Verify population + audit trail |
-| **R9** | Grading + Feedback | Partial | V1 only | 27 (PR) | No | Merge PR #3 + results UI |
-| **R10** | Quick Drill | PR Only | No | Yes (PR) | No | Merge + migration + UI |
+| **R8** | Prompt Governance | Partial | Yes | 0 | Admin API exists | Audit trail logging (Phase 7: 22 DB prompts, 96/96 served) |
+| **R9** | Grading + Feedback | **Implemented** | Yes (V1+V2) | 27 | Yes (results modal) | Citation accuracy validation |
+| **R10** | Quick Drill | **Implemented** | Yes | Yes | Yes (selector) | E2E smoke test |
 
 ---
 
@@ -604,15 +597,19 @@ The problem statement defines seven success criteria for "what done looks like."
 
 Of the 10 core requirements and 2 design constraints in the Oral Exam Problem Statement:
 
-- **2 requirements are fully implemented** (R2 Exam Shape, R3 ACS Compliance)
+- **4 requirements are fully implemented** (R2 Exam Shape, R3 ACS Compliance, R9 Grading + Feedback, R10 Quick Drill)
 - **6 requirements are partially implemented** (R1, R4, R5, R6, R7, R8)
-- **2 requirements exist only in PR #3** (R9 V2 grading, R10 Quick Drill)
+- **0 requirements exist only in PRs**
 - **0 requirements have no implementation at all**
 
-The most impactful next action is **merging PR #3** to bring R9 and R10 onto main. After that, the highest-value gaps are:
+> **UPDATE (2026-03-03):** PR #3 merged (Phase 5), migration applied, Phase 6 sprint added results display UI and Quick Drill selector. R9 and R10 are now fully implemented.
+
+The highest-value remaining gaps are:
 
 1. **Post-hoc grounding verification** (R1) --- the highest-risk failure mode
-2. **Results display UI** (R9) --- students currently receive no feedback
-3. **Difficulty validation** (R4) --- no evidence that difficulty setting works
-4. **Personality exposure** (R6) --- infrastructure exists but is invisible to users
-5. **Admin prompt verification** (R8) --- table may be empty in production
+2. **Difficulty validation** (R4) --- no evidence that difficulty setting works
+3. **Personality exposure** (R6) --- infrastructure exists but is invisible to users
+4. **Admin prompt verification** (R8) --- table may be empty in production
+5. **Citation accuracy validation** (R9) --- weak-area report accuracy untested
+
+> **UPDATE (2026-03-04):** Phase 7 built a reusable quality harness (6 scripts) measuring R1, R4, R5, R8, R9, R10. Key findings: R1 citation accuracy FAIL (35.9% unsupported — evidence-chain citations not area-filtered); R4 instruction injection PASS (no transcript data yet); R5 connectedWalk function correct but no taxonomy fingerprints on PA elements; R8 PASS (22 DB prompts serve all 96 config combos, 4 persona fragments). See [[29 - Exam Quality Harness and Calibration]].

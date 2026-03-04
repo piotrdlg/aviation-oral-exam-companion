@@ -13,6 +13,7 @@ import {
 } from './exam-logic';
 import type { AircraftClass, Rating } from '@/types/database';
 import { searchChunks, formatChunksForPrompt, getImagesForChunks, type ChunkSearchResult, type ImageResult } from './rag-retrieval';
+import { selectBestAssets, type AssetSelectionContext, type SelectedAsset } from './asset-selector';
 import { searchWithFallback, inferRagFilters } from './rag-search-with-fallback';
 import type { SystemConfigMap } from './system-config';
 import type { TimingContext } from './timing';
@@ -287,18 +288,20 @@ export async function generateExaminerTurn(
   prefetchedRag?: { ragContext: string },
   rating: Rating = 'private',
   studyMode?: string,
-  personaId?: string,
-  studentName?: string
+  personaSection?: string,
+  studentName?: string,
+  transitionHint?: string,
+  depthContractSection?: string
 ): Promise<ExamTurn> {
   // Load the best-matching prompt from DB (specificity: rating + studyMode + difficulty)
   const { content: dbPromptContent } = await loadPromptFromDB(
     supabase, 'examiner_system', rating, studyMode, difficulty
   );
 
-  const systemPrompt = buildSystemPrompt(task, difficulty, aircraftClass, rating, dbPromptContent);
+  const systemPrompt = buildSystemPrompt(task, difficulty, aircraftClass, rating, dbPromptContent, depthContractSection);
 
-  // Persona personality + student name injection
-  const personaFragment = personaId ? await loadPersonaFragment(personaId) : '';
+  // Persona personality contract injection (Phase 11)
+  const personaFragment = personaSection ? `\n\n${personaSection}` : '';
   const nameInstruction = studentName
     ? `\n\nADDRESS THE STUDENT: Address the student as "${studentName}" naturally in conversation. Use their name occasionally, not in every sentence.`
     : '';
@@ -314,6 +317,9 @@ export async function generateExaminerTurn(
     ? `\n\nFAA SOURCE MATERIAL (use to ask accurate, specific questions):\n${ragContext}`
     : '';
 
+  // Transition hint for cross_acs mode (Phase 9)
+  const transitionSection = transitionHint || '';
+
   const messages = history.map((msg) => ({
     role: msg.role === 'examiner' ? 'assistant' as const : 'user' as const,
     content: msg.text,
@@ -323,7 +329,7 @@ export async function generateExaminerTurn(
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 500,
-    system: systemPrompt + personaFragment + nameInstruction + ragSection,
+    system: systemPrompt + personaFragment + nameInstruction + transitionSection + ragSection,
     messages:
       messages.length === 0
         ? [{ role: 'user', content: 'Begin the oral examination.' }]
@@ -354,25 +360,28 @@ export async function generateExaminerTurnStreaming(
   history: ExamMessage[],
   difficulty?: import('@/types/database').Difficulty,
   aircraftClass?: AircraftClass,
-  prefetchedRag?: { ragContext: string; ragImages?: ImageResult[] },
+  prefetchedRag?: { ragContext: string; ragImages?: ImageResult[]; ragChunks?: ChunkSearchResult[] },
   assessmentPromise?: Promise<AssessmentData>,
   onComplete?: (fullText: string) => Promise<void> | void,
   rating: Rating = 'private',
   studyMode?: string,
-  personaId?: string,
+  personaSection?: string,
   studentName?: string,
   structuredResponse?: boolean,
-  timing?: TimingContext
+  timing?: TimingContext,
+  depthContractSection?: string,
+  assetContext?: AssetSelectionContext,
+  onAssetSelected?: (asset: SelectedAsset) => void
 ): Promise<{ stream: ReadableStream; fullTextPromise: Promise<string> }> {
   // Load the best-matching prompt from DB (specificity: rating + studyMode + difficulty)
   const { content: dbPromptContent } = await loadPromptFromDB(
     supabase, 'examiner_system', rating, studyMode, difficulty
   );
 
-  const systemPrompt = buildSystemPrompt(task, difficulty, aircraftClass, rating, dbPromptContent);
+  const systemPrompt = buildSystemPrompt(task, difficulty, aircraftClass, rating, dbPromptContent, depthContractSection);
 
-  // Persona personality + student name injection
-  const personaFragment = personaId ? await loadPersonaFragment(personaId) : '';
+  // Persona personality contract injection (Phase 11)
+  const personaFragment = personaSection ? `\n\n${personaSection}` : '';
   const nameInstruction = studentName
     ? `\n\nADDRESS THE STUDENT: Address the student as "${studentName}" naturally in conversation. Use their name occasionally, not in every sentence.`
     : '';
@@ -539,13 +548,28 @@ export async function generateExaminerTurnStreaming(
         // Send the full examiner message as a separate event for client-side persistence
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ examinerMessage: plainText })}\n\n`));
 
-        // Send linked images (if any) — max 3, filtered by relevance
+        // Send linked images (if any) — semantic selection with threshold
         const ragImages = prefetchedRag?.ragImages ?? [];
-        if (ragImages.length > 0) {
-          const selectedImages = ragImages
-            .sort((a, b) => b.relevance_score - a.relevance_score)
-            .slice(0, 3);
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ images: selectedImages })}\n\n`));
+        const ragChunks = prefetchedRag?.ragChunks ?? [];
+        if (ragImages.length > 0 || ragChunks.length > 0) {
+          if (assetContext) {
+            const asset = selectBestAssets(ragImages, ragChunks, assetContext);
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ asset })}\n\n`));
+            // Backward-compat: also emit legacy { images } event
+            const legacyImages = asset.images.map(s => s.image);
+            if (legacyImages.length > 0) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ images: legacyImages })}\n\n`));
+            }
+            if (onAssetSelected) onAssetSelected(asset);
+          } else {
+            // Legacy fallback: sort by relevance, take top 3
+            const selectedImages = ragImages
+              .sort((a, b) => b.relevance_score - a.relevance_score)
+              .slice(0, 3);
+            if (selectedImages.length > 0) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ images: selectedImages })}\n\n`));
+            }
+          }
         }
 
         // Resolve full text so after() block can persist reliably
@@ -611,7 +635,8 @@ export async function assessAnswer(
   questionImages?: ImageResult[],
   rating: Rating = 'private',
   studyMode?: string,
-  difficulty?: string
+  difficulty?: string,
+  gradingContractSection?: string
 ): Promise<AssessmentData> {
   // Build complete element list for the assessment prompt
   const allElements: string[] = [];
@@ -661,6 +686,9 @@ export async function assessAnswer(
     ? `\n\nVERIFIED REGULATORY CLAIMS (check student answers against these known-correct values):\n${prefetchedRag.graphContext}`
     : '';
 
+  // Grading calibration contract (Phase 10) — injected when provided
+  const gradingContract = gradingContractSection ? `\n\n${gradingContractSection}` : '';
+
   // Load the best-matching assessment prompt from DB (specificity: rating + studyMode + difficulty)
   const { content: dbPromptContent } = await loadPromptFromDB(
     supabase, 'assessment_system', rating, studyMode, difficulty
@@ -677,7 +705,7 @@ EXAM CONTEXT:
 Certificate: ${ratingLabel}
 ACS Task: ${task.id} - ${task.task}
 All elements for this task:
-${elementList}${ragSection}${graphSection}
+${elementList}${ragSection}${graphSection}${gradingContract}
 
 OUTPUT FORMAT — Respond in JSON only with this exact schema:
 {

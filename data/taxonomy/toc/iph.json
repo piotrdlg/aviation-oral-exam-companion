@@ -1,0 +1,128 @@
+{
+  "doc_abbrev": "iph",
+  "doc_title": "Instrument Procedures Handbook (FAA-H-8083-16B)",
+  "faa_number": "FAA-H-8083-16B",
+  "files_processed": [
+    "FAA-H-8083-16B_Instrument_Procedures.pdf"
+  ],
+  "total_entries": 14,
+  "level_counts": {
+    "level_1": 14,
+    "level_2": 0,
+    "level_3": 0
+  },
+  "entries": [
+    {
+      "toc_level": 1,
+      "title": "Preface",
+      "page": 5,
+      "raw_title": "Preface",
+      "source_file": "FAA-H-8083-16B_Instrument_Procedures.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Acknowledgments",
+      "page": 6,
+      "raw_title": "Acknowledgments",
+      "source_file": "FAA-H-8083-16B_Instrument_Procedures.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Summary of Changes",
+      "page": 8,
+      "raw_title": "Summary of Changes",
+      "source_file": "FAA-H-8083-16B_Instrument_Procedures.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Table of Contents",
+      "page": 12,
+      "raw_title": "Table of Contents",
+      "source_file": "FAA-H-8083-16B_Instrument_Procedures.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 1 - Departure Procedures",
+      "page": 17,
+      "raw_title": "Chapter 1 - Departure Procedures",
+      "source_file": "FAA-H-8083-16B_Instrument_Procedures.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 2 - En Route Operations",
+      "page": 61,
+      "raw_title": "Chapter 2 - En Route Operations",
+      "source_file": "FAA-H-8083-16B_Instrument_Procedures.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 3 - Arrivals",
+      "page": 113,
+      "raw_title": "Chapter 3 - Arrivals",
+      "source_file": "FAA-H-8083-16B_Instrument_Procedures.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 4 - Approaches",
+      "page": 141,
+      "raw_title": "Chapter 4 - Approaches",
+      "source_file": "FAA-H-8083-16B_Instrument_Procedures.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 5 - Improvement Plans",
+      "page": 233,
+      "raw_title": "Chapter 5 - Improvement Plans",
+      "source_file": "FAA-H-8083-16B_Instrument_Procedures.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 6 - Airborne Navigation Databases",
+      "page": 251,
+      "raw_title": "Chapter 6 - Airborne Navigation Databases",
+      "source_file": "FAA-H-8083-16B_Instrument_Procedures.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 7 - Helicopter Instrument Procedures",
+      "page": 269,
+      "raw_title": "Chapter 7 - Helicopter Instrument Procedures",
+      "source_file": "FAA-H-8083-16B_Instrument_Procedures.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Appendix A - Emergency Procedures",
+      "page": 287,
+      "raw_title": "Appendix A - Emergency Procedures",
+      "source_file": "FAA-H-8083-16B_Instrument_Procedures.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Appendix B - Acronyms",
+      "page": 293,
+      "raw_title": "Appendix B - Acronyms",
+      "source_file": "FAA-H-8083-16B_Instrument_Procedures.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Glossary",
+      "page": 301,
+      "raw_title": "Glossary",
+      "source_file": "FAA-H-8083-16B_Instrument_Procedures.pdf",
+      "parent_title": null
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "session_id": "3754ebb2-fa3c-42c8-a707-0cbda070ccc5",
+  "timestamp": "2026-03-03T03:07:47.327Z",
+  "rating": "instrument",
+  "study_mode": "weak_areas",
+  "exchange_count": 9,
+  "v2_status": "fail",
+  "v2_score": 0.03,
+  "weak_elements_total": 135,
+  "weak_elements_audited": 10,
+  "grounded_count": 10,
+  "insufficient_count": 0,
+  "grounding_rate": 100,
+  "elements": [
+    {
+      "element_code": "IR.VI.D.K1",
+      "area": "VI",
+      "severity": "partial",
+      "transcript_citations": 10,
+      "evidence_citations": 10,
+      "total_citations": 20,
+      "grounded": true,
+      "sample_citation": "iph: (no heading)"
+    },
+    {
+      "element_code": "IR.VI.D.R2",
+      "area": "VI",
+      "severity": "partial",
+      "transcript_citations": 5,
+      "evidence_citations": 10,
+      "total_citations": 15,
+      "grounded": true,
+      "sample_citation": "iph: (no heading)"
+    },
+    {
+      "element_code": "IR.VI.D.R6",
+      "area": "VI",
+      "severity": "partial",
+      "transcript_citations": 5,
+      "evidence_citations": 4,
+      "total_citations": 9,
+      "grounded": true,
+      "sample_citation": "ifh: (no heading)"
+    },
+    {
+      "element_code": "IR.VI.D.R7",
+      "area": "VI",
+      "severity": "partial",
+      "transcript_citations": 5,
+      "evidence_citations": 11,
+      "total_citations": 16,
+      "grounded": true,
+      "sample_citation": "acs: (no heading)"
+    },
+    {
+      "element_code": "IR.I.A.K1",
+      "area": "I",
+      "severity": "not_asked",
+      "transcript_citations": 0,
+      "evidence_citations": 11,
+      "total_citations": 11,
+      "grounded": true,
+      "sample_citation": "14 CFR Part 61"
+    },
+    {
+      "element_code": "IR.I.A.K2",
+      "area": "I",
+      "severity": "not_asked",
+      "transcript_citations": 0,
+      "evidence_citations": 3,
+      "total_citations": 3,
+      "grounded": true,
+      "sample_citation": "FAA-S-ACS-6C Private Pilot ACS"
+    },
+    {
+      "element_code": "IR.I.A.K3",
+      "area": "I",
+      "severity": "not_asked",
+      "transcript_citations": 0,
+      "evidence_citations": 9,
+      "total_citations": 9,
+      "grounded": true,
+      "sample_citation": "14 CFR Part 61"
+    },
+    {
+      "element_code": "IR.I.A.R1",
+      "area": "I",
+      "severity": "not_asked",
+      "transcript_citations": 0,
+      "evidence_citations": 5,
+      "total_citations": 5,
+      "grounded": true,
+      "sample_citation": "14 CFR Part 61"
+    },
+    {
+      "element_code": "IR.I.A.R2",
+      "area": "I",
+      "severity": "not_asked",
+      "transcript_citations": 0,
+      "evidence_citations": 3,
+      "total_citations": 3,
+      "grounded": true,
+      "sample_citation": "RMH rmh 02 ch2"
+    },
+    {
+      "element_code": "IR.I.A.R3",
+      "area": "I",
+      "severity": "not_asked",
+      "transcript_citations": 0,
+      "evidence_citations": 10,
+      "total_citations": 10,
+      "grounded": true,
+      "sample_citation": "14 CFR Part 68"
+    }
+  ]
+}

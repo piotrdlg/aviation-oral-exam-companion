@@ -1,0 +1,15 @@
+# Multimodal Asset Audit Report
+Date: 2026-03-04T03:18:39.484Z
+Result: 10/10 passed
+
+## Checks
+- [PASS] all_9_categories_in_map: All 9 categories present: airport, chart, diagram, general, instrument, performance, sectional, table, weather
+- [PASS] link_type_scores_complete: All 4 link types scored: figure_ref=1, caption_match=0.8, same_page=0.6, manual=0.9
+- [PASS] confidence_threshold_is_0.4: Threshold = 0.4
+- [PASS] max_3_images_returned: 3 images returned from 10 candidates (max 3)
+- [PASS] max_2_text_cards_returned: 2 text cards returned (max 2)
+- [PASS] empty_input_empty_output: Images: 0, TextCards: 0
+- [PASS] all_below_threshold_zero_images: 0 images selected from 5 low-scoring candidates
+- [PASS] explanation_strings_non_empty: All 2 selected images have explanations
+- [PASS] text_card_keywords_coverage: All required keywords configured: metar, taf, notam, cfr
+- [PASS] category_scoring_deterministic: Same inputs always produce same scores

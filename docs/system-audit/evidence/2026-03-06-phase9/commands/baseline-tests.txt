@@ -1,0 +1,20 @@
+--- Strategy A: LLM-based Edge Inference ---
+
+[90mstdout[2m | scripts/__tests__/embed-concepts.test.ts
+[22m[39m[dotenv@17.3.1] injecting env (17) from .env.local -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+Environment: local
+
+Embed Concepts Pipeline
+=======================
+Mode: LIVE
+
+
+ [32m✓[39m scripts/__tests__/embed-concepts.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m27 passed[39m[22m[90m (27)[39m
+[2m      Tests [22m [1m[32m546 passed[39m[22m[90m (546)[39m
+[2m   Start at [22m 22:44:49
+[2m   Duration [22m 1.07s[2m (transform 1.55s, setup 0ms, import 3.57s, tests 218ms, environment 2ms)[22m
+

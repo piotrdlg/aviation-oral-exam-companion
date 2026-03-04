@@ -1,0 +1,20 @@
+4fef6b7 (HEAD -> main, origin/main) chore(release): merge inventory sprint + ship phase5 grading v2 + quick drill
+39fc159 Merge pull request #3 from piotrdlg/phase5-grading-v2-quick-drill
+2c6edc7 (origin/phase5-grading-v2-quick-drill) Merge origin/main into phase5 branch (resolve Index conflict)
+2c21cc8 fix(test): widen expires_at tolerance for DST boundary crossings
+3bb19f8 Merge pull request #4 from piotrdlg/inventory-verification-sprint-20260227
+476a426 (origin/inventory-verification-sprint-20260227) chore(audit): inventory + evidence pack + docs normalization
+8e165c5 feat(exam): grading v2 + weak-area summary + quick drill
+8dab6d3 Merge prod-reality-audit-20260224: KG infrastructure + ExamPlan Phase 4
+b920534 (prod-reality-audit-20260224) Add design/implementation plans, staging tools, and dev utilities
+9e50c41 Update graph explorer with taxonomy node support and UI fixes
+5a47e80 Add knowledge graph infrastructure: migrations, scripts, taxonomy pipeline
+99a125c Add system audit docs 11-19, production audit, and graph reports
+c09c5a2 Add ExamPlanV1: predetermined exam shape with grounding enforcement
+6b82b95 Add multi-line label blocks to 2D and 3D graph views
+e2b3896 Fix AFRAME not defined error by using standalone force-graph packages
+62d0fc0 Fix graph explorer "No nodes found" by stripping slug prefix before RPC
+007d569 Add ConceptCategory, EvidenceType, ConceptChunkEvidence types to database.ts
+bb6611e fix: lazy-init Stripe client to prevent build crash when key is unset
+640d903 feat: add graph page with Explorer, 3D, Health, and Coverage tabs
+648cd89 feat: add graph coverage treemap visualization

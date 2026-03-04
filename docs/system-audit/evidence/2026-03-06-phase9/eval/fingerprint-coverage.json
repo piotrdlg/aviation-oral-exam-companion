@@ -1,0 +1,635 @@
+{
+  "timestamp": "2026-03-04T03:18:42.625Z",
+  "ratings_audited": [
+    "private",
+    "commercial",
+    "instrument"
+  ],
+  "results": [
+    {
+      "rating": "private",
+      "evidence_chain": {
+        "coverage_pct": 0,
+        "elements_with_fp": 0,
+        "total_elements": 535,
+        "unique_slugs": 0
+      },
+      "structural": {
+        "coverage_pct": 100,
+        "elements_with_fp": 535,
+        "total_elements": 535,
+        "unique_slugs": 267,
+        "avg_fp_size": 20
+      },
+      "combined": {
+        "coverage_pct": 100,
+        "elements_with_fp": 535,
+        "total_elements": 535,
+        "unique_slugs": 267
+      },
+      "cross_area_bridges": 11,
+      "top_bridges": [
+        {
+          "keyword": "configuration",
+          "areas": [
+            "II",
+            "IV"
+          ],
+          "elementCount": 184
+        },
+        {
+          "keyword": "approach",
+          "areas": [
+            "IV",
+            "X"
+          ],
+          "elementCount": 167
+        },
+        {
+          "keyword": "preflight",
+          "areas": [
+            "I",
+            "II"
+          ],
+          "elementCount": 115
+        },
+        {
+          "keyword": "inspection",
+          "areas": [
+            "I",
+            "II"
+          ],
+          "elementCount": 115
+        },
+        {
+          "keyword": "weather",
+          "areas": [
+            "I",
+            "VII"
+          ],
+          "elementCount": 108
+        },
+        {
+          "keyword": "instrument",
+          "areas": [
+            "VIII",
+            "X"
+          ],
+          "elementCount": 83
+        },
+        {
+          "keyword": "diversion",
+          "areas": [
+            "VI",
+            "VII"
+          ],
+          "elementCount": 72
+        },
+        {
+          "keyword": "spatial disorientation",
+          "areas": [
+            "VIII",
+            "XI"
+          ],
+          "elementCount": 68
+        },
+        {
+          "keyword": "night vision",
+          "areas": [
+            "VIII",
+            "XI"
+          ],
+          "elementCount": 68
+        },
+        {
+          "keyword": "flight plan",
+          "areas": [
+            "VI",
+            "X"
+          ],
+          "elementCount": 62
+        },
+        {
+          "keyword": "clearance",
+          "areas": [
+            "III",
+            "X"
+          ],
+          "elementCount": 49
+        }
+      ],
+      "area_breakdown": {
+        "I": {
+          "total": 68,
+          "withFP": 68
+        },
+        "II": {
+          "total": 47,
+          "withFP": 47
+        },
+        "III": {
+          "total": 19,
+          "withFP": 19
+        },
+        "IV": {
+          "total": 137,
+          "withFP": 137
+        },
+        "IX": {
+          "total": 65,
+          "withFP": 65
+        },
+        "V": {
+          "total": 16,
+          "withFP": 16
+        },
+        "VI": {
+          "total": 32,
+          "withFP": 32
+        },
+        "VII": {
+          "total": 40,
+          "withFP": 40
+        },
+        "VIII": {
+          "total": 53,
+          "withFP": 53
+        },
+        "X": {
+          "total": 30,
+          "withFP": 30
+        },
+        "XI": {
+          "total": 15,
+          "withFP": 15
+        },
+        "XII": {
+          "total": 13,
+          "withFP": 13
+        }
+      }
+    },
+    {
+      "rating": "commercial",
+      "evidence_chain": {
+        "coverage_pct": 0,
+        "elements_with_fp": 0,
+        "total_elements": 533,
+        "unique_slugs": 0
+      },
+      "structural": {
+        "coverage_pct": 100,
+        "elements_with_fp": 533,
+        "total_elements": 533,
+        "unique_slugs": 281,
+        "avg_fp_size": 24.3
+      },
+      "combined": {
+        "coverage_pct": 100,
+        "elements_with_fp": 533,
+        "total_elements": 533,
+        "unique_slugs": 281
+      },
+      "cross_area_bridges": 27,
+      "top_bridges": [
+        {
+          "keyword": "weather",
+          "areas": [
+            "I",
+            "IX",
+            "VII"
+          ],
+          "elementCount": 185
+        },
+        {
+          "keyword": "diversion",
+          "areas": [
+            "IX",
+            "VI",
+            "VII"
+          ],
+          "elementCount": 149
+        },
+        {
+          "keyword": "configuration",
+          "areas": [
+            "II",
+            "IV"
+          ],
+          "elementCount": 192
+        },
+        {
+          "keyword": "approach",
+          "areas": [
+            "IV",
+            "X"
+          ],
+          "elementCount": 176
+        },
+        {
+          "keyword": "emergency",
+          "areas": [
+            "IX",
+            "VII"
+          ],
+          "elementCount": 117
+        },
+        {
+          "keyword": "engine failure",
+          "areas": [
+            "IX",
+            "VII"
+          ],
+          "elementCount": 117
+        },
+        {
+          "keyword": "fire",
+          "areas": [
+            "IX",
+            "VII"
+          ],
+          "elementCount": 117
+        },
+        {
+          "keyword": "system malfunction",
+          "areas": [
+            "IX",
+            "VII"
+          ],
+          "elementCount": 117
+        },
+        {
+          "keyword": "forced landing",
+          "areas": [
+            "IX",
+            "VII"
+          ],
+          "elementCount": 117
+        },
+        {
+          "keyword": "electrical",
+          "areas": [
+            "IX",
+            "VII"
+          ],
+          "elementCount": 117
+        },
+        {
+          "keyword": "vacuum",
+          "areas": [
+            "IX",
+            "VII"
+          ],
+          "elementCount": 117
+        },
+        {
+          "keyword": "pitot",
+          "areas": [
+            "IX",
+            "VII"
+          ],
+          "elementCount": 117
+        },
+        {
+          "keyword": "icing",
+          "areas": [
+            "IX",
+            "VII"
+          ],
+          "elementCount": 117
+        },
+        {
+          "keyword": "thunderstorm",
+          "areas": [
+            "IX",
+            "VII"
+          ],
+          "elementCount": 117
+        },
+        {
+          "keyword": "wind shear",
+          "areas": [
+            "IX",
+            "VII"
+          ],
+          "elementCount": 117
+        },
+        {
+          "keyword": "lost communication",
+          "areas": [
+            "IX",
+            "VII"
+          ],
+          "elementCount": 117
+        },
+        {
+          "keyword": "fuel emergency",
+          "areas": [
+            "IX",
+            "VII"
+          ],
+          "elementCount": 117
+        },
+        {
+          "keyword": "abnormal",
+          "areas": [
+            "IX",
+            "VII"
+          ],
+          "elementCount": 117
+        },
+        {
+          "keyword": "caution",
+          "areas": [
+            "IX",
+            "VII"
+          ],
+          "elementCount": 117
+        },
+        {
+          "keyword": "warning",
+          "areas": [
+            "IX",
+            "VII"
+          ],
+          "elementCount": 117
+        }
+      ],
+      "area_breakdown": {
+        "IV": {
+          "total": 146,
+          "withFP": 146
+        },
+        "I": {
+          "total": 68,
+          "withFP": 68
+        },
+        "IX": {
+          "total": 65,
+          "withFP": 65
+        },
+        "V": {
+          "total": 51,
+          "withFP": 51
+        },
+        "VI": {
+          "total": 32,
+          "withFP": 32
+        },
+        "VII": {
+          "total": 52,
+          "withFP": 52
+        },
+        "VIII": {
+          "total": 11,
+          "withFP": 11
+        },
+        "X": {
+          "total": 30,
+          "withFP": 30
+        },
+        "II": {
+          "total": 46,
+          "withFP": 46
+        },
+        "III": {
+          "total": 19,
+          "withFP": 19
+        },
+        "XI": {
+          "total": 13,
+          "withFP": 13
+        }
+      }
+    },
+    {
+      "rating": "instrument",
+      "evidence_chain": {
+        "coverage_pct": 0,
+        "elements_with_fp": 0,
+        "total_elements": 149,
+        "unique_slugs": 0
+      },
+      "structural": {
+        "coverage_pct": 100,
+        "elements_with_fp": 149,
+        "total_elements": 149,
+        "unique_slugs": 224,
+        "avg_fp_size": 35.2
+      },
+      "combined": {
+        "coverage_pct": 100,
+        "elements_with_fp": 149,
+        "total_elements": 149,
+        "unique_slugs": 224
+      },
+      "cross_area_bridges": 34,
+      "top_bridges": [
+        {
+          "keyword": "instrument",
+          "areas": [
+            "I",
+            "II",
+            "III",
+            "IV",
+            "VIII"
+          ],
+          "elementCount": 75
+        },
+        {
+          "keyword": "ifr",
+          "areas": [
+            "I",
+            "II",
+            "III"
+          ],
+          "elementCount": 55
+        },
+        {
+          "keyword": "transponder",
+          "areas": [
+            "I",
+            "II",
+            "III"
+          ],
+          "elementCount": 55
+        },
+        {
+          "keyword": "gps",
+          "areas": [
+            "I",
+            "II",
+            "V"
+          ],
+          "elementCount": 53
+        },
+        {
+          "keyword": "unusual attitude",
+          "areas": [
+            "IV",
+            "VII",
+            "VIII"
+          ],
+          "elementCount": 41
+        },
+        {
+          "keyword": "partial panel",
+          "areas": [
+            "IV",
+            "VII",
+            "VIII"
+          ],
+          "elementCount": 41
+        },
+        {
+          "keyword": "spatial disorientation",
+          "areas": [
+            "IV",
+            "VII",
+            "VIII"
+          ],
+          "elementCount": 41
+        },
+        {
+          "keyword": "gyroscopic",
+          "areas": [
+            "II",
+            "IV",
+            "VIII"
+          ],
+          "elementCount": 38
+        },
+        {
+          "keyword": "departure procedure",
+          "areas": [
+            "II",
+            "VI"
+          ],
+          "elementCount": 61
+        },
+        {
+          "keyword": "sid",
+          "areas": [
+            "II",
+            "VI"
+          ],
+          "elementCount": 61
+        },
+        {
+          "keyword": "arrival",
+          "areas": [
+            "III",
+            "VI"
+          ],
+          "elementCount": 55
+        },
+        {
+          "keyword": "holding",
+          "areas": [
+            "III",
+            "VI"
+          ],
+          "elementCount": 55
+        },
+        {
+          "keyword": "glideslope",
+          "areas": [
+            "V",
+            "VI"
+          ],
+          "elementCount": 53
+        },
+        {
+          "keyword": "lnav",
+          "areas": [
+            "V",
+            "VI"
+          ],
+          "elementCount": 53
+        },
+        {
+          "keyword": "lpv",
+          "areas": [
+            "V",
+            "VI"
+          ],
+          "elementCount": 53
+        },
+        {
+          "keyword": "alternate",
+          "areas": [
+            "I",
+            "VII"
+          ],
+          "elementCount": 46
+        },
+        {
+          "keyword": "icing",
+          "areas": [
+            "I",
+            "VII"
+          ],
+          "elementCount": 46
+        },
+        {
+          "keyword": "preflight",
+          "areas": [
+            "I",
+            "II"
+          ],
+          "elementCount": 43
+        },
+        {
+          "keyword": "pitot",
+          "areas": [
+            "I",
+            "II"
+          ],
+          "elementCount": 43
+        },
+        {
+          "keyword": "static",
+          "areas": [
+            "I",
+            "II"
+          ],
+          "elementCount": 43
+        }
+      ],
+      "area_breakdown": {
+        "I": {
+          "total": 25,
+          "withFP": 25
+        },
+        "II": {
+          "total": 18,
+          "withFP": 18
+        },
+        "III": {
+          "total": 12,
+          "withFP": 12
+        },
+        "IV": {
+          "total": 18,
+          "withFP": 18
+        },
+        "V": {
+          "total": 10,
+          "withFP": 10
+        },
+        "VI": {
+          "total": 43,
+          "withFP": 43
+        },
+        "VII": {
+          "total": 21,
+          "withFP": 21
+        },
+        "VIII": {
+          "total": 2,
+          "withFP": 2
+        }
+      }
+    }
+  ]
+}

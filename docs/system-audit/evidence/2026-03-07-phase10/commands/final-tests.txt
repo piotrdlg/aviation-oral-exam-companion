@@ -1,0 +1,680 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion[39m
+
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mgroupByDate[2m > [22mbuckets rows by date field[32m 2[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mgroupByDate[2m > [22mreturns empty object for empty array[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mgroupByDate[2m > [22mskips rows with missing field[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mfillDateGaps[2m > [22mfills missing dates with 0[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mfillDateGaps[2m > [22mreturns sorted array for 30-day range[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mcomputeMRR[2m > [22mcalculates correctly: (4x3900) + (2x2492) = 20584[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mcomputeMRR[2m > [22mreturns 0 for 0 subscribers[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mcomputeChurnRate[2m > [22mcalculates: 3 churned / (10 + 3) approx 0.231[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mcomputeChurnRate[2m > [22mreturns 0 when denominator is 0[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mcomputeTrialConversion[2m > [22mcalculates: 5/20 = 0.25[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mcomputeTrialConversion[2m > [22mreturns 0 when no trials[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mcomputeAvgDuration[2m > [22mcalculates average in minutes[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mcomputeAvgDuration[2m > [22mfilters out sessions with null ended_at[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mcomputeAvgDuration[2m > [22mreturns 0 for empty array[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mformatCents[2m > [22mformats 3900 to "$39.00"[32m 12[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mformatCents[2m > [22mformats 0 to "$0.00"[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mformatCents[2m > [22mformats 29900 to "$299.00"[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mformatPercent[2m > [22mformats 0.231 to "23.1%"[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mformatPercent[2m > [22mformats 0 to "0.0%"[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mformatPercent[2m > [22mformats 1 to "100.0%"[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mrelativeTime[2m > [22mreturns "just now" for < 60 seconds ago[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mrelativeTime[2m > [22mreturns "5m ago" for 5 minutes ago[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mrelativeTime[2m > [22mreturns "2h ago" for 2 hours ago[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics-utils.test.ts[2m > [22mrelativeTime[2m > [22mreturns "3d ago" for 3 days ago[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mgetAppEnv[2m > [22mreturns "local" when no env vars are set[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mgetAppEnv[2m > [22mreturns NEXT_PUBLIC_APP_ENV when explicitly set to staging[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mgetAppEnv[2m > [22mreturns NEXT_PUBLIC_APP_ENV when set to production[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mgetAppEnv[2m > [22mreturns NEXT_PUBLIC_APP_ENV when set to local[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mgetAppEnv[2m > [22mignores invalid NEXT_PUBLIC_APP_ENV and falls through to VERCEL_ENV[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mgetAppEnv[2m > [22mmaps VERCEL_ENV=production to production[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mgetAppEnv[2m > [22mmaps VERCEL_ENV=preview to staging[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mgetAppEnv[2m > [22mmaps VERCEL_ENV=development to local[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22misProduction[2m > [22mreturns true when app env is production[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22misProduction[2m > [22mreturns false when app env is staging[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22misProduction[2m > [22mreturns false when app env is local[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22massertNotProduction[2m > [22mdoes not throw in local env[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22massertNotProduction[2m > [22mdoes not throw in staging env[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22massertNotProduction[2m > [22mthrows in production env[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22massertNotProduction[2m > [22mdoes not throw in production when allow is true[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22massertNotProduction[2m > [22mincludes env source in error message[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mgetDbEnvName[2m > [22mreturns the name from app.environment config[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mgetDbEnvName[2m > [22mreturns null when key is missing[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mgetDbEnvName[2m > [22mreturns null when name field is missing[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mgetDbEnvName[2m > [22mreturns null when name is not a string[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22massertDbEnvMatchesAppEnv[2m > [22mdoes not throw when envs match[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22massertDbEnvMatchesAppEnv[2m > [22mthrows on mismatch[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22massertDbEnvMatchesAppEnv[2m > [22mwarns but does not throw when dbEnv is null[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22massertDbEnvMatchesAppEnv[2m > [22mincludes both env values in mismatch error[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mrequireSafeDbTarget[2m > [22mstaging + staging marker → ok[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mrequireSafeDbTarget[2m > [22mstaging + production marker → throws[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mrequireSafeDbTarget[2m > [22mstaging + missing marker → throws[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mrequireSafeDbTarget[2m > [22mlocal + local marker → ok[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mrequireSafeDbTarget[2m > [22mlocal + production marker → throws[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mrequireSafeDbTarget[2m > [22mlocal + missing marker → throws[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mrequireSafeDbTarget[2m > [22mproduction + production marker → ok[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mrequireSafeDbTarget[2m > [22mproduction + missing marker → does NOT throw[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mrequireSafeDbTarget[2m > [22mproduction + staging marker → warns but does NOT throw[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mrequireSafeDbTarget[2m > [22mincludes action name in error[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/app-env.test.ts[2m > [22mrequireSafeDbTarget[2m > [22merror message contains no secrets (keys, URLs)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mbuildExamPlan[2m > [22mcreates a plan with correct version and mode[32m 2[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mbuildExamPlan[2m > [22mcomputes proportional planned_question_count for partial scope[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mbuildExamPlan[2m > [22mcaps at queue length for narrow scope[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mbuildExamPlan[2m > [22muses full count for full scope[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mbuildExamPlan[2m > [22mrespects min_question_count floor[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mbuildExamPlan[2m > [22mapplies admin overrides[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mbuildExamPlan[2m > [22minitializes all elements as pending[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mbuildExamPlan[2m > [22msets created_at timestamp[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mbuildExamPlan[2m > [22mdefaults bonus_question_max from DEFAULT_PLAN_DEFAULTS[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22misExamComplete[2m > [22mreturns false when asked < planned[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22misExamComplete[2m > [22mreturns true when asked >= planned + bonus[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22misExamComplete[2m > [22mreturns true at exact boundary[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22misExamComplete[2m > [22mreturns false when bonus extends the exam[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mrecordQuestionAsked[2m > [22mincrements asked_count[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mrecordQuestionAsked[2m > [22mmarks element as asked in coverage[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22museBonusQuestion[2m > [22mincrements bonus_used[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22museBonusQuestion[2m > [22mreturns null when bonus budget exhausted[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mcreditMentionedElements[2m > [22mcredits pending elements as credited_by_mention[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mcreditMentionedElements[2m > [22mdoes not overwrite asked elements[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mcreditMentionedElements[2m > [22mignores elements not in coverage[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mcanFollowUp[2m > [22mallows follow-up on first attempt[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mcanFollowUp[2m > [22mdisallows follow-up when at max + 1 attempts[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mcanFollowUp[2m > [22mrespects custom follow_up_max[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mconnectedWalk[2m > [22mreturns all elements in the output[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mconnectedWalk[2m > [22mreturns single element unchanged[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mconnectedWalk[2m > [22mhandles empty input[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mconnectedWalk[2m > [22mappends elements without fingerprints at the end[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mconnectedWalk[2m > [22mplaces similar elements adjacent[32m 2[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mconnectedWalk[2m > [22mfalls back to shuffle when all fingerprints are empty[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mGROUNDING_CONTRACT[2m > [22mis included in default system prompts[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-plan.test.ts[2m > [22mGROUNDING_CONTRACT[2m > [22mis included in DB-sourced prompts[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mbasic computation[2m > [22mreturns incomplete for empty plan[32m 2[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mbasic computation[2m > [22mreturns incomplete when no elements asked[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mbasic computation[2m > [22mcomputes plan-based denominator (not asked-only)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mbasic computation[2m > [22mpasses when all elements satisfactory[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mbasic computation[2m > [22mfails when overall score below threshold[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mbasic computation[2m > [22mincludes partial score as 0.7 points[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mbasic computation[2m > [22mcounts credited-by-mention as satisfactory for overall score[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mbasic computation[2m > [22mdeduplicates attempts (last write wins)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mper-area gating[2m > [22mfails exam when an area score is below area threshold[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mper-area gating[2m > [22mmarks area as insufficient_data when too few attempts[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mper-area gating[2m > [22mfails critical area with any unsatisfactory even if area score passes[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mper-area gating[2m > [22mpasses critical area when all elements satisfactory[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mper-area gating[2m > [22mrespects custom gating overrides[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mweak elements[2m > [22midentifies unsatisfactory elements[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mweak elements[2m > [22midentifies partial elements[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mweak elements[2m > [22midentifies not-asked elements[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mweak elements[2m > [22mexcludes credited-by-mention from weak elements[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mweak elements[2m > [22msorts weak elements: unsatisfactory first, then partial, then not_asked[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mcompletion triggers[2m > [22mmarks plan_exhausted when all_tasks_covered[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mcompletion triggers[2m > [22mreturns incomplete when user ends very early (< 3 attempts)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mcompletion triggers[2m > [22mgrades normally when user ends after 3+ attempts[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22marea breakdown[2m > [22mproduces correct per-area counts[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22marea breakdown[2m > [22msorts areas by Roman numeral order[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mcomputeExamResultV2[2m > [22mCRITICAL_AREAS_BY_RATING[2m > [22mdefines critical areas for private, commercial, instrument[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mExamResultV2 UI contract[2m > [22mincludes all fields consumed by the results display modal[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mExamResultV2 UI contract[2m > [22mweak_elements contain element_code, area, score, and severity[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mExamResultV2 UI contract[2m > [22marea status is pass, fail, or insufficient_data[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mbuildElementQueue quick_drill mode[2m > [22mexcludes satisfactory elements in quick_drill mode[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mbuildElementQueue quick_drill mode[2m > [22mfalls back to all elements when no weak stats provided[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-result.test.ts[2m > [22mbuildElementQueue quick_drill mode[2m > [22mincludes all elements as fallback when all are satisfactory[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/voice-usage.test.ts[2m > [22mcheckQuota[2m > [22mallows ground_school user under all limits[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/voice-usage.test.ts[2m > [22mcheckQuota[2m > [22mblocks ground_school user at session limit (now same as checkride_prep)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/voice-usage.test.ts[2m > [22mcheckQuota[2m > [22mblocks at TTS char limit (now 500k for ground_school)[32m 12[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/voice-usage.test.ts[2m > [22mcheckQuota[2m > [22mblocks at exchange limit (now 30 for ground_school)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/voice-usage.test.ts[2m > [22mcheckQuota[2m > [22mallows dpe_live unlimited sessions[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/voice-usage.test.ts[2m > [22mcheckQuota[2m > [22mblocks dpe_live at exchange limit[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mORAL_EXAM_AREA_PREFIXES[2m > [22mis a Record with private, commercial, instrument, and atp keys[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mORAL_EXAM_AREA_PREFIXES[2m > [22mincludes 10 oral-exam-relevant areas for private (including multiengine)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mORAL_EXAM_AREA_PREFIXES[2m > [22mincludes Preflight Preparation (Area I) for private[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mORAL_EXAM_AREA_PREFIXES[2m > [22mincludes Emergency Operations (Area IX) for private[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mORAL_EXAM_AREA_PREFIXES[2m > [22mincludes Multiengine Operations (Area X) for private — filtered by class, not area[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mORAL_EXAM_AREA_PREFIXES[2m > [22mexcludes Takeoffs/Landings (Area IV) for private[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mORAL_EXAM_AREA_PREFIXES[2m > [22mexcludes Performance Maneuvers (Area V) for private[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mORAL_EXAM_AREA_PREFIXES[2m > [22mhas 7 commercial oral-exam areas[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mORAL_EXAM_AREA_PREFIXES[2m > [22mhas 6 instrument oral-exam areas[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mfilterEligibleTasks[2m > [22mfilters to oral-exam-relevant areas only[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mfilterEligibleTasks[2m > [22mreturns 11 eligible tasks from the 13 total (Area X now included)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mfilterEligibleTasks[2m > [22mexcludes already-covered tasks[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mfilterEligibleTasks[2m > [22mfilters by aircraft class[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mfilterEligibleTasks[2m > [22mincludes multiengine tasks for AMEL class[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mfilterEligibleTasks[2m > [22mreturns empty when all eligible are covered[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mfilterEligibleTasks[2m > [22mhandles empty task list[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mselectRandomTask[2m > [22mreturns null for empty task list[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mselectRandomTask[2m > [22mselects from oral-exam areas when available[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mselectRandomTask[2m > [22mfilters by aircraft class in random selection[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mselectRandomTask[2m > [22mfalls back to any task when all oral-exam tasks are covered[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mselectRandomTask[2m > [22mreturns first task when all are covered[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildSystemPrompt[2m > [22mincludes the task area and ID[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildSystemPrompt[2m > [22mincludes DPE role instructions[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildSystemPrompt[2m > [22mincludes difficulty instruction when provided[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildSystemPrompt[2m > [22momits difficulty instruction when not provided[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildSystemPrompt[2m > [22mincludes aircraft class instruction when provided[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildSystemPrompt[2m > [22momits aircraft class instruction when not provided[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildElementQueue[2m > [22mfilters out skill elements[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildElementQueue[2m > [22mincludes knowledge and risk elements[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildElementQueue[2m > [22mfilters by selected areas[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildElementQueue[2m > [22mfilters by selected tasks (overrides areas)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildElementQueue[2m > [22mfilters by difficulty when not mixed[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildElementQueue[2m > [22mpreserves order in linear mode[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildElementQueue[2m > [22mshuffles in cross_acs mode[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildElementQueue[2m > [22mfalls back to all elements when difficulty filter would empty queue[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mpickNextElement[2m > [22mpicks the first element from the queue[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mpickNextElement[2m > [22madvances cursor after pick[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mpickNextElement[2m > [22mskips recently visited elements[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mpickNextElement[2m > [22mwraps around the queue[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mpickNextElement[2m > [22mincrements attempt count[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mpickNextElement[2m > [22mreturns null for empty queue[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mpickNextElement[2m > [22mincrements version[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22minitPlannerState[2m > [22mcreates state with correct defaults[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mcomputeExamResult[2m > [22mreturns satisfactory (100%) when all elements are satisfactory[32m 2[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mcomputeExamResult[2m > [22mreturns satisfactory when score >= 70% (mix of sat + partial)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mcomputeExamResult[2m > [22mreturns satisfactory at exactly 70% threshold[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mcomputeExamResult[2m > [22mreturns unsatisfactory when score < 70%[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mcomputeExamResult[2m > [22mreturns unsatisfactory just below 70% threshold[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mcomputeExamResult[2m > [22mgrades against elements asked when user ends exam early[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mcomputeExamResult[2m > [22mreturns incomplete for natural completion with partial coverage[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mcomputeExamResult[2m > [22mreturns incomplete for expired exams[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mcomputeExamResult[2m > [22mcomputes score_by_area correctly[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mcomputeExamResult[2m > [22mhandles empty attempts (zero exchanges)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mcomputeExamResult[2m > [22mall-partial scores 70% — passes at threshold[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mcomputeExamResult[2m > [22mreturns incomplete when totalElementsInSet is 0 (degenerate case)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mcomputeExamResult[2m > [22mdeduplicates element_codes using last-score-wins[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mcomputeExamResult[2m > [22mhandles more attempts than total elements (retries with dedup)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mcomputeExamResult[2m > [22mextracts area correctly for multi-character Roman numerals[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mcomputeExamResult[2m > [22mmixed sat/partial/unsat computes correct percentage[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mextractStructuredChunks[2m > [22mextracts all 3 fields from well-formed JSON[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mextractStructuredChunks[2m > [22mskips already-emitted fields[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mextractStructuredChunks[2m > [22mhandles escaped quotes inside values[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mextractStructuredChunks[2m > [22mhandles escaped newlines inside values[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mextractStructuredChunks[2m > [22mhandles escaped backslashes inside values[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mextractStructuredChunks[2m > [22mreturns empty array for partial JSON with no complete field[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mextractStructuredChunks[2m > [22mextracts only completed fields from partial streaming JSON[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mextractStructuredChunks[2m > [22mhandles model output that is not JSON at all[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mextractStructuredChunks[2m > [22mhandles JSON with extra whitespace between field and value[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildPlainTextFromChunks[2m > [22mjoins all 3 chunks with double newline[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildPlainTextFromChunks[2m > [22mfills missing chunks from full JSON parse[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildPlainTextFromChunks[2m > [22mdoes full JSON parse when no chunks were extracted[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildPlainTextFromChunks[2m > [22mstrips markdown code blocks before parsing[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildPlainTextFromChunks[2m > [22mfalls back to raw fullText when JSON is completely malformed[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildPlainTextFromChunks[2m > [22mfalls back to raw fullText when partial chunks exist and JSON parse fails[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mbuildPlainTextFromChunks[2m > [22mreturns all 3 chunks when all were already extracted (no parse needed)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/exam-logic.test.ts[2m > [22mSTRUCTURED_CHUNK_FIELDS[2m > [22mcontains exactly 3 fields in the correct order[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22msendWelcomeEmail[2m > [22msends with correct from, to, and subject[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22msendWelcomeEmail[2m > [22mpasses name to WelcomeEmail template[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22msendWelcomeEmail[2m > [22mworks without a name (optional param)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22msendWelcomeEmail[2m > [22mdoes not throw when Resend fails[32m 2[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22msendSubscriptionConfirmed[2m > [22msends with billing sender and correct subject[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22msendSubscriptionConfirmed[2m > [22mpasses monthly plan to template[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22msendSubscriptionConfirmed[2m > [22mpasses annual plan to template[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22msendSubscriptionConfirmed[2m > [22mdoes not throw when Resend fails[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22msendSubscriptionCancelled[2m > [22msends with billing sender and cancellation subject[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22msendSubscriptionCancelled[2m > [22mdoes not throw when Resend fails[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22msendPaymentFailed[2m > [22msends with billing sender and urgency subject[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22msendPaymentFailed[2m > [22mdoes not throw when Resend fails[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22msendTicketReply[2m > [22msends with support sender and Re: prefix[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22msendTicketReply[2m > [22msets In-Reply-To and References headers when inReplyTo provided[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22msendTicketReply[2m > [22mdoes not set threading headers when inReplyTo is not provided[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22msendTicketReply[2m > [22mreturns the Resend email ID on success[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22msendTicketReply[2m > [22mreturns null when Resend returns an error response[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22msendTicketReply[2m > [22mreturns null and does not throw when Resend throws[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22mforwardEmail[2m > [22mforwards to EMAIL_FORWARD_TO env var[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22mforwardEmail[2m > [22msends from noreply with [Fwd] prefix[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22mforwardEmail[2m > [22msets X-Original-From and X-Original-To headers[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22mforwardEmail[2m > [22muses bodyHtml when provided[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22mforwardEmail[2m > [22mgenerates HTML from text when bodyHtml is not provided[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22mforwardEmail[2m > [22mdoes not send when EMAIL_FORWARD_TO is not set[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email.test.ts[2m > [22memail service[2m > [22mforwardEmail[2m > [22mdoes not throw when Resend fails[32m 0[2mms[22m[39m
+[90mstdout[2m | scripts/__tests__/extract-topics.test.ts
+[22m[39m[dotenv@17.3.1] injecting env (17) from .env.local -- tip: ⚙️  override existing env vars with { override: true }
+
+Environment: local
+
+Topic Extraction Pipeline
+=========================
+Mode: LIVE
+Document type: handbook
+Chunk limit: none
+
+Fetching handbook documents...
+
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mauth guard[2m > [22mreturns 401 when not authenticated[32m 3[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mcreate — is_onboarding validation[2m > [22mallows onboarding when profile not completed and no prior onboarding exams[32m 2[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mcreate — is_onboarding validation[2m > [22mrejects onboarding when profile already completed[32m 2[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mcreate — is_onboarding validation[2m > [22mrejects onboarding when user already has an onboarding exam[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mcreate — is_onboarding validation[2m > [22mnever sets onboarding when client does not request it[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mcreate — trial limits[2m > [22mblocks free user at trial limit (3 exams)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mcreate — trial limits[2m > [22mallows free user under limit[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mcreate — trial limits[2m > [22mskips trial check for paying user[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mcreate — trial limits[2m > [22mskips trial check for onboarding exams[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mcreate — expires_at[2m > [22msets 7-day expiry for free non-onboarding exams[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mcreate — expires_at[2m > [22mdoes not set expiry for paying users[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mcreate — expires_at[2m > [22mdoes not set expiry for onboarding exams[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mcreate — field defaults[2m > [22muses sensible defaults for unspecified fields[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mcreate — field defaults[2m > [22mpasses through client-provided configuration[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mcreate — error handling[2m > [22mreturns 500 when insert fails[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mupdate — grading[2m > [22mcomputes and stores grade when status=completed[32m 4[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mupdate — grading[2m > [22mgrades as unsatisfactory when score < 70%[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mupdate — grading[2m > [22mgrades against elements asked when user ends exam early[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mupdate — grading[2m > [22mskips grading when attempts query returns null[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mupdate — grading[2m > [22mgrades using attempt count as fallback when planner state is missing[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mupdate — grading[2m > [22mreturns result: null for non-completion updates[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mupdate — validation[2m > [22mreturns 400 when sessionId is missing[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22minvalid action[2m > [22mreturns 400[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mGET — get-all-resumable[2m > [22mreturns 401 when not authenticated[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mGET — get-all-resumable[2m > [22mreturns all active/paused sessions[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/session-policy.test.ts[2m > [22mGET — get-all-resumable[2m > [22mreturns empty array when no open exams[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-topics.test.ts[2m > [22mtoKebabCase[2m > [22mconverts "Left Turning Tendencies" to "left-turning-tendencies"[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-topics.test.ts[2m > [22mtoKebabCase[2m > [22mhandles special characters and multiple spaces[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-topics.test.ts[2m > [22mtoKebabCase[2m > [22mtruncates to reasonable length[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-topics.test.ts[2m > [22mgenerateTopicSlug[2m > [22mgenerates correct format "topic:left-turning-tendencies"[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-topics.test.ts[2m > [22mgenerateTopicSlug[2m > [22mtruncates long names to 100 char max slug[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-topics.test.ts[2m > [22mcomputeLevenshtein[2m > [22mreturns 0 for identical strings[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-topics.test.ts[2m > [22mcomputeLevenshtein[2m > [22mreturns correct distance for simple edits[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-topics.test.ts[2m > [22mcomputeLevenshtein[2m > [22mhandles empty strings[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-topics.test.ts[2m > [22mfindFuzzyMatch[2m > [22mfinds match within threshold[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-topics.test.ts[2m > [22mfindFuzzyMatch[2m > [22mreturns null when no match within threshold[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-topics.test.ts[2m > [22mfindFuzzyMatch[2m > [22mcase insensitive matching[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-topics.test.ts[2m > [22mparseTopicsResponse[2m > [22mparses valid JSON array[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-topics.test.ts[2m > [22mparseTopicsResponse[2m > [22mreturns empty array for invalid JSON[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-topics.test.ts[2m > [22mparseTopicsResponse[2m > [22mhandles markdown code fences[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-topics.test.ts[2m > [22mparseTopicsResponse[2m > [22mfilters out items missing required fields[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns filterDocType cfr for "14 CFR" with section number[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mdoes NOT force CFR for bare "14 CFR" without part/section[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns filterDocType cfr for "14 CFR Part 91"[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns filterDocType cfr for bare section number "91.155"[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns filterDocType cfr for bare section number "61.57"[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns filterDocType cfr for "FAR" reference[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns filterDocType cfr for Part reference with number[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns filterDocType cfr for section symbol reference §[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns filterAbbreviation aim for "AIM" as word boundary[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns filterAbbreviation aim for mixed case AIM usage[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns filterAbbreviation phak for "PHAK" reference[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns filterAbbreviation phak for "Pilot's Handbook" text[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns filterAbbreviation afh for "AFH" reference[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns filterAbbreviation afh for "Airplane Flying Handbook" text[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns null for generic question with no regulatory signals[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns null for completely empty context[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns null for undefined/missing fields[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns null for empty string inputs[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns null for whitespace-only text[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns null for casual flight question with no document signals[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns filterAbbreviation phak even when CFR is also mentioned[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns filterAbbreviation aim even when a Part number appears[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mdoes not force CFR when AIM airspace content mentions "14 CFR" casually[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mmatches across combined fields (taskId + examinerQuestion with Part number)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mmatches FAR in studentAnswer field[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns filterDocType cfr for "currency" keyword[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns filterDocType cfr for "medical" keyword[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns filterDocType cfr for "logbook" keyword[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns filterDocType cfr for "airworthiness certificate"[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mreturns filterDocType cfr for "registration certificate"[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mdoes NOT force CFR for "private pilot certificate" alone (airspace-001 fix)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/rag-filters.test.ts[2m > [22minferRagFilters[2m > [22mdoes not match "claim" as AIM[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/ttl-cache.test.ts[2m > [22mTtlCache[2m > [22mstores and retrieves values[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/ttl-cache.test.ts[2m > [22mTtlCache[2m > [22mreturns undefined for missing keys[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/ttl-cache.test.ts[2m > [22mTtlCache[2m > [22mexpires entries after default TTL[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/ttl-cache.test.ts[2m > [22mTtlCache[2m > [22msupports custom TTL per entry[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/ttl-cache.test.ts[2m > [22mTtlCache[2m > [22mdelete() removes an entry[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/ttl-cache.test.ts[2m > [22mTtlCache[2m > [22mclear() removes all entries[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/ttl-cache.test.ts[2m > [22mTtlCache[2m > [22mreports correct size[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/ttl-cache.test.ts[2m > [22mTtlCache[2m > [22moverwrites existing keys[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/ttl-cache.test.ts[2m > [22mTtlCache[2m > [22mcleans up expired entries on get()[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/difficulty-contract.test.ts[2m > [22mbuildDepthDifficultyContract[2m > [22mproduces a contract with all required fields[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/difficulty-contract.test.ts[2m > [22mbuildDepthDifficultyContract[2m > [22mgenerates contracts for all rating × difficulty combinations[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/difficulty-contract.test.ts[2m > [22mbuildDepthDifficultyContract[2m > [22mprivate+easy is more lenient than instrument+hard[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/difficulty-contract.test.ts[2m > [22mbuildDepthDifficultyContract[2m > [22mhard difficulty includes challenging follow-up style[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/difficulty-contract.test.ts[2m > [22mbuildDepthDifficultyContract[2m > [22measy difficulty includes supportive follow-up style[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/difficulty-contract.test.ts[2m > [22mbuildDepthDifficultyContract[2m > [22mmixed difficulty mentions variation[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/difficulty-contract.test.ts[2m > [22mbuildDepthDifficultyContract[2m > [22mincludes element-type guidance for knowledge elements[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/difficulty-contract.test.ts[2m > [22mbuildDepthDifficultyContract[2m > [22mincludes element-type guidance for risk elements[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/difficulty-contract.test.ts[2m > [22mbuildDepthDifficultyContract[2m > [22msame rating with different difficulties produces different contracts[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/difficulty-contract.test.ts[2m > [22mbuildDepthDifficultyContract[2m > [22msame difficulty with different ratings produces different contracts[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/difficulty-contract.test.ts[2m > [22mbuildDepthDifficultyContract[2m > [22mis deterministic — same inputs produce same output[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/difficulty-contract.test.ts[2m > [22mformatContractForExaminer[2m > [22mincludes contract header[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/difficulty-contract.test.ts[2m > [22mformatContractForExaminer[2m > [22mincludes all key sections[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/difficulty-contract.test.ts[2m > [22mformatContractForExaminer[2m > [22mdoes not include assessment-specific tolerance[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/difficulty-contract.test.ts[2m > [22mformatContractForAssessment[2m > [22mincludes grading calibration header[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/difficulty-contract.test.ts[2m > [22mformatContractForAssessment[2m > [22mincludes certificate level and difficulty[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/difficulty-contract.test.ts[2m > [22mformatContractForAssessment[2m > [22mincludes tolerance and precision[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/difficulty-contract.test.ts[2m > [22mformatContractForAssessment[2m > [22mdoes not include scenario or follow-up style (examiner-only)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/difficulty-contract.test.ts[2m > [22mcontractSummary[2m > [22mproduces compact summary with character counts[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/difficulty-contract.test.ts[2m > [22mcontractSummary[2m > [22msummary char counts match actual contract lengths[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/chunk-utils.test.ts[2m > [22mflattenPageParagraphs[2m > [22msplits pages into paragraphs with page numbers[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/chunk-utils.test.ts[2m > [22mflattenPageParagraphs[2m > [22mskips empty paragraphs and whitespace-only content[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/chunk-utils.test.ts[2m > [22mflattenPageParagraphs[2m > [22mhandles triple+ newlines as a single split[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/chunk-utils.test.ts[2m > [22mflattenPageParagraphs[2m > [22mreturns empty array for empty pages[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/chunk-utils.test.ts[2m > [22mextractHeading[2m > [22mdetects uppercase headings[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/chunk-utils.test.ts[2m > [22mextractHeading[2m > [22mdetects "Chapter" prefix headings[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/chunk-utils.test.ts[2m > [22mextractHeading[2m > [22mdetects numbered headings[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/chunk-utils.test.ts[2m > [22mextractHeading[2m > [22mreturns null for long first lines[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/chunk-utils.test.ts[2m > [22mextractHeading[2m > [22mreturns null for normal paragraph text[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/chunk-utils.test.ts[2m > [22mchunkText[2m > [22mproduces a single chunk when total tokens < maxTokens[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/chunk-utils.test.ts[2m > [22mchunkText[2m > [22msplits into multiple chunks when exceeding maxTokens[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/chunk-utils.test.ts[2m > [22mchunkText[2m > [22mtracks page ranges across multiple pages correctly[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/chunk-utils.test.ts[2m > [22mchunkText[2m > [22mnever produces null page_start or page_end[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/chunk-utils.test.ts[2m > [22mchunkText[2m > [22mhandles single paragraph that is short[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/chunk-utils.test.ts[2m > [22mchunkText[2m > [22mproduces chunks with sequential indices[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/chunk-utils.test.ts[2m > [22mchunkText[2m > [22mcontent does not contain leading/trailing whitespace[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/chunk-utils.test.ts[2m > [22mchunkText[2m > [22massigns page_end = page_start for single-page chunks[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/structural-fingerprints.test.ts[2m > [22mparseElementCode[2m > [22mparses a private pilot knowledge element[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/structural-fingerprints.test.ts[2m > [22mparseElementCode[2m > [22mparses a commercial risk management element[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/structural-fingerprints.test.ts[2m > [22mparseElementCode[2m > [22mparses an instrument rating element[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/structural-fingerprints.test.ts[2m > [22mparseElementCode[2m > [22mparses a skill element[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/structural-fingerprints.test.ts[2m > [22mparseElementCode[2m > [22mreturns null for invalid format[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/structural-fingerprints.test.ts[2m > [22mbuildStructuralFingerprints[2m > [22mreturns non-empty fingerprints for valid element codes[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/structural-fingerprints.test.ts[2m > [22mbuildStructuralFingerprints[2m > [22msame-area elements share most fingerprint slugs[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/structural-fingerprints.test.ts[2m > [22mbuildStructuralFingerprints[2m > [22mdifferent-area elements share fewer slugs[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/structural-fingerprints.test.ts[2m > [22mbuildStructuralFingerprints[2m > [22mcross-area keyword bridges exist (e.g. weather in Area I and VII)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/structural-fingerprints.test.ts[2m > [22mbuildStructuralFingerprints[2m > [22mincludes area, task, and element type structural tags[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/structural-fingerprints.test.ts[2m > [22mbuildStructuralFingerprints[2m > [22mknowledge elements get etype:knowledge tag[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/structural-fingerprints.test.ts[2m > [22mbuildStructuralFingerprints[2m > [22muses instrument-specific keywords for IR elements[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/structural-fingerprints.test.ts[2m > [22mbuildStructuralFingerprints[2m > [22mPA Area V uses VFR maneuver keywords (not instrument nav)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/structural-fingerprints.test.ts[2m > [22mbuildStructuralFingerprints[2m > [22mskips unparseable element codes[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/structural-fingerprints.test.ts[2m > [22mbuildStructuralFingerprints[2m > [22mhandles empty input[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/structural-fingerprints.test.ts[2m > [22mbuildStructuralFingerprints[2m > [22mproduces fingerprints for all three ratings[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/structural-fingerprints.test.ts[2m > [22mcomputeFingerprintStats[2m > [22mcomputes correct coverage stats[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/structural-fingerprints.test.ts[2m > [22mcomputeFingerprintStats[2m > [22mhandles 100% coverage[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/structural-fingerprints.test.ts[2m > [22mcomputeFingerprintStats[2m > [22mhandles empty input[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mscoreCitationRelevance[2m > [22mgives high score for direct element reference in snippet[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mscoreCitationRelevance[2m > [22mgives high score for task prefix reference in heading[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mscoreCitationRelevance[2m > [22mgives good score for multiple area keyword matches[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mscoreCitationRelevance[2m > [22mgives universal doc bonus for PHAK[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mscoreCitationRelevance[2m > [22mgives universal doc bonus for AIM[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mscoreCitationRelevance[2m > [22mgives universal doc bonus for CFR[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mscoreCitationRelevance[2m > [22mgives rating+area bonus for IFH with instrument rating in Area VI[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mscoreCitationRelevance[2m > [22mgives rating bonus for IPH with instrument rating[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mscoreCitationRelevance[2m > [22mgives low doc relevance for IPH with private rating Area I[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mscoreCitationRelevance[2m > [22mgives transcript source bonus[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mscoreCitationRelevance[2m > [22mpenalizes empty snippets[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mscoreCitationRelevance[2m > [22mpenalizes no heading + no keywords + no direct ref[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mscoreCitationRelevance[2m > [22mrejects citations below threshold[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mscoreCitationRelevance[2m > [22mclamps score to [0, 1][32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mscoreCitationRelevance[2m > [22mhandles missing rating gracefully[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mscoreCitationRelevance[2m > [22muses instrument-specific keywords for instrument rating Area IV[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mscoreCitationRelevance[2m > [22muses instrument-specific keywords for instrument rating Area V[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mfilterCitations[2m > [22mreturns only citations above threshold sorted by score[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mfilterCitations[2m > [22mrespects maxResults parameter[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mfilterCitations[2m > [22mreturns empty kept array when all are irrelevant[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/citation-relevance.test.ts[2m > [22mfilterCitations[2m > [22mprefers transcript citations in tie-breaking[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/image-retrieval.test.ts[2m > [22mFigure Reference Matching (linking)[2m > [22mfinds "Figure X-Y" in chunk text[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/image-retrieval.test.ts[2m > [22mFigure Reference Matching (linking)[2m > [22mfinds "Table X-Y" in chunk text[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/image-retrieval.test.ts[2m > [22mFigure Reference Matching (linking)[2m > [22mfinds "Fig. X-Y" abbreviated format[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/image-retrieval.test.ts[2m > [22mFigure Reference Matching (linking)[2m > [22mfinds multiple references in same chunk[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/image-retrieval.test.ts[2m > [22mFigure Reference Matching (linking)[2m > [22mreturns empty array when no references found[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/image-retrieval.test.ts[2m > [22mFigure Reference Matching (linking)[2m > [22mhandles em-dash variant[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/image-retrieval.test.ts[2m > [22mImage Selection Logic[2m > [22mreturns empty for no images[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/image-retrieval.test.ts[2m > [22mImage Selection Logic[2m > [22mlimits to max 3 images[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/image-retrieval.test.ts[2m > [22mImage Selection Logic[2m > [22msorts by relevance score descending[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/image-retrieval.test.ts[2m > [22mImage Selection Logic[2m > [22mfilters out images with null public_url[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/image-retrieval.test.ts[2m > [22mSSE Image Event Parsing[2m > [22mparses image event from SSE payload[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/image-retrieval.test.ts[2m > [22mSSE Image Event Parsing[2m > [22mhandles empty images array[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/image-retrieval.test.ts[2m > [22mSSE Image Event Parsing[2m > [22mignores non-image SSE events[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/image-retrieval.test.ts[2m > [22mNo Images Edge Cases[2m > [22mempty chunk ID array returns no images[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/image-retrieval.test.ts[2m > [22mNo Images Edge Cases[2m > [22mfeature flag controls image display[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/depth-profile.test.ts[2m > [22mDEPTH_PROFILES[2m > [22mdefines profiles for all four ratings[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/depth-profile.test.ts[2m > [22mDEPTH_PROFILES[2m > [22meach profile has all required fields[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/depth-profile.test.ts[2m > [22mDEPTH_PROFILES[2m > [22mprivate profile is lenient on precision[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/depth-profile.test.ts[2m > [22mDEPTH_PROFILES[2m > [22mcommercial profile expects operational depth[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/depth-profile.test.ts[2m > [22mDEPTH_PROFILES[2m > [22minstrument profile demands precision[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/depth-profile.test.ts[2m > [22mDEPTH_PROFILES[2m > [22mdepth profiles have distinct expected depths across ratings[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/depth-profile.test.ts[2m > [22mDEPTH_PROFILES[2m > [22mpartial tolerance increases from instrument to private[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/depth-profile.test.ts[2m > [22mgetDepthProfile[2m > [22mreturns correct profile for known ratings[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/depth-profile.test.ts[2m > [22mgetDepthProfile[2m > [22mfalls back to private for unknown rating[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/depth-profile.test.ts[2m > [22mgetElementDepthGuidance[2m > [22mreturns knowledge guidance for knowledge elements[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/depth-profile.test.ts[2m > [22mgetElementDepthGuidance[2m > [22mreturns risk guidance for risk elements[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/depth-profile.test.ts[2m > [22mgetElementDepthGuidance[2m > [22mreturns knowledge guidance for skill elements (oral exam fallback)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/depth-profile.test.ts[2m > [22mgetElementDepthGuidance[2m > [22mhandles unknown element types gracefully[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/depth-profile.test.ts[2m > [22mgetElementDepthGuidance[2m > [22mproduces different guidance for knowledge vs risk[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics.test.ts[2m > [22manalytics (browser environment)[2m > [22mtrackSignup pushes sign_up event with method to dataLayer[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics.test.ts[2m > [22manalytics (browser environment)[2m > [22mtrackTrialStart pushes trial_start event with rating[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics.test.ts[2m > [22manalytics (browser environment)[2m > [22mtrackPurchase pushes purchase event with correct ecommerce structure[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics.test.ts[2m > [22manalytics (browser environment)[2m > [22mtrackPurchase includes transaction_id, value, currency USD, items array[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics.test.ts[2m > [22manalytics (browser environment)[2m > [22mpushPageData pushes page_type, user_status, user_plan[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics.test.ts[2m > [22manalytics (browser environment)[2m > [22mpush creates dataLayer array if it does not exist[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics.test.ts[2m > [22manalytics (browser environment)[2m > [22mmultiple calls accumulate in dataLayer[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/analytics.test.ts[2m > [22manalytics (SSR / no window)[2m > [22mfunctions do not throw when window is undefined[32m 0[2mms[22m[39m
+[90mstdout[2m | scripts/__tests__/infer-edges.test.ts
+[22m[39m[dotenv@17.3.1] injecting env (17) from .env.local -- tip: 🛡️ auth for agents: https://vestauth.com
+
+Environment: local
+
+Embed Concepts Pipeline
+=======================
+Mode: LIVE
+
+
+[90mstdout[2m | scripts/__tests__/infer-edges.test.ts
+[22m[39m[dotenv@17.3.1] injecting env (0) from .env.local -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+Environment: local
+
+Infer Edges Pipeline
+====================
+Strategy: all
+Mode:     LIVE
+
+--- Strategy A: LLM-based Edge Inference ---
+
+ [32m✓[39m src/lib/__tests__/utm.test.ts[2m > [22mUTM utilities (browser environment)[2m > [22mcaptureUTMParams[2m > [22mreturns null when no UTM params in URL[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/utm.test.ts[2m > [22mUTM utilities (browser environment)[2m > [22mcaptureUTMParams[2m > [22mcaptures utm_source when present[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/utm.test.ts[2m > [22mUTM utilities (browser environment)[2m > [22mcaptureUTMParams[2m > [22mcaptures all 5 UTM params[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/utm.test.ts[2m > [22mUTM utilities (browser environment)[2m > [22mcaptureUTMParams[2m > [22mcaptures partial params (only present ones)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/utm.test.ts[2m > [22mUTM utilities (browser environment)[2m > [22mcaptureUTMParams[2m > [22mstores captured params in sessionStorage[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/utm.test.ts[2m > [22mUTM utilities (browser environment)[2m > [22mcaptureUTMParams[2m > [22mignores non-UTM query params[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/utm.test.ts[2m > [22mUTM utilities (browser environment)[2m > [22mcaptureUTMParams[2m > [22mreturns null for empty search string[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/utm.test.ts[2m > [22mUTM utilities (browser environment)[2m > [22mgetStoredUTMParams[2m > [22mreturns null when nothing stored[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/utm.test.ts[2m > [22mUTM utilities (browser environment)[2m > [22mgetStoredUTMParams[2m > [22mreturns parsed object when valid data exists[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/utm.test.ts[2m > [22mUTM utilities (browser environment)[2m > [22mgetStoredUTMParams[2m > [22mreturns null for corrupt JSON[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/utm.test.ts[2m > [22mUTM utilities (SSR / no window)[2m > [22mcaptureUTMParams returns null when window is undefined[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/utm.test.ts[2m > [22mUTM utilities (SSR / no window)[2m > [22mgetStoredUTMParams returns null when window is undefined[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/transition-explanation.test.ts[2m > [22mfindSharedKeywords[2m > [22mfinds "weather" shared between Area I and Area VII (private)[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/transition-explanation.test.ts[2m > [22mfindSharedKeywords[2m > [22mfinds "emergency" shared between Area VII and Area IX (private)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/transition-explanation.test.ts[2m > [22mfindSharedKeywords[2m > [22mfinds shared keywords between instrument areas[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/transition-explanation.test.ts[2m > [22mfindSharedKeywords[2m > [22mreturns empty array for areas with no overlap[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/transition-explanation.test.ts[2m > [22mgenerateTransition[2m > [22mreturns sameArea for elements in the same area[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/transition-explanation.test.ts[2m > [22mgenerateTransition[2m > [22mreturns bridge sentence for cross-area transition[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/transition-explanation.test.ts[2m > [22mgenerateTransition[2m > [22mreturns null for invalid element codes[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/transition-explanation.test.ts[2m > [22mgenerateTransition[2m > [22mproduces different sentences for different area pairs[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/transition-explanation.test.ts[2m > [22mgenerateTransition[2m > [22muses instrument-specific labels for IR elements[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/transition-explanation.test.ts[2m > [22mgenerateTransition[2m > [22mincludes bridge keywords when available[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/transition-explanation.test.ts[2m > [22mgenerateTransition[2m > [22mproduces generic transition when no bridge keywords match[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/transition-explanation.test.ts[2m > [22mbuildTransitionHint[2m > [22mreturns empty string for non-cross_acs modes[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/transition-explanation.test.ts[2m > [22mbuildTransitionHint[2m > [22mreturns empty string when no fromElement[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/transition-explanation.test.ts[2m > [22mbuildTransitionHint[2m > [22mreturns empty string for same-area transitions[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/transition-explanation.test.ts[2m > [22mbuildTransitionHint[2m > [22mreturns transition hint for cross-area in cross_acs mode[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/transition-explanation.test.ts[2m > [22mbuildTransitionHint[2m > [22mincludes "Do not read this instruction aloud"[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/transition-explanation.test.ts[2m > [22mbuildTransitionHint[2m > [22mworks with instrument rating[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mextractCfrReferences[2m > [22mextracts "14 CFR 91.155" from text[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mextractCfrReferences[2m > [22mextracts multiple CFR references[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mextractCfrReferences[2m > [22mreturns empty array when no CFR references[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mextractCfrReferences[2m > [22mhandles "14 CFR §91.155(a)" format[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mextractCfrReferences[2m > [22mdeduplicates repeated references[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mextractCfrReferences[2m > [22mhandles subsection references like 61.57(c)(1)[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mextractCfrReferences[2m > [22mreturns empty array for empty string[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mextractCfrReferences[2m > [22mreturns empty array for null-like input[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mparseEdgeResponse[2m > [22mparses valid JSON array[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mparseEdgeResponse[2m > [22mreturns empty for invalid JSON[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mparseEdgeResponse[2m > [22mhandles markdown code fences[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mparseEdgeResponse[2m > [22mfilters out edges with missing required fields[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mparseEdgeResponse[2m > [22mreturns empty for empty string[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mparseEdgeResponse[2m > [22mreturns empty for non-array JSON[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mparseEdgeResponse[2m > [22mhandles code fences without json language tag[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mbuildEdgeBatchPrompt[2m > [22mincludes concept names and categories[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mbuildEdgeBatchPrompt[2m > [22mincludes concept slugs for reference[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mbuildEdgeBatchPrompt[2m > [22mincludes concept content[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mbuildEdgeBatchPrompt[2m > [22mtruncates long content[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mbuildEdgeBatchPrompt[2m > [22mdoes not truncate short content[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mbuildEdgeBatchPrompt[2m > [22mincludes instruction text for the LLM[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts[2m > [22mbuildEdgeBatchPrompt[2m > [22mhandles empty concept list[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/timing.test.ts[2m > [22mcreateTimingContext[2m > [22mrecords a span with start and end[32m 2[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/timing.test.ts[2m > [22mcreateTimingContext[2m > [22mtoJSON() returns rounded durations keyed by name[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/timing.test.ts[2m > [22mcreateTimingContext[2m > [22mreturns null for unclosed spans[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/timing.test.ts[2m > [22mcreateTimingContext[2m > [22msupports multiple spans with the same name (nested)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/timing.test.ts[2m > [22mcreateTimingContext[2m > [22mend() on unknown span is a no-op[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/timing.test.ts[2m > [22mcreateTimingContext[2m > [22mgetSpans() returns empty array when nothing recorded[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/sentence-boundary.test.ts[2m > [22mdetectSentenceBoundary[2m > [22mdetects a simple sentence ending with a period[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/sentence-boundary.test.ts[2m > [22mdetectSentenceBoundary[2m > [22mdetects a sentence ending with a question mark[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/sentence-boundary.test.ts[2m > [22mdetectSentenceBoundary[2m > [22mdetects a sentence ending with an exclamation mark[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/sentence-boundary.test.ts[2m > [22mdetectSentenceBoundary[2m > [22mdoes NOT split on abbreviations like e.g. and i.e.[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/sentence-boundary.test.ts[2m > [22mdetectSentenceBoundary[2m > [22mdoes NOT split on FAA references like 91.205[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/sentence-boundary.test.ts[2m > [22mdetectSentenceBoundary[2m > [22mdoes NOT split on decimal numbers like 122.8[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/sentence-boundary.test.ts[2m > [22mdetectSentenceBoundary[2m > [22mdoes NOT split on list markers like 1). or a).[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/sentence-boundary.test.ts[2m > [22mdetectSentenceBoundary[2m > [22msplits on colon soft boundary for long buffers[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/sentence-boundary.test.ts[2m > [22mdetectSentenceBoundary[2m > [22mforce flushes very long buffers without any punctuation[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/sentence-boundary.test.ts[2m > [22mdetectSentenceBoundary[2m > [22mreturns null when buffer is too short for a sentence[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/sentence-boundary.test.ts[2m > [22mdetectSentenceBoundary[2m > [22mdoes NOT split on 14 CFR 91.155 mid-sentence[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/sentence-boundary.test.ts[2m > [22mdetectSentenceBoundary[2m > [22mdoes NOT split on 61.113 with CFR reference[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/sentence-boundary.test.ts[2m > [22mdetectSentenceBoundary[2m > [22mdoes NOT split on decimal altitudes like 3.5 degrees[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/sentence-boundary.test.ts[2m > [22mdetectSentenceBoundary[2m > [22mhandles multiple sentences and returns only the first[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/sentence-boundary.test.ts[2m > [22mdetectSentenceBoundary[2m > [22mhandles streaming scenario: accumulate tokens then detect[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/sentence-boundary.test.ts[2m > [22mdetectSentenceBoundary[2m > [22mhandles etc. abbreviation: does not split there, waits for real boundary[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22mDesktop Chrome[2m > [22mdetects Chrome[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22mDesktop Chrome[2m > [22mis not iOS[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22mDesktop Chrome[2m > [22mis not Safari[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22mDesktop Chrome[2m > [22mis not iOS Safari[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22mDesktop Safari[2m > [22mdetects Safari[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22mDesktop Safari[2m > [22mis not Chrome[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22mDesktop Safari[2m > [22mis not iOS[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22mDesktop Firefox[2m > [22mdetects Firefox[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22mDesktop Firefox[2m > [22mis not Chrome[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22mDesktop Firefox[2m > [22mis not Safari[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22miOS Safari (iPhone)[2m > [22mdetects iOS[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22miOS Safari (iPhone)[2m > [22mdetects iOS Safari[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22miOS Safari (iPhone)[2m > [22mis not iOS Chrome[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22miOS Safari (iPhone)[2m > [22mis not iOS Firefox[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22miOS Safari (iPad)[2m > [22mdetects iOS[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22miOS Safari (iPad)[2m > [22mdetects iOS Safari[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22miOS Chrome (CriOS)[2m > [22mdetects iOS[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22miOS Chrome (CriOS)[2m > [22mdetects iOS Chrome[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22miOS Chrome (CriOS)[2m > [22mis NOT iOS Safari[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22miOS Firefox (FxiOS)[2m > [22mdetects iOS[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22miOS Firefox (FxiOS)[2m > [22mdetects iOS Firefox[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22miOS Firefox (FxiOS)[2m > [22mis NOT iOS Safari[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22miOS Firefox (FxiOS)[2m > [22mis NOT iOS Chrome[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22miOS Edge (EdgiOS)[2m > [22mdetects iOS[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22miOS Edge (EdgiOS)[2m > [22mdetects iOS Edge[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22miOS Edge (EdgiOS)[2m > [22mis NOT iOS Safari[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22miPadOS (desktop mode via Macintosh + Mobile)[2m > [22mdetects iOS (iPadOS desktop mode)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22miPadOS (desktop mode via Macintosh + Mobile)[2m > [22mdetects iOS Safari[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22mEdge (desktop)[2m > [22mis not Safari[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22mEdge (desktop)[2m > [22mis not detected as Chrome[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts[2m > [22mparseUserAgent[2m > [22mempty user agent[2m > [22mreturns false for all flags[32m 0[2mms[22m[39m
+[90mstdout[2m | scripts/__tests__/embed-concepts.test.ts
+[22m[39m[dotenv@17.3.1] injecting env (17) from .env.local -- tip: ⚙️  enable debug logging with { debug: true }
+
+Environment: local
+
+Embed Concepts Pipeline
+=======================
+Mode: LIVE
+
+
+ [32m✓[39m scripts/__tests__/embed-concepts.test.ts[2m > [22mbuildEmbeddingText[2m > [22mconstructs text from concept fields correctly[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/embed-concepts.test.ts[2m > [22mbuildEmbeddingText[2m > [22mhandles empty key_facts gracefully[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/embed-concepts.test.ts[2m > [22mbuildEmbeddingText[2m > [22mhandles null key_facts gracefully[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/embed-concepts.test.ts[2m > [22mbuildEmbeddingText[2m > [22mhandles null content[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/embed-concepts.test.ts[2m > [22mbuildEmbeddingText[2m > [22mhandles empty content[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/embed-concepts.test.ts[2m > [22mbuildEmbeddingText[2m > [22mreturns only name when content and key_facts are both empty/null[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/embed-concepts.test.ts[2m > [22mbuildEmbeddingText[2m > [22mreturns only name when content is empty string and key_facts is empty array[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/embed-concepts.test.ts[2m > [22mbatchArray[2m > [22msplits an array into batches of the given size[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/embed-concepts.test.ts[2m > [22mbatchArray[2m > [22mreturns a single batch when items fit within batch size[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/embed-concepts.test.ts[2m > [22mbatchArray[2m > [22mreturns empty array for empty input[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/embed-concepts.test.ts[2m > [22mbatchArray[2m > [22mhandles batch size of 1[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/embed-concepts.test.ts[2m > [22mbatchArray[2m > [22mhandles exact multiple of batch size[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/embed-concepts.test.ts[2m > [22mbatchArray[2m > [22mproduces batches with correct total element count[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/graph-retrieval.test.ts[2m > [22mformatBundleForPrompt[2m > [22mreturns empty string for empty bundle[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/graph-retrieval.test.ts[2m > [22mformatBundleForPrompt[2m > [22mreturns empty string for null/undefined input[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/graph-retrieval.test.ts[2m > [22mformatBundleForPrompt[2m > [22mformats regulatory claims with CFR references[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/graph-retrieval.test.ts[2m > [22mformatBundleForPrompt[2m > [22mformats regulatory claims without CFR reference[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/graph-retrieval.test.ts[2m > [22mformatBundleForPrompt[2m > [22mformats topics under KEY CONCEPTS section[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/graph-retrieval.test.ts[2m > [22mformatBundleForPrompt[2m > [22mformats definitions under both KEY CONCEPTS and DEFINITIONS sections[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/graph-retrieval.test.ts[2m > [22mformatBundleForPrompt[2m > [22mcollects and deduplicates misconceptions[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/graph-retrieval.test.ts[2m > [22mformatBundleForPrompt[2m > [22mincludes examiner transitions under SUGGESTED FOLLOW-UP DIRECTIONS[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/graph-retrieval.test.ts[2m > [22mformatBundleForPrompt[2m > [22mexcludes transitions with non-matching relation_type[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/graph-retrieval.test.ts[2m > [22mformatBundleForPrompt[2m > [22mincludes evidence citations under REFERENCES[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/graph-retrieval.test.ts[2m > [22mformatBundleForPrompt[2m > [22mhandles full bundle with all concept categories[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/graph-retrieval.test.ts[2m > [22mformatBundleForPrompt[2m > [22mhandles bundle with only one category (topics only)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/graph-retrieval.test.ts[2m > [22mformatBundleForPrompt[2m > [22mlimits misconceptions to 10 entries[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/graph-retrieval.test.ts[2m > [22mformatBundleForPrompt[2m > [22mlimits transitions to 5 entries[32m 0[2mms[22m[39m
+[90mstdout[2m | scripts/__tests__/extract-regulatory-claims.test.ts
+[22m[39m[dotenv@17.3.1] injecting env (17) from .env.local -- tip: ⚙️  suppress all logs with { quiet: true }
+
+Environment: local
+
+Extract Regulatory Claims Pipeline
+===================================
+Mode: LIVE
+
+
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts[2m > [22mpercentile[2m > [22mreturns 0 for empty array[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts[2m > [22mpercentile[2m > [22mreturns the single value for a 1-element array[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts[2m > [22mpercentile[2m > [22mcomputes p50 (median) of odd-length array[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts[2m > [22mpercentile[2m > [22mcomputes p50 (median) of even-length array with interpolation[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts[2m > [22mpercentile[2m > [22mcomputes p95 correctly[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts[2m > [22mpercentile[2m > [22mp0 returns first element[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts[2m > [22mpercentile[2m > [22mp100 returns last element[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts[2m > [22mmean[2m > [22mreturns 0 for empty array[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts[2m > [22mmean[2m > [22mcomputes correct mean[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts[2m > [22mmean[2m > [22mhandles single value[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts[2m > [22mstdev[2m > [22mreturns 0 for empty array[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts[2m > [22mstdev[2m > [22mreturns 0 for single value[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts[2m > [22mstdev[2m > [22mcomputes sample standard deviation[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts[2m > [22mstdev[2m > [22mreturns 0 for identical values[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts[2m > [22mcomputeStepStats[2m > [22mcomputes full stats for a set of samples[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts[2m > [22mformatMs[2m > [22mformats sub-second values in ms[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts[2m > [22mformatMs[2m > [22mformats values >= 1000 in seconds[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts[2m > [22mformatMs[2m > [22mformats exact second[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts[2m > [22mclassifyStep[2m > [22mclassifies db steps[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/bench-stats.test.ts[2m > [22mclassifyStep[2m > [22mclassifies claude steps as llm[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email-routing.test.ts[2m > [22mrouteEmail[2m > [22mroutes support@heydpe.com to create_ticket(support)[32m 2[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email-routing.test.ts[2m > [22mrouteEmail[2m > [22mroutes feedback@heydpe.com to create_ticket(feedback)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email-routing.test.ts[2m > [22mrouteEmail[2m > [22mforwards pd@heydpe.com when forwardTo is set[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email-routing.test.ts[2m > [22mrouteEmail[2m > [22mforwards random@heydpe.com when forwardTo is set (catch-all)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email-routing.test.ts[2m > [22mrouteEmail[2m > [22mignores random@heydpe.com without forwardTo[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email-routing.test.ts[2m > [22mrouteEmail[2m > [22mis case insensitive: Support@HeyDPE.com routes to create_ticket(support)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email-routing.test.ts[2m > [22mrouteEmail[2m > [22mprioritizes ticket address when multiple recipients include both ticket and non-ticket[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email-routing.test.ts[2m > [22mrouteEmail[2m > [22mforwards when toAddresses is empty and forwardTo is set[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email-routing.test.ts[2m > [22mrouteEmail[2m > [22mignores when toAddresses is empty and forwardTo is not set[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email-routing.test.ts[2m > [22mextractEmailAddress[2m > [22mextracts email from "John Doe <john@example.com>"[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email-routing.test.ts[2m > [22mextractEmailAddress[2m > [22mreturns plain email address as-is[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email-routing.test.ts[2m > [22mextractEmailAddress[2m > [22mlowercases and extracts from "<JOHN@Example.Com>"[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email-routing.test.ts[2m > [22mextractEmailAddress[2m > [22mtrims whitespace from " john@example.com "[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email-routing.test.ts[2m > [22mextractEmailName[2m > [22mextracts name from "John Doe <john@example.com>"[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email-routing.test.ts[2m > [22mextractEmailName[2m > [22mreturns null for plain email "john@example.com"[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email-routing.test.ts[2m > [22mextractEmailName[2m > [22mreturns null for "<john@example.com>" (no name portion)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/email-routing.test.ts[2m > [22mextractEmailName[2m > [22mtrims leading whitespace from " John Doe <john@example.com>"[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-regulatory-claims.test.ts[2m > [22mnormalizeCfrReference[2m > [22mnormalizes "14 CFR 91.155" to "14_cfr_91.155"[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-regulatory-claims.test.ts[2m > [22mnormalizeCfrReference[2m > [22mstrips section signs[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-regulatory-claims.test.ts[2m > [22mnormalizeCfrReference[2m > [22mhandles "14 CFR §91.155(a)"[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-regulatory-claims.test.ts[2m > [22mgenerateClaimSlug[2m > [22mgenerates correct slug for a claim with CFR reference[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-regulatory-claims.test.ts[2m > [22mgenerateClaimSlug[2m > [22mgenerates unref slug when cfr_reference is null[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-regulatory-claims.test.ts[2m > [22mgenerateClaimSlug[2m > [22mdifferent conditions produce different slugs[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-regulatory-claims.test.ts[2m > [22mparseClaimsResponse[2m > [22mparses valid JSON array[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-regulatory-claims.test.ts[2m > [22mparseClaimsResponse[2m > [22mreturns empty array for invalid JSON[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-regulatory-claims.test.ts[2m > [22mparseClaimsResponse[2m > [22mhandles JSON wrapped in markdown code fence[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/extract-regulatory-claims.test.ts[2m > [22mparseClaimsResponse[2m > [22mfilters out claims missing required fields (claim_text, domain)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/provider-factory.test.ts[2m > [22mgetTTSProviderName[2m > [22mreturns deepgram for ground_school[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/provider-factory.test.ts[2m > [22mgetTTSProviderName[2m > [22mreturns deepgram for checkride_prep[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/provider-factory.test.ts[2m > [22mgetTTSProviderName[2m > [22mreturns deepgram for dpe_live[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/eval-helpers.test.ts[2m > [22mresolveChunkAuthority[2m > [22mresolves doc_type from map for known document_id[32m 1[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/eval-helpers.test.ts[2m > [22mresolveChunkAuthority[2m > [22mresolves handbook type for PHAK[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/eval-helpers.test.ts[2m > [22mresolveChunkAuthority[2m > [22mfalls back to abbreviation when document_id missing from map[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/eval-helpers.test.ts[2m > [22mresolveChunkAuthority[2m > [22muses map abbreviation over chunk abbreviation[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/eval-helpers.test.ts[2m > [22mmatchesAuthority[2m > [22mauto-passes when neither expected field is set[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/eval-helpers.test.ts[2m > [22mmatchesAuthority[2m > [22mmatches expected_abbreviation (case-insensitive)[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/eval-helpers.test.ts[2m > [22mmatchesAuthority[2m > [22mfails on abbreviation mismatch[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/eval-helpers.test.ts[2m > [22mmatchesAuthority[2m > [22mmatches expected_doc_type via resolved docType[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/eval-helpers.test.ts[2m > [22mmatchesAuthority[2m > [22mfails when expected_doc_type is cfr but resolved is handbook[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/eval-helpers.test.ts[2m > [22mmatchesAuthority[2m > [22mfails with unmappedDocumentId when docType is null[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/eval-helpers.test.ts[2m > [22mmatchesAuthority[2m > [22mabbreviation check takes priority over doc_type when both are set[32m 0[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/eval-helpers.test.ts[2m > [22mmatchesAuthority[2m > [22mcase insensitive doc_type match[32m 0[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m31 passed[39m[22m[90m (31)[39m
+[2m      Tests [22m [1m[32m616 passed[39m[22m[90m (616)[39m
+[2m   Start at [22m 23:43:29
+[2m   Duration [22m 813ms[2m (transform 1.25s, setup 0ms, import 2.59s, tests 179ms, environment 2ms)[22m
+

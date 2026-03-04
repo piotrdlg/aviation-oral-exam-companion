@@ -2,17 +2,19 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import type { AircraftClass, Rating } from '@/types/database';
+import type { AircraftClass, Rating, ExaminerProfileKey } from '@/types/database';
+import { EXAMINER_PROFILES } from '@/lib/examiner-profile';
 
 export interface SessionConfigData {
   rating: Rating;
-  studyMode: 'linear' | 'cross_acs' | 'weak_areas';
+  studyMode: 'linear' | 'cross_acs' | 'weak_areas' | 'quick_drill';
   difficulty: 'easy' | 'medium' | 'hard' | 'mixed';
   aircraftClass: AircraftClass;
   selectedAreas: string[];
   selectedTasks: string[];
   voiceEnabled: boolean;
   isOnboarding?: boolean;
+  examinerProfileKey?: ExaminerProfileKey;
 }
 
 const RATING_LABELS: Record<string, string> = {
@@ -42,9 +44,11 @@ interface Props {
   preferredAircraftClass?: AircraftClass;
   prefsLoaded?: boolean;
   preferredVoiceEnabled?: boolean;
+  hasCompletedExams?: boolean;
+  examinerProfileKey?: ExaminerProfileKey;
 }
 
-export default function SessionConfig({ onStart, loading, preferredRating, preferredAircraftClass, prefsLoaded, preferredVoiceEnabled }: Props) {
+export default function SessionConfig({ onStart, loading, preferredRating, preferredAircraftClass, prefsLoaded, preferredVoiceEnabled, hasCompletedExams, examinerProfileKey }: Props) {
   const rating = preferredRating || 'private';
   const aircraftClass = preferredAircraftClass || 'ASEL';
   const prefsLoading = prefsLoaded === undefined ? false : !prefsLoaded;
@@ -52,6 +56,7 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
   const [difficulty, setDifficulty] = useState<SessionConfigData['difficulty']>('mixed');
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [voiceEnabled, setVoiceEnabled] = useState(preferredVoiceEnabled ?? true);
+  const resolvedProfile = examinerProfileKey ? EXAMINER_PROFILES[examinerProfileKey] : EXAMINER_PROFILES.maria_methodical;
   const [showTaskPicker, setShowTaskPicker] = useState(false);
   const [allTasks, setAllTasks] = useState<AcsTaskItem[]>([]);
   const [tasksLoading, setTasksLoading] = useState(false);
@@ -150,23 +155,34 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
         {/* Study Mode */}
         <div>
           <label className="block font-mono text-xs text-c-muted mb-2 tracking-wider uppercase">STUDY MODE</label>
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { value: 'linear' as const, label: 'AREA BY AREA', desc: 'One area at a time' },
-              { value: 'cross_acs' as const, label: 'ACROSS ACS', desc: 'Random across all areas' },
-              { value: 'weak_areas' as const, label: 'WEAK AREAS', desc: 'Focus on your gaps' },
-            ].map((mode) => (
+          <div className="grid grid-cols-2 gap-2">
+            {([
+              { value: 'linear' as const, label: 'AREA BY AREA', desc: 'One area at a time', locked: false },
+              { value: 'cross_acs' as const, label: 'ACROSS ACS', desc: 'Random across all areas', locked: false },
+              { value: 'weak_areas' as const, label: 'WEAK AREAS', desc: 'Focus on your gaps', locked: false },
+              { value: 'quick_drill' as const, label: 'QUICK DRILL', desc: '10\u201320 focused questions on weak areas', locked: !hasCompletedExams },
+            ] as const).map((mode) => (
               <button
                 key={mode.value}
-                onClick={() => setStudyMode(mode.value)}
+                onClick={() => !mode.locked && setStudyMode(mode.value)}
+                disabled={mode.locked}
                 className={`p-3 rounded-lg border text-left transition-colors ${
-                  studyMode === mode.value
+                  mode.locked
+                    ? 'border-c-border bg-c-bezel opacity-50 cursor-not-allowed'
+                    : studyMode === mode.value
                     ? 'border-c-amber/50 bg-c-amber-lo/50'
                     : 'border-c-border bg-c-bezel hover:border-c-border-hi'
                 }`}
               >
-                <p className={`font-mono text-sm ${studyMode === mode.value ? 'font-semibold text-c-amber' : 'font-medium text-c-muted'}`}>{mode.label}</p>
+                <p className={`font-mono text-sm ${
+                  mode.locked ? 'font-medium text-c-dim'
+                    : studyMode === mode.value ? 'font-semibold text-c-amber'
+                    : 'font-medium text-c-muted'
+                }`}>{mode.label}</p>
                 <p className="text-xs text-c-muted mt-1">{mode.desc}</p>
+                {mode.locked && (
+                  <p className="text-[10px] text-c-dim mt-1">Complete at least one exam to unlock</p>
+                )}
               </button>
             ))}
           </div>
@@ -195,6 +211,25 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Examiner Profile (read-only from Settings) */}
+        <div className="flex items-center justify-between px-4 py-3 bg-c-panel rounded-lg border border-c-border">
+          {prefsLoading ? (
+            <span className="font-mono text-sm text-c-dim">LOADING EXAMINER...</span>
+          ) : (
+            <span className="font-mono text-sm">
+              <span className="text-c-green font-semibold glow-g">{resolvedProfile.defaultDisplayName.toUpperCase()}</span>
+              <span className="text-c-muted mx-2">&middot;</span>
+              <span className="text-c-cyan font-semibold">{resolvedProfile.description.toUpperCase()}</span>
+            </span>
+          )}
+          <Link
+            href="/settings"
+            className="font-mono text-xs text-c-amber hover:text-c-amber/80 transition-colors whitespace-nowrap ml-3 uppercase tracking-wider"
+          >
+            CHANGE IN SETTINGS &rarr;
+          </Link>
         </div>
 
         {/* Task Selection Toggle */}
@@ -295,6 +330,7 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
             selectedAreas,
             selectedTasks,
             voiceEnabled,
+            examinerProfileKey: examinerProfileKey || 'maria_methodical',
           })}
           disabled={loading || prefsLoading}
           className="w-full py-3.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg rounded-lg font-mono font-bold text-base tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"

@@ -1,0 +1,110 @@
+[dotenv@17.3.1] injecting env (17) from .env.local -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+=== Fingerprint Coverage Audit (Phase 9) ===
+
+--- Rating: private (PA.) ---
+
+  Total oral elements: 535
+  Loading evidence chain fingerprints...
+    Evidence chain: 0/535 (0%)
+  Building structural fingerprints...
+    Structural: 535/535 (100%)
+    Combined: 535/535 (100%)
+    Cross-area bridges: 11 keywords bridge 2+ areas
+
+  Area breakdown:
+    Area I: 68/68 (100%) — 29 keywords
+    Area II: 47/47 (100%) — 17 keywords
+    Area III: 19/19 (100%) — 30 keywords
+    Area IV: 137/137 (100%) — 16 keywords
+    Area IX: 65/65 (100%) — 6 keywords
+    Area V: 16/16 (100%) — 16 keywords
+    Area VI: 32/32 (100%) — 22 keywords
+    Area VII: 40/40 (100%) — 19 keywords
+    Area VIII: 53/53 (100%) — 14 keywords
+    Area X: 30/30 (100%) — 14 keywords
+    Area XI: 15/15 (100%) — 13 keywords
+    Area XII: 13/13 (100%) — 7 keywords
+
+  Top 10 cross-area bridges:
+    "configuration" → areas [II, IV] (184 elements)
+    "approach" → areas [IV, X] (167 elements)
+    "preflight" → areas [I, II] (115 elements)
+    "inspection" → areas [I, II] (115 elements)
+    "weather" → areas [I, VII] (108 elements)
+    "instrument" → areas [VIII, X] (83 elements)
+    "diversion" → areas [VI, VII] (72 elements)
+    "spatial disorientation" → areas [VIII, XI] (68 elements)
+    "night vision" → areas [VIII, XI] (68 elements)
+    "flight plan" → areas [VI, X] (62 elements)
+
+--- Rating: commercial (CA.) ---
+
+  Total oral elements: 533
+  Loading evidence chain fingerprints...
+    Evidence chain: 0/533 (0%)
+  Building structural fingerprints...
+    Structural: 533/533 (100%)
+    Combined: 533/533 (100%)
+    Cross-area bridges: 11 keywords bridge 2+ areas
+
+  Area breakdown:
+    Area I: 68/68 (100%) — 29 keywords
+    Area II: 46/46 (100%) — 17 keywords
+    Area III: 19/19 (100%) — 30 keywords
+    Area IV: 146/146 (100%) — 16 keywords
+    Area IX: 65/65 (100%) — 6 keywords
+    Area V: 51/51 (100%) — 16 keywords
+    Area VI: 32/32 (100%) — 22 keywords
+    Area VII: 52/52 (100%) — 19 keywords
+    Area VIII: 11/11 (100%) — 14 keywords
+    Area X: 30/30 (100%) — 14 keywords
+    Area XI: 13/13 (100%) — 13 keywords
+
+  Top 10 cross-area bridges:
+    "configuration" → areas [II, IV] (192 elements)
+    "approach" → areas [IV, X] (176 elements)
+    "weather" → areas [I, VII] (120 elements)
+    "preflight" → areas [I, II] (114 elements)
+    "inspection" → areas [I, II] (114 elements)
+    "diversion" → areas [VI, VII] (84 elements)
+    "flight plan" → areas [VI, X] (62 elements)
+    "clearance" → areas [III, X] (49 elements)
+    "instrument" → areas [VIII, X] (41 elements)
+    "spatial disorientation" → areas [VIII, XI] (24 elements)
+
+--- Rating: instrument (IR.) ---
+
+  Total oral elements: 149
+  Loading evidence chain fingerprints...
+    Evidence chain: 0/149 (0%)
+  Building structural fingerprints...
+    Structural: 149/149 (100%)
+    Combined: 149/149 (100%)
+    Cross-area bridges: 34 keywords bridge 2+ areas
+
+  Area breakdown:
+    Area I: 25/25 (100%) — 39 keywords
+    Area II: 18/18 (100%) — 30 keywords
+    Area III: 12/12 (100%) — 27 keywords
+    Area IV: 18/18 (100%) — 29 keywords
+    Area V: 10/10 (100%) — 38 keywords
+    Area VI: 43/43 (100%) — 36 keywords
+    Area VII: 21/21 (100%) — 23 keywords
+    Area VIII: 2/2 (100%) — 14 keywords
+
+  Top 10 cross-area bridges:
+    "instrument" → areas [I, II, III, IV, VIII] (75 elements)
+    "ifr" → areas [I, II, III] (55 elements)
+    "transponder" → areas [I, II, III] (55 elements)
+    "gps" → areas [I, II, V] (53 elements)
+    "unusual attitude" → areas [IV, VII, VIII] (41 elements)
+    "partial panel" → areas [IV, VII, VIII] (41 elements)
+    "spatial disorientation" → areas [IV, VII, VIII] (41 elements)
+    "gyroscopic" → areas [II, IV, VIII] (38 elements)
+    "departure procedure" → areas [II, VI] (61 elements)
+    "sid" → areas [II, VI] (61 elements)
+
+
+Evidence saved to /Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/docs/system-audit/evidence/2026-03-06-phase9/eval/fingerprint-coverage.{json,md}
+
+OVERALL: PASS

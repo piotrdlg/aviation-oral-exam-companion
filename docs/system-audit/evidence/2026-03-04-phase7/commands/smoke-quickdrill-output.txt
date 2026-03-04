@@ -1,0 +1,40 @@
+
+> aviation-oral-exam-companion@0.1.0 smoke:phase7:quickdrill
+> tsx scripts/smoke/phase7-quickdrill-smoke.ts
+
+[dotenv@17.3.1] injecting env (17) from .env.local -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+=== Phase 7 Quick Drill Smoke Test ===
+
+Step 1: Finding user with exam history...
+  User: 068d07ba...
+  Rating: private
+  Sessions: 5
+
+Step 2: Loading element scores...
+  Total scored elements: 921
+  Satisfactory: 7
+  Unsatisfactory: 4
+  Partial: 3
+
+Step 3: Loading ACS elements...
+  Total oral elements: 535
+
+Step 4: Running buildElementQueue(quick_drill)...
+  Queue length: 528
+
+Step 5: Verifying quick_drill exclusion...
+  ✅ No satisfactory elements in queue (7 excluded)
+
+Step 6: Checking prioritization...
+  First 10 elements:
+    Unsatisfactory: 1
+    Partial: 0
+    Untouched: 9
+
+=== RESULTS ===
+✅ find_user: PASS — User 068d07ba with 5 completed sessions
+✅ load_scores: PASS — 921 scores (7 sat / 4 unsat / 3 partial)
+✅ exclusion_check: PASS — 0 satisfactory elements in queue; 7 correctly excluded
+✅ prioritization: PASS — First 10: 1 unsat + 0 partial + 9 untouched
+
+OVERALL: PASS

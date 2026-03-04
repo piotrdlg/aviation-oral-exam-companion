@@ -1,0 +1,600 @@
+{
+  "doc_abbrev": "aim",
+  "doc_title": "Aeronautical Information Manual",
+  "faa_number": "AIM",
+  "files_processed": [
+    "AIM_Basic_2-20-25.pdf"
+  ],
+  "total_entries": 73,
+  "level_counts": {
+    "level_1": 21,
+    "level_2": 52,
+    "level_3": 0
+  },
+  "entries": [
+    {
+      "toc_level": 1,
+      "title": "AIM-Basic dated February 20,",
+      "page": 1,
+      "raw_title": "AIM-Basic dated February 20, 2025",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Explanation of Changes",
+      "page": 3,
+      "raw_title": "Explanation of Changes",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Checklist of Pages",
+      "page": 5,
+      "raw_title": "Checklist of Pages",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Subscription Information",
+      "page": 13,
+      "raw_title": "Subscription Information",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Comments/Corrections",
+      "page": 15,
+      "raw_title": "Comments/Corrections",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Publication Schedule",
+      "page": 17,
+      "raw_title": "Publication Schedule",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Table of Contents",
+      "page": 23,
+      "raw_title": "Table of Contents",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 1. Air Navigation",
+      "page": 37,
+      "raw_title": "Chapter 1. Air Navigation",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 1. Navigation Aids",
+      "page": 37,
+      "raw_title": "Section 1. Navigation Aids",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 1. Air Navigation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 2. Performance-Based Navigation (PBN) and Area Navigation (RNAV)",
+      "page": 79,
+      "raw_title": "Section 2. Performance-Based Navigation (PBN) and Area Navigation (RNAV)",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 1. Air Navigation"
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 2. Aeronautical Lighting and Other Airport Visual Aids",
+      "page": 91,
+      "raw_title": "Chapter 2. Aeronautical Lighting and Other Airport Visual Aids",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 1. Airport Lighting Aids",
+      "page": 91,
+      "raw_title": "Section 1. Airport Lighting Aids",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 2. Aeronautical Lighting and Other Airport Visual Aids"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 2. Air Navigation and Obstruction Lighting",
+      "page": 105,
+      "raw_title": "Section 2. Air Navigation and Obstruction Lighting",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 2. Aeronautical Lighting and Other Airport Visual Aids"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 3. Airport Marking Aids and Signs",
+      "page": 107,
+      "raw_title": "Section 3. Airport Marking Aids and Signs",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 2. Aeronautical Lighting and Other Airport Visual Aids"
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 3. Airspace",
+      "page": 143,
+      "raw_title": "Chapter 3. Airspace",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 1. General",
+      "page": 143,
+      "raw_title": "Section 1. General",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 3. Airspace"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 2. Controlled Airspace",
+      "page": 147,
+      "raw_title": "Section 2. Controlled Airspace",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 3. Airspace"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 3. Class G Airspace",
+      "page": 159,
+      "raw_title": "Section 3. Class G Airspace",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 3. Airspace"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 4. Special Use Airspace",
+      "page": 161,
+      "raw_title": "Section 4. Special Use Airspace",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 3. Airspace"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 5. Other Airspace Areas",
+      "page": 165,
+      "raw_title": "Section 5. Other Airspace Areas",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 3. Airspace"
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 4. Air Traffic Control",
+      "page": 177,
+      "raw_title": "Chapter 4. Air Traffic Control",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 1. Services Available to Pilots",
+      "page": 177,
+      "raw_title": "Section 1. Services Available to Pilots",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 4. Air Traffic Control"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 2. Radio Communications Phraseology and Techniques",
+      "page": 201,
+      "raw_title": "Section 2. Radio Communications Phraseology and Techniques",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 4. Air Traffic Control"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 3. Airport Operations",
+      "page": 211,
+      "raw_title": "Section 3. Airport Operations",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 4. Air Traffic Control"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 4. ATC Clearances and Aircraft Separation",
+      "page": 249,
+      "raw_title": "Section 4. ATC Clearances and Aircraft Separation",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 4. Air Traffic Control"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 5. Surveillance Systems",
+      "page": 263,
+      "raw_title": "Section 5. Surveillance Systems",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 4. Air Traffic Control"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 6. Operational Policy/Procedures for Reduced Vertical Separation Minimum (RVSM) in the Domestic U.S., Alaska, Offs",
+      "page": 285,
+      "raw_title": "Section 6. Operational Policy/Procedures for Reduced Vertical Separation Minimum (RVSM) in the Domestic U.S., Alaska, Offs...",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 4. Air Traffic Control"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 7. Operational Policy/Procedures for the Gulf of Mexico 50 NM Lateral Separation Initiative",
+      "page": 295,
+      "raw_title": "Section 7. Operational Policy/Procedures for the Gulf of Mexico 50 NM Lateral Separation Initiative",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 4. Air Traffic Control"
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 5. Air Traffic Procedures",
+      "page": 297,
+      "raw_title": "Chapter 5. Air Traffic Procedures",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 1. Preflight",
+      "page": 297,
+      "raw_title": "Section 1. Preflight",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 5. Air Traffic Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 2. Departure Procedures",
+      "page": 319,
+      "raw_title": "Section 2. Departure Procedures",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 5. Air Traffic Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 3. En Route Procedures",
+      "page": 335,
+      "raw_title": "Section 3. En Route Procedures",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 5. Air Traffic Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 4. Arrival Procedures",
+      "page": 365,
+      "raw_title": "Section 4. Arrival Procedures",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 5. Air Traffic Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 5. Pilot/Controller Roles and Responsibilities",
+      "page": 433,
+      "raw_title": "Section 5. Pilot/Controller Roles and Responsibilities",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 5. Air Traffic Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 6. National Security and Interception Procedures",
+      "page": 443,
+      "raw_title": "Section 6. National Security and Interception Procedures",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 5. Air Traffic Procedures"
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 6. Emergency Procedures",
+      "page": 459,
+      "raw_title": "Chapter 6. Emergency Procedures",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 1. General",
+      "page": 459,
+      "raw_title": "Section 1. General",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 6. Emergency Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 2. Emergency Services Available to Pilots",
+      "page": 461,
+      "raw_title": "Section 2. Emergency Services Available to Pilots",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 6. Emergency Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 3. Distress and Urgency Procedures",
+      "page": 477,
+      "raw_title": "Section 3. Distress and Urgency Procedures",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 6. Emergency Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 4. Two\u2010way Radio Communications Failure",
+      "page": 485,
+      "raw_title": "Section 4. Two\u2010way Radio Communications Failure",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 6. Emergency Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 5. Aircraft Rescue and Fire Fighting Communications",
+      "page": 489,
+      "raw_title": "Section 5. Aircraft Rescue and Fire Fighting Communications",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 6. Emergency Procedures"
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 7. Safety of Flight",
+      "page": 491,
+      "raw_title": "Chapter 7. Safety of Flight",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 1. Meteorology",
+      "page": 491,
+      "raw_title": "Section 1. Meteorology",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 7. Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 2. Barometric Altimeter Errors and Setting Procedures",
+      "page": 569,
+      "raw_title": "Section 2. Barometric Altimeter Errors and Setting Procedures",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 7. Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 3. Cold Temperature Barometric Altimeter Errors, Setting Procedures and Cold Temperature Airports (CTA)",
+      "page": 573,
+      "raw_title": "Section 3. Cold Temperature Barometric Altimeter Errors, Setting Procedures and Cold Temperature Airports (CTA)",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 7. Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 4. Wake Turbulence",
+      "page": 581,
+      "raw_title": "Section 4. Wake Turbulence",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 7. Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 5. Bird Hazards and Flight Over National Refuges, Parks, and Forests",
+      "page": 591,
+      "raw_title": "Section 5. Bird Hazards and Flight Over National Refuges, Parks, and Forests",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 7. Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 6. Potential Flight Hazards",
+      "page": 593,
+      "raw_title": "Section 6. Potential Flight Hazards",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 7. Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 7. Safety, Accident, and Hazard Reports",
+      "page": 611,
+      "raw_title": "Section 7. Safety, Accident, and Hazard Reports",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 7. Safety of Flight"
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 8. Medical Facts for Pilots",
+      "page": 615,
+      "raw_title": "Chapter 8. Medical Facts for Pilots",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 1. Fitness for Flight",
+      "page": 615,
+      "raw_title": "Section 1. Fitness for Flight",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 8. Medical Facts for Pilots"
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 9. Aeronautical Charts and Related Publications",
+      "page": null,
+      "raw_title": "Chapter 9. Aeronautical Charts and Related Publications",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 1. Types of Charts Available",
+      "page": null,
+      "raw_title": "Section 1. Types of Charts Available",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 9. Aeronautical Charts and Related Publications"
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 10. Helicopter Operations",
+      "page": 639,
+      "raw_title": "Chapter 10. Helicopter Operations",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 1. Helicopter IFR Operations",
+      "page": 639,
+      "raw_title": "Section 1. Helicopter IFR Operations",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 10. Helicopter Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 2. Special Operations",
+      "page": 647,
+      "raw_title": "Section 2. Special Operations",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 10. Helicopter Operations"
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 11. Unmanned Aircraft Systems (UAS)",
+      "page": 667,
+      "raw_title": "Chapter 11. Unmanned Aircraft Systems (UAS)",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 1. General",
+      "page": 667,
+      "raw_title": "Section 1. General",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 11. Unmanned Aircraft Systems (UAS)"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 2. Small Unmanned Aircraft System (sUAS)",
+      "page": 669,
+      "raw_title": "Section 2. Small Unmanned Aircraft System (sUAS)",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 11. Unmanned Aircraft Systems (UAS)"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 3. Large UAS (MGOW 55 Pounds or More)",
+      "page": 673,
+      "raw_title": "Section 3. Large UAS (MGOW 55 Pounds or More)",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 11. Unmanned Aircraft Systems (UAS)"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 4. Airspace Access for UAS",
+      "page": 679,
+      "raw_title": "Section 4. Airspace Access for UAS",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 11. Unmanned Aircraft Systems (UAS)"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 5. UAS Pilot Testing, Certification and Responsibilities",
+      "page": 689,
+      "raw_title": "Section 5. UAS Pilot Testing, Certification and Responsibilities",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 11. Unmanned Aircraft Systems (UAS)"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 6. Advanced Air Mobility",
+      "page": 693,
+      "raw_title": "Section 6. Advanced Air Mobility",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 11. Unmanned Aircraft Systems (UAS)"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 7. UAS Operations on Airports",
+      "page": 695,
+      "raw_title": "Section 7. UAS Operations on Airports",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 11. Unmanned Aircraft Systems (UAS)"
+    },
+    {
+      "toc_level": 2,
+      "title": "Section 8. Other Information and Best Practices",
+      "page": 697,
+      "raw_title": "Section 8. Other Information and Best Practices",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Chapter 11. Unmanned Aircraft Systems (UAS)"
+    },
+    {
+      "toc_level": 1,
+      "title": "Appendices",
+      "page": 701,
+      "raw_title": "Appendices",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Appendix 1. Bird/Other Wildlife Strike Report",
+      "page": 701,
+      "raw_title": "Appendix 1. Bird/Other Wildlife Strike Report",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Appendices"
+    },
+    {
+      "toc_level": 2,
+      "title": "Appendix 2. Volcanic Activity Reporting Form (VAR)",
+      "page": 703,
+      "raw_title": "Appendix 2. Volcanic Activity Reporting Form (VAR)",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Appendices"
+    },
+    {
+      "toc_level": 2,
+      "title": "Appendix 3. Abbreviations/Acronyms",
+      "page": 705,
+      "raw_title": "Appendix 3. Abbreviations/Acronyms",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Appendices"
+    },
+    {
+      "toc_level": 2,
+      "title": "Appendix 4. FAA Form 7233-4 - International Flight Plan",
+      "page": 711,
+      "raw_title": "Appendix 4. FAA Form 7233-4 - International Flight Plan",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Appendices"
+    },
+    {
+      "toc_level": 2,
+      "title": "Appendix 5. FAA Form 7233-1 - Flight Plan",
+      "page": 735,
+      "raw_title": "Appendix 5. FAA Form 7233-1 - Flight Plan",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": "Appendices"
+    },
+    {
+      "toc_level": 1,
+      "title": "Pilot/Controller Glossary",
+      "page": 739,
+      "raw_title": "Pilot/Controller Glossary",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Index",
+      "page": 1,
+      "raw_title": "Index",
+      "source_file": "AIM_Basic_2-20-25.pdf",
+      "parent_title": null
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "timestamp": "2026-03-03T03:08:03.678Z",
+  "phase": 8,
+  "runtime_filter_threshold": 0.2,
+  "sessions_audited": 3,
+  "total_elements": 159,
+  "grounded_elements": 147,
+  "insufficient_elements": 12,
+  "element_grounding_rate": 0.92,
+  "insufficient_rate": 0.08,
+  "passes_threshold": true,
+  "post_filter_citations": {
+    "total_kept": 391,
+    "supports": 146,
+    "weak_support": 245,
+    "filtered_out": 368,
+    "raw_candidates": 1066,
+    "avg_relevance_score": 0.39
+  },
+  "session_summaries": [
+    {
+      "session_id": "3754ebb2-fa3c-42c8-a707-0cbda070ccc5",
+      "rating": "instrument",
+      "weak_count": 135,
+      "grounded": 124,
+      "insufficient": 11,
+      "grounding_rate": 0.92,
+      "supports": 124,
+      "weak_support": 194,
+      "filtered_out": 313
+    },
+    {
+      "session_id": "6cc31bb3-1cd4-42bc-b6f7-cfba314c4a1d",
+      "rating": "instrument",
+      "weak_count": 14,
+      "grounded": 13,
+      "insufficient": 1,
+      "grounding_rate": 0.93,
+      "supports": 13,
+      "weak_support": 25,
+      "filtered_out": 34
+    },
+    {
+      "session_id": "3564331f-bf0a-412c-a221-86e8b6319fd0",
+      "rating": "private",
+      "weak_count": 10,
+      "grounded": 10,
+      "insufficient": 0,
+      "grounding_rate": 1,
+      "supports": 9,
+      "weak_support": 26,
+      "filtered_out": 21
+    }
+  ],
+  "insufficient_by_area": {
+    "I": 1,
+    "V": 4,
+    "IV": 1,
+    "VI": 4,
+    "VII": 2
+  },
+  "sample_insufficient": [
+    {
+      "element": "IR.I.C.R1",
+      "area": "I",
+      "raw_candidates": 3,
+      "reason": "All candidates below relevance threshold"
+    },
+    {
+      "element": "IR.V.A.K1",
+      "area": "V",
+      "raw_candidates": 4,
+      "reason": "All candidates below relevance threshold"
+    },
+    {
+      "element": "IR.V.A.R2",
+      "area": "V",
+      "raw_candidates": 3,
+      "reason": "All candidates below relevance threshold"
+    },
+    {
+      "element": "IR.V.B.R2",
+      "area": "V",
+      "raw_candidates": 8,
+      "reason": "All candidates below relevance threshold"
+    },
+    {
+      "element": "IR.IV.B.K4",
+      "area": "IV",
+      "raw_candidates": 3,
+      "reason": "All candidates below relevance threshold"
+    }
+  ]
+}

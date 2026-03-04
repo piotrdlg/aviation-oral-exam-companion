@@ -1,0 +1,56 @@
+{
+  "timestamp": "2026-03-03T02:27:28.291Z",
+  "user_id": "068d07ba-cfa7-40c1-bc64-4b3ed1d6e097",
+  "rating": "private",
+  "total_elements": 535,
+  "scores_summary": {
+    "total": 921,
+    "satisfactory": 7,
+    "unsatisfactory": 4,
+    "partial": 3
+  },
+  "queue_length": 528,
+  "satisfactory_in_queue": 0,
+  "first_10_elements": [
+    {
+      "code": "PA.IV.N.K3",
+      "status": "untouched"
+    },
+    {
+      "code": "PA.IV.C.K1",
+      "status": "untouched"
+    },
+    {
+      "code": "PA.II.D.R3",
+      "status": "untouched"
+    },
+    {
+      "code": "PA.II.B.K4",
+      "status": "untouched"
+    },
+    {
+      "code": "PA.I.H.K2",
+      "status": "unsatisfactory"
+    },
+    {
+      "code": "PA.I.F.K1",
+      "status": "untouched"
+    },
+    {
+      "code": "PA.II.B.R3",
+      "status": "untouched"
+    },
+    {
+      "code": "PA.I.I.K9",
+      "status": "untouched"
+    },
+    {
+      "code": "PA.I.I.R3",
+      "status": "untouched"
+    },
+    {
+      "code": "PA.II.A.K4",
+      "status": "untouched"
+    }
+  ]
+}

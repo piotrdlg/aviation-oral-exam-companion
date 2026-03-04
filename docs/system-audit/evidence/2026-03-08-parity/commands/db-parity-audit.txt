@@ -1,0 +1,40 @@
+[dotenv@17.3.1] injecting env (17) from .env.local -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+=== Rating Parity Audit — Database ===
+
+1. ACS Coverage by Rating...
+  private: 61 tasks, 921 elements, areas: [Airport and Seaplane Base Operations, Basic Instrument Maneuvers, Emergency Operations, Multiengine Operations, Navigation, Night Operations, Performance Maneuvers and Ground Reference Maneuvers, Postflight Procedures, Preflight Preparation, Preflight Procedures, Slow Flight and Stalls, Takeoffs, Landings, and Go-Arounds]
+  commercial: 60 tasks, 960 elements, areas: [Airport and Seaplane Base Operations, Emergency Operations, High-Altitude Operations, Multiengine Operations, Navigation, Performance Maneuvers and Ground Reference Maneuvers, Postflight Procedures, Preflight Preparation, Preflight Procedures, Slow Flight and Stalls, Takeoffs, Landings, and Go-Arounds]
+  instrument: 22 tasks, 293 elements, areas: [Air Traffic Control (ATC) Clearances and Procedures, Emergency Operations, Flight by Reference to Instruments, Instrument Approach Procedures, Navigation Systems, Postflight Procedures, Preflight Preparation, Preflight Procedures]
+
+2. Session Counts by Rating...
+  private: total=74, completed=19, v2=1, quick_drill=0
+  commercial: total=1, completed=1, v2=0, quick_drill=0
+  instrument: total=3, completed=2, v2=2, quick_drill=0
+
+3. Prompt Coverage...
+  private: examiner=9, assessment=9, total=22
+  commercial: examiner=9, assessment=9, total=22
+  instrument: examiner=9, assessment=9, total=22
+
+4. System Config...
+  Config keys: [kill_switch.anthropic, kill_switch.openai, kill_switch.deepgram, kill_switch.cartesia, kill_switch.tier.ground_school, kill_switch.tier.checkride_prep, kill_switch.tier.dpe_live, maintenance_mode, user_hard_caps, app.environment, voice.user_options, graph.shadow_mode, graph.enhanced_retrieval, tts.openai, tts.deepgram, tts.cartesia]
+  Rating-specific config keys: [none]
+
+=== PARITY SUMMARY TABLE ===
+
+| Rating | Tasks | Elements | Areas | Sessions | Completed | V2 | QuickDrill | Prompts |
+|--------|-------|----------|-------|----------|-----------|----|-----------:|---------|
+| private | 61 | 921 | 12 | 74 | 19 | 1 | 0 | 22 |
+| commercial | 60 | 960 | 11 | 1 | 1 | 0 | 0 | 22 |
+| instrument | 22 | 293 | 8 | 3 | 2 | 2 | 0 | 22 |
+
+=== PARITY CHECKS ===
+
+✅ acs_tasks_populated: private=61, commercial=60, instrument=22
+✅ acs_elements_populated: private=921, commercial=960, instrument=293
+✅ prompts_serve_all: private=22, commercial=22, instrument=22
+✅ sessions_exist_all: private=74, commercial=1, instrument=3
+
+OVERALL DB PARITY: PASS
+
+Evidence saved to /Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/docs/system-audit/evidence/2026-03-08-parity/sql/rating-parity-db.{json,md}

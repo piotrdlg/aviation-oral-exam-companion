@@ -1,0 +1,47 @@
+
+> aviation-oral-exam-companion@0.1.0 eval:flow
+> tsx scripts/eval/flow-coherence-audit.ts
+
+[dotenv@17.3.1] injecting env (17) from .env.local -- tip: 🛡️ auth for agents: https://vestauth.com
+=== Flow Coherence Audit (R5) ===
+
+Step 1: Loading ACS elements + taxonomy fingerprints...
+  Loaded 535 PA elements
+  RPC not available. Building fingerprints from evidence chain...
+  Built fingerprints for 0 elements from evidence chain
+
+Step 2: Running connectedWalk vs random baseline...
+  Using 50 elements for comparison
+
+  Connected Walk (5 trials):
+    Avg Jaccard:  0.0%
+    Pct shared:   0.0%
+
+  Random Baseline (5 trials):
+    Avg Jaccard:  0.0%
+    Pct shared:   0.0%
+
+  Improvement: 0.0%
+
+Step 3: Sample pair analysis...
+  First 10 consecutive pairs:
+    PA.I.I.R3 → PA.IV.C.K4: J=0, shared=[(none)]
+    PA.IV.C.K4 → PA.VI.B.K4: J=0, shared=[(none)]
+    PA.VI.B.K4 → PA.X.A.R1: J=0, shared=[(none)]
+    PA.X.A.R1 → PA.IX.D.R3: J=0, shared=[(none)]
+    PA.IX.D.R3 → PA.IV.D.K1: J=0, shared=[(none)]
+    PA.IV.D.K1 → PA.VIII.E.R5: J=0, shared=[(none)]
+    PA.VIII.E.R5 → PA.XI.A.R5: J=0, shared=[(none)]
+    PA.XI.A.R5 → PA.I.B.K3: J=0, shared=[(none)]
+    PA.I.B.K3 → PA.X.A.K2: J=0, shared=[(none)]
+    PA.X.A.K2 → PA.IX.C.R1: J=0, shared=[(none)]
+
+=== CALIBRATION CHECKS ===
+✅ walk_beats_random: SKIP: no fingerprints available (walk degrades to shuffle)
+✅ shared_slug_coverage: SKIP: no fingerprints available
+✅ function_exported: connectedWalk() is exported from exam-logic.ts
+✅ no_fp_appended: 0 with FP, 50 without (correctly appended)
+
+Evidence saved to /Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/docs/system-audit/evidence/2026-03-04-phase7/eval/flow-coherence-audit.{json,md}
+
+OVERALL: PASS

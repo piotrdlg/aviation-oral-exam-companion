@@ -1,0 +1,334 @@
+{
+  "timestamp": "2026-03-03T03:59:37.827Z",
+  "sample_size": 50,
+  "trials": 5,
+  "fingerprints_loaded": 535,
+  "walk_results": [
+    {
+      "avg_jaccard": 0.708,
+      "pct_shared": 1
+    },
+    {
+      "avg_jaccard": 0.707,
+      "pct_shared": 1
+    },
+    {
+      "avg_jaccard": 0.709,
+      "pct_shared": 0.98
+    },
+    {
+      "avg_jaccard": 0.712,
+      "pct_shared": 1
+    },
+    {
+      "avg_jaccard": 0.71,
+      "pct_shared": 1
+    }
+  ],
+  "random_results": [
+    {
+      "avg_jaccard": 0.162,
+      "pct_shared": 0.63
+    },
+    {
+      "avg_jaccard": 0.137,
+      "pct_shared": 0.71
+    },
+    {
+      "avg_jaccard": 0.105,
+      "pct_shared": 0.63
+    },
+    {
+      "avg_jaccard": 0.203,
+      "pct_shared": 0.63
+    },
+    {
+      "avg_jaccard": 0.109,
+      "pct_shared": 0.57
+    }
+  ],
+  "avg_walk_jaccard": 0.709,
+  "avg_random_jaccard": 0.143,
+  "improvement_pct": 395.3,
+  "avg_walk_pct_shared": 1,
+  "checks": [
+    {
+      "check": "walk_beats_random",
+      "pass": true,
+      "detail": "walk 70.9% > random 14.3% (395.3% improvement)"
+    },
+    {
+      "check": "shared_slug_coverage",
+      "pass": true,
+      "detail": "99.6% of pairs share >= 1 taxonomy slug (threshold: 50%)"
+    },
+    {
+      "check": "function_exported",
+      "pass": true,
+      "detail": "connectedWalk() is exported from exam-logic.ts"
+    },
+    {
+      "check": "no_fp_appended",
+      "pass": true,
+      "detail": "50 with FP, 0 without (correctly appended)"
+    }
+  ],
+  "sample_pairs": [
+    {
+      "from_code": "PA.I.B.R1",
+      "to_code": "PA.I.G.K2",
+      "jaccard": 0.882,
+      "shared_slugs": 30,
+      "shared_slug_list": [
+        "topic:preflight",
+        "topic:airworthiness",
+        "topic:certificate",
+        "topic:document",
+        "topic:logbook"
+      ]
+    },
+    {
+      "from_code": "PA.I.G.K2",
+      "to_code": "PA.II.B.K2",
+      "jaccard": 0.061,
+      "shared_slugs": 3,
+      "shared_slug_list": [
+        "topic:preflight",
+        "topic:inspection",
+        "etype:knowledge"
+      ]
+    },
+    {
+      "from_code": "PA.II.B.K2",
+      "to_code": "PA.II.E.R1",
+      "jaccard": 0.818,
+      "shared_slugs": 18,
+      "shared_slug_list": [
+        "topic:preflight",
+        "topic:procedures",
+        "topic:inspection",
+        "topic:cockpit",
+        "topic:checklist"
+      ]
+    },
+    {
+      "from_code": "PA.II.E.R1",
+      "to_code": "PA.II.F.R1",
+      "jaccard": 0.905,
+      "shared_slugs": 19,
+      "shared_slug_list": [
+        "topic:preflight",
+        "topic:procedures",
+        "topic:inspection",
+        "topic:cockpit",
+        "topic:checklist"
+      ]
+    },
+    {
+      "from_code": "PA.II.F.R1",
+      "to_code": "PA.IV.I.R5",
+      "jaccard": 0.054,
+      "shared_slugs": 2,
+      "shared_slug_list": [
+        "topic:configuration",
+        "etype:risk"
+      ]
+    },
+    {
+      "from_code": "PA.IV.I.R5",
+      "to_code": "PA.IV.I.R1",
+      "jaccard": 1,
+      "shared_slugs": 19,
+      "shared_slug_list": [
+        "topic:takeoff",
+        "topic:landing",
+        "topic:pattern",
+        "topic:approach",
+        "topic:crosswind"
+      ]
+    },
+    {
+      "from_code": "PA.IV.I.R1",
+      "to_code": "PA.IV.I.K2",
+      "jaccard": 0.9,
+      "shared_slugs": 18,
+      "shared_slug_list": [
+        "topic:takeoff",
+        "topic:landing",
+        "topic:pattern",
+        "topic:approach",
+        "topic:crosswind"
+      ]
+    },
+    {
+      "from_code": "PA.IV.I.K2",
+      "to_code": "PA.IV.D.K3",
+      "jaccard": 0.9,
+      "shared_slugs": 18,
+      "shared_slug_list": [
+        "topic:takeoff",
+        "topic:landing",
+        "topic:pattern",
+        "topic:approach",
+        "topic:crosswind"
+      ]
+    },
+    {
+      "from_code": "PA.IV.D.K3",
+      "to_code": "PA.IV.D.K1",
+      "jaccard": 1,
+      "shared_slugs": 19,
+      "shared_slug_list": [
+        "topic:takeoff",
+        "topic:landing",
+        "topic:pattern",
+        "topic:approach",
+        "topic:crosswind"
+      ]
+    },
+    {
+      "from_code": "PA.IV.D.K1",
+      "to_code": "PA.IV.D.R3",
+      "jaccard": 0.9,
+      "shared_slugs": 18,
+      "shared_slug_list": [
+        "topic:takeoff",
+        "topic:landing",
+        "topic:pattern",
+        "topic:approach",
+        "topic:crosswind"
+      ]
+    },
+    {
+      "from_code": "PA.IV.D.R3",
+      "to_code": "PA.IV.K.R5",
+      "jaccard": 0.9,
+      "shared_slugs": 18,
+      "shared_slug_list": [
+        "topic:takeoff",
+        "topic:landing",
+        "topic:pattern",
+        "topic:approach",
+        "topic:crosswind"
+      ]
+    },
+    {
+      "from_code": "PA.IV.K.R5",
+      "to_code": "PA.IV.N.R5",
+      "jaccard": 0.9,
+      "shared_slugs": 18,
+      "shared_slug_list": [
+        "topic:takeoff",
+        "topic:landing",
+        "topic:pattern",
+        "topic:approach",
+        "topic:crosswind"
+      ]
+    },
+    {
+      "from_code": "PA.IV.N.R5",
+      "to_code": "PA.IV.A.R2",
+      "jaccard": 0.9,
+      "shared_slugs": 18,
+      "shared_slug_list": [
+        "topic:takeoff",
+        "topic:landing",
+        "topic:pattern",
+        "topic:approach",
+        "topic:crosswind"
+      ]
+    },
+    {
+      "from_code": "PA.IV.A.R2",
+      "to_code": "PA.IV.E.R4",
+      "jaccard": 0.9,
+      "shared_slugs": 18,
+      "shared_slug_list": [
+        "topic:takeoff",
+        "topic:landing",
+        "topic:pattern",
+        "topic:approach",
+        "topic:crosswind"
+      ]
+    },
+    {
+      "from_code": "PA.IV.E.R4",
+      "to_code": "PA.IV.E.R5",
+      "jaccard": 1,
+      "shared_slugs": 19,
+      "shared_slug_list": [
+        "topic:takeoff",
+        "topic:landing",
+        "topic:pattern",
+        "topic:approach",
+        "topic:crosswind"
+      ]
+    },
+    {
+      "from_code": "PA.IV.E.R5",
+      "to_code": "PA.IV.G.R5",
+      "jaccard": 0.9,
+      "shared_slugs": 18,
+      "shared_slug_list": [
+        "topic:takeoff",
+        "topic:landing",
+        "topic:pattern",
+        "topic:approach",
+        "topic:crosswind"
+      ]
+    },
+    {
+      "from_code": "PA.IV.G.R5",
+      "to_code": "PA.IV.G.R1",
+      "jaccard": 1,
+      "shared_slugs": 19,
+      "shared_slug_list": [
+        "topic:takeoff",
+        "topic:landing",
+        "topic:pattern",
+        "topic:approach",
+        "topic:crosswind"
+      ]
+    },
+    {
+      "from_code": "PA.IV.G.R1",
+      "to_code": "PA.IV.B.R1",
+      "jaccard": 0.9,
+      "shared_slugs": 18,
+      "shared_slug_list": [
+        "topic:takeoff",
+        "topic:landing",
+        "topic:pattern",
+        "topic:approach",
+        "topic:crosswind"
+      ]
+    },
+    {
+      "from_code": "PA.IV.B.R1",
+      "to_code": "PA.IV.M.K3",
+      "jaccard": 0.81,
+      "shared_slugs": 17,
+      "shared_slug_list": [
+        "topic:takeoff",
+        "topic:landing",
+        "topic:pattern",
+        "topic:approach",
+        "topic:crosswind"
+      ]
+    },
+    {
+      "from_code": "PA.IV.M.K3",
+      "to_code": "PA.IV.F.K2",
+      "jaccard": 0.9,
+      "shared_slugs": 18,
+      "shared_slug_list": [
+        "topic:takeoff",
+        "topic:landing",
+        "topic:pattern",
+        "topic:approach",
+        "topic:crosswind"
+      ]
+    }
+  ],
+  "overall_pass": true
+}

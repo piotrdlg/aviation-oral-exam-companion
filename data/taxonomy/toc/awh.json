@@ -1,0 +1,3856 @@
+{
+  "doc_abbrev": "awh",
+  "doc_title": "Aviation Weather Handbook (FAA-H-8083-28A)",
+  "faa_number": "FAA-H-8083-28A",
+  "files_processed": [
+    "FAA-H-8083-28A_Aviation_Weather.pdf"
+  ],
+  "total_entries": 480,
+  "level_counts": {
+    "level_1": 28,
+    "level_2": 169,
+    "level_3": 283
+  },
+  "entries": [
+    {
+      "toc_level": 1,
+      "title": "Introduction",
+      "page": 25,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Aviation Weather Service Program",
+      "page": 27,
+      "raw_title": "Aviation Weather Service Program",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "2.1 Introduction",
+      "page": 27,
+      "raw_title": "2.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Aviation Weather Service Program"
+    },
+    {
+      "toc_level": 2,
+      "title": "2.2 National Oceanic and Atmospheric Administration (NOAA)",
+      "page": 28,
+      "raw_title": "2.2 National Oceanic and Atmospheric Administration (NOAA)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Aviation Weather Service Program"
+    },
+    {
+      "toc_level": 3,
+      "title": "2.2.1 National Environmental Satellite, Data, and Information Service (NESDIS)",
+      "page": 28,
+      "raw_title": "2.2.1 National Environmental Satellite, Data, and Information Service (NESDIS)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "2.2 National Oceanic and Atmospheric Administration (NOAA)"
+    },
+    {
+      "toc_level": 3,
+      "title": "2.2.2 National Weather Service (NWS)",
+      "page": 28,
+      "raw_title": "2.2.2 National Weather Service (NWS)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "2.2 National Oceanic and Atmospheric Administration (NOAA)"
+    },
+    {
+      "toc_level": 2,
+      "title": "2.3 Federal Aviation Administration (FAA)",
+      "page": 30,
+      "raw_title": "2.3 Federal Aviation Administration (FAA)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Aviation Weather Service Program"
+    },
+    {
+      "toc_level": 3,
+      "title": "2.3.1 Air Traffic Control Systems Command Center (ATCSCC)",
+      "page": 30,
+      "raw_title": "2.3.1 Air Traffic Control Systems Command Center (ATCSCC)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "2.3 Federal Aviation Administration (FAA)"
+    },
+    {
+      "toc_level": 3,
+      "title": "2.3.2 Air Route Traffic Control Center (ARTCC)",
+      "page": 31,
+      "raw_title": "2.3.2 Air Route Traffic Control Center (ARTCC)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "2.3 Federal Aviation Administration (FAA)"
+    },
+    {
+      "toc_level": 3,
+      "title": "2.3.3 Airport Traffic Control Tower (ATCT) and Terminal Radar Approach Control (TRACON)",
+      "page": 31,
+      "raw_title": "2.3.3 Airport Traffic Control Tower (ATCT) and Terminal Radar Approach Control (TRACON)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "2.3 Federal Aviation Administration (FAA)"
+    },
+    {
+      "toc_level": 3,
+      "title": "2.3.4 Flight Service",
+      "page": 31,
+      "raw_title": "2.3.4 Flight Service",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "2.3 Federal Aviation Administration (FAA)"
+    },
+    {
+      "toc_level": 2,
+      "title": "2.4 Department of Defense (DOD)",
+      "page": 31,
+      "raw_title": "2.4 Department of Defense (DOD)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Aviation Weather Service Program"
+    },
+    {
+      "toc_level": 2,
+      "title": "2.5 Commercial Weather Information Providers",
+      "page": 31,
+      "raw_title": "2.5 Commercial Weather Information Providers",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Aviation Weather Service Program"
+    },
+    {
+      "toc_level": 1,
+      "title": "Overview of Aviation Weather Information",
+      "page": 33,
+      "raw_title": "Overview of Aviation Weather Information",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "3.1 Introduction",
+      "page": 33,
+      "raw_title": "3.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Overview of Aviation Weather Information"
+    },
+    {
+      "toc_level": 2,
+      "title": "3.2 Use of Aviation Weather Information",
+      "page": 34,
+      "raw_title": "3.2 Use of Aviation Weather Information",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Overview of Aviation Weather Information"
+    },
+    {
+      "toc_level": 3,
+      "title": "3.2.1 Understanding Weather Forecasts",
+      "page": 34,
+      "raw_title": "3.2.1 Understanding Weather Forecasts",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "3.2 Use of Aviation Weather Information"
+    },
+    {
+      "toc_level": 3,
+      "title": "3.2.2 Product Latency",
+      "page": 34,
+      "raw_title": "3.2.2 Product Latency",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "3.2 Use of Aviation Weather Information"
+    },
+    {
+      "toc_level": 3,
+      "title": "3.2.3 Additional Use Information",
+      "page": 34,
+      "raw_title": "3.2.3 Additional Use Information",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "3.2 Use of Aviation Weather Information"
+    },
+    {
+      "toc_level": 2,
+      "title": "3.3 Obtaining Weather Information",
+      "page": 35,
+      "raw_title": "3.3 Obtaining Weather Information",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Overview of Aviation Weather Information"
+    },
+    {
+      "toc_level": 3,
+      "title": "3.3.1 Weather Briefings",
+      "page": 35,
+      "raw_title": "3.3.1 Weather Briefings",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "3.3 Obtaining Weather Information"
+    },
+    {
+      "toc_level": 3,
+      "title": "3.3.2 Telephone",
+      "page": 36,
+      "raw_title": "3.3.2 Telephone",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "3.3 Obtaining Weather Information"
+    },
+    {
+      "toc_level": 3,
+      "title": "3.3.3 Self-Briefing",
+      "page": 37,
+      "raw_title": "3.3.3 Self-Briefing",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "3.3 Obtaining Weather Information"
+    },
+    {
+      "toc_level": 3,
+      "title": "3.3.4 In-Flight Updates",
+      "page": 38,
+      "raw_title": "3.3.4 In-Flight Updates",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "3.3 Obtaining Weather Information"
+    },
+    {
+      "toc_level": 2,
+      "title": "3.4 Overview of Aviation Weather Products",
+      "page": 39,
+      "raw_title": "3.4 Overview of Aviation Weather Products",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Overview of Aviation Weather Information"
+    },
+    {
+      "toc_level": 3,
+      "title": "3.4.1 Weather Products versus Weather Elements and Phenomena",
+      "page": 40,
+      "raw_title": "3.4.1 Weather Products versus Weather Elements and Phenomena",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "3.4 Overview of Aviation Weather Products"
+    },
+    {
+      "toc_level": 3,
+      "title": "3.4.2 Summaries of Specific Weather Information Contained in Various Weather Products",
+      "page": 45,
+      "raw_title": "3.4.2 Summaries of Specific Weather Information Contained in Various Weather Products",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "3.4 Overview of Aviation Weather Products"
+    },
+    {
+      "toc_level": 1,
+      "title": "The Earth\u2019s Atmosphere",
+      "page": 70,
+      "raw_title": "The Earth\u2019s Atmosphere",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "4.1 Introduction",
+      "page": 70,
+      "raw_title": "4.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "The Earth\u2019s Atmosphere"
+    },
+    {
+      "toc_level": 2,
+      "title": "4.2 Composition",
+      "page": 71,
+      "raw_title": "4.2 Composition",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "The Earth\u2019s Atmosphere"
+    },
+    {
+      "toc_level": 3,
+      "title": "4.2.1 Air Parcel",
+      "page": 72,
+      "raw_title": "4.2.1 Air Parcel",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "4.2 Composition"
+    },
+    {
+      "toc_level": 2,
+      "title": "4.3 Vertical Structure",
+      "page": 72,
+      "raw_title": "4.3 Vertical Structure",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "The Earth\u2019s Atmosphere"
+    },
+    {
+      "toc_level": 3,
+      "title": "4.3.1 Troposphere",
+      "page": 72,
+      "raw_title": "4.3.1 Troposphere",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "4.3 Vertical Structure"
+    },
+    {
+      "toc_level": 3,
+      "title": "4.3.2 Stratosphere",
+      "page": 72,
+      "raw_title": "4.3.2 Stratosphere",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "4.3 Vertical Structure"
+    },
+    {
+      "toc_level": 3,
+      "title": "4.3.3 Mesosphere",
+      "page": 73,
+      "raw_title": "4.3.3 Mesosphere",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "4.3 Vertical Structure"
+    },
+    {
+      "toc_level": 3,
+      "title": "4.3.4 Thermosphere",
+      "page": 73,
+      "raw_title": "4.3.4 Thermosphere",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "4.3 Vertical Structure"
+    },
+    {
+      "toc_level": 3,
+      "title": "4.3.5 Exosphere",
+      "page": 73,
+      "raw_title": "4.3.5 Exosphere",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "4.3 Vertical Structure"
+    },
+    {
+      "toc_level": 2,
+      "title": "4.4 The Standard Atmosphere",
+      "page": 74,
+      "raw_title": "4.4 The Standard Atmosphere",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "The Earth\u2019s Atmosphere"
+    },
+    {
+      "toc_level": 1,
+      "title": "Heat and Temperature",
+      "page": 76,
+      "raw_title": "Heat and Temperature",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "5.1 Introduction",
+      "page": 76,
+      "raw_title": "5.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Heat and Temperature"
+    },
+    {
+      "toc_level": 2,
+      "title": "5.2 Matter",
+      "page": 77,
+      "raw_title": "5.2 Matter",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Heat and Temperature"
+    },
+    {
+      "toc_level": 2,
+      "title": "5.3 Energy",
+      "page": 77,
+      "raw_title": "5.3 Energy",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Heat and Temperature"
+    },
+    {
+      "toc_level": 2,
+      "title": "5.4 Heat",
+      "page": 77,
+      "raw_title": "5.4 Heat",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Heat and Temperature"
+    },
+    {
+      "toc_level": 2,
+      "title": "5.5 Temperature",
+      "page": 77,
+      "raw_title": "5.5 Temperature",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Heat and Temperature"
+    },
+    {
+      "toc_level": 3,
+      "title": "5.5.1 Temperature Measurement",
+      "page": 77,
+      "raw_title": "5.5.1 Temperature Measurement",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "5.5 Temperature"
+    },
+    {
+      "toc_level": 3,
+      "title": "5.5.2 Temperature Scales",
+      "page": 77,
+      "raw_title": "5.5.2 Temperature Scales",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "5.5 Temperature"
+    },
+    {
+      "toc_level": 2,
+      "title": "5.6 Heat Transfer",
+      "page": 79,
+      "raw_title": "5.6 Heat Transfer",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Heat and Temperature"
+    },
+    {
+      "toc_level": 3,
+      "title": "5.6.1 Radiation",
+      "page": 79,
+      "raw_title": "5.6.1 Radiation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "5.6 Heat Transfer"
+    },
+    {
+      "toc_level": 3,
+      "title": "5.6.2 Conduction",
+      "page": 81,
+      "raw_title": "5.6.2 Conduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "5.6 Heat Transfer"
+    },
+    {
+      "toc_level": 3,
+      "title": "5.6.3 Convection",
+      "page": 82,
+      "raw_title": "5.6.3 Convection",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "5.6 Heat Transfer"
+    },
+    {
+      "toc_level": 2,
+      "title": "5.7 Thermal Response",
+      "page": 83,
+      "raw_title": "5.7 Thermal Response",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Heat and Temperature"
+    },
+    {
+      "toc_level": 2,
+      "title": "5.8 Temperature Variations with Altitude",
+      "page": 86,
+      "raw_title": "5.8 Temperature Variations with Altitude",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Heat and Temperature"
+    },
+    {
+      "toc_level": 3,
+      "title": "5.8.1 Atmospheric Sounding",
+      "page": 86,
+      "raw_title": "5.8.1 Atmospheric Sounding",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "5.8 Temperature Variations with Altitude"
+    },
+    {
+      "toc_level": 3,
+      "title": "5.8.2 Isothermal Layer",
+      "page": 86,
+      "raw_title": "5.8.2 Isothermal Layer",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "5.8 Temperature Variations with Altitude"
+    },
+    {
+      "toc_level": 3,
+      "title": "5.8.3 Temperature Inversion",
+      "page": 87,
+      "raw_title": "5.8.3 Temperature Inversion",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "5.8 Temperature Variations with Altitude"
+    },
+    {
+      "toc_level": 1,
+      "title": "Water Vapor",
+      "page": 89,
+      "raw_title": "Water Vapor",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "6.1 Introduction",
+      "page": 89,
+      "raw_title": "6.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Water Vapor"
+    },
+    {
+      "toc_level": 2,
+      "title": "6.2 The Hydrologic Cycle",
+      "page": 90,
+      "raw_title": "6.2 The Hydrologic Cycle",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Water Vapor"
+    },
+    {
+      "toc_level": 3,
+      "title": "6.2.1 Evaporation",
+      "page": 90,
+      "raw_title": "6.2.1 Evaporation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "6.2 The Hydrologic Cycle"
+    },
+    {
+      "toc_level": 3,
+      "title": "6.2.2 Transpiration",
+      "page": 90,
+      "raw_title": "6.2.2 Transpiration",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "6.2 The Hydrologic Cycle"
+    },
+    {
+      "toc_level": 3,
+      "title": "6.2.3 Sublimation",
+      "page": 90,
+      "raw_title": "6.2.3 Sublimation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "6.2 The Hydrologic Cycle"
+    },
+    {
+      "toc_level": 3,
+      "title": "6.2.4 Deposition",
+      "page": 91,
+      "raw_title": "6.2.4 Deposition",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "6.2 The Hydrologic Cycle"
+    },
+    {
+      "toc_level": 3,
+      "title": "6.2.5 Condensation",
+      "page": 91,
+      "raw_title": "6.2.5 Condensation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "6.2 The Hydrologic Cycle"
+    },
+    {
+      "toc_level": 3,
+      "title": "6.2.6 Transportation",
+      "page": 91,
+      "raw_title": "6.2.6 Transportation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "6.2 The Hydrologic Cycle"
+    },
+    {
+      "toc_level": 3,
+      "title": "6.2.7 Precipitation",
+      "page": 91,
+      "raw_title": "6.2.7 Precipitation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "6.2 The Hydrologic Cycle"
+    },
+    {
+      "toc_level": 3,
+      "title": "6.2.8 Runoff",
+      "page": 91,
+      "raw_title": "6.2.8 Runoff",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "6.2 The Hydrologic Cycle"
+    },
+    {
+      "toc_level": 3,
+      "title": "6.2.9 Infiltration",
+      "page": 91,
+      "raw_title": "6.2.9 Infiltration",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "6.2 The Hydrologic Cycle"
+    },
+    {
+      "toc_level": 3,
+      "title": "6.2.10 Groundwater Flow",
+      "page": 91,
+      "raw_title": "6.2.10 Groundwater Flow",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "6.2 The Hydrologic Cycle"
+    },
+    {
+      "toc_level": 3,
+      "title": "6.2.11 Plant Uptake",
+      "page": 91,
+      "raw_title": "6.2.11 Plant Uptake",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "6.2 The Hydrologic Cycle"
+    },
+    {
+      "toc_level": 2,
+      "title": "6.3 Saturation",
+      "page": 91,
+      "raw_title": "6.3 Saturation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Water Vapor"
+    },
+    {
+      "toc_level": 2,
+      "title": "6.4 Relative Humidity",
+      "page": 92,
+      "raw_title": "6.4 Relative Humidity",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Water Vapor"
+    },
+    {
+      "toc_level": 2,
+      "title": "6.5 Dewpoint",
+      "page": 92,
+      "raw_title": "6.5 Dewpoint",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Water Vapor"
+    },
+    {
+      "toc_level": 2,
+      "title": "6.6 Temperature-Dewpoint Spread (Dewpoint Depression)",
+      "page": 92,
+      "raw_title": "6.6 Temperature-Dewpoint Spread (Dewpoint Depression)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Water Vapor"
+    },
+    {
+      "toc_level": 2,
+      "title": "6.7 Change of Phase",
+      "page": 93,
+      "raw_title": "6.7 Change of Phase",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Water Vapor"
+    },
+    {
+      "toc_level": 3,
+      "title": "6.7.1 Latent Heat",
+      "page": 94,
+      "raw_title": "6.7.1 Latent Heat",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "6.7 Change of Phase"
+    },
+    {
+      "toc_level": 1,
+      "title": "Earth-Atmosphere Heat Imbalances",
+      "page": 96,
+      "raw_title": "Earth-Atmosphere Heat Imbalances",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "7.1 Introduction",
+      "page": 96,
+      "raw_title": "7.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Earth-Atmosphere Heat Imbalances"
+    },
+    {
+      "toc_level": 2,
+      "title": "7.2 The Earth-Atmosphere Energy Balance",
+      "page": 97,
+      "raw_title": "7.2 The Earth-Atmosphere Energy Balance",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Earth-Atmosphere Heat Imbalances"
+    },
+    {
+      "toc_level": 2,
+      "title": "7.3 Heat Imbalances Between Earth\u2019s Surface and the Atmosphere",
+      "page": 98,
+      "raw_title": "7.3 Heat Imbalances Between Earth\u2019s Surface and the Atmosphere",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Earth-Atmosphere Heat Imbalances"
+    },
+    {
+      "toc_level": 3,
+      "title": "7.3.1 Sensible Heating",
+      "page": 98,
+      "raw_title": "7.3.1 Sensible Heating",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "7.3 Heat Imbalances Between Earth\u2019s Surface and the Atmosphere"
+    },
+    {
+      "toc_level": 3,
+      "title": "7.3.2 Latent Heat",
+      "page": 99,
+      "raw_title": "7.3.2 Latent Heat",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "7.3 Heat Imbalances Between Earth\u2019s Surface and the Atmosphere"
+    },
+    {
+      "toc_level": 2,
+      "title": "7.4 Heat Imbalance Variations with Latitude",
+      "page": 100,
+      "raw_title": "7.4 Heat Imbalance Variations with Latitude",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Earth-Atmosphere Heat Imbalances"
+    },
+    {
+      "toc_level": 2,
+      "title": "7.5 Seasons",
+      "page": 101,
+      "raw_title": "7.5 Seasons",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Earth-Atmosphere Heat Imbalances"
+    },
+    {
+      "toc_level": 2,
+      "title": "7.6 Diurnal Temperature Variation",
+      "page": 102,
+      "raw_title": "7.6 Diurnal Temperature Variation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Earth-Atmosphere Heat Imbalances"
+    },
+    {
+      "toc_level": 1,
+      "title": "Atmospheric Pressure and Altimetry",
+      "page": 104,
+      "raw_title": "Atmospheric Pressure and Altimetry",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "8.1 Introduction",
+      "page": 104,
+      "raw_title": "8.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Atmospheric Pressure and Altimetry"
+    },
+    {
+      "toc_level": 2,
+      "title": "8.2 Atmospheric Pressure",
+      "page": 105,
+      "raw_title": "8.2 Atmospheric Pressure",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Atmospheric Pressure and Altimetry"
+    },
+    {
+      "toc_level": 3,
+      "title": "8.2.1 Barometer",
+      "page": 105,
+      "raw_title": "8.2.1 Barometer",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "8.2 Atmospheric Pressure"
+    },
+    {
+      "toc_level": 3,
+      "title": "8.2.2 Atmospheric Pressure Units",
+      "page": 106,
+      "raw_title": "8.2.2 Atmospheric Pressure Units",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "8.2 Atmospheric Pressure"
+    },
+    {
+      "toc_level": 3,
+      "title": "8.2.3 Station Pressure",
+      "page": 106,
+      "raw_title": "8.2.3 Station Pressure",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "8.2 Atmospheric Pressure"
+    },
+    {
+      "toc_level": 3,
+      "title": "8.2.4 Pressure Variation",
+      "page": 107,
+      "raw_title": "8.2.4 Pressure Variation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "8.2 Atmospheric Pressure"
+    },
+    {
+      "toc_level": 3,
+      "title": "8.2.5 Sea Level Pressure",
+      "page": 109,
+      "raw_title": "8.2.5 Sea Level Pressure",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "8.2 Atmospheric Pressure"
+    },
+    {
+      "toc_level": 2,
+      "title": "8.3 Density",
+      "page": 109,
+      "raw_title": "8.3 Density",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Atmospheric Pressure and Altimetry"
+    },
+    {
+      "toc_level": 3,
+      "title": "8.3.1 Volume\u2019s Effects on Density",
+      "page": 110,
+      "raw_title": "8.3.1 Volume\u2019s Effects on Density",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "8.3 Density"
+    },
+    {
+      "toc_level": 3,
+      "title": "8.3.2 Changes in Density",
+      "page": 111,
+      "raw_title": "8.3.2 Changes in Density",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "8.3 Density"
+    },
+    {
+      "toc_level": 3,
+      "title": "8.3.3 Density\u2019s Effects on Pressure",
+      "page": 111,
+      "raw_title": "8.3.3 Density\u2019s Effects on Pressure",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "8.3 Density"
+    },
+    {
+      "toc_level": 3,
+      "title": "8.3.4 Temperature\u2019s Effects on Density",
+      "page": 112,
+      "raw_title": "8.3.4 Temperature\u2019s Effects on Density",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "8.3 Density"
+    },
+    {
+      "toc_level": 3,
+      "title": "8.3.5 Water Vapor\u2019s Effects on Density",
+      "page": 112,
+      "raw_title": "8.3.5 Water Vapor\u2019s Effects on Density",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "8.3 Density"
+    },
+    {
+      "toc_level": 2,
+      "title": "8.4 Altimetry",
+      "page": 113,
+      "raw_title": "8.4 Altimetry",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Atmospheric Pressure and Altimetry"
+    },
+    {
+      "toc_level": 3,
+      "title": "8.4.1 Altitude",
+      "page": 113,
+      "raw_title": "8.4.1 Altitude",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "8.4 Altimetry"
+    },
+    {
+      "toc_level": 1,
+      "title": "Global Circulations and Jet Streams",
+      "page": 118,
+      "raw_title": "Global Circulations and Jet Streams",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "9.1 Introduction",
+      "page": 118,
+      "raw_title": "9.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Global Circulations and Jet Streams"
+    },
+    {
+      "toc_level": 2,
+      "title": "9.2 Non-Rotating Earth Circulation System",
+      "page": 119,
+      "raw_title": "9.2 Non-Rotating Earth Circulation System",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Global Circulations and Jet Streams"
+    },
+    {
+      "toc_level": 2,
+      "title": "9.3 Rotating Earth Circulation System",
+      "page": 119,
+      "raw_title": "9.3 Rotating Earth Circulation System",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Global Circulations and Jet Streams"
+    },
+    {
+      "toc_level": 2,
+      "title": "9.4 Jet Streams",
+      "page": 120,
+      "raw_title": "9.4 Jet Streams",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Global Circulations and Jet Streams"
+    },
+    {
+      "toc_level": 3,
+      "title": "9.4.1 Direction of Wind Flow",
+      "page": 120,
+      "raw_title": "9.4.1 Direction of Wind Flow",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "9.4 Jet Streams"
+    },
+    {
+      "toc_level": 3,
+      "title": "9.4.2 Location",
+      "page": 121,
+      "raw_title": "9.4.2 Location",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "9.4 Jet Streams"
+    },
+    {
+      "toc_level": 1,
+      "title": "Wind",
+      "page": 124,
+      "raw_title": "Wind",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "10.1 Introduction",
+      "page": 124,
+      "raw_title": "10.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Wind"
+    },
+    {
+      "toc_level": 2,
+      "title": "10.2 Naming of the Wind",
+      "page": 125,
+      "raw_title": "10.2 Naming of the Wind",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Wind"
+    },
+    {
+      "toc_level": 2,
+      "title": "10.3 Forces That Affect the Wind",
+      "page": 125,
+      "raw_title": "10.3 Forces That Affect the Wind",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Wind"
+    },
+    {
+      "toc_level": 3,
+      "title": "10.3.1 Pressure Gradient Force (PGF)",
+      "page": 125,
+      "raw_title": "10.3.1 Pressure Gradient Force (PGF)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "10.3 Forces That Affect the Wind"
+    },
+    {
+      "toc_level": 3,
+      "title": "10.3.2 Coriolis Force",
+      "page": 126,
+      "raw_title": "10.3.2 Coriolis Force",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "10.3 Forces That Affect the Wind"
+    },
+    {
+      "toc_level": 3,
+      "title": "10.3.3 Friction Force",
+      "page": 128,
+      "raw_title": "10.3.3 Friction Force",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "10.3 Forces That Affect the Wind"
+    },
+    {
+      "toc_level": 2,
+      "title": "10.4 Upper Air Wind",
+      "page": 129,
+      "raw_title": "10.4 Upper Air Wind",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Wind"
+    },
+    {
+      "toc_level": 2,
+      "title": "10.5 Surface Wind",
+      "page": 130,
+      "raw_title": "10.5 Surface Wind",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Wind"
+    },
+    {
+      "toc_level": 2,
+      "title": "10.6 Local Winds",
+      "page": 131,
+      "raw_title": "10.6 Local Winds",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Wind"
+    },
+    {
+      "toc_level": 3,
+      "title": "10.6.1 Sea Breeze",
+      "page": 132,
+      "raw_title": "10.6.1 Sea Breeze",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "10.6 Local Winds"
+    },
+    {
+      "toc_level": 3,
+      "title": "10.6.2 Land Breeze",
+      "page": 134,
+      "raw_title": "10.6.2 Land Breeze",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "10.6 Local Winds"
+    },
+    {
+      "toc_level": 3,
+      "title": "10.6.3 Lake Breeze",
+      "page": 135,
+      "raw_title": "10.6.3 Lake Breeze",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "10.6 Local Winds"
+    },
+    {
+      "toc_level": 3,
+      "title": "10.6.4 Valley Breeze",
+      "page": 137,
+      "raw_title": "10.6.4 Valley Breeze",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "10.6 Local Winds"
+    },
+    {
+      "toc_level": 3,
+      "title": "10.6.5 Mountain-Plains Wind System",
+      "page": 137,
+      "raw_title": "10.6.5 Mountain-Plains Wind System",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "10.6 Local Winds"
+    },
+    {
+      "toc_level": 3,
+      "title": "10.6.6 Mountain Breeze",
+      "page": 138,
+      "raw_title": "10.6.6 Mountain Breeze",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "10.6 Local Winds"
+    },
+    {
+      "toc_level": 2,
+      "title": "10.7 Adverse Winds",
+      "page": 139,
+      "raw_title": "10.7 Adverse Winds",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Wind"
+    },
+    {
+      "toc_level": 3,
+      "title": "10.7.1 Crosswind",
+      "page": 139,
+      "raw_title": "10.7.1 Crosswind",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "10.7 Adverse Winds"
+    },
+    {
+      "toc_level": 3,
+      "title": "10.7.2 Gust",
+      "page": 140,
+      "raw_title": "10.7.2 Gust",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "10.7 Adverse Winds"
+    },
+    {
+      "toc_level": 3,
+      "title": "10.7.3 Tailwind",
+      "page": 140,
+      "raw_title": "10.7.3 Tailwind",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "10.7 Adverse Winds"
+    },
+    {
+      "toc_level": 3,
+      "title": "10.7.4 Variable Wind/Sudden Wind Shift",
+      "page": 141,
+      "raw_title": "10.7.4 Variable Wind/Sudden Wind Shift",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "10.7 Adverse Winds"
+    },
+    {
+      "toc_level": 3,
+      "title": "10.7.5 Wind Shear",
+      "page": 141,
+      "raw_title": "10.7.5 Wind Shear",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "10.7 Adverse Winds"
+    },
+    {
+      "toc_level": 3,
+      "title": "10.7.6 Adverse Mountain Winds",
+      "page": 141,
+      "raw_title": "10.7.6 Adverse Mountain Winds",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "10.7 Adverse Winds"
+    },
+    {
+      "toc_level": 3,
+      "title": "10.7.7 Atmospheric Disturbances in Mountainous Areas",
+      "page": 141,
+      "raw_title": "10.7.7 Atmospheric Disturbances in Mountainous Areas",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "10.7 Adverse Winds"
+    },
+    {
+      "toc_level": 1,
+      "title": "Air Masses, Fronts, and the Wave Cyclone Model",
+      "page": 142,
+      "raw_title": "Air Masses, Fronts, and the Wave\u00a0Cyclone Model",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "11.1 Introduction",
+      "page": 142,
+      "raw_title": "11.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Air Masses, Fronts, and the Wave Cyclone Model"
+    },
+    {
+      "toc_level": 2,
+      "title": "11.2 Air Masses",
+      "page": 143,
+      "raw_title": "11.2 Air Masses",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Air Masses, Fronts, and the Wave Cyclone Model"
+    },
+    {
+      "toc_level": 3,
+      "title": "11.2.1 Air Mass Classification",
+      "page": 143,
+      "raw_title": "11.2.1 Air Mass Classification",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "11.2 Air Masses"
+    },
+    {
+      "toc_level": 3,
+      "title": "11.2.2 Air Mass Modification",
+      "page": 144,
+      "raw_title": "11.2.2 Air Mass Modification",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "11.2 Air Masses"
+    },
+    {
+      "toc_level": 2,
+      "title": "11.3 Fronts",
+      "page": 145,
+      "raw_title": "11.3 Fronts",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Air Masses, Fronts, and the Wave Cyclone Model"
+    },
+    {
+      "toc_level": 3,
+      "title": "11.3.1 Warm Front",
+      "page": 146,
+      "raw_title": "11.3.1 Warm Front",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "11.3 Fronts"
+    },
+    {
+      "toc_level": 3,
+      "title": "11.3.2 Cold Front",
+      "page": 147,
+      "raw_title": "11.3.2 Cold Front",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "11.3 Fronts"
+    },
+    {
+      "toc_level": 3,
+      "title": "11.3.3 Stationary Front",
+      "page": 148,
+      "raw_title": "11.3.3 Stationary Front",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "11.3 Fronts"
+    },
+    {
+      "toc_level": 3,
+      "title": "11.3.4 Occluded Front",
+      "page": 149,
+      "raw_title": "11.3.4 Occluded Front",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "11.3 Fronts"
+    },
+    {
+      "toc_level": 2,
+      "title": "11.4 The Wave Cyclone Model",
+      "page": 150,
+      "raw_title": "11.4 The Wave Cyclone Model",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Air Masses, Fronts, and the Wave Cyclone Model"
+    },
+    {
+      "toc_level": 2,
+      "title": "11.5 Dryline",
+      "page": 152,
+      "raw_title": "11.5 Dryline",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Air Masses, Fronts, and the Wave Cyclone Model"
+    },
+    {
+      "toc_level": 1,
+      "title": "Vertical Motion and Clouds",
+      "page": 153,
+      "raw_title": "Vertical Motion and Clouds",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "12.1 Introduction",
+      "page": 153,
+      "raw_title": "12.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Vertical Motion and Clouds"
+    },
+    {
+      "toc_level": 2,
+      "title": "12.2 Vertical Motion Effects on an Unsaturated Air Parcel",
+      "page": 154,
+      "raw_title": "12.2 Vertical Motion Effects on an Unsaturated Air Parcel",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Vertical Motion and Clouds"
+    },
+    {
+      "toc_level": 2,
+      "title": "12.3 Vertical Motion Effects on a Saturated Air Parcel",
+      "page": 155,
+      "raw_title": "12.3 Vertical Motion Effects on a Saturated Air Parcel",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Vertical Motion and Clouds"
+    },
+    {
+      "toc_level": 2,
+      "title": "12.4 Common Sources of Vertical Motion",
+      "page": 157,
+      "raw_title": "12.4 Common Sources of Vertical Motion",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Vertical Motion and Clouds"
+    },
+    {
+      "toc_level": 3,
+      "title": "12.4.1 Orographic Effects",
+      "page": 157,
+      "raw_title": "12.4.1 Orographic Effects",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "12.4 Common Sources of Vertical Motion"
+    },
+    {
+      "toc_level": 3,
+      "title": "12.4.2 Frictional Effects",
+      "page": 158,
+      "raw_title": "12.4.2 Frictional Effects",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "12.4 Common Sources of Vertical Motion"
+    },
+    {
+      "toc_level": 3,
+      "title": "12.4.3 Frontal Lift",
+      "page": 159,
+      "raw_title": "12.4.3 Frontal Lift",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "12.4 Common Sources of Vertical Motion"
+    },
+    {
+      "toc_level": 3,
+      "title": "12.4.4 Buoyancy",
+      "page": 159,
+      "raw_title": "12.4.4 Buoyancy",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "12.4 Common Sources of Vertical Motion"
+    },
+    {
+      "toc_level": 2,
+      "title": "12.5 Cloud Forms",
+      "page": 160,
+      "raw_title": "12.5 Cloud Forms",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Vertical Motion and Clouds"
+    },
+    {
+      "toc_level": 2,
+      "title": "12.6 Cloud Levels",
+      "page": 160,
+      "raw_title": "12.6 Cloud Levels",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Vertical Motion and Clouds"
+    },
+    {
+      "toc_level": 1,
+      "title": "Atmospheric Stability",
+      "page": 162,
+      "raw_title": "Atmospheric Stability",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "13.1 Introduction",
+      "page": 162,
+      "raw_title": "13.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Atmospheric Stability"
+    },
+    {
+      "toc_level": 2,
+      "title": "13.2 Using a Parcel as a Tool to Evaluate Stability",
+      "page": 163,
+      "raw_title": "13.2 Using a Parcel as a Tool to Evaluate Stability",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Atmospheric Stability"
+    },
+    {
+      "toc_level": 2,
+      "title": "13.3 Stability Types",
+      "page": 163,
+      "raw_title": "13.3 Stability Types",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Atmospheric Stability"
+    },
+    {
+      "toc_level": 3,
+      "title": "13.3.1 Absolute Stability",
+      "page": 163,
+      "raw_title": "13.3.1 Absolute Stability",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "13.3 Stability Types"
+    },
+    {
+      "toc_level": 3,
+      "title": "13.3.2 Neutral Stability",
+      "page": 164,
+      "raw_title": "13.3.2 Neutral Stability",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "13.3 Stability Types"
+    },
+    {
+      "toc_level": 3,
+      "title": "13.3.3 Absolute Instability",
+      "page": 165,
+      "raw_title": "13.3.3 Absolute Instability",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "13.3 Stability Types"
+    },
+    {
+      "toc_level": 3,
+      "title": "13.3.4 Conditional Instability",
+      "page": 166,
+      "raw_title": "13.3.4 Conditional Instability",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "13.3 Stability Types"
+    },
+    {
+      "toc_level": 3,
+      "title": "13.3.5 Summary of Stability Types",
+      "page": 167,
+      "raw_title": "13.3.5 Summary of Stability Types",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "13.3 Stability Types"
+    },
+    {
+      "toc_level": 2,
+      "title": "13.4 Processes That Change Atmospheric Stability",
+      "page": 169,
+      "raw_title": "13.4 Processes That Change Atmospheric Stability",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Atmospheric Stability"
+    },
+    {
+      "toc_level": 3,
+      "title": "13.4.1 Wind Effects on Stability",
+      "page": 169,
+      "raw_title": "13.4.1 Wind Effects on Stability",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "13.4 Processes That Change Atmospheric Stability"
+    },
+    {
+      "toc_level": 3,
+      "title": "13.4.2 Vertical Air Motion Effects on Stability",
+      "page": 169,
+      "raw_title": "13.4.2 Vertical Air Motion Effects on Stability",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "13.4 Processes That Change Atmospheric Stability"
+    },
+    {
+      "toc_level": 3,
+      "title": "13.4.3 Diurnal Temperature Variation Effects on Stability",
+      "page": 170,
+      "raw_title": "13.4.3 Diurnal Temperature Variation Effects on Stability",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "13.4 Processes That Change Atmospheric Stability"
+    },
+    {
+      "toc_level": 2,
+      "title": "13.5 Measurements of Stability",
+      "page": 171,
+      "raw_title": "13.5 Measurements of Stability",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Atmospheric Stability"
+    },
+    {
+      "toc_level": 3,
+      "title": "13.5.1 Lifted Index (LI)",
+      "page": 171,
+      "raw_title": "13.5.1 Lifted Index (LI)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "13.5 Measurements of Stability"
+    },
+    {
+      "toc_level": 3,
+      "title": "13.5.2 Convective Available Potential Energy (CAPE)",
+      "page": 172,
+      "raw_title": "13.5.2 Convective Available Potential Energy (CAPE)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "13.5 Measurements of Stability"
+    },
+    {
+      "toc_level": 2,
+      "title": "13.6 Convection",
+      "page": 172,
+      "raw_title": "13.6 Convection",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Atmospheric Stability"
+    },
+    {
+      "toc_level": 3,
+      "title": "13.6.1 Surface-Based Convection",
+      "page": 173,
+      "raw_title": "13.6.1 Surface-Based Convection",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "13.6 Convection"
+    },
+    {
+      "toc_level": 3,
+      "title": "13.6.2 Elevated Convection",
+      "page": 173,
+      "raw_title": "13.6.2 Elevated Convection",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "13.6 Convection"
+    },
+    {
+      "toc_level": 3,
+      "title": "13.6.3 Level of Free Convection (LFC)",
+      "page": 173,
+      "raw_title": "13.6.3 Level of Free Convection (LFC)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "13.6 Convection"
+    },
+    {
+      "toc_level": 3,
+      "title": "13.6.4 Popcorn Convection",
+      "page": 173,
+      "raw_title": "13.6.4 Popcorn Convection",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "13.6 Convection"
+    },
+    {
+      "toc_level": 2,
+      "title": "13.7 Summary",
+      "page": 173,
+      "raw_title": "13.7 Summary",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Atmospheric Stability"
+    },
+    {
+      "toc_level": 1,
+      "title": "Precipitation",
+      "page": 174,
+      "raw_title": "Precipitation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "14.1 Introduction",
+      "page": 174,
+      "raw_title": "14.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Precipitation"
+    },
+    {
+      "toc_level": 2,
+      "title": "14.2 Necessary Ingredients for Formation",
+      "page": 175,
+      "raw_title": "14.2 Necessary Ingredients for Formation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Precipitation"
+    },
+    {
+      "toc_level": 2,
+      "title": "14.3 Growth Process",
+      "page": 175,
+      "raw_title": "14.3 Growth Process",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Precipitation"
+    },
+    {
+      "toc_level": 2,
+      "title": "14.4 Precipitation Types",
+      "page": 176,
+      "raw_title": "14.4 Precipitation Types",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Precipitation"
+    },
+    {
+      "toc_level": 3,
+      "title": "14.4.1 Snow",
+      "page": 176,
+      "raw_title": "14.4.1 Snow",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "14.4 Precipitation Types"
+    },
+    {
+      "toc_level": 3,
+      "title": "14.4.2 Ice Pellets",
+      "page": 177,
+      "raw_title": "14.4.2 Ice Pellets",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "14.4 Precipitation Types"
+    },
+    {
+      "toc_level": 3,
+      "title": "14.4.3 Freezing Rain",
+      "page": 177,
+      "raw_title": "14.4.3 Freezing Rain",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "14.4 Precipitation Types"
+    },
+    {
+      "toc_level": 3,
+      "title": "14.4.4 Rain",
+      "page": 178,
+      "raw_title": "14.4.4 Rain",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "14.4 Precipitation Types"
+    },
+    {
+      "toc_level": 3,
+      "title": "14.4.5 Hail",
+      "page": 178,
+      "raw_title": "14.4.5 Hail",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "14.4 Precipitation Types"
+    },
+    {
+      "toc_level": 1,
+      "title": "Weather Radar",
+      "page": 180,
+      "raw_title": "Weather Radar",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "15.1 Introduction",
+      "page": 180,
+      "raw_title": "15.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Weather Radar"
+    },
+    {
+      "toc_level": 2,
+      "title": "15.2 Principles of Weather Radar",
+      "page": 181,
+      "raw_title": "15.2 Principles of Weather Radar",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Weather Radar"
+    },
+    {
+      "toc_level": 3,
+      "title": "15.2.1 Antenna",
+      "page": 181,
+      "raw_title": "15.2.1 Antenna",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "15.2 Principles of Weather Radar"
+    },
+    {
+      "toc_level": 3,
+      "title": "15.2.2 Backscattered Energy",
+      "page": 181,
+      "raw_title": "15.2.2 Backscattered Energy",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "15.2 Principles of Weather Radar"
+    },
+    {
+      "toc_level": 3,
+      "title": "15.2.3 Power Output",
+      "page": 182,
+      "raw_title": "15.2.3 Power Output",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "15.2 Principles of Weather Radar"
+    },
+    {
+      "toc_level": 3,
+      "title": "15.2.4 Wavelengths",
+      "page": 182,
+      "raw_title": "15.2.4 Wavelengths",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "15.2 Principles of Weather Radar"
+    },
+    {
+      "toc_level": 3,
+      "title": "15.2.5 Attenuation",
+      "page": 183,
+      "raw_title": "15.2.5 Attenuation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "15.2 Principles of Weather Radar"
+    },
+    {
+      "toc_level": 3,
+      "title": "15.2.6 Resolution",
+      "page": 184,
+      "raw_title": "15.2.6 Resolution",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "15.2 Principles of Weather Radar"
+    },
+    {
+      "toc_level": 3,
+      "title": "15.2.7 Wave Propagation",
+      "page": 186,
+      "raw_title": "15.2.7 Wave Propagation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "15.2 Principles of Weather Radar"
+    },
+    {
+      "toc_level": 3,
+      "title": "15.2.8 Radar Beam Overshooting and Undershooting",
+      "page": 189,
+      "raw_title": "15.2.8 Radar Beam Overshooting and Undershooting",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "15.2 Principles of Weather Radar"
+    },
+    {
+      "toc_level": 3,
+      "title": "15.2.9 Beam Blockage",
+      "page": 190,
+      "raw_title": "15.2.9 Beam Blockage",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "15.2 Principles of Weather Radar"
+    },
+    {
+      "toc_level": 3,
+      "title": "15.2.10 Ground Clutter",
+      "page": 190,
+      "raw_title": "15.2.10 Ground Clutter",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "15.2 Principles of Weather Radar"
+    },
+    {
+      "toc_level": 3,
+      "title": "15.2.11 Ghost",
+      "page": 191,
+      "raw_title": "15.2.11 Ghost",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "15.2 Principles of Weather Radar"
+    },
+    {
+      "toc_level": 3,
+      "title": "15.2.12 Angels",
+      "page": 192,
+      "raw_title": "15.2.12 Angels",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "15.2 Principles of Weather Radar"
+    },
+    {
+      "toc_level": 3,
+      "title": "15.2.13 Anomalous Propagation (AP)",
+      "page": 193,
+      "raw_title": "15.2.13 Anomalous Propagation (AP)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "15.2 Principles of Weather Radar"
+    },
+    {
+      "toc_level": 3,
+      "title": "15.2.14 Other Non-Meteorological Phenomena",
+      "page": 194,
+      "raw_title": "15.2.14 Other Non-Meteorological Phenomena",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "15.2 Principles of Weather Radar"
+    },
+    {
+      "toc_level": 3,
+      "title": "15.2.15 Precipitation",
+      "page": 195,
+      "raw_title": "15.2.15 Precipitation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "15.2 Principles of Weather Radar"
+    },
+    {
+      "toc_level": 1,
+      "title": "Mountain Weather",
+      "page": 198,
+      "raw_title": "Mountain Weather",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "16.1 Introduction",
+      "page": 198,
+      "raw_title": "16.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Mountain Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "16.2 Mountain Waves and Adverse Winds",
+      "page": 199,
+      "raw_title": "16.2 Mountain Waves and Adverse Winds",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Mountain Weather"
+    },
+    {
+      "toc_level": 3,
+      "title": "16.2.1 Gravity Waves",
+      "page": 199,
+      "raw_title": "16.2.1 Gravity Waves",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "16.2 Mountain Waves and Adverse Winds"
+    },
+    {
+      "toc_level": 3,
+      "title": "16.2.2 Kelvin-Helmholtz (K-H) Waves",
+      "page": 200,
+      "raw_title": "16.2.2 Kelvin-Helmholtz (K-H) Waves",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "16.2 Mountain Waves and Adverse Winds"
+    },
+    {
+      "toc_level": 3,
+      "title": "16.2.3 Vertically Propagating Mountain Waves",
+      "page": 202,
+      "raw_title": "16.2.3 Vertically Propagating Mountain Waves",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "16.2 Mountain Waves and Adverse Winds"
+    },
+    {
+      "toc_level": 3,
+      "title": "16.2.4 Trapped Lee Waves",
+      "page": 205,
+      "raw_title": "16.2.4 Trapped Lee Waves",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "16.2 Mountain Waves and Adverse Winds"
+    },
+    {
+      "toc_level": 3,
+      "title": "16.2.5 Persistent Horizontal Roll Vortices (Rotors)",
+      "page": 207,
+      "raw_title": "16.2.5 Persistent Horizontal Roll Vortices (Rotors)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "16.2 Mountain Waves and Adverse Winds"
+    },
+    {
+      "toc_level": 3,
+      "title": "16.2.6 Smaller-Scale Hazards",
+      "page": 208,
+      "raw_title": "16.2.6 Smaller-Scale Hazards",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "16.2 Mountain Waves and Adverse Winds"
+    },
+    {
+      "toc_level": 3,
+      "title": "16.2.7 Visual Indicators of Orographic Wind Fields",
+      "page": 213,
+      "raw_title": "16.2.7 Visual Indicators of Orographic Wind Fields",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "16.2 Mountain Waves and Adverse Winds"
+    },
+    {
+      "toc_level": 2,
+      "title": "16.3 Mountain/Valley Breezes and Circulation",
+      "page": 214,
+      "raw_title": "16.3 Mountain/Valley Breezes and Circulation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Mountain Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "16.4 Mountain/Valley Fog",
+      "page": 214,
+      "raw_title": "16.4 Mountain/Valley Fog",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Mountain Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "16.5 Upslope Fog",
+      "page": 214,
+      "raw_title": "16.5 Upslope Fog",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Mountain Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "16.6 Mountain Obscuration",
+      "page": 214,
+      "raw_title": "16.6 Mountain Obscuration",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Mountain Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "16.7 Mountain Turbulence",
+      "page": 214,
+      "raw_title": "16.7 Mountain Turbulence",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Mountain Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "16.8 Mountain Icing",
+      "page": 214,
+      "raw_title": "16.8 Mountain Icing",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Mountain Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "16.9 Density Altitude",
+      "page": 214,
+      "raw_title": "16.9 Density Altitude",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Mountain Weather"
+    },
+    {
+      "toc_level": 1,
+      "title": "Tropical Weather",
+      "page": 215,
+      "raw_title": "Tropical Weather",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "17.1 Introduction",
+      "page": 215,
+      "raw_title": "17.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Tropical Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "17.2 Circulation",
+      "page": 216,
+      "raw_title": "17.2 Circulation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Tropical Weather"
+    },
+    {
+      "toc_level": 3,
+      "title": "17.2.1 Subtropical High-Pressure Belts",
+      "page": 216,
+      "raw_title": "17.2.1 Subtropical High-Pressure Belts",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "17.2 Circulation"
+    },
+    {
+      "toc_level": 3,
+      "title": "17.2.2 Trade Wind Belts",
+      "page": 218,
+      "raw_title": "17.2.2 Trade Wind Belts",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "17.2 Circulation"
+    },
+    {
+      "toc_level": 3,
+      "title": "17.2.3 Continental Weather",
+      "page": 218,
+      "raw_title": "17.2.3 Continental Weather",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "17.2 Circulation"
+    },
+    {
+      "toc_level": 3,
+      "title": "17.2.4 Intertropical Convergence Zone (ITCZ)",
+      "page": 219,
+      "raw_title": "17.2.4 Intertropical Convergence Zone (ITCZ)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "17.2 Circulation"
+    },
+    {
+      "toc_level": 3,
+      "title": "17.2.5 Monsoon",
+      "page": 219,
+      "raw_title": "17.2.5 Monsoon",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "17.2 Circulation"
+    },
+    {
+      "toc_level": 2,
+      "title": "17.3 Transitory Systems",
+      "page": 221,
+      "raw_title": "17.3 Transitory Systems",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Tropical Weather"
+    },
+    {
+      "toc_level": 3,
+      "title": "17.3.1 Remnants of Polar Fronts and Shear Lines",
+      "page": 221,
+      "raw_title": "17.3.1 Remnants of Polar Fronts and Shear Lines",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "17.3 Transitory Systems"
+    },
+    {
+      "toc_level": 3,
+      "title": "17.3.2 Tropical Upper Tropospheric Trough (TUTT)",
+      "page": 221,
+      "raw_title": "17.3.2 Tropical Upper Tropospheric Trough (TUTT)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "17.3 Transitory Systems"
+    },
+    {
+      "toc_level": 3,
+      "title": "17.3.3 Tropical Wave",
+      "page": 222,
+      "raw_title": "17.3.3 Tropical Wave",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "17.3 Transitory Systems"
+    },
+    {
+      "toc_level": 3,
+      "title": "17.3.4 West African Disturbance Line (WADL)",
+      "page": 223,
+      "raw_title": "17.3.4 West African Disturbance Line (WADL)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "17.3 Transitory Systems"
+    },
+    {
+      "toc_level": 3,
+      "title": "17.3.5 Tropical Cyclones",
+      "page": 224,
+      "raw_title": "17.3.5 Tropical Cyclones",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "17.3 Transitory Systems"
+    },
+    {
+      "toc_level": 1,
+      "title": "Weather and Obstructions to Visibility",
+      "page": 229,
+      "raw_title": "Weather and Obstructions to Visibility",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "18.1 Introduction",
+      "page": 229,
+      "raw_title": "18.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Weather and Obstructions to Visibility"
+    },
+    {
+      "toc_level": 3,
+      "title": "18.1.1 Fog",
+      "page": 230,
+      "raw_title": "18.1.1 Fog",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "18.1 Introduction"
+    },
+    {
+      "toc_level": 3,
+      "title": "18.1.2 Mist",
+      "page": 237,
+      "raw_title": "18.1.2 Mist",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "18.1 Introduction"
+    },
+    {
+      "toc_level": 3,
+      "title": "18.1.3 Haze",
+      "page": 237,
+      "raw_title": "18.1.3 Haze",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "18.1 Introduction"
+    },
+    {
+      "toc_level": 3,
+      "title": "18.1.4 Smoke",
+      "page": 237,
+      "raw_title": "18.1.4 Smoke",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "18.1 Introduction"
+    },
+    {
+      "toc_level": 3,
+      "title": "18.1.5 Precipitation",
+      "page": 237,
+      "raw_title": "18.1.5 Precipitation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "18.1 Introduction"
+    },
+    {
+      "toc_level": 3,
+      "title": "18.1.6 Blowing Snow",
+      "page": 238,
+      "raw_title": "18.1.6 Blowing Snow",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "18.1 Introduction"
+    },
+    {
+      "toc_level": 3,
+      "title": "18.1.7 Dust Storm",
+      "page": 238,
+      "raw_title": "18.1.7 Dust Storm",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "18.1 Introduction"
+    },
+    {
+      "toc_level": 3,
+      "title": "18.1.8 Sandstorm",
+      "page": 238,
+      "raw_title": "18.1.8 Sandstorm",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "18.1 Introduction"
+    },
+    {
+      "toc_level": 3,
+      "title": "18.1.9 Volcanic Ash",
+      "page": 239,
+      "raw_title": "18.1.9 Volcanic Ash",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "18.1 Introduction"
+    },
+    {
+      "toc_level": 2,
+      "title": "18.2 Low Ceiling and Mountain Obscuration",
+      "page": 240,
+      "raw_title": "18.2 Low Ceiling and Mountain Obscuration",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Weather and Obstructions to Visibility"
+    },
+    {
+      "toc_level": 3,
+      "title": "18.2.1 Low Ceiling",
+      "page": 240,
+      "raw_title": "18.2.1 Low Ceiling",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "18.2 Low Ceiling and Mountain Obscuration"
+    },
+    {
+      "toc_level": 3,
+      "title": "18.2.2 Mountain Obscuration",
+      "page": 240,
+      "raw_title": "18.2.2 Mountain Obscuration",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "18.2 Low Ceiling and Mountain Obscuration"
+    },
+    {
+      "toc_level": 1,
+      "title": "Turbulence",
+      "page": 241,
+      "raw_title": "Turbulence",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "19.1 Introduction",
+      "page": 241,
+      "raw_title": "19.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Turbulence"
+    },
+    {
+      "toc_level": 2,
+      "title": "19.2 Causes of Turbulence",
+      "page": 242,
+      "raw_title": "19.2 Causes of Turbulence",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Turbulence"
+    },
+    {
+      "toc_level": 3,
+      "title": "19.2.1 Convective Turbulence",
+      "page": 242,
+      "raw_title": "19.2.1 Convective Turbulence",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "19.2 Causes of Turbulence"
+    },
+    {
+      "toc_level": 3,
+      "title": "19.2.2 Mechanical Turbulence",
+      "page": 244,
+      "raw_title": "19.2.2 Mechanical Turbulence",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "19.2 Causes of Turbulence"
+    },
+    {
+      "toc_level": 3,
+      "title": "19.2.3 Wind Shear Turbulence",
+      "page": 245,
+      "raw_title": "19.2.3 Wind Shear Turbulence",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "19.2 Causes of Turbulence"
+    },
+    {
+      "toc_level": 3,
+      "title": "19.2.4 Wind Shear",
+      "page": 247,
+      "raw_title": "19.2.4 Wind Shear",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "19.2 Causes of Turbulence"
+    },
+    {
+      "toc_level": 3,
+      "title": "19.2.5 The Effects of Orographic Winds and Turbulence on Aviation Operations",
+      "page": 249,
+      "raw_title": "19.2.5 The Effects of Orographic Winds and Turbulence on Aviation Operations",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "19.2 Causes of Turbulence"
+    },
+    {
+      "toc_level": 1,
+      "title": "Icing",
+      "page": 251,
+      "raw_title": "Icing",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "20.1 Introduction",
+      "page": 251,
+      "raw_title": "20.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Icing"
+    },
+    {
+      "toc_level": 2,
+      "title": "20.2 Supercooled Water",
+      "page": 252,
+      "raw_title": "20.2 Supercooled Water",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Icing"
+    },
+    {
+      "toc_level": 2,
+      "title": "20.3 Structural Icing",
+      "page": 252,
+      "raw_title": "20.3 Structural Icing",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Icing"
+    },
+    {
+      "toc_level": 3,
+      "title": "20.3.1 Rime Icing",
+      "page": 252,
+      "raw_title": "20.3.1 Rime Icing",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "20.3 Structural Icing"
+    },
+    {
+      "toc_level": 3,
+      "title": "20.3.2 Clear Icing",
+      "page": 252,
+      "raw_title": "20.3.2 Clear Icing",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "20.3 Structural Icing"
+    },
+    {
+      "toc_level": 3,
+      "title": "20.3.3 Mixed Icing",
+      "page": 253,
+      "raw_title": "20.3.3 Mixed Icing",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "20.3 Structural Icing"
+    },
+    {
+      "toc_level": 3,
+      "title": "20.3.4 Icing Factors",
+      "page": 253,
+      "raw_title": "20.3.4 Icing Factors",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "20.3 Structural Icing"
+    },
+    {
+      "toc_level": 3,
+      "title": "20.3.5 Icing in Stratiform Clouds",
+      "page": 254,
+      "raw_title": "20.3.5 Icing in Stratiform Clouds",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "20.3 Structural Icing"
+    },
+    {
+      "toc_level": 3,
+      "title": "20.3.6 Icing in Cumuliform Clouds",
+      "page": 254,
+      "raw_title": "20.3.6 Icing in Cumuliform Clouds",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "20.3 Structural Icing"
+    },
+    {
+      "toc_level": 3,
+      "title": "20.3.7 Icing with Fronts",
+      "page": 254,
+      "raw_title": "20.3.7 Icing with Fronts",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "20.3 Structural Icing"
+    },
+    {
+      "toc_level": 3,
+      "title": "20.3.8 Icing with Mountains",
+      "page": 255,
+      "raw_title": "20.3.8 Icing with Mountains",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "20.3 Structural Icing"
+    },
+    {
+      "toc_level": 3,
+      "title": "20.3.9 Convective Icing",
+      "page": 256,
+      "raw_title": "20.3.9 Convective Icing",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "20.3 Structural Icing"
+    },
+    {
+      "toc_level": 3,
+      "title": "20.3.10 Icing Hazards",
+      "page": 256,
+      "raw_title": "20.3.10 Icing Hazards",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "20.3 Structural Icing"
+    },
+    {
+      "toc_level": 2,
+      "title": "20.4 Engine Icing",
+      "page": 257,
+      "raw_title": "20.4 Engine Icing",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Icing"
+    },
+    {
+      "toc_level": 3,
+      "title": "20.4.1 Carburetor Icing",
+      "page": 257,
+      "raw_title": "20.4.1 Carburetor Icing",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "20.4 Engine Icing"
+    },
+    {
+      "toc_level": 3,
+      "title": "20.4.2 High Ice Water Content (HIWC)",
+      "page": 258,
+      "raw_title": "20.4.2 High Ice Water Content (HIWC)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "20.4 Engine Icing"
+    },
+    {
+      "toc_level": 2,
+      "title": "20.5 Additional Information",
+      "page": 258,
+      "raw_title": "20.5 Additional Information",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Icing"
+    },
+    {
+      "toc_level": 1,
+      "title": "Arctic Weather",
+      "page": 259,
+      "raw_title": "Arctic Weather",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "21.1 Introduction",
+      "page": 259,
+      "raw_title": "21.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Arctic Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "21.2 Climate, Air Masses, and Fronts",
+      "page": 260,
+      "raw_title": "21.2 Climate, Air Masses, and Fronts",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Arctic Weather"
+    },
+    {
+      "toc_level": 3,
+      "title": "21.2.1 Long Days and Nights",
+      "page": 260,
+      "raw_title": "21.2.1 Long Days and Nights",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "21.2 Climate, Air Masses, and Fronts"
+    },
+    {
+      "toc_level": 3,
+      "title": "21.2.2 Land and Water",
+      "page": 261,
+      "raw_title": "21.2.2 Land and Water",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "21.2 Climate, Air Masses, and Fronts"
+    },
+    {
+      "toc_level": 3,
+      "title": "21.2.3 Temperature",
+      "page": 261,
+      "raw_title": "21.2.3 Temperature",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "21.2 Climate, Air Masses, and Fronts"
+    },
+    {
+      "toc_level": 3,
+      "title": "21.2.4 Clouds and Precipitation",
+      "page": 261,
+      "raw_title": "21.2.4 Clouds and Precipitation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "21.2 Climate, Air Masses, and Fronts"
+    },
+    {
+      "toc_level": 3,
+      "title": "21.2.5 Wind",
+      "page": 261,
+      "raw_title": "21.2.5 Wind",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "21.2 Climate, Air Masses, and Fronts"
+    },
+    {
+      "toc_level": 3,
+      "title": "21.2.6 Air Masses\u2014Winter",
+      "page": 261,
+      "raw_title": "21.2.6 Air Masses\u2014Winter",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "21.2 Climate, Air Masses, and Fronts"
+    },
+    {
+      "toc_level": 3,
+      "title": "21.2.7 Air Masses\u2014Summer",
+      "page": 262,
+      "raw_title": "21.2.7 Air Masses\u2014Summer",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "21.2 Climate, Air Masses, and Fronts"
+    },
+    {
+      "toc_level": 3,
+      "title": "21.2.8 Fronts",
+      "page": 262,
+      "raw_title": "21.2.8 Fronts",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "21.2 Climate, Air Masses, and Fronts"
+    },
+    {
+      "toc_level": 2,
+      "title": "21.3 Arctic Peculiarities",
+      "page": 262,
+      "raw_title": "21.3 Arctic Peculiarities",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Arctic Weather"
+    },
+    {
+      "toc_level": 3,
+      "title": "21.3.1 Effects of Temperature Inversion",
+      "page": 262,
+      "raw_title": "21.3.1 Effects of Temperature Inversion",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "21.3 Arctic Peculiarities"
+    },
+    {
+      "toc_level": 3,
+      "title": "21.3.2 Light Reflection by Snow-Covered Surfaces",
+      "page": 262,
+      "raw_title": "21.3.2 Light Reflection by Snow-Covered Surfaces",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "21.3 Arctic Peculiarities"
+    },
+    {
+      "toc_level": 3,
+      "title": "21.3.3 Light from Celestial Bodies",
+      "page": 262,
+      "raw_title": "21.3.3 Light from Celestial Bodies",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "21.3 Arctic Peculiarities"
+    },
+    {
+      "toc_level": 2,
+      "title": "21.4 Arctic Weather Hazards",
+      "page": 262,
+      "raw_title": "21.4 Arctic Weather Hazards",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Arctic Weather"
+    },
+    {
+      "toc_level": 3,
+      "title": "21.4.1 Fog and Ice Fog",
+      "page": 262,
+      "raw_title": "21.4.1 Fog and Ice Fog",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "21.4 Arctic Weather Hazards"
+    },
+    {
+      "toc_level": 3,
+      "title": "21.4.2 Blowing and Drifting Snow",
+      "page": 263,
+      "raw_title": "21.4.2 Blowing and Drifting Snow",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "21.4 Arctic Weather Hazards"
+    },
+    {
+      "toc_level": 3,
+      "title": "21.4.3 Frost",
+      "page": 263,
+      "raw_title": "21.4.3 Frost",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "21.4 Arctic Weather Hazards"
+    },
+    {
+      "toc_level": 3,
+      "title": "21.4.4 Whiteout",
+      "page": 263,
+      "raw_title": "21.4.4 Whiteout",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "21.4 Arctic Weather Hazards"
+    },
+    {
+      "toc_level": 1,
+      "title": "Thunderstorms",
+      "page": 264,
+      "raw_title": "Thunderstorms",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "22.1 Introduction",
+      "page": 264,
+      "raw_title": "22.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Thunderstorms"
+    },
+    {
+      "toc_level": 2,
+      "title": "22.2 Necessary Ingredients for Thunderstorm Cell Formation",
+      "page": 265,
+      "raw_title": "22.2 Necessary Ingredients for Thunderstorm Cell Formation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Thunderstorms"
+    },
+    {
+      "toc_level": 2,
+      "title": "22.3 Thunderstorm Cell Life Cycle",
+      "page": 265,
+      "raw_title": "22.3 Thunderstorm Cell Life Cycle",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Thunderstorms"
+    },
+    {
+      "toc_level": 2,
+      "title": "22.4 Thunderstorm Types",
+      "page": 266,
+      "raw_title": "22.4 Thunderstorm Types",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Thunderstorms"
+    },
+    {
+      "toc_level": 2,
+      "title": "22.5 Factors that Influence Thunderstorm Motion",
+      "page": 268,
+      "raw_title": "22.5 Factors that Influence Thunderstorm Motion",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Thunderstorms"
+    },
+    {
+      "toc_level": 2,
+      "title": "22.6 Thunderstorm Terminology",
+      "page": 269,
+      "raw_title": "22.6 Thunderstorm Terminology",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Thunderstorms"
+    },
+    {
+      "toc_level": 2,
+      "title": "22.7 Hazards",
+      "page": 270,
+      "raw_title": "22.7 Hazards",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Thunderstorms"
+    },
+    {
+      "toc_level": 3,
+      "title": "22.7.1 Low Ceiling and Visibility",
+      "page": 270,
+      "raw_title": "22.7.1 Low Ceiling and Visibility",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "22.7 Hazards"
+    },
+    {
+      "toc_level": 3,
+      "title": "22.7.2 Lightning",
+      "page": 270,
+      "raw_title": "22.7.2 Lightning",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "22.7 Hazards"
+    },
+    {
+      "toc_level": 3,
+      "title": "22.7.3 Downburst and Microburst",
+      "page": 270,
+      "raw_title": "22.7.3 Downburst and Microburst",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "22.7 Hazards"
+    },
+    {
+      "toc_level": 3,
+      "title": "22.7.4 Convective Turbulence",
+      "page": 282,
+      "raw_title": "22.7.4 Convective Turbulence",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "22.7 Hazards"
+    },
+    {
+      "toc_level": 3,
+      "title": "22.7.5 Convective Icing",
+      "page": 282,
+      "raw_title": "22.7.5 Convective Icing",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "22.7 Hazards"
+    },
+    {
+      "toc_level": 3,
+      "title": "22.7.6 Hail",
+      "page": 282,
+      "raw_title": "22.7.6 Hail",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "22.7 Hazards"
+    },
+    {
+      "toc_level": 3,
+      "title": "22.7.7 Rapid Altimeter Changes",
+      "page": 282,
+      "raw_title": "22.7.7 Rapid Altimeter Changes",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "22.7 Hazards"
+    },
+    {
+      "toc_level": 3,
+      "title": "22.7.8 Static Electricity",
+      "page": 282,
+      "raw_title": "22.7.8 Static Electricity",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "22.7 Hazards"
+    },
+    {
+      "toc_level": 3,
+      "title": "22.7.9 Tornado",
+      "page": 282,
+      "raw_title": "22.7.9 Tornado",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "22.7 Hazards"
+    },
+    {
+      "toc_level": 3,
+      "title": "22.7.10 Engine Water Ingestion",
+      "page": 283,
+      "raw_title": "22.7.10 Engine Water Ingestion",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "22.7 Hazards"
+    },
+    {
+      "toc_level": 2,
+      "title": "22.8 Thunderstorm Avoidance",
+      "page": 283,
+      "raw_title": "22.8 Thunderstorm Avoidance",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Thunderstorms"
+    },
+    {
+      "toc_level": 3,
+      "title": "22.8.1 Airborne Weather Avoidance Radar (Aircraft Radar)",
+      "page": 283,
+      "raw_title": "22.8.1 Airborne Weather Avoidance Radar (Aircraft Radar)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "22.8 Thunderstorm Avoidance"
+    },
+    {
+      "toc_level": 3,
+      "title": "22.8.2 Thunderstorm Avoidance Guidance",
+      "page": 284,
+      "raw_title": "22.8.2 Thunderstorm Avoidance Guidance",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "22.8 Thunderstorm Avoidance"
+    },
+    {
+      "toc_level": 1,
+      "title": "Space Weather",
+      "page": 286,
+      "raw_title": "Space Weather",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "23.1 Introduction",
+      "page": 286,
+      "raw_title": "23.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Space Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "23.2 The Sun\u2014Prime Source of Space Weather",
+      "page": 287,
+      "raw_title": "23.2 The Sun\u2014Prime Source of Space Weather",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Space Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "23.3 The Sun\u2019s Energy Output and Variability",
+      "page": 287,
+      "raw_title": "23.3 The Sun\u2019s Energy Output and Variability",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Space Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "23.4 Sunspots and the Solar Cycle",
+      "page": 287,
+      "raw_title": "23.4 Sunspots and the Solar Cycle",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Space Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "23.5 Solar Wind",
+      "page": 287,
+      "raw_title": "23.5 Solar Wind",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Space Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "23.6 Solar Eruptive Activity",
+      "page": 288,
+      "raw_title": "23.6 Solar Eruptive Activity",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Space Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "23.7 Geospace",
+      "page": 288,
+      "raw_title": "23.7 Geospace",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Space Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "23.8 Galactic Cosmic Rays (GCR)",
+      "page": 289,
+      "raw_title": "23.8 Galactic Cosmic Rays (GCR)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Space Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "23.9 Geomagnetic Storms",
+      "page": 289,
+      "raw_title": "23.9 Geomagnetic Storms",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Space Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "23.10 Solar Radiation Storms",
+      "page": 289,
+      "raw_title": "23.10 Solar Radiation Storms",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Space Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "23.11 Ionospheric Storms",
+      "page": 290,
+      "raw_title": "23.11 Ionospheric Storms",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Space Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "23.12 Solar Flare Radio Blackouts",
+      "page": 290,
+      "raw_title": "23.12 Solar Flare Radio Blackouts",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Space Weather"
+    },
+    {
+      "toc_level": 2,
+      "title": "23.13 Effects of Space Weather on Aircraft Operations",
+      "page": 291,
+      "raw_title": "23.13 Effects of Space Weather on Aircraft Operations",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Space Weather"
+    },
+    {
+      "toc_level": 3,
+      "title": "23.13.1 Communications",
+      "page": 291,
+      "raw_title": "23.13.1 Communications",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "23.13 Effects of Space Weather on Aircraft Operations"
+    },
+    {
+      "toc_level": 3,
+      "title": "23.13.2 Navigation and GPS",
+      "page": 291,
+      "raw_title": "23.13.2 Navigation and GPS",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "23.13 Effects of Space Weather on Aircraft Operations"
+    },
+    {
+      "toc_level": 3,
+      "title": "23.13.3 Radiation Exposure to Flightcrews and Passengers",
+      "page": 291,
+      "raw_title": "23.13.3 Radiation Exposure to Flightcrews and Passengers",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "23.13 Effects of Space Weather on Aircraft Operations"
+    },
+    {
+      "toc_level": 3,
+      "title": "23.13.4 Radiation Effects on Avionics",
+      "page": 291,
+      "raw_title": "23.13.4 Radiation Effects on Avionics",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "23.13 Effects of Space Weather on Aircraft Operations"
+    },
+    {
+      "toc_level": 1,
+      "title": "Observations",
+      "page": 293,
+      "raw_title": "Observations",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "24.1 Introduction",
+      "page": 293,
+      "raw_title": "24.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Observations"
+    },
+    {
+      "toc_level": 2,
+      "title": "24.2 Surface Observations",
+      "page": 294,
+      "raw_title": "24.2 Surface Observations",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Observations"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.2.1 Manual Observation",
+      "page": 294,
+      "raw_title": "24.2.1 Manual Observation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.2 Surface Observations"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.2.2 Automated Observation",
+      "page": 294,
+      "raw_title": "24.2.2 Automated Observation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.2 Surface Observations"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.2.3 Augmented Observation",
+      "page": 294,
+      "raw_title": "24.2.3 Augmented Observation",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.2 Surface Observations"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.2.4 Recency of Observed Elements at Automated Stations",
+      "page": 294,
+      "raw_title": "24.2.4 Recency of Observed Elements at Automated Stations",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.2 Surface Observations"
+    },
+    {
+      "toc_level": 2,
+      "title": "24.3 Automated Surface Observing System (ASOS) and Automated Weather Observing System (AWOS)",
+      "page": 294,
+      "raw_title": "24.3 Automated Surface Observing System (ASOS) and Automated Weather Observing System (AWOS)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Observations"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.3.1 Automated Surface Observing System (ASOS)",
+      "page": 294,
+      "raw_title": "24.3.1 Automated Surface Observing System (ASOS)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.3 Automated Surface Observing System (ASOS) and Automated Weather Observing System (AWOS)"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.3.2 Automated Weather Observing System (AWOS)",
+      "page": 295,
+      "raw_title": "24.3.2 Automated Weather Observing System (AWOS)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.3 Automated Surface Observing System (ASOS) and Automated Weather Observing System (AWOS)"
+    },
+    {
+      "toc_level": 2,
+      "title": "24.4 Aviation Routine Weather Report (METAR) and Aviation Selected Special Weather Report (SPECI)",
+      "page": 297,
+      "raw_title": "24.4 Aviation Routine Weather Report (METAR) and Aviation Selected Special Weather Report (SPECI)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Observations"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.4.1 Aviation Routine Weather Report (METAR)",
+      "page": 297,
+      "raw_title": "24.4.1 Aviation Routine Weather Report (METAR)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.4 Aviation Routine Weather Report (METAR) and Aviation Selected Special Weather Report (SPECI)"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.4.2 Aviation Selected Special Weather Report (SPECI)",
+      "page": 298,
+      "raw_title": "24.4.2 Aviation Selected Special Weather Report (SPECI)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.4 Aviation Routine Weather Report (METAR) and Aviation Selected Special Weather Report (SPECI)"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.4.3 METAR/SPECI Format",
+      "page": 299,
+      "raw_title": "24.4.3 METAR/SPECI Format",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.4 Aviation Routine Weather Report (METAR) and Aviation Selected Special Weather Report (SPECI)"
+    },
+    {
+      "toc_level": 2,
+      "title": "24.5 Aircraft Observations and Reports",
+      "page": 318,
+      "raw_title": "24.5 Aircraft Observations and Reports",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Observations"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.5.1 Pilot Weather Reports (PIREP)",
+      "page": 318,
+      "raw_title": "24.5.1 Pilot Weather Reports (PIREP)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.5 Aircraft Observations and Reports"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.5.2 Aircraft Reports (AIREP)",
+      "page": 325,
+      "raw_title": "24.5.2 Aircraft Reports (AIREP)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.5 Aircraft Observations and Reports"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.5.3 Volcanic Activity Reports (VAR)",
+      "page": 326,
+      "raw_title": "24.5.3 Volcanic Activity Reports (VAR)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.5 Aircraft Observations and Reports"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.5.4 Turbulence Observations",
+      "page": 327,
+      "raw_title": "24.5.4 Turbulence Observations",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.5 Aircraft Observations and Reports"
+    },
+    {
+      "toc_level": 2,
+      "title": "24.6 Radar Observations",
+      "page": 328,
+      "raw_title": "24.6 Radar Observations",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Observations"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.6.1 Weather Surveillance Radar\u20141988 Doppler (WSR-88D) Description",
+      "page": 328,
+      "raw_title": "24.6.1 Weather Surveillance Radar\u20141988 Doppler (WSR-88D) Description",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.6 Radar Observations"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.6.2 Terminal Doppler Weather Radar (TDWR)",
+      "page": 339,
+      "raw_title": "24.6.2 Terminal Doppler Weather Radar (TDWR)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.6 Radar Observations"
+    },
+    {
+      "toc_level": 2,
+      "title": "24.7 Satellite Observations",
+      "page": 340,
+      "raw_title": "24.7 Satellite Observations",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Observations"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.7.1 Description",
+      "page": 340,
+      "raw_title": "24.7.1 Description",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.7 Satellite Observations"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.7.2 Imagery Types",
+      "page": 340,
+      "raw_title": "24.7.2 Imagery Types",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.7 Satellite Observations"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.7.3 Polar Operational Environment Satellites (POES)",
+      "page": 346,
+      "raw_title": "24.7.3 Polar Operational Environment Satellites (POES)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.7 Satellite Observations"
+    },
+    {
+      "toc_level": 2,
+      "title": "24.8 Upper Air Observations",
+      "page": 346,
+      "raw_title": "24.8 Upper Air Observations",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Observations"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.8.1 Radiosonde Observations (Weather Balloon)",
+      "page": 346,
+      "raw_title": "24.8.1 Radiosonde Observations (Weather Balloon)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.8 Upper Air Observations"
+    },
+    {
+      "toc_level": 2,
+      "title": "24.9 Aviation Weather Cameras",
+      "page": 348,
+      "raw_title": "24.9 Aviation Weather Cameras",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Observations"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.9.1 FAA Aviation Weather Camera Network",
+      "page": 348,
+      "raw_title": "24.9.1 FAA Aviation Weather Camera Network",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.9 Aviation Weather Cameras"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.9.2 Visibility Estimation through Image Analytics (VEIA)",
+      "page": 351,
+      "raw_title": "24.9.2 Visibility Estimation through Image Analytics (VEIA)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.9 Aviation Weather Cameras"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.9.3 Visual Weather Observation System (VWOS)",
+      "page": 352,
+      "raw_title": "24.9.3 Visual Weather Observation System (VWOS)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.9 Aviation Weather Cameras"
+    },
+    {
+      "toc_level": 3,
+      "title": "24.9.4 Issuance",
+      "page": 352,
+      "raw_title": "24.9.4 Issuance",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "24.9 Aviation Weather Cameras"
+    },
+    {
+      "toc_level": 1,
+      "title": "Analysis",
+      "page": 354,
+      "raw_title": "Analysis",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "25.1 Introduction",
+      "page": 354,
+      "raw_title": "25.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Analysis"
+    },
+    {
+      "toc_level": 2,
+      "title": "25.2 Weather Charts",
+      "page": 355,
+      "raw_title": "25.2 Weather Charts",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Analysis"
+    },
+    {
+      "toc_level": 3,
+      "title": "25.2.1 Weather Observation Sources",
+      "page": 355,
+      "raw_title": "25.2.1 Weather Observation Sources",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "25.2 Weather Charts"
+    },
+    {
+      "toc_level": 3,
+      "title": "25.2.2 Analysis",
+      "page": 355,
+      "raw_title": "25.2.2 Analysis",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "25.2 Weather Charts"
+    },
+    {
+      "toc_level": 3,
+      "title": "25.2.3 Surface Analysis Chart",
+      "page": 359,
+      "raw_title": "25.2.3 Surface Analysis Chart",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "25.2 Weather Charts"
+    },
+    {
+      "toc_level": 3,
+      "title": "25.2.4 Unified Surface Analysis Chart",
+      "page": 368,
+      "raw_title": "25.2.4 Unified Surface Analysis Chart",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "25.2 Weather Charts"
+    },
+    {
+      "toc_level": 3,
+      "title": "25.2.5 AAWU Surface Chart",
+      "page": 370,
+      "raw_title": "25.2.5 AAWU Surface Chart",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "25.2 Weather Charts"
+    },
+    {
+      "toc_level": 2,
+      "title": "25.3 Upper Air Analysis",
+      "page": 370,
+      "raw_title": "25.3 Upper Air Analysis",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Analysis"
+    },
+    {
+      "toc_level": 3,
+      "title": "25.3.1 Issuance",
+      "page": 372,
+      "raw_title": "25.3.1 Issuance",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "25.3 Upper Air Analysis"
+    },
+    {
+      "toc_level": 3,
+      "title": "25.3.2 Radiosonde Observation (Weather Balloon) Analysis",
+      "page": 372,
+      "raw_title": "25.3.2 Radiosonde Observation (Weather Balloon) Analysis",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "25.3 Upper Air Analysis"
+    },
+    {
+      "toc_level": 2,
+      "title": "25.4 Freezing Level Analysis",
+      "page": 375,
+      "raw_title": "25.4 Freezing Level Analysis",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Analysis"
+    },
+    {
+      "toc_level": 2,
+      "title": "25.5 Icing Analysis (Current Icing Product (CIP))",
+      "page": 376,
+      "raw_title": "25.5 Icing Analysis (Current Icing Product (CIP))",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Analysis"
+    },
+    {
+      "toc_level": 2,
+      "title": "25.6 Turbulence (Graphical Turbulence Guidance (GTG)) Analysis",
+      "page": 378,
+      "raw_title": "25.6 Turbulence (Graphical Turbulence Guidance (GTG)) Analysis",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Analysis"
+    },
+    {
+      "toc_level": 2,
+      "title": "25.7 Real-Time Mesoscale Analysis (RTMA)",
+      "page": 379,
+      "raw_title": "25.7 Real-Time Mesoscale Analysis (RTMA)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Analysis"
+    },
+    {
+      "toc_level": 3,
+      "title": "25.7.1 Adjustments",
+      "page": 380,
+      "raw_title": "25.7.1 Adjustments",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "25.7 Real-Time Mesoscale Analysis (RTMA)"
+    },
+    {
+      "toc_level": 1,
+      "title": "Advisories",
+      "page": 381,
+      "raw_title": "Advisories",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "26.1 Introduction",
+      "page": 381,
+      "raw_title": "26.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Advisories"
+    },
+    {
+      "toc_level": 2,
+      "title": "26.2 Significant Meteorological Information (SIGMET)",
+      "page": 382,
+      "raw_title": "26.2 Significant Meteorological Information (SIGMET)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Advisories"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.2.1 SIGMET Issuance",
+      "page": 382,
+      "raw_title": "26.2.1 SIGMET Issuance",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.2 Significant Meteorological Information (SIGMET)"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.2.2 SIGMET Identification",
+      "page": 384,
+      "raw_title": "26.2.2 SIGMET Identification",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.2 Significant Meteorological Information (SIGMET)"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.2.3 SIGMET Standardization",
+      "page": 385,
+      "raw_title": "26.2.3 SIGMET Standardization",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.2 Significant Meteorological Information (SIGMET)"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.2.4 Inside the CONUS",
+      "page": 385,
+      "raw_title": "26.2.4 Inside the CONUS",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.2 Significant Meteorological Information (SIGMET)"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.2.5 Outside the CONUS",
+      "page": 391,
+      "raw_title": "26.2.5 Outside the CONUS",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.2 Significant Meteorological Information (SIGMET)"
+    },
+    {
+      "toc_level": 2,
+      "title": "26.3 Airmen\u2019s Meteorological Information (AIRMET)",
+      "page": 395,
+      "raw_title": "26.3 Airmen\u2019s Meteorological Information (AIRMET)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Advisories"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.3.1 AIRMET Issuance",
+      "page": 396,
+      "raw_title": "26.3.1 AIRMET Issuance",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.3 Airmen\u2019s Meteorological Information (AIRMET)"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.3.2 AIRMET Standardization",
+      "page": 397,
+      "raw_title": "26.3.2 AIRMET Standardization",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.3 Airmen\u2019s Meteorological Information (AIRMET)"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.3.3 AIRMET Issuance Times and Valid Periods",
+      "page": 398,
+      "raw_title": "26.3.3 AIRMET Issuance Times and Valid Periods",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.3 Airmen\u2019s Meteorological Information (AIRMET)"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.3.4 AIRMET Formats and Examples",
+      "page": 398,
+      "raw_title": "26.3.4 AIRMET Formats and Examples",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.3 Airmen\u2019s Meteorological Information (AIRMET)"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.3.5 AIRMET Updates and Amendments",
+      "page": 401,
+      "raw_title": "26.3.5 AIRMET Updates and Amendments",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.3 Airmen\u2019s Meteorological Information (AIRMET)"
+    },
+    {
+      "toc_level": 2,
+      "title": "26.4 Center Weather Advisory (CWA)",
+      "page": 401,
+      "raw_title": "26.4 Center Weather Advisory (CWA)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Advisories"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.4.1 CWA Issuance",
+      "page": 401,
+      "raw_title": "26.4.1 CWA Issuance",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.4 Center Weather Advisory (CWA)"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.4.2 CWA Criteria",
+      "page": 402,
+      "raw_title": "26.4.2 CWA Criteria",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.4 Center Weather Advisory (CWA)"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.4.3 CWA Format and Example",
+      "page": 403,
+      "raw_title": "26.4.3 CWA Format and Example",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.4 Center Weather Advisory (CWA)"
+    },
+    {
+      "toc_level": 2,
+      "title": "26.5 Volcanic Ash Advisory (VAA)",
+      "page": 404,
+      "raw_title": "26.5 Volcanic Ash Advisory (VAA)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Advisories"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.5.1 Volcanic Ash Advisory Center (VAAC)",
+      "page": 404,
+      "raw_title": "26.5.1 Volcanic Ash Advisory Center (VAAC)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.5 Volcanic Ash Advisory (VAA)"
+    },
+    {
+      "toc_level": 2,
+      "title": "26.6 Aviation Tropical Cyclone Advisory (TCA)",
+      "page": 407,
+      "raw_title": "26.6 Aviation Tropical Cyclone Advisory (TCA)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Advisories"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.6.1 TCA Issuance",
+      "page": 407,
+      "raw_title": "26.6.1 TCA Issuance",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.6 Aviation Tropical Cyclone Advisory (TCA)"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.6.2 TCA Content",
+      "page": 408,
+      "raw_title": "26.6.2 TCA Content",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.6 Aviation Tropical Cyclone Advisory (TCA)"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.6.3 TCA Example",
+      "page": 408,
+      "raw_title": "26.6.3 TCA Example",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.6 Aviation Tropical Cyclone Advisory (TCA)"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.6.4 Additional Tropical Cyclone Information Products",
+      "page": 408,
+      "raw_title": "26.6.4 Additional Tropical Cyclone Information Products",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.6 Aviation Tropical Cyclone Advisory (TCA)"
+    },
+    {
+      "toc_level": 2,
+      "title": "26.7 Space Weather Advisory",
+      "page": 409,
+      "raw_title": "26.7 Space Weather Advisory",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Advisories"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.7.1 Space Weather Advisory Issuance",
+      "page": 409,
+      "raw_title": "26.7.1 Space Weather Advisory Issuance",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.7 Space Weather Advisory"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.7.2 Space Weather Advisory Format",
+      "page": 410,
+      "raw_title": "26.7.2 Space Weather Advisory Format",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.7 Space Weather Advisory"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.7.3 Space Weather Advisory Examples",
+      "page": 413,
+      "raw_title": "26.7.3 Space Weather Advisory Examples",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.7 Space Weather Advisory"
+    },
+    {
+      "toc_level": 2,
+      "title": "26.8 Low-Level Wind Shear (LLWS)/Microburst Advisories",
+      "page": 414,
+      "raw_title": "26.8 Low-Level Wind Shear (LLWS)/Microburst Advisories",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Advisories"
+    },
+    {
+      "toc_level": 2,
+      "title": "26.9 Airport Weather Warning (AWW)",
+      "page": 414,
+      "raw_title": "26.9 Airport Weather Warning (AWW)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Advisories"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.9.1 AWW Issuance",
+      "page": 414,
+      "raw_title": "26.9.1 AWW Issuance",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.9 Airport Weather Warning (AWW)"
+    },
+    {
+      "toc_level": 3,
+      "title": "26.9.2 AWW Format and Example",
+      "page": 415,
+      "raw_title": "26.9.2 AWW Format and Example",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "26.9 Airport Weather Warning (AWW)"
+    },
+    {
+      "toc_level": 1,
+      "title": "Forecasts",
+      "page": 416,
+      "raw_title": "Forecasts",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "27.1 Introduction",
+      "page": 416,
+      "raw_title": "27.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 2,
+      "title": "27.2 Winds and Temperatures Aloft",
+      "page": 418,
+      "raw_title": "27.2 Winds and Temperatures Aloft",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.2.1 FB Wind and Temperature Aloft Forecast",
+      "page": 419,
+      "raw_title": "27.2.1 FB Wind and Temperature Aloft Forecast",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.2 Winds and Temperatures Aloft"
+    },
+    {
+      "toc_level": 2,
+      "title": "27.3 Terminal Aerodrome Forecast (TAF)",
+      "page": 422,
+      "raw_title": "27.3 Terminal Aerodrome Forecast (TAF)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.3.1 TAF Responsibility",
+      "page": 422,
+      "raw_title": "27.3.1 TAF Responsibility",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.3 Terminal Aerodrome Forecast (TAF)"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.3.2 Generic Format of the Forecast Text of an NWS-Prepared TAF",
+      "page": 422,
+      "raw_title": "27.3.2 Generic Format of the Forecast Text of an NWS-Prepared TAF",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.3 Terminal Aerodrome Forecast (TAF)"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.3.3 TAF Examples",
+      "page": 433,
+      "raw_title": "27.3.3 TAF Examples",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.3 Terminal Aerodrome Forecast (TAF)"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.3.4 Issuance",
+      "page": 436,
+      "raw_title": "27.3.4 Issuance",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.3 Terminal Aerodrome Forecast (TAF)"
+    },
+    {
+      "toc_level": 2,
+      "title": "27.4 Aviation Surface Forecast and Aviation Clouds Forecast",
+      "page": 438,
+      "raw_title": "27.4 Aviation Surface Forecast and Aviation Clouds Forecast",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 2,
+      "title": "27.5 Area Forecasts (FA)",
+      "page": 440,
+      "raw_title": "27.5 Area Forecasts (FA)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.5.1 FA Standardization",
+      "page": 440,
+      "raw_title": "27.5.1 FA Standardization",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.5 Area Forecasts (FA)"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.5.2 FA Issuance Schedule",
+      "page": 440,
+      "raw_title": "27.5.2 FA Issuance Schedule",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.5 Area Forecasts (FA)"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.5.3 FA Amendments and Corrections",
+      "page": 441,
+      "raw_title": "27.5.3 FA Amendments and Corrections",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.5 Area Forecasts (FA)"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.5.4 FA Issuance",
+      "page": 441,
+      "raw_title": "27.5.4 FA Issuance",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.5 Area Forecasts (FA)"
+    },
+    {
+      "toc_level": 2,
+      "title": "27.6 Alaska Graphical Forecasts",
+      "page": 450,
+      "raw_title": "27.6 Alaska Graphical Forecasts",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.6.1 AAWU Flying Weather",
+      "page": 450,
+      "raw_title": "27.6.1 AAWU Flying Weather",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.6 Alaska Graphical Forecasts"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.6.2 Alaska Surface Forecast",
+      "page": 451,
+      "raw_title": "27.6.2 Alaska Surface Forecast",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.6 Alaska Graphical Forecasts"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.6.3 Alaska Icing Forecast",
+      "page": 452,
+      "raw_title": "27.6.3 Alaska Icing Forecast",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.6 Alaska Graphical Forecasts"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.6.4 Alaska Turbulence Forecast",
+      "page": 453,
+      "raw_title": "27.6.4 Alaska Turbulence Forecast",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.6 Alaska Graphical Forecasts"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.6.5 Alaska Convective Outlook",
+      "page": 454,
+      "raw_title": "27.6.5 Alaska Convective Outlook",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.6 Alaska Graphical Forecasts"
+    },
+    {
+      "toc_level": 2,
+      "title": "27.7 World Area Forecast System (WAFS)",
+      "page": 455,
+      "raw_title": "27.7 World Area Forecast System (WAFS)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.7.1 WAFS Forecasts",
+      "page": 455,
+      "raw_title": "27.7.1 WAFS Forecasts",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.7 World Area Forecast System (WAFS)"
+    },
+    {
+      "toc_level": 2,
+      "title": "27.8 Significant Weather (SIGWX)",
+      "page": 458,
+      "raw_title": "27.8 Significant Weather (SIGWX)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.8.1 Low-Level Significant Weather (SIGWX) Charts",
+      "page": 458,
+      "raw_title": "27.8.1 Low-Level Significant Weather (SIGWX) Charts",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.8 Significant Weather (SIGWX)"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.8.2 Mid-Level Significant Weather (SIGWX) Chart",
+      "page": 462,
+      "raw_title": "27.8.2 Mid-Level Significant Weather (SIGWX) Chart",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.8 Significant Weather (SIGWX)"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.8.3 High-Level Significant Weather (SIGWX) Charts",
+      "page": 464,
+      "raw_title": "27.8.3 High-Level Significant Weather (SIGWX) Charts",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.8 Significant Weather (SIGWX)"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.8.4 Alaska Significant Weather (SIGWX) Charts",
+      "page": 469,
+      "raw_title": "27.8.4 Alaska Significant Weather (SIGWX) Charts",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.8 Significant Weather (SIGWX)"
+    },
+    {
+      "toc_level": 2,
+      "title": "27.9 Short-Range Surface Prognostic (Prog) Charts",
+      "page": 471,
+      "raw_title": "27.9 Short-Range Surface Prognostic (Prog) Charts",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.9.1 Content",
+      "page": 472,
+      "raw_title": "27.9.1 Content",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.9 Short-Range Surface Prognostic (Prog) Charts"
+    },
+    {
+      "toc_level": 2,
+      "title": "27.10 Upper Air Forecasts",
+      "page": 473,
+      "raw_title": "27.10 Upper Air Forecasts",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.10.1 Constant Pressure Level Forecasts",
+      "page": 474,
+      "raw_title": "27.10.1 Constant Pressure Level Forecasts",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.10 Upper Air Forecasts"
+    },
+    {
+      "toc_level": 2,
+      "title": "27.11 Freezing Level Forecast Graphics",
+      "page": 476,
+      "raw_title": "27.11 Freezing Level Forecast Graphics",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 2,
+      "title": "27.12 Forecast Icing Product (FIP)",
+      "page": 477,
+      "raw_title": "27.12 Forecast Icing Product (FIP)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.12.1 Icing Probability",
+      "page": 478,
+      "raw_title": "27.12.1 Icing Probability",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.12 Forecast Icing Product (FIP)"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.12.2 Icing Severity",
+      "page": 478,
+      "raw_title": "27.12.2 Icing Severity",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.12 Forecast Icing Product (FIP)"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.12.3 Icing Severity\u2014Probability > 25 Percent",
+      "page": 478,
+      "raw_title": "27.12.3 Icing Severity\u2014Probability > 25 Percent",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.12 Forecast Icing Product (FIP)"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.12.4 Icing Severity\u2014Probability > 50 Percent",
+      "page": 478,
+      "raw_title": "27.12.4 Icing Severity\u2014Probability > 50 Percent",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.12 Forecast Icing Product (FIP)"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.12.5 Icing Severity Plus SLD",
+      "page": 478,
+      "raw_title": "27.12.5 Icing Severity Plus SLD",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.12 Forecast Icing Product (FIP)"
+    },
+    {
+      "toc_level": 2,
+      "title": "27.13 Graphical Turbulence Guidance (GTG)",
+      "page": 479,
+      "raw_title": "27.13 Graphical Turbulence Guidance (GTG)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 2,
+      "title": "27.14 Cloud Tops",
+      "page": 481,
+      "raw_title": "27.14 Cloud Tops",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 2,
+      "title": "27.15 Localized Aviation Model Output Statistics (MOS) Program (LAMP)",
+      "page": 481,
+      "raw_title": "27.15 Localized Aviation Model Output Statistics (MOS) Program (LAMP)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.15.1 Alaska Aviation Guidance (AAG) Weather Product",
+      "page": 481,
+      "raw_title": "27.15.1 Alaska Aviation Guidance (AAG) Weather Product",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.15 Localized Aviation Model Output Statistics (MOS) Program (LAMP)"
+    },
+    {
+      "toc_level": 2,
+      "title": "27.16 Additional Products for Convection",
+      "page": 481,
+      "raw_title": "27.16 Additional Products for Convection",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.16.1 Convective Outlook (AC)",
+      "page": 482,
+      "raw_title": "27.16.1 Convective Outlook (AC)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.16 Additional Products for Convection"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.16.2 Traffic Flow Management (TFM) Convective Forecast (TCF)",
+      "page": 483,
+      "raw_title": "27.16.2 Traffic Flow Management (TFM) Convective Forecast (TCF)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.16 Additional Products for Convection"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.16.3 Extended Convective Forecast Product (ECFP)",
+      "page": 484,
+      "raw_title": "27.16.3 Extended Convective Forecast Product (ECFP)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.16 Additional Products for Convection"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.16.4 Watch Notification Messages",
+      "page": 485,
+      "raw_title": "27.16.4 Watch Notification Messages",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.16 Additional Products for Convection"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.16.5 Corridor Integrated Weather System (CIWS) and Consolidated Storm Prediction for Aviation (CoSPA)",
+      "page": 489,
+      "raw_title": "27.16.5 Corridor Integrated Weather System (CIWS) and Consolidated Storm Prediction for Aviation (CoSPA)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.16 Additional Products for Convection"
+    },
+    {
+      "toc_level": 2,
+      "title": "27.17 Route Forecast (ROFOR)",
+      "page": 490,
+      "raw_title": "27.17 Route Forecast (ROFOR)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 2,
+      "title": "27.18 Aviation Forecast Discussion (AFD)",
+      "page": 490,
+      "raw_title": "27.18 Aviation Forecast Discussion (AFD)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.18.1 Example",
+      "page": 491,
+      "raw_title": "27.18.1 Example",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.18 Aviation Forecast Discussion (AFD)"
+    },
+    {
+      "toc_level": 2,
+      "title": "27.19 Meteorological Impact Statement (MIS)",
+      "page": 491,
+      "raw_title": "27.19 Meteorological Impact Statement (MIS)",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.19.1 Example",
+      "page": 492,
+      "raw_title": "27.19.1 Example",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.19 Meteorological Impact Statement (MIS)"
+    },
+    {
+      "toc_level": 2,
+      "title": "27.20 Soaring Forecast",
+      "page": 492,
+      "raw_title": "27.20 Soaring Forecast",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.20.1 Example",
+      "page": 492,
+      "raw_title": "27.20.1 Example",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.20 Soaring Forecast"
+    },
+    {
+      "toc_level": 2,
+      "title": "27.21 Balloon Forecast",
+      "page": 493,
+      "raw_title": "27.21 Balloon Forecast",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Forecasts"
+    },
+    {
+      "toc_level": 3,
+      "title": "27.21.1 Example",
+      "page": 493,
+      "raw_title": "27.21.1 Example",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "27.21 Balloon Forecast"
+    },
+    {
+      "toc_level": 1,
+      "title": "Aviation Weather Tools",
+      "page": 495,
+      "raw_title": "Aviation Weather Tools",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "28.1 Introduction",
+      "page": 495,
+      "raw_title": "28.1 Introduction",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Aviation Weather Tools"
+    },
+    {
+      "toc_level": 2,
+      "title": "28.2 Graphical Forecasts for Aviation (GFA) Tool",
+      "page": 496,
+      "raw_title": "28.2 Graphical Forecasts for Aviation (GFA) Tool",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Aviation Weather Tools"
+    },
+    {
+      "toc_level": 3,
+      "title": "28.2.1 GFA Static Images",
+      "page": 497,
+      "raw_title": "28.2.1 GFA Static Images",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "28.2 Graphical Forecasts for Aviation (GFA) Tool"
+    },
+    {
+      "toc_level": 2,
+      "title": "28.3 FAA Flight Service\u2019s Interactive Map",
+      "page": 497,
+      "raw_title": "28.3 FAA Flight Service\u2019s Interactive Map",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Aviation Weather Tools"
+    },
+    {
+      "toc_level": 2,
+      "title": "28.4 Helicopter Emergency Medical Services (HEMS) Tool",
+      "page": 497,
+      "raw_title": "28.4 Helicopter Emergency Medical Services (HEMS) Tool",
+      "source_file": "FAA-H-8083-28A_Aviation_Weather.pdf",
+      "parent_title": "Aviation Weather Tools"
+    }
+  ]
+}

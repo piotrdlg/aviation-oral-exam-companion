@@ -1,0 +1,138 @@
+{
+  "timestamp": "2026-03-04T03:18:54.870Z",
+  "ratings": {
+    "private": {
+      "rating": "private",
+      "acs": {
+        "tasks": 61,
+        "elements": 921,
+        "areas": [
+          "Airport and Seaplane Base Operations",
+          "Basic Instrument Maneuvers",
+          "Emergency Operations",
+          "Multiengine Operations",
+          "Navigation",
+          "Night Operations",
+          "Performance Maneuvers and Ground Reference Maneuvers",
+          "Postflight Procedures",
+          "Preflight Preparation",
+          "Preflight Procedures",
+          "Slow Flight and Stalls",
+          "Takeoffs, Landings, and Go-Arounds"
+        ]
+      },
+      "sessions": {
+        "total": 74,
+        "completed": 19,
+        "withResultV2": 1,
+        "quickDrill": 0
+      },
+      "prompts": {
+        "examiner": 9,
+        "assessment": 9,
+        "total": 22
+      }
+    },
+    "commercial": {
+      "rating": "commercial",
+      "acs": {
+        "tasks": 60,
+        "elements": 960,
+        "areas": [
+          "Airport and Seaplane Base Operations",
+          "Emergency Operations",
+          "High-Altitude Operations",
+          "Multiengine Operations",
+          "Navigation",
+          "Performance Maneuvers and Ground Reference Maneuvers",
+          "Postflight Procedures",
+          "Preflight Preparation",
+          "Preflight Procedures",
+          "Slow Flight and Stalls",
+          "Takeoffs, Landings, and Go-Arounds"
+        ]
+      },
+      "sessions": {
+        "total": 1,
+        "completed": 1,
+        "withResultV2": 0,
+        "quickDrill": 0
+      },
+      "prompts": {
+        "examiner": 9,
+        "assessment": 9,
+        "total": 22
+      }
+    },
+    "instrument": {
+      "rating": "instrument",
+      "acs": {
+        "tasks": 22,
+        "elements": 293,
+        "areas": [
+          "Air Traffic Control (ATC) Clearances and Procedures",
+          "Emergency Operations",
+          "Flight by Reference to Instruments",
+          "Instrument Approach Procedures",
+          "Navigation Systems",
+          "Postflight Procedures",
+          "Preflight Preparation",
+          "Preflight Procedures"
+        ]
+      },
+      "sessions": {
+        "total": 3,
+        "completed": 2,
+        "withResultV2": 2,
+        "quickDrill": 0
+      },
+      "prompts": {
+        "examiner": 9,
+        "assessment": 9,
+        "total": 22
+      }
+    }
+  },
+  "checks": [
+    {
+      "name": "acs_tasks_populated",
+      "pass": true,
+      "detail": "private=61, commercial=60, instrument=22"
+    },
+    {
+      "name": "acs_elements_populated",
+      "pass": true,
+      "detail": "private=921, commercial=960, instrument=293"
+    },
+    {
+      "name": "prompts_serve_all",
+      "pass": true,
+      "detail": "private=22, commercial=22, instrument=22"
+    },
+    {
+      "name": "sessions_exist_all",
+      "pass": true,
+      "detail": "private=74, commercial=1, instrument=3"
+    }
+  ],
+  "overall_pass": true,
+  "config_keys": [
+    "kill_switch.anthropic",
+    "kill_switch.openai",
+    "kill_switch.deepgram",
+    "kill_switch.cartesia",
+    "kill_switch.tier.ground_school",
+    "kill_switch.tier.checkride_prep",
+    "kill_switch.tier.dpe_live",
+    "maintenance_mode",
+    "user_hard_caps",
+    "app.environment",
+    "voice.user_options",
+    "graph.shadow_mode",
+    "graph.enhanced_retrieval",
+    "tts.openai",
+    "tts.deepgram",
+    "tts.cartesia"
+  ],
+  "rating_specific_config": []
+}

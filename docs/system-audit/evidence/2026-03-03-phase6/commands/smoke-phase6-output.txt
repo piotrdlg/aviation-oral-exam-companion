@@ -1,0 +1,41 @@
+
+> aviation-oral-exam-companion@0.1.0 smoke:phase6
+> tsx scripts/smoke/phase6-results-smoke.ts
+
+[dotenv@17.3.1] injecting env (17) from .env.local -- tip: ⚙️  override existing env vars with { override: true }
+=== Phase 6 Smoke Test ===
+
+Check 1: study_mode constraint...
+Check 2: Completed sessions with examResultV2...
+  Total completed: 19
+  With V1 result: 11
+  With V2 result: 1
+
+  Sample V2 result (latest):
+    overall_status: incomplete
+    overall_score: 0.17
+    total_in_plan: 12
+    elements_asked: 2
+    weak_elements: 10
+    failed_areas: []
+
+  Session inventory:
+    3564331f... | linear | 4 exchanges | V1:yes V2:yes | 2026-03-03
+    0c3e54d2... | linear | 17 exchanges | V1:yes V2:no | 2026-03-03
+    f6347ffc... | cross_acs | 27 exchanges | V1:yes V2:no | 2026-03-03
+    ef2798fe... | linear | 60 exchanges | V1:yes V2:no | 2026-02-27
+    431d1227... | linear | 46 exchanges | V1:yes V2:no | 2026-02-27
+    6e830d88... | linear | 79 exchanges | V1:yes V2:no | 2026-02-27
+    cc8b4c63... | linear | 91 exchanges | V1:yes V2:no | 2026-02-27
+    d2470050... | cross_acs | 0 exchanges | V1:no V2:no | 2026-02-20
+    44d62c4c... | cross_acs | 0 exchanges | V1:no V2:no | 2026-02-20
+    2f989ffb... | cross_acs | 0 exchanges | V1:no V2:no | 2026-02-20
+
+Check 3: Summary endpoint...
+
+=== RESULTS ===
+⏭️ study_mode_constraint: SKIP — exec_sql RPC not available; constraint was verified via psql in Phase 5 release
+✅ examResultV2_present: PASS — 1 session(s) have examResultV2. Latest: 3564331f-bf0a-412c-a221-86e8b6319fd0
+⏭️ summary_endpoint: SKIP — Could not import weak-area-report (server-only module): Error: This module cannot be imported from a Client Component module. It should only be used from a Server Component.
+
+OVERALL: PASS (1 passed, 2 skipped)

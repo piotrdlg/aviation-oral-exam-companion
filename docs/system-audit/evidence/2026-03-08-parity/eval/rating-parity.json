@@ -1,0 +1,62 @@
+{
+  "timestamp": "2026-03-08T06:22:00.000Z",
+  "ratings": {
+    "private": {
+      "acsCoverage": { "tasks": 61, "elements": 921, "areas": 12, "oralAreas": 10 },
+      "promptCoverage": { "examiner": 9, "assessment": 9, "total": 22 },
+      "depthProfile": "PASS",
+      "difficultyContract": "PASS (8/8)",
+      "areaKeywords": "DEFAULT map — pre-existing numbering mismatch for areas VII/IX/XI",
+      "fingerprints": "Uses DEFAULT keywords",
+      "transitionLabels": "PASS (12 areas)",
+      "criticalAreas": ["I"],
+      "quickDrill": "PASS",
+      "sessions": { "total": 74, "completed": 19, "withResultV2": 1 },
+      "tests": "Covered by 19 parity tests + existing suite"
+    },
+    "commercial": {
+      "acsCoverage": { "tasks": 60, "elements": 960, "areas": 11, "oralAreas": 7 },
+      "promptCoverage": { "examiner": 9, "assessment": 9, "total": 22 },
+      "depthProfile": "PASS",
+      "difficultyContract": "PASS (8/8)",
+      "areaKeywords": "COMMERCIAL_AREA_KEYWORDS — FIXED (was using Private keywords for VIII/IX/XI)",
+      "fingerprints": "Uses COMMERCIAL keywords — FIXED",
+      "transitionLabels": "PASS (11 areas)",
+      "criticalAreas": ["I"],
+      "quickDrill": "PASS",
+      "sessions": { "total": 1, "completed": 1, "withResultV2": 0 },
+      "tests": "Covered by 19 parity tests + 2 commercial citation tests"
+    },
+    "instrument": {
+      "acsCoverage": { "tasks": 22, "elements": 293, "areas": 8, "oralAreas": 6 },
+      "promptCoverage": { "examiner": 9, "assessment": 9, "total": 22 },
+      "depthProfile": "PASS",
+      "difficultyContract": "PASS (8/8)",
+      "areaKeywords": "INSTRUMENT_AREA_KEYWORDS — correct, custom map",
+      "fingerprints": "Uses INSTRUMENT keywords",
+      "transitionLabels": "PASS (8 areas)",
+      "criticalAreas": ["I", "III"],
+      "quickDrill": "PASS",
+      "sessions": { "total": 3, "completed": 2, "withResultV2": 2 },
+      "tests": "Covered by 19 parity tests + existing instrument tests"
+    }
+  },
+  "verdict": "pass",
+  "commercialGaps": [
+    {
+      "subsystem": "area_keywords",
+      "severity": "medium",
+      "description": "getAreaKeywords() had no commercial branch — fell through to DEFAULT_AREA_KEYWORDS which are semantically aligned with Private ACS area numbering. Commercial areas VIII (High-Altitude Ops), IX (Emergency Ops), and XI (Postflight) got wrong keywords.",
+      "fix": "Added COMMERCIAL_AREA_KEYWORDS map and updated getAreaKeywords() to branch on 'commercial'",
+      "files_changed": ["src/lib/citation-relevance.ts"],
+      "tests_added": 21,
+      "status": "fixed"
+    }
+  ],
+  "residualRisks": [
+    "DEFAULT_AREA_KEYWORDS numbering mismatch for Private areas VII/IX/XI (pre-existing, does not affect Commercial parity)",
+    "Low Commercial session count (1 completed, 0 ResultV2) — usage gap, not code gap",
+    "No commercial-specific documents in DOC_RELEVANCE (none exist in corpus)"
+  ],
+  "phase11Safe": true
+}

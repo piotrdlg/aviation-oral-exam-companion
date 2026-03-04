@@ -1,0 +1,158 @@
+{
+  "timestamp": "2026-03-04T03:19:02.190Z",
+  "total_rows": 24,
+  "row_counts_by_key": {
+    "assessment_system": {
+      "archived": 1,
+      "draft": 1,
+      "published": 9
+    },
+    "examiner_system": {
+      "published": 9
+    },
+    "persona_bob_mitchell": {
+      "published": 1
+    },
+    "persona_jim_hayes": {
+      "published": 1
+    },
+    "persona_karen_sullivan": {
+      "published": 1
+    },
+    "persona_maria_torres": {
+      "published": 1
+    }
+  },
+  "coverage_matrix": {
+    "total_combos": 96,
+    "covered_combos": 24,
+    "wildcard_only_combos": 72,
+    "wildcard_combo_details": [
+      "examiner_system/private/full_exam/easy",
+      "examiner_system/private/full_exam/medium",
+      "examiner_system/private/full_exam/hard",
+      "examiner_system/private/full_exam/mixed",
+      "examiner_system/private/topic_focus/easy",
+      "examiner_system/private/topic_focus/medium",
+      "examiner_system/private/topic_focus/hard",
+      "examiner_system/private/topic_focus/mixed",
+      "examiner_system/private/quick_drill/easy",
+      "examiner_system/private/quick_drill/medium",
+      "examiner_system/private/quick_drill/hard",
+      "examiner_system/private/quick_drill/mixed",
+      "examiner_system/commercial/full_exam/easy",
+      "examiner_system/commercial/full_exam/medium",
+      "examiner_system/commercial/full_exam/hard",
+      "examiner_system/commercial/full_exam/mixed",
+      "examiner_system/commercial/topic_focus/easy",
+      "examiner_system/commercial/topic_focus/medium",
+      "examiner_system/commercial/topic_focus/hard",
+      "examiner_system/commercial/topic_focus/mixed",
+      "examiner_system/commercial/quick_drill/easy",
+      "examiner_system/commercial/quick_drill/medium",
+      "examiner_system/commercial/quick_drill/hard",
+      "examiner_system/commercial/quick_drill/mixed",
+      "examiner_system/instrument/full_exam/easy",
+      "examiner_system/instrument/full_exam/medium",
+      "examiner_system/instrument/full_exam/hard",
+      "examiner_system/instrument/full_exam/mixed",
+      "examiner_system/instrument/topic_focus/easy",
+      "examiner_system/instrument/topic_focus/medium",
+      "examiner_system/instrument/topic_focus/hard",
+      "examiner_system/instrument/topic_focus/mixed",
+      "examiner_system/instrument/quick_drill/easy",
+      "examiner_system/instrument/quick_drill/medium",
+      "examiner_system/instrument/quick_drill/hard",
+      "examiner_system/instrument/quick_drill/mixed",
+      "assessment_system/private/full_exam/easy",
+      "assessment_system/private/full_exam/medium",
+      "assessment_system/private/full_exam/hard",
+      "assessment_system/private/full_exam/mixed",
+      "assessment_system/private/topic_focus/easy",
+      "assessment_system/private/topic_focus/medium",
+      "assessment_system/private/topic_focus/hard",
+      "assessment_system/private/topic_focus/mixed",
+      "assessment_system/private/quick_drill/easy",
+      "assessment_system/private/quick_drill/medium",
+      "assessment_system/private/quick_drill/hard",
+      "assessment_system/private/quick_drill/mixed",
+      "assessment_system/commercial/full_exam/easy",
+      "assessment_system/commercial/full_exam/medium",
+      "assessment_system/commercial/full_exam/hard",
+      "assessment_system/commercial/full_exam/mixed",
+      "assessment_system/commercial/topic_focus/easy",
+      "assessment_system/commercial/topic_focus/medium",
+      "assessment_system/commercial/topic_focus/hard",
+      "assessment_system/commercial/topic_focus/mixed",
+      "assessment_system/commercial/quick_drill/easy",
+      "assessment_system/commercial/quick_drill/medium",
+      "assessment_system/commercial/quick_drill/hard",
+      "assessment_system/commercial/quick_drill/mixed",
+      "assessment_system/instrument/full_exam/easy",
+      "assessment_system/instrument/full_exam/medium",
+      "assessment_system/instrument/full_exam/hard",
+      "assessment_system/instrument/full_exam/mixed",
+      "assessment_system/instrument/topic_focus/easy",
+      "assessment_system/instrument/topic_focus/medium",
+      "assessment_system/instrument/topic_focus/hard",
+      "assessment_system/instrument/topic_focus/mixed",
+      "assessment_system/instrument/quick_drill/easy",
+      "assessment_system/instrument/quick_drill/medium",
+      "assessment_system/instrument/quick_drill/hard",
+      "assessment_system/instrument/quick_drill/mixed"
+    ]
+  },
+  "version_ambiguity": {
+    "ambiguous_group_count": 0,
+    "groups": []
+  },
+  "required_keys": {
+    "required": [
+      "examiner_system",
+      "assessment_system",
+      "persona_maria_torres",
+      "persona_bob_mitchell",
+      "persona_jim_hayes",
+      "persona_karen_sullivan"
+    ],
+    "missing": []
+  },
+  "persona_coverage": {
+    "required": [
+      "persona_maria_torres",
+      "persona_bob_mitchell",
+      "persona_jim_hayes",
+      "persona_karen_sullivan"
+    ],
+    "missing": [],
+    "published_count": 4
+  },
+  "checks": [
+    {
+      "check": "row_counts_by_key",
+      "pass": true,
+      "detail": "6 distinct prompt_key(s) found across 24 total rows"
+    },
+    {
+      "check": "coverage_matrix",
+      "pass": true,
+      "detail": "24/96 combos have specificity > 0; 72 rely on wildcard/fallback"
+    },
+    {
+      "check": "version_ambiguity",
+      "pass": true,
+      "detail": "No (prompt_key, rating, study_mode, difficulty) groups have multiple published rows"
+    },
+    {
+      "check": "required_prompt_keys",
+      "pass": true,
+      "detail": "All 6 required prompt keys have at least 1 published row"
+    },
+    {
+      "check": "persona_coverage",
+      "pass": true,
+      "detail": "All 4 persona prompts found (4 total published persona rows)"
+    }
+  ],
+  "overall_pass": true
+}

@@ -226,7 +226,13 @@ export async function POST(request: NextRequest) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    return NextResponse.json({ ok: true, result: updateData.result ?? null });
+    // Return both V1 and V2 results to the client
+    const metadataObj = updateData.metadata as Record<string, unknown> | undefined;
+    return NextResponse.json({
+      ok: true,
+      result: updateData.result ?? null,
+      resultV2: metadataObj?.examResultV2 ?? null,
+    });
   }
 
   return NextResponse.json({ error: 'Invalid action' }, { status: 400 });

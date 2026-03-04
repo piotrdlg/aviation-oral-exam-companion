@@ -1,0 +1,191 @@
+{
+  "doc_abbrev": "afh",
+  "doc_title": "Airplane Flying Handbook (FAA-H-8083-3C)",
+  "faa_number": "FAA-H-8083-3C",
+  "files_processed": [
+    "01_afh_front.pdf",
+    "03_afh_ch2.pdf",
+    "04_afh_ch3.pdf",
+    "06_afh_ch5.pdf",
+    "10_afh_ch9.pdf",
+    "14_afh_ch13.pdf",
+    "17_afh_ch16.pdf",
+    "19_afh_ch18.pdf"
+  ],
+  "total_entries": 21,
+  "level_counts": {
+    "level_1": 8,
+    "level_2": 13,
+    "level_3": 0
+  },
+  "entries": [
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "01_afh_front.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Preface",
+      "page": 4,
+      "raw_title": "Preface ",
+      "source_file": "01_afh_front.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 2,
+      "title": "Acknowledgments",
+      "page": 6,
+      "raw_title": "Acknowledgments ",
+      "source_file": "01_afh_front.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 2,
+      "title": "Airplane Flying Handbook (FAA-H-8083-3C) Major Revisions",
+      "page": 8,
+      "raw_title": "Airplane Flying Handbook (FAA-H-8083-3C) Major Revisions ",
+      "source_file": "01_afh_front.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "03_afh_ch2.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Resource Management",
+      "page": 13,
+      "raw_title": "Resource Management ",
+      "source_file": "03_afh_ch2.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 2,
+      "title": "Situational Awareness",
+      "page": 13,
+      "raw_title": "Situational Awareness ",
+      "source_file": "03_afh_ch2.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task Management",
+      "page": 14,
+      "raw_title": "Task Management ",
+      "source_file": "03_afh_ch2.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 2,
+      "title": "Aeronautical Decision-Making (ADM)",
+      "page": 14,
+      "raw_title": "Aeronautical Decision-Making (ADM) ",
+      "source_file": "03_afh_ch2.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "04_afh_ch3.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Airplane Flying Handbook (FAA-H-8083-3C) Chapter 3: Basic Flight Maneuvers",
+      "page": 1,
+      "raw_title": "Airplane Flying Handbook (FAA-H-8083-3C) Chapter 3: Basic Flight Maneuvers ",
+      "source_file": "04_afh_ch3.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "06_afh_ch5.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Airplane Flying Handbook (FAA-H-8083-3C) Chapter 5: Maintaining Aircraft Control: Upset Prevention and Recovery Training",
+      "page": 1,
+      "raw_title": "Airplane Flying Handbook  (FAA-H-8083-3C) Chapter 5: Maintaining Aircraft Control: Upset Prevention and Recovery Training ",
+      "source_file": "06_afh_ch5.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "10_afh_ch9.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Airplane Flying Handbook (FAA-H-8083-3C) Chapter 9: Approaches and Landings",
+      "page": 1,
+      "raw_title": "Airplane Flying Handbook (FAA-H-8083-3C) Chapter 9: Approaches and Landings ",
+      "source_file": "10_afh_ch9.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "14_afh_ch13.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Airplane Flying Handbook (FAA-H-8083-3C) Chapter 13: Transition to Multiengine Airplanes",
+      "page": 1,
+      "raw_title": "Airplane Flying Handbook  (FAA-H-8083-3C) Chapter 13: Transition to Multiengine Airplanes ",
+      "source_file": "14_afh_ch13.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "17_afh_ch16.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Airplane Flying Handbook (FAA-H-8083-3C) Chapter 16: Transition to Jet-Powered Airplanes",
+      "page": 1,
+      "raw_title": "Airplane Flying Handbook  (FAA-H-8083-3C) Chapter 16: Transition to Jet-Powered Airplanes ",
+      "source_file": "17_afh_ch16.pdf",
+      "parent_title": "Structure Bookmarks"
+    },
+    {
+      "toc_level": 1,
+      "title": "Structure Bookmarks",
+      "page": null,
+      "raw_title": "Structure Bookmarks",
+      "source_file": "19_afh_ch18.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Airplane Flying Handbook (FAA-H-8083-3C) Chapter 18: Emergency Procedures",
+      "page": 1,
+      "raw_title": "Airplane Flying Handbook  (FAA-H-8083-3C) Chapter 18: Emergency Procedures ",
+      "source_file": "19_afh_ch18.pdf",
+      "parent_title": "Structure Bookmarks"
+    }
+  ]
+}

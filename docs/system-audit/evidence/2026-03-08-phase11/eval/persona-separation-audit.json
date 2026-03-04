@@ -1,0 +1,122 @@
+{
+  "timestamp": "2026-03-04T03:18:49.208Z",
+  "audit": "persona-separation",
+  "phase": 11,
+  "checks": [
+    {
+      "name": "all_personas_defined",
+      "status": "PASS",
+      "detail": "Expected 4 personas, got 4: supportive_coach, strict_dpe, quiet_methodical, scenario_challenger"
+    },
+    {
+      "name": "all_dimensions_populated",
+      "status": "PASS",
+      "detail": "8 dimensions × 4 personas = 32 values checked"
+    },
+    {
+      "name": "pairwise_separation",
+      "status": "PASS",
+      "detail": "Minimum dimension difference: 4 (quiet_methodical vs scenario_challenger). All pairs:\n    supportive_coach vs strict_dpe: 8/8 dimensions differ\n    supportive_coach vs quiet_methodical: 8/8 dimensions differ\n    supportive_coach vs scenario_challenger: 6/8 dimensions differ\n    strict_dpe vs quiet_methodical: 7/8 dimensions differ\n    strict_dpe vs scenario_challenger: 7/8 dimensions differ\n    quiet_methodical vs scenario_challenger: 4/8 dimensions differ"
+    },
+    {
+      "name": "formatted_prompts_distinct",
+      "status": "PASS",
+      "detail": "4 unique prompts from 4 personas"
+    },
+    {
+      "name": "prompt_char_counts",
+      "status": "PASS",
+      "detail": "Character counts: supportive_coach: 1659 chars, strict_dpe: 1490 chars, quiet_methodical: 1389 chars, scenario_challenger: 1566 chars"
+    },
+    {
+      "name": "boundary_enforcement",
+      "status": "PASS",
+      "detail": "5 boundary markers checked across 4 personas"
+    },
+    {
+      "name": "voice_map_consistency",
+      "status": "PASS",
+      "detail": "Forward map: 4 entries, Reverse map: 4 entries"
+    },
+    {
+      "name": "resolution_logic",
+      "status": "PASS",
+      "detail": "8 resolution tests: direct keys, voice IDs, undefined, unknown"
+    },
+    {
+      "name": "summary_completeness",
+      "status": "PASS",
+      "detail": "10 fields per summary × 4 personas"
+    },
+    {
+      "name": "deterministic",
+      "status": "PASS",
+      "detail": "Same key → same output for all 4 personas"
+    }
+  ],
+  "overall": "PASS",
+  "passed": 10,
+  "total": 10,
+  "personas": [
+    {
+      "key": "supportive_coach",
+      "label": "Supportive Coach",
+      "dimensions": {
+        "warmth": "high",
+        "strictness": "low",
+        "verbosity": "explanatory",
+        "drilldownTendency": "low",
+        "transitionStyle": "narrative",
+        "challengeStyle": "compare_contrast",
+        "correctionStyle": "teaching",
+        "patience": "high"
+      },
+      "promptCharCount": 1659
+    },
+    {
+      "key": "strict_dpe",
+      "label": "Strict DPE",
+      "dimensions": {
+        "warmth": "low",
+        "strictness": "high",
+        "verbosity": "terse",
+        "drilldownTendency": "high",
+        "transitionStyle": "abrupt",
+        "challengeStyle": "direct",
+        "correctionStyle": "blunt",
+        "patience": "low"
+      },
+      "promptCharCount": 1490
+    },
+    {
+      "key": "quiet_methodical",
+      "label": "Quiet & Methodical",
+      "dimensions": {
+        "warmth": "medium",
+        "strictness": "medium",
+        "verbosity": "balanced",
+        "drilldownTendency": "medium",
+        "transitionStyle": "smooth",
+        "challengeStyle": "direct",
+        "correctionStyle": "neutral",
+        "patience": "medium"
+      },
+      "promptCharCount": 1389
+    },
+    {
+      "key": "scenario_challenger",
+      "label": "Scenario Challenger",
+      "dimensions": {
+        "warmth": "medium",
+        "strictness": "medium",
+        "verbosity": "explanatory",
+        "drilldownTendency": "high",
+        "transitionStyle": "narrative",
+        "challengeStyle": "scenario_pressure",
+        "correctionStyle": "neutral",
+        "patience": "medium"
+      },
+      "promptCharCount": 1566
+    }
+  ]
+}

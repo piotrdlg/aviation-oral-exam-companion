@@ -1,0 +1,8 @@
+ [32m✓[39m scripts/__tests__/embed-concepts.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/infer-edges.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m33 passed[39m[22m[90m (33)[39m
+[2m      Tests [22m [1m[32m663 passed[39m[22m[90m (663)[39m
+[2m   Start at [22m 07:06:08
+[2m   Duration [22m 1.32s[2m (transform 1.70s, setup 0ms, import 4.25s, tests 393ms, environment 3ms)[22m
+

@@ -1,0 +1,62 @@
+
+> aviation-oral-exam-companion@0.1.0 smoke:phase7:summary
+> tsx scripts/smoke/phase7-summary-http.ts
+
+[dotenv@17.3.1] injecting env (17) from .env.local -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+=== Phase 7 Summary Smoke Test ===
+
+Found 3 session(s) with V2 data
+
+
+--- Session 3754ebb2... ---
+  V2 status: fail
+  V2 score: 0.03
+  Weak elements: 135
+  IR.VI.D.K1: 20 citations, grounded=true
+  IR.VI.D.R2: 15 citations, grounded=true
+  IR.VI.D.R6: 9 citations, grounded=true
+  IR.VI.D.R7: 16 citations, grounded=true
+  IR.I.A.K1: 11 citations, grounded=true
+  IR.I.A.K2: 3 citations, grounded=true
+  IR.I.A.K3: 9 citations, grounded=true
+  IR.I.A.R1: 5 citations, grounded=true
+  IR.I.A.R2: 3 citations, grounded=true
+  IR.I.A.R3: 10 citations, grounded=true
+
+--- Session 6cc31bb3... ---
+  V2 status: incomplete
+  V2 score: 0.07
+  Weak elements: 14
+  IR.I.A.K2: 3 citations, grounded=true
+  IR.I.A.K3: 9 citations, grounded=true
+  IR.I.B.K1: 9 citations, grounded=true
+  IR.I.C.K2: 9 citations, grounded=true
+  IR.I.C.K3: 10 citations, grounded=true
+  IR.V.A.K1: 10 citations, grounded=true
+  IR.V.A.K2: 10 citations, grounded=true
+  IR.II.C.K1: 10 citations, grounded=true
+  IR.II.C.K2: 9 citations, grounded=true
+  IR.IV.A.K2: 3 citations, grounded=true
+
+--- Session 3564331f... ---
+  V2 status: incomplete
+  V2 score: 0.17
+  Weak elements: 10
+  PA.I.A.K2: 3 citations, grounded=true
+  PA.I.A.K3: 10 citations, grounded=true
+  PA.I.A.K5: 5 citations, grounded=true
+  PA.I.A.R1: 4 citations, grounded=true
+  PA.I.A.R2: 10 citations, grounded=true
+  PA.I.B.K1: 10 citations, grounded=true
+  PA.I.B.K2: 10 citations, grounded=true
+  PA.I.B.K3: 10 citations, grounded=true
+  PA.I.B.K4: 10 citations, grounded=true
+  PA.I.B.R1: 11 citations, grounded=true
+
+=== RESULTS ===
+✅ find_v2_sessions: PASS — 3 session(s) with examResultV2
+✅ report_3754ebb2: PASS — 10/10 grounded (100%), V2: fail
+✅ report_6cc31bb3: PASS — 10/10 grounded (100%), V2: incomplete
+✅ report_3564331f: PASS — 10/10 grounded (100%), V2: incomplete
+
+OVERALL: PASS

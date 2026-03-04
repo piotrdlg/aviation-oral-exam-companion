@@ -1,0 +1,82 @@
+{
+  "timestamp": "2026-03-03T02:50:33.152Z",
+  "sessions_audited": 3,
+  "total_citations": 592,
+  "supports": 50,
+  "weak_support": 303,
+  "unsupported": 239,
+  "aggregate_grounding_score": 0.34,
+  "unsupported_rate": 0.4,
+  "passes_threshold": false,
+  "session_summaries": [
+    {
+      "session_id": "3754ebb2-fa3c-42c8-a707-0cbda070ccc5",
+      "rating": "instrument",
+      "weak_count": 135,
+      "supports": 43,
+      "weak_support": 251,
+      "unsupported": 206,
+      "grounding_score": 0.34
+    },
+    {
+      "session_id": "6cc31bb3-1cd4-42bc-b6f7-cfba314c4a1d",
+      "rating": "instrument",
+      "weak_count": 14,
+      "supports": 4,
+      "weak_support": 29,
+      "unsupported": 20,
+      "grounding_score": 0.35
+    },
+    {
+      "session_id": "3564331f-bf0a-412c-a221-86e8b6319fd0",
+      "rating": "private",
+      "weak_count": 10,
+      "supports": 3,
+      "weak_support": 23,
+      "unsupported": 13,
+      "grounding_score": 0.37
+    }
+  ],
+  "failure_patterns": {
+    "VI": 57,
+    "I": 41,
+    "V": 16,
+    "II": 44,
+    "IV": 51,
+    "III": 11,
+    "VII": 15,
+    "VIII": 4
+  },
+  "sample_unsupported": [
+    {
+      "element": "IR.VI.D.K1",
+      "area": "VI",
+      "doc": "IPH",
+      "reason": "No area keywords matched for Area VI; doc: IPH"
+    },
+    {
+      "element": "IR.VI.D.K1",
+      "area": "VI",
+      "doc": "IPH",
+      "reason": "No area keywords matched for Area VI; doc: IPH"
+    },
+    {
+      "element": "IR.VI.D.K1",
+      "area": "VI",
+      "doc": "IFH",
+      "reason": "No area keywords matched for Area VI; doc: IFH"
+    },
+    {
+      "element": "IR.VI.D.R2",
+      "area": "VI",
+      "doc": "IPH",
+      "reason": "No area keywords matched for Area VI; doc: IPH"
+    },
+    {
+      "element": "IR.VI.D.R2",
+      "area": "VI",
+      "doc": "RMH",
+      "reason": "No area keywords matched for Area VI; doc: RMH"
+    }
+  ]
+}

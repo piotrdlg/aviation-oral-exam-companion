@@ -404,6 +404,88 @@ describe('computeExamResultV2', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Tests: V2 Result UI Contract (Phase 6)
+// ---------------------------------------------------------------------------
+
+describe('ExamResultV2 UI contract', () => {
+  it('includes all fields consumed by the results display modal', () => {
+    const plan = makePlan(ALL_ELEMENTS);
+    const attempts = [
+      makeAttempt('PA.I.A.K1', 'satisfactory'),
+      makeAttempt('PA.I.A.K2', 'unsatisfactory'),
+      makeAttempt('PA.II.A.K1', 'partial'),
+    ];
+    for (const a of attempts) plan.coverage[a.element_code] = 'asked';
+    plan.asked_count = 3;
+
+    const result = computeExamResultV2(attempts, plan, 'user_ended');
+
+    // Top-level fields used by modal header
+    expect(result).toHaveProperty('version', 2);
+    expect(result).toHaveProperty('overall_status');
+    expect(result).toHaveProperty('overall_score');
+    expect(result).toHaveProperty('total_in_plan');
+    expect(result).toHaveProperty('elements_asked');
+    expect(result).toHaveProperty('elements_credited');
+
+    // Per-area breakdown used by V2 area grid
+    expect(result).toHaveProperty('areas');
+    expect(Array.isArray(result.areas)).toBe(true);
+    expect(result.areas.length).toBeGreaterThan(0);
+
+    const area = result.areas[0];
+    expect(area).toHaveProperty('area');
+    expect(area).toHaveProperty('total_in_plan');
+    expect(area).toHaveProperty('asked');
+    expect(area).toHaveProperty('satisfactory');
+    expect(area).toHaveProperty('score');
+    expect(area).toHaveProperty('status');
+
+    // Weak elements used by "Elements to review" section
+    expect(result).toHaveProperty('weak_elements');
+    expect(Array.isArray(result.weak_elements)).toBe(true);
+
+    // Failed areas array used by threshold warning
+    expect(result).toHaveProperty('failed_areas');
+    expect(Array.isArray(result.failed_areas)).toBe(true);
+  });
+
+  it('weak_elements contain element_code, area, score, and severity', () => {
+    const plan = makePlan(ALL_ELEMENTS);
+    const attempts = [
+      makeAttempt('PA.I.A.K1', 'unsatisfactory'),
+      makeAttempt('PA.II.A.K1', 'partial'),
+    ];
+    for (const a of attempts) plan.coverage[a.element_code] = 'asked';
+    plan.asked_count = 2;
+
+    const result = computeExamResultV2(attempts, plan, 'user_ended');
+
+    expect(result.weak_elements.length).toBeGreaterThan(0);
+    for (const el of result.weak_elements) {
+      expect(el).toHaveProperty('element_code');
+      expect(el).toHaveProperty('area');
+      expect(el).toHaveProperty('score');
+      expect(el).toHaveProperty('severity');
+      expect(['unsatisfactory', 'partial', 'not_asked']).toContain(el.severity);
+    }
+  });
+
+  it('area status is pass, fail, or insufficient_data', () => {
+    const plan = makePlan(ALL_ELEMENTS);
+    const attempts = ALL_ELEMENTS.map(code => makeAttempt(code, 'satisfactory'));
+    for (const code of ALL_ELEMENTS) plan.coverage[code] = 'asked';
+    plan.asked_count = ALL_ELEMENTS.length;
+
+    const result = computeExamResultV2(attempts, plan, 'all_tasks_covered');
+
+    for (const area of result.areas) {
+      expect(['pass', 'fail', 'insufficient_data']).toContain(area.status);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Tests: Quick Drill queue building
 // ---------------------------------------------------------------------------
 

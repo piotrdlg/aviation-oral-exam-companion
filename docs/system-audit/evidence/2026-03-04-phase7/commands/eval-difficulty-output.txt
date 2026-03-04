@@ -1,0 +1,23 @@
+
+> aviation-oral-exam-companion@0.1.0 eval:difficulty
+> tsx scripts/eval/difficulty-calibration.ts
+
+[dotenv@17.3.1] injecting env (17) from .env.local -- tip: 🛡️ auth for agents: https://vestauth.com
+=== Difficulty Calibration Audit (R4) ===
+
+Step 1: Validating difficulty instruction text...
+  ✅ easy: present
+  ✅ medium: present
+  ✅ hard: present
+  ✅ mixed: present
+  ✅ (none): no header
+
+Step 2: Loading sessions with transcripts...
+No completed sessions found. Skipping transcript analysis.
+
+=== RESULTS ===
+Instructions: 5/5 pass
+
+Evidence saved to /Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/docs/system-audit/evidence/2026-03-04-phase7/eval/difficulty-calibration.{json,md}
+
+OVERALL: PASS

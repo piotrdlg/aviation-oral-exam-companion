@@ -41,6 +41,17 @@ evidence_level: high
 | 25 | [[25 - Docs Restructure Plan and Moves]] | Final |
 | 26 | [[26 - Deployment and PR Status]] | Final |
 | 27 | [[27 - Release Verification — Phase 5]] | Final |
+| 28 | [[28 - Results UI and Quick Drill Entry]] | Final |
+| 29 | [[29 - Exam Quality Harness and Calibration]] | Final |
+| 30 | [[30 - Grounding Repair and Monitoring]] | Final |
+| 31 | [[31 - Flow Coherence Activation]] | Final |
+| 32 | [[32 - Certificate Depth and Difficulty Engine]] | Final |
+| 33 | [[33 - Rating Parity Audit (Private, Commercial, Instrument)]] | Final |
+| 34 | [[34 - Examiner Personality Engine]] | Final |
+| 35 | [[35 - Examiner Identity Unification]] | Final |
+| 36 | [[36 - Multimodal Semantic Asset Engine]] | Final |
+| 37 | [[37 - PromptOps Hardening and Launch Readiness Gate]] | Final |
+| 38 | [[38 - Commercial Launch Preparation Checklist]] | Final |
 
 ---
 
@@ -115,6 +126,17 @@ HeyDPE is a production-quality FAA oral exam simulator built on Next.js 16 + Sup
 | [[25 - Docs Restructure Plan and Moves]] | **Docs** | 22 doc files git-mv'd to canonical structure (system-audit, build-reports, runbooks, plans, archive) |
 | [[26 - Deployment and PR Status]] | **Deployment** | Branch status, 3 PRs, DB migration readiness, pre-merge checklist for PR #3 |
 | [[27 - Release Verification — Phase 5]] | **Release** | PR #3+#4 merge evidence, DB migration proof, 522 tests, rollback steps |
+| [[28 - Results UI and Quick Drill Entry]] | **Phase 6** | Results display modal (V2 per-area gating, weak elements, FAA citations), Quick Drill selector, smoke proof, 525 tests |
+| [[29 - Exam Quality Harness and Calibration]] | **Phase 7** | Reusable eval harness: 6 scripts covering R1 (grounding FAIL 35.9%), R4 (instruction PASS), R5 (flow PASS/SKIP), R8 (prompts PASS 96/96), R9/R10 smoke |
+| [[30 - Grounding Repair and Monitoring]] | **Phase 8** | Citation relevance scorer, runtime filtering, rating-aware keywords, admin endpoint, PostHog events. R1 grounding: 35.9% → **7.5%** PASS |
+| [[31 - Flow Coherence Activation]] | **Phase 9** | Structural fingerprints, connectedWalk activation, transition explanations, flow monitoring. R5 flow: 0% → **72.8%** Jaccard, **812.5%** improvement over random |
+| [[32 - Certificate Depth and Difficulty Engine]] | **Phase 10** | Deterministic DepthDifficultyContract (32 combos), per-rating depth profiles, examiner+grading prompt injection, 34 new tests, 8/8 audit PASS |
+| [[33 - Rating Parity Audit (Private, Commercial, Instrument)]] | **Parity** | All 3 ratings verified across 15+ subsystems. 1 gap fixed (Commercial area keywords). 21 new tests. Phase 11 safe. |
+| [[34 - Examiner Personality Engine]] | **Phase 11** | PersonaContractV1 with 4 personas × 8 style dimensions. UI selector, PostHog events, admin endpoint. 26 new tests, 10/10 audit PASS |
+| [[35 - Examiner Identity Unification]] | **Phase 12** | ExaminerProfileV1 unifies persona+voice+display identity. Settings as source of truth, deterministic 4-level resolution, backward compat. 31 new tests, 10/10 audit PASS |
+| [[36 - Multimodal Semantic Asset Engine]] | **Phase 13** | 4-signal semantic image scoring (category+caption+linkType+relevance), 0.4 confidence threshold, text cards for METAR/TAF/regs, dual-emit SSE, no migration. 37 new tests, 10/10 audit PASS |
+| [[37 - PromptOps Hardening and Launch Readiness Gate]] | **Phase 14** | PromptOps governance audit (5 checks), prompt trace logging, admin quality endpoint, 12-check launch readiness gate (GO/REVIEW/NO-GO), E2E smoke matrix (9 scripts). 11/12 GO |
+| [[38 - Commercial Launch Preparation Checklist]] | **Phase 14** | 32-item pre-launch checklist across core engine, test coverage, operational readiness, monitoring. 731 tests, 9 eval scripts, cumulative phase history |
 
 ---
 

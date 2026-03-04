@@ -5,11 +5,12 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import SessionConfig, { type SessionConfigData } from './components/SessionConfig';
 import OnboardingWizard from './components/OnboardingWizard';
-import type { PlannerState, SessionConfig as SessionConfigType, Rating, AircraftClass, ExamResult } from '@/types/database';
+import type { PlannerState, SessionConfig as SessionConfigType, Rating, AircraftClass, ExamResult, ExaminerProfileKey } from '@/types/database';
 import type { VoiceTier } from '@/lib/voice/types';
 import { useVoiceProvider } from '@/hooks/useVoiceProvider';
 import { useSentenceTTS } from '@/hooks/useSentenceTTS';
 import { ExamImages } from '@/components/ui/ExamImages';
+import { TextAssetCard } from '@/components/ui/TextAssetCard';
 import { setTheme } from '@/lib/theme';
 
 /**
@@ -55,12 +56,21 @@ interface ExamImage {
   relevance_score: number;
 }
 
+interface TextCard {
+  type: string;
+  title: string;
+  content: string;
+  source: string;
+  confidence: number;
+}
+
 interface Message {
   role: 'examiner' | 'student';
   text: string;
   assessment?: Assessment;
   sources?: Source[];
   images?: ExamImage[];
+  textCards?: TextCard[];
 }
 
 interface TaskData {
@@ -92,6 +102,7 @@ export default function PracticePage() {
   const [preferredRating, setPreferredRating] = useState<Rating>('private');
   const [preferredAircraftClass, setPreferredAircraftClass] = useState<AircraftClass>('ASEL');
   const [prefsLoaded, setPrefsLoaded] = useState(false);
+  const [examinerProfileKey, setExaminerProfileKey] = useState<ExaminerProfileKey | undefined>(undefined);
   const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
   const [showWizard, setShowWizard] = useState(false);
   // Upgrade prompt states (Task 34)
@@ -129,8 +140,12 @@ export default function PracticePage() {
   const [preferredVoiceEnabled, setPreferredVoiceEnabled] = useState(true);
   // Exam results modal state
   const [examResult, setExamResult] = useState<ExamResult | null>(null);
+  const [examResultV2, setExamResultV2] = useState<Record<string, unknown> | null>(null);
+  const [weakAreaReport, setWeakAreaReport] = useState<Record<string, unknown> | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
   const [gradingInProgress, setGradingInProgress] = useState(false);
   const [allResumableSessions, setAllResumableSessions] = useState<NonNullable<typeof resumableSession>[]>([]);
+  const [hasCompletedExams, setHasCompletedExams] = useState(false);
   const [showOpenExamsModal, setShowOpenExamsModal] = useState(false);
   // Feature flag: sentence-level TTS streaming (default OFF)
   const [sentenceStreamEnabled, setSentenceStreamEnabled] = useState(false);
@@ -236,6 +251,7 @@ export default function PracticePage() {
           setTheme(data.preferredTheme);
         }
         if (data?.voiceEnabled !== undefined) setPreferredVoiceEnabled(data.voiceEnabled);
+        if (data?.examinerProfile) setExaminerProfileKey(data.examinerProfile);
         setPrefsLoaded(true);
         // Populate avatar + persona for message bubbles (Task 18)
         if (data?.displayName) setUserName(data.displayName);
@@ -265,7 +281,7 @@ export default function PracticePage() {
       .catch(() => { setPrefsLoaded(true); setOnboardingCompleted(true); }); // Fallback to defaults
   }, []);
 
-  // Check for resumable sessions on mount
+  // Check for resumable sessions on mount + detect completed exams for Quick Drill eligibility
   useEffect(() => {
     fetch('/api/session?action=get-all-resumable')
       .then((res) => res.ok ? res.json() : null)
@@ -279,6 +295,15 @@ export default function PracticePage() {
           if (valid.length > 0) {
             setResumableSession(valid[0]); // most recent
           }
+        }
+      })
+      .catch(() => {});
+    // Check if user has any completed sessions (for Quick Drill unlock)
+    fetch('/api/session')
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data?.sessions?.some((s: { status: string }) => s.status === 'completed')) {
+          setHasCompletedExams(true);
         }
       })
       .catch(() => {});
@@ -522,6 +547,7 @@ export default function PracticePage() {
       difficulty: configData.difficulty,
       selectedAreas: configData.selectedAreas,
       selectedTasks: configData.selectedTasks,
+      examinerProfileKey: configData.examinerProfileKey,
     };
     setSessionConfig(config);
 
@@ -780,8 +806,27 @@ export default function PracticePage() {
                     return updated;
                   });
                 }
+              } else if (parsed.asset) {
+                // Semantic asset selection (Phase 13) — images + text cards
+                const showImages = process.env.NEXT_PUBLIC_SHOW_EXAM_IMAGES === 'true';
+                if (showImages && parsed.asset.images) {
+                  const assetImages = parsed.asset.images.map((s: { image: ExamImage }) => s.image);
+                  const assetTextCards = parsed.asset.textCards || [];
+                  setMessages((prev) => {
+                    const updated = [...prev];
+                    const lastIdx = updated.length - 1;
+                    if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
+                      updated[lastIdx] = {
+                        ...updated[lastIdx],
+                        images: assetImages.length > 0 ? assetImages : updated[lastIdx].images,
+                        textCards: assetTextCards.length > 0 ? assetTextCards : updated[lastIdx].textCards,
+                      };
+                    }
+                    return updated;
+                  });
+                }
               } else if (parsed.images) {
-                // Image references for the examiner message
+                // Legacy image references for backward compat
                 const showImages = process.env.NEXT_PUBLIC_SHOW_EXAM_IMAGES === 'true';
                 if (showImages && Array.isArray(parsed.images) && parsed.images.length > 0) {
                   setMessages((prev) => {
@@ -1010,6 +1055,8 @@ export default function PracticePage() {
     setGradingInProgress(true);
 
     let result: ExamResult | null = null;
+    let resultV2: Record<string, unknown> | null = null;
+    const completedSessionId = sessionId;
     if (sessionId) {
       try {
         const res = await fetch('/api/session', {
@@ -1031,6 +1078,7 @@ export default function PracticePage() {
         });
         const data = await res.json();
         if (data.result) result = data.result as ExamResult;
+        if (data.resultV2) resultV2 = data.resultV2 as Record<string, unknown>;
       } catch {
         // Session update failed, but still clean up UI
       }
@@ -1050,6 +1098,23 @@ export default function PracticePage() {
     taskScoresRef.current = {};
     setGradingInProgress(false);
     if (result) setExamResult(result);
+    if (resultV2) setExamResultV2(resultV2);
+
+    // Fetch weak-area summary report in background (non-blocking)
+    if (completedSessionId && resultV2) {
+      setSummaryLoading(true);
+      try {
+        const summaryRes = await fetch(`/api/exam?action=summary&sessionId=${completedSessionId}`);
+        if (summaryRes.ok) {
+          const { report } = await summaryRes.json();
+          if (report) setWeakAreaReport(report);
+        }
+      } catch {
+        // Summary fetch failed — non-critical, UI will show without citations
+      } finally {
+        setSummaryLoading(false);
+      }
+    }
   }
 
   /** End session without showing results (used by error recovery). */
@@ -1483,6 +1548,8 @@ export default function PracticePage() {
               preferredAircraftClass={preferredAircraftClass}
               prefsLoaded={prefsLoaded}
               preferredVoiceEnabled={preferredVoiceEnabled}
+              hasCompletedExams={hasCompletedExams}
+              examinerProfileKey={examinerProfileKey}
             />
 
             {/* Disclaimer — always visible but low visual weight */}
@@ -1686,6 +1753,10 @@ export default function PracticePage() {
               {/* Reference images (feature-flagged) */}
               {msg.images && msg.images.length > 0 && (
                 <ExamImages images={msg.images} />
+              )}
+              {/* Text asset cards (Phase 13) */}
+              {msg.textCards && msg.textCards.length > 0 && (
+                <TextAssetCard textCards={msg.textCards} />
               )}
 
               {/* Assessment badge */}
@@ -2137,8 +2208,8 @@ export default function PracticePage() {
 
       {/* Exam results modal */}
       {examResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
-          <div className="bezel rounded-lg border border-c-border p-6 max-w-lg mx-4 shadow-2xl w-full">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm overflow-y-auto py-8">
+          <div className="bezel rounded-lg border border-c-border p-6 max-w-lg mx-4 shadow-2xl w-full my-auto">
             <h2 className="font-mono font-bold text-xl text-c-text tracking-wider uppercase mb-4 text-center">EXAM RESULTS</h2>
 
             {/* Grade badge + score */}
@@ -2163,6 +2234,9 @@ export default function PracticePage() {
               }`}>
                 {Math.round(examResult.score_percentage * 100)}%
               </span>
+              {examResultV2 && (
+                <p className="text-xs font-mono text-c-muted mt-1">Plan-based scoring (V2)</p>
+              )}
             </div>
 
             {/* Element breakdown */}
@@ -2176,10 +2250,52 @@ export default function PracticePage() {
                 {' '}&middot; {examResult.elements_unsatisfactory} unsatisfactory
                 {examResult.elements_not_asked > 0 && <> &middot; {examResult.elements_not_asked} not asked</>}
               </p>
+              {examResultV2 && typeof examResultV2.elements_credited === 'number' && examResultV2.elements_credited > 0 && (
+                <p className="text-xs font-mono text-c-muted">
+                  {examResultV2.elements_credited} credited by mention
+                </p>
+              )}
             </div>
 
-            {/* Per-area breakdown */}
-            {Object.keys(examResult.score_by_area).length > 0 && (
+            {/* V2 Per-area breakdown with gating */}
+            {examResultV2 && Array.isArray(examResultV2.areas) && examResultV2.areas.length > 0 ? (
+              <div className="mb-5">
+                <h3 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-2">SCORE BY AREA</h3>
+                <div className="space-y-1.5">
+                  {(examResultV2.areas as Array<{ area: string; asked: number; satisfactory: number; score: number; status: string }>)
+                    .sort((a, b) => a.area.localeCompare(b.area))
+                    .map((areaData) => {
+                      const pct = Math.round(areaData.score * 100);
+                      const failed = areaData.status === 'fail';
+                      return (
+                        <div key={areaData.area} className="flex items-center gap-2 text-xs font-mono">
+                          <span className={`w-10 shrink-0 ${failed ? 'text-red-400' : 'text-c-muted'}`}>
+                            Area {areaData.area}
+                          </span>
+                          <div className="flex-1 h-2 bg-c-bezel rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${
+                                failed ? 'bg-red-400' : pct >= 70 ? 'bg-c-green' : pct > 0 ? 'bg-c-amber' : 'bg-c-dim'
+                              }`}
+                              style={{ width: `${Math.max(pct, 2)}%` }}
+                            />
+                          </div>
+                          <span className={`w-20 text-right ${failed ? 'text-red-400' : 'text-c-text'}`}>
+                            {areaData.satisfactory}/{areaData.asked} ({pct}%)
+                            {failed && ' FAIL'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                </div>
+                {Array.isArray(examResultV2.failed_areas) && examResultV2.failed_areas.length > 0 && (
+                  <p className="text-xs font-mono text-red-400 mt-2">
+                    Area{examResultV2.failed_areas.length > 1 ? 's' : ''} {(examResultV2.failed_areas as string[]).join(', ')} below minimum threshold
+                  </p>
+                )}
+              </div>
+            ) : Object.keys(examResult.score_by_area).length > 0 ? (
+              /* V1 fallback: per-area breakdown without gating */
               <div className="mb-5">
                 <h3 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-2">SCORE BY AREA</h3>
                 <div className="space-y-1.5">
@@ -2202,6 +2318,75 @@ export default function PracticePage() {
                     })}
                 </div>
               </div>
+            ) : null}
+
+            {/* V2 Weak elements section */}
+            {examResultV2 && Array.isArray(examResultV2.weak_elements) && examResultV2.weak_elements.length > 0 && (
+              <div className="mb-5">
+                <h3 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-2">
+                  WEAK ELEMENTS ({(examResultV2.weak_elements as Array<{ element_code: string; severity: string }>).length})
+                </h3>
+                <div className="space-y-1 max-h-32 overflow-y-auto">
+                  {(examResultV2.weak_elements as Array<{ element_code: string; severity: string; area: string }>)
+                    .slice(0, 10)
+                    .map((el) => (
+                      <div key={el.element_code} className="flex items-center gap-2 text-xs font-mono">
+                        <span className="text-c-text">{el.element_code}</span>
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] uppercase ${
+                          el.severity === 'unsatisfactory' ? 'bg-red-500/20 text-red-400'
+                            : el.severity === 'partial' ? 'bg-c-amber-lo text-c-amber'
+                            : 'bg-c-bezel text-c-muted'
+                        }`}>
+                          {el.severity === 'not_asked' ? 'not asked' : el.severity}
+                        </span>
+                      </div>
+                    ))}
+                  {(examResultV2.weak_elements as unknown[]).length > 10 && (
+                    <p className="text-xs font-mono text-c-muted">
+                      + {(examResultV2.weak_elements as unknown[]).length - 10} more
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Weak area citations from summary report */}
+            {weakAreaReport && Array.isArray((weakAreaReport as Record<string, unknown>).elements) && (
+              <div className="mb-5">
+                <h3 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-2">STUDY RESOURCES</h3>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {((weakAreaReport as Record<string, unknown>).elements as Array<{
+                    element_code: string;
+                    grounded: boolean;
+                    citations: Array<{ doc_abbreviation: string; page_ref: string | null; heading: string | null }>;
+                  }>)
+                    .filter(el => el.citations && el.citations.length > 0)
+                    .slice(0, 5)
+                    .map((el) => (
+                      <div key={el.element_code} className="text-xs font-mono">
+                        <span className="text-c-text">{el.element_code}</span>
+                        <span className="text-c-muted ml-2">
+                          {el.citations.slice(0, 2).map((c, i) => (
+                            <span key={i}>
+                              {i > 0 && ', '}
+                              {c.doc_abbreviation}{c.page_ref ? ` ${c.page_ref}` : ''}{c.heading ? ` — ${c.heading.slice(0, 40)}` : ''}
+                            </span>
+                          ))}
+                        </span>
+                      </div>
+                    ))}
+                  {!((weakAreaReport as Record<string, unknown>).elements as unknown[]).some(
+                    (el: unknown) => (el as { citations: unknown[] }).citations?.length > 0
+                  ) && (
+                    <p className="text-xs font-mono text-c-muted italic">
+                      Insufficient FAA sources available for citation
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+            {summaryLoading && (
+              <p className="text-xs font-mono text-c-muted mb-4 animate-pulse">Loading study resources...</p>
             )}
 
             {/* Actions */}
@@ -2213,7 +2398,7 @@ export default function PracticePage() {
                 VIEW PROGRESS
               </Link>
               <button
-                onClick={() => setExamResult(null)}
+                onClick={() => { setExamResult(null); setExamResultV2(null); setWeakAreaReport(null); }}
                 className="flex-1 py-2.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm transition-colors uppercase tracking-wider"
               >
                 NEW EXAM

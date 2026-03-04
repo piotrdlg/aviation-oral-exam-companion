@@ -1,0 +1,2186 @@
+{
+  "doc_abbrev": "acs",
+  "doc_title": "Airman Certification Standards",
+  "faa_number": "ACS",
+  "files_processed": [
+    "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+    "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+    "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf"
+  ],
+  "total_entries": 271,
+  "level_counts": {
+    "level_1": 43,
+    "level_2": 228,
+    "level_3": 0
+  },
+  "entries": [
+    {
+      "toc_level": 1,
+      "title": "Introduction",
+      "page": 9,
+      "raw_title": "Introduction",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Airman Certification Standards Concept",
+      "page": 9,
+      "raw_title": "Airman Certification Standards Concept",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Introduction"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation I. Preflight Preparation",
+      "page": 10,
+      "raw_title": "Area of Operation I.  Preflight Preparation",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Pilot Qualifications",
+      "page": 10,
+      "raw_title": "Task A.  Pilot Qualifications",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Airworthiness Requirements",
+      "page": 10,
+      "raw_title": "Task B.  Airworthiness Requirements",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task C. Weather Information",
+      "page": 11,
+      "raw_title": "Task C.  Weather Information",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task D. Cross-Country Flight Planning",
+      "page": 12,
+      "raw_title": "Task D.  Cross-Country Flight Planning",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task E. National Airspace System",
+      "page": 13,
+      "raw_title": "Task E.  National Airspace System",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task F. Performance and Limitations",
+      "page": 14,
+      "raw_title": "Task F.  Performance and Limitations",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task G. Operation of Systems",
+      "page": 15,
+      "raw_title": "Task G.  Operation of Systems",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task H. Human Factors",
+      "page": 16,
+      "raw_title": "Task H.  Human Factors",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task I. Water and Seaplane Characteristics, Seaplane Bases, Maritime Rules, and Aids to Marine Navigation (ASES, AMES)",
+      "page": 17,
+      "raw_title": "Task I.  Water and Seaplane Characteristics, Seaplane Bases, Maritime Rules, and Aids to Marine Navigation (ASES, AMES)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation II. Preflight Procedures",
+      "page": 19,
+      "raw_title": "Area of Operation II.  Preflight Procedures",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Preflight Assessment",
+      "page": 19,
+      "raw_title": "Task A.  Preflight Assessment",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation II. Preflight Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Flight Deck Management",
+      "page": 19,
+      "raw_title": "Task B.  Flight Deck Management",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation II. Preflight Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task C. Engine Starting",
+      "page": 20,
+      "raw_title": "Task C.  Engine Starting",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation II. Preflight Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task D. Taxiing (ASEL, AMEL)",
+      "page": 21,
+      "raw_title": "Task D.  Taxiing (ASEL, AMEL)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation II. Preflight Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task E. Taxiing and Sailing (ASES, AMES)",
+      "page": 22,
+      "raw_title": "Task E.  Taxiing and Sailing (ASES, AMES)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation II. Preflight Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task F. Before Takeoff Check",
+      "page": 23,
+      "raw_title": "Task F.  Before Takeoff Check",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation II. Preflight Procedures"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation III. Airport and Seaplane Base Operations",
+      "page": 24,
+      "raw_title": "Area of Operation III.  Airport and Seaplane Base Operations",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Communications, Light Signals, and Runway Lighting Systems",
+      "page": 24,
+      "raw_title": "Task A.  Communications, Light Signals, and Runway Lighting Systems",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation III. Airport and Seaplane Base Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Traffic Patterns",
+      "page": 24,
+      "raw_title": "Task B.  Traffic Patterns",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation III. Airport and Seaplane Base Operations"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds",
+      "page": 26,
+      "raw_title": "Area of Operation IV.  Takeoffs, Landings, and Go-Arounds",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Normal Takeoff and Climb",
+      "page": 26,
+      "raw_title": "Task A.  Normal Takeoff and Climb",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Normal Approach and Landing",
+      "page": 27,
+      "raw_title": "Task B.  Normal Approach and Landing",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task C. Soft-Field Takeoff and Climb (ASEL)",
+      "page": 28,
+      "raw_title": "Task C.  Soft-Field Takeoff and Climb (ASEL)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task D. Soft-Field Approach and Landing (ASEL)",
+      "page": 30,
+      "raw_title": "Task D.  Soft-Field Approach and Landing (ASEL)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task E. Short-Field Takeoff and Maximum Performance Climb (ASEL, AMEL)",
+      "page": 31,
+      "raw_title": "Task E.  Short-Field Takeoff and Maximum Performance Climb (ASEL, AMEL)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task F. Short-Field Approach and Landing (ASEL, AMEL)",
+      "page": 32,
+      "raw_title": "Task F.  Short-Field Approach and Landing (ASEL, AMEL)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task G. Confined Area Takeoff and Maximum Performance Climb (ASES, AMES)",
+      "page": 34,
+      "raw_title": "Task G.  Confined Area Takeoff and Maximum Performance Climb (ASES, AMES)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task H. Confined Area Approach and Landing (ASES, AMES)",
+      "page": 35,
+      "raw_title": "Task H.  Confined Area Approach and Landing (ASES, AMES)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task I. Glassy Water Takeoff and Climb (ASES, AMES)",
+      "page": 36,
+      "raw_title": "Task I.  Glassy Water Takeoff and Climb (ASES, AMES)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task J. Glassy Water Approach and Landing (ASES, AMES)",
+      "page": 38,
+      "raw_title": "Task J.  Glassy Water Approach and Landing (ASES, AMES)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task K. Rough Water Takeoff and Climb (ASES, AMES)",
+      "page": 39,
+      "raw_title": "Task K.  Rough Water Takeoff and Climb (ASES, AMES)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task L. Rough Water Approach and Landing (ASES, AMES)",
+      "page": 40,
+      "raw_title": "Task L.  Rough Water Approach and Landing (ASES, AMES)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task M. Forward Slip to a Landing (ASEL, ASES)",
+      "page": 41,
+      "raw_title": "Task M.  Forward Slip to a Landing (ASEL, ASES)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task N. Go-Around/Rejected Landing",
+      "page": 42,
+      "raw_title": "Task N.  Go-Around/Rejected Landing",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation V. Performance Maneuvers and Ground Reference Maneuvers",
+      "page": 44,
+      "raw_title": "Area of Operation V.  Performance Maneuvers and Ground Reference Maneuvers",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Steep Turns",
+      "page": 44,
+      "raw_title": "Task A.  Steep Turns",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation V. Performance Maneuvers and Ground Reference Maneuvers"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Ground Reference Maneuvers",
+      "page": 44,
+      "raw_title": "Task B.  Ground Reference Maneuvers",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation V. Performance Maneuvers and Ground Reference Maneuvers"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation VI. Navigation",
+      "page": 46,
+      "raw_title": "Area of Operation VI.  Navigation",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Pilotage and Dead Reckoning",
+      "page": 46,
+      "raw_title": "Task A.  Pilotage and Dead Reckoning",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VI. Navigation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Navigation Systems and Radar Services",
+      "page": 47,
+      "raw_title": "Task B.  Navigation Systems and Radar Services",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VI. Navigation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task C. Diversion",
+      "page": 47,
+      "raw_title": "Task C.  Diversion",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VI. Navigation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task D. Lost Procedures",
+      "page": 48,
+      "raw_title": "Task D.  Lost Procedures",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VI. Navigation"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation VII. Slow Flight and Stalls",
+      "page": 50,
+      "raw_title": "Area of Operation VII.  Slow Flight and Stalls",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Maneuvering During Slow Flight",
+      "page": 50,
+      "raw_title": "Task A.  Maneuvering During Slow Flight",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VII. Slow Flight and Stalls"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Power-Off Stalls",
+      "page": 50,
+      "raw_title": "Task B.  Power-Off Stalls",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VII. Slow Flight and Stalls"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task C. Power-On Stalls",
+      "page": 52,
+      "raw_title": "Task C.  Power-On Stalls",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VII. Slow Flight and Stalls"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task D. Spin Awareness",
+      "page": 53,
+      "raw_title": "Task D.  Spin Awareness",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VII. Slow Flight and Stalls"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation VIII. Basic Instrument Maneuvers",
+      "page": 54,
+      "raw_title": "Area of Operation VIII.  Basic Instrument Maneuvers",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Straight-and-Level Flight",
+      "page": 54,
+      "raw_title": "Task A.  Straight-and-Level Flight",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VIII. Basic Instrument Maneuvers"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Constant Airspeed Climbs",
+      "page": 54,
+      "raw_title": "Task B.  Constant Airspeed Climbs",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VIII. Basic Instrument Maneuvers"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task C. Constant Airspeed Descents",
+      "page": 55,
+      "raw_title": "Task C.  Constant Airspeed Descents",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VIII. Basic Instrument Maneuvers"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task D. Turns to Headings",
+      "page": 56,
+      "raw_title": "Task D.  Turns to Headings",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VIII. Basic Instrument Maneuvers"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task E. Recovery from Unusual Flight Attitudes",
+      "page": 57,
+      "raw_title": "Task E.  Recovery from Unusual Flight Attitudes",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VIII. Basic Instrument Maneuvers"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task F. Radio Communications, Navigation Systems/Facilities, and Radar Services",
+      "page": 58,
+      "raw_title": "Task F.  Radio Communications, Navigation Systems/Facilities, and Radar Services",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VIII. Basic Instrument Maneuvers"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation IX. Emergency Operations",
+      "page": 59,
+      "raw_title": "Area of Operation IX.  Emergency Operations",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Emergency Descent",
+      "page": 59,
+      "raw_title": "Task A.  Emergency Descent",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IX. Emergency Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Emergency Approach and Landing (Simulated) (ASEL, ASES)",
+      "page": 59,
+      "raw_title": "Task B.  Emergency Approach and Landing (Simulated) (ASEL, ASES)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IX. Emergency Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task C. Systems and Equipment Malfunctions",
+      "page": 60,
+      "raw_title": "Task C.  Systems and Equipment Malfunctions",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IX. Emergency Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task D. Emergency Equipment and Survival Gear",
+      "page": 61,
+      "raw_title": "Task D.  Emergency Equipment and Survival Gear",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IX. Emergency Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task E. Engine Failure During Takeoff Before VMC (Simulated) (AMEL, AMES)",
+      "page": 62,
+      "raw_title": "Task E.  Engine Failure During Takeoff Before VMC (Simulated) (AMEL, AMES)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IX. Emergency Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task F. Engine Failure After Liftoff (Simulated) (AMEL, AMES)",
+      "page": 63,
+      "raw_title": "Task F.  Engine Failure After Liftoff (Simulated) (AMEL, AMES)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IX. Emergency Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task G. Approach and Landing with an Inoperative Engine (Simulated)(AMEL, AMES)",
+      "page": 64,
+      "raw_title": "Task G.  Approach and Landing with an Inoperative Engine (Simulated)(AMEL, AMES)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IX. Emergency Operations"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation X. Multiengine Operations",
+      "page": 66,
+      "raw_title": "Area of Operation X.  Multiengine Operations",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Maneuvering with One Engine Inoperative (AMEL, AMES)",
+      "page": 66,
+      "raw_title": "Task A.  Maneuvering with One Engine Inoperative (AMEL, AMES)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation X. Multiengine Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. VMC Demonstration (AMEL, AMES)",
+      "page": 67,
+      "raw_title": "Task B.  VMC Demonstration (AMEL, AMES)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation X. Multiengine Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task C. One Engine Inoperative (Simulated) (solely by Reference to Instruments) During Straight-and-Level Flight and Turns (AMEL, AMES)",
+      "page": 68,
+      "raw_title": "Task C.  One Engine Inoperative (Simulated) (solely by Reference to Instruments) During Straight-and-Level Flight and Turns (AMEL, AMES)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation X. Multiengine Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task D. Instrument Approach and Landing with an Inoperative Engine (Simulated) (AMEL, AMES)",
+      "page": 69,
+      "raw_title": "Task D.  Instrument Approach and Landing with an Inoperative Engine (Simulated) (AMEL, AMES)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation X. Multiengine Operations"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation XI. Night Operations",
+      "page": 71,
+      "raw_title": "Area of Operation XI.  Night Operations",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Night Operations",
+      "page": 71,
+      "raw_title": "Task A.  Night Operations",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation XI. Night Operations"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation XII. Postflight Procedures",
+      "page": 72,
+      "raw_title": "Area of Operation XII.  Postflight Procedures",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. After Landing, Parking, and Securing (ASEL, AMEL)",
+      "page": 72,
+      "raw_title": "Task A.  After Landing, Parking, and Securing (ASEL, AMEL)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation XII. Postflight Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Seaplane Post-Landing Procedures (ASES, AMES)",
+      "page": 72,
+      "raw_title": "Task B.  Seaplane Post-Landing Procedures (ASES, AMES)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation XII. Postflight Procedures"
+    },
+    {
+      "toc_level": 1,
+      "title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes",
+      "page": 74,
+      "raw_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Eligibility Requirements for a Private Pilot Certificate",
+      "page": 74,
+      "raw_title": "Eligibility Requirements for a Private Pilot Certificate",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Private Pilot Airplane Knowledge Test Table",
+      "page": 74,
+      "raw_title": "Private Pilot Airplane Knowledge Test Table",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Use of the ACS During a Practical Test",
+      "page": 74,
+      "raw_title": "Use of the ACS During a Practical Test",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Combined Private/Instrument Test",
+      "page": 75,
+      "raw_title": "Combined Private/Instrument Test",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Instructor Responsibilities",
+      "page": 75,
+      "raw_title": "Instructor Responsibilities",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Evaluator Responsibilities",
+      "page": 75,
+      "raw_title": "Evaluator Responsibilities",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Possible Outcomes of the Test",
+      "page": 76,
+      "raw_title": "Possible Outcomes of the Test",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Additional Rating Task Table",
+      "page": 77,
+      "raw_title": "Additional Rating Task Table",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Addition of an Airplane Single-Engine Land Rating to an Existing Private Pilot Certificate",
+      "page": 78,
+      "raw_title": "Addition of an Airplane Single-Engine Land Rating to an Existing Private Pilot Certificate",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Addition of an Airplane Single-Engine Sea Rating to an Existing Private Pilot Certificate",
+      "page": 79,
+      "raw_title": "Addition of an Airplane Single-Engine Sea Rating to an Existing Private Pilot Certificate",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Addition of an Airplane Multiengine Land Rating to an Existing Private Pilot Certificate",
+      "page": 80,
+      "raw_title": "Addition of an Airplane Multiengine Land Rating to an Existing Private Pilot Certificate",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Addition of an Airplane Multiengine Sea Rating to an existing Private Pilot Certificate",
+      "page": 81,
+      "raw_title": "Addition of an Airplane Multiengine Sea Rating to an existing Private Pilot Certificate ",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Removal of the \u201cAirplane Multiengine VFR Only\u201d Limitation",
+      "page": 82,
+      "raw_title": "Removal of the \u201cAirplane Multiengine VFR Only\u201d Limitation",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Removal of the \u201cLimited to Center Thrust\u201d Limitation",
+      "page": 82,
+      "raw_title": "Removal of the \u201cLimited to Center Thrust\u201d Limitation",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 1,
+      "title": "Appendix 2: Safety of Flight",
+      "page": 83,
+      "raw_title": "Appendix 2: Safety of Flight",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "General",
+      "page": 83,
+      "raw_title": "General ",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Stall and Spin Awareness",
+      "page": 83,
+      "raw_title": "Stall and Spin Awareness",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Use of Checklists",
+      "page": 83,
+      "raw_title": "Use of Checklists",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Positive Exchange of Flight Controls",
+      "page": 83,
+      "raw_title": "Positive Exchange of Flight Controls",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Use of Distractions",
+      "page": 83,
+      "raw_title": "Use of Distractions",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Aeronautical Decision-Making, Risk Management, Crew Resource Management, and Single-Pilot Resource Management",
+      "page": 83,
+      "raw_title": "Aeronautical Decision-Making, Risk Management, Crew Resource Management, and Single-Pilot Resource Management",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Multiengine Considerations",
+      "page": 84,
+      "raw_title": "Multiengine Considerations",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Single-Engine Considerations",
+      "page": 84,
+      "raw_title": "Single-Engine Considerations ",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 1,
+      "title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations",
+      "page": 85,
+      "raw_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Aircraft Requirements & Limitations",
+      "page": 85,
+      "raw_title": "Aircraft Requirements & Limitations",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Equipment Requirements & Limitations",
+      "page": 85,
+      "raw_title": "Equipment Requirements & Limitations",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Use of Flight Simulation Training Devices (FSTD)",
+      "page": 85,
+      "raw_title": "Use of Flight Simulation Training Devices (FSTD)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Credit for Pilot Time in an FSTD",
+      "page": 85,
+      "raw_title": "Credit for Pilot Time in an FSTD",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Use of Aviation Training Devices (ATD)",
+      "page": 85,
+      "raw_title": "Use of Aviation Training Devices (ATD)",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Credit for Pilot Time in an ATD",
+      "page": 85,
+      "raw_title": "Credit for Pilot Time in an ATD",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Operational Requirements, Limitations, & Task Information",
+      "page": 86,
+      "raw_title": "Operational Requirements, Limitations, & Task Information",
+      "source_file": "FAA-S-ACS-6C_Private_Pilot_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    },
+    {
+      "toc_level": 1,
+      "title": "Introduction",
+      "page": 8,
+      "raw_title": "Introduction",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Airman Certification Standards Concept",
+      "page": 8,
+      "raw_title": "Airman Certification Standards Concept",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Introduction"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation I. Preflight Preparation",
+      "page": 9,
+      "raw_title": "Area of Operation I.  Preflight Preparation",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Pilot Qualifications",
+      "page": 9,
+      "raw_title": "Task A.  Pilot Qualifications",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Airworthiness Requirements",
+      "page": 9,
+      "raw_title": "Task B.  Airworthiness Requirements",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task C. Weather Information",
+      "page": 10,
+      "raw_title": "Task C.  Weather Information",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task D. Cross-Country Flight Planning",
+      "page": 11,
+      "raw_title": "Task D.  Cross-Country Flight Planning",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task E. National Airspace System",
+      "page": 12,
+      "raw_title": "Task E.  National Airspace System",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task F. Performance and Limitations",
+      "page": 13,
+      "raw_title": "Task F.  Performance and Limitations",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task G. Operation of Systems",
+      "page": 14,
+      "raw_title": "Task G.  Operation of Systems",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task H. Human Factors",
+      "page": 15,
+      "raw_title": "Task H.  Human Factors",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task I. Water and Seaplane Characteristics, Seaplane Bases, Maritime Rules, and Aids to Marine Navigation (ASES, AMES)",
+      "page": 16,
+      "raw_title": "Task I.  Water and Seaplane Characteristics, Seaplane Bases, Maritime Rules, and Aids to Marine Navigation (ASES, AMES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation II. Preflight Procedures",
+      "page": 18,
+      "raw_title": "Area of Operation II.  Preflight Procedures",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Preflight Assessment",
+      "page": 18,
+      "raw_title": "Task A.  Preflight Assessment",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation II. Preflight Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Flight Deck Management",
+      "page": 18,
+      "raw_title": "Task B.  Flight Deck Management",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation II. Preflight Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task C. Engine Starting",
+      "page": 19,
+      "raw_title": "Task C.  Engine Starting",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation II. Preflight Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task D. Taxiing (ASEL, AMEL)",
+      "page": 19,
+      "raw_title": "Task D.  Taxiing (ASEL, AMEL)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation II. Preflight Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task E. Taxiing and Sailing (ASES, AMES)",
+      "page": 21,
+      "raw_title": "Task E.  Taxiing and Sailing (ASES, AMES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation II. Preflight Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task F. Before Takeoff Check",
+      "page": 22,
+      "raw_title": "Task F.  Before Takeoff Check",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation II. Preflight Procedures"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation III. Airport and Seaplane Base Operations",
+      "page": 23,
+      "raw_title": "Area of Operation III.  Airport and Seaplane Base Operations",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Communications, Light Signals, and Runway Lighting Systems",
+      "page": 23,
+      "raw_title": "Task A.  Communications, Light Signals, and Runway Lighting Systems",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation III. Airport and Seaplane Base Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Traffic Patterns",
+      "page": 23,
+      "raw_title": "Task B.  Traffic Patterns",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation III. Airport and Seaplane Base Operations"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds",
+      "page": 25,
+      "raw_title": "Area of Operation IV.  Takeoffs, Landings, and Go-Arounds",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Normal Takeoff and Climb",
+      "page": 25,
+      "raw_title": "Task A.  Normal Takeoff and Climb",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Normal Approach and Landing",
+      "page": 26,
+      "raw_title": "Task B.  Normal Approach and Landing",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task C. Soft-Field Takeoff and Climb (ASEL)",
+      "page": 27,
+      "raw_title": "Task C.  Soft-Field Takeoff and Climb (ASEL)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task D. Soft-Field Approach and Landing (ASEL)",
+      "page": 29,
+      "raw_title": "Task D.  Soft-Field Approach and Landing (ASEL)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task E. Short-Field Takeoff and Maximum Performance Climb (ASEL, AMEL)",
+      "page": 30,
+      "raw_title": "Task E.  Short-Field Takeoff and Maximum Performance Climb (ASEL, AMEL)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task F. Short-Field Approach and Landing (ASEL, AMEL)",
+      "page": 31,
+      "raw_title": "Task F.  Short-Field Approach and Landing (ASEL, AMEL)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task G. Confined Area Takeoff and Maximum Performance Climb (ASES, AMES)",
+      "page": 33,
+      "raw_title": "Task G.  Confined Area Takeoff and Maximum Performance Climb (ASES, AMES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task H. Confined Area Approach and Landing (ASES, AMES)",
+      "page": 34,
+      "raw_title": "Task H.  Confined Area Approach and Landing (ASES, AMES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task I. Glassy Water Takeoff and Climb (ASES, AMES)",
+      "page": 35,
+      "raw_title": "Task I.  Glassy Water Takeoff and Climb (ASES, AMES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task J. Glassy Water Approach and Landing (ASES, AMES)",
+      "page": 37,
+      "raw_title": "Task J.  Glassy Water Approach and Landing (ASES, AMES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task K. Rough Water Takeoff and Climb (ASES, AMES)",
+      "page": 38,
+      "raw_title": "Task K.  Rough Water Takeoff and Climb (ASES, AMES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task L. Rough Water Approach and Landing (ASES, AMES)",
+      "page": 39,
+      "raw_title": "Task L.  Rough Water Approach and Landing (ASES, AMES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task M. Power-Off 180\u00b0 Accuracy Approach and Landing (ASEL, ASES)",
+      "page": 40,
+      "raw_title": "Task M.  Power-Off 180\u00b0 Accuracy Approach and Landing (ASEL, ASES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task N. Go-Around/Rejected Landing",
+      "page": 41,
+      "raw_title": "Task N.  Go-Around/Rejected Landing",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IV. Takeoffs, Landings, and Go-Arounds"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation V. Performance Maneuvers and Ground Reference Maneuvers",
+      "page": 43,
+      "raw_title": "Area of Operation V.  Performance Maneuvers and Ground Reference Maneuvers",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Steep Turns",
+      "page": 43,
+      "raw_title": "Task A.  Steep Turns",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation V. Performance Maneuvers and Ground Reference Maneuvers"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Steep Spiral (ASEL, ASES)",
+      "page": 43,
+      "raw_title": "Task B.  Steep Spiral (ASEL, ASES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation V. Performance Maneuvers and Ground Reference Maneuvers"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task C. Chandelles (ASEL, ASES)",
+      "page": 44,
+      "raw_title": "Task C.  Chandelles (ASEL, ASES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation V. Performance Maneuvers and Ground Reference Maneuvers"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task D. Lazy Eights (ASEL, ASES)",
+      "page": 45,
+      "raw_title": "Task D.  Lazy Eights (ASEL, ASES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation V. Performance Maneuvers and Ground Reference Maneuvers"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task E. Eights on Pylons (ASEL, ASES)",
+      "page": 46,
+      "raw_title": "Task E.  Eights on Pylons (ASEL, ASES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation V. Performance Maneuvers and Ground Reference Maneuvers"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation VI. Navigation",
+      "page": 48,
+      "raw_title": "Area of Operation VI.  Navigation",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Pilotage and Dead Reckoning",
+      "page": 48,
+      "raw_title": "Task A.  Pilotage and Dead Reckoning",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VI. Navigation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Navigation Systems and Radar Services",
+      "page": 49,
+      "raw_title": "Task B.  Navigation Systems and Radar Services",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VI. Navigation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task C. Diversion",
+      "page": 49,
+      "raw_title": "Task C.  Diversion",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VI. Navigation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task D. Lost Procedures",
+      "page": 50,
+      "raw_title": "Task D.  Lost Procedures",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VI. Navigation"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation VII. Slow Flight and Stalls",
+      "page": 52,
+      "raw_title": "Area of Operation VII.  Slow Flight and Stalls",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Maneuvering During Slow Flight",
+      "page": 52,
+      "raw_title": "Task A.  Maneuvering During Slow Flight",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VII. Slow Flight and Stalls"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Power-Off Stalls",
+      "page": 52,
+      "raw_title": "Task B.  Power-Off Stalls",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VII. Slow Flight and Stalls"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task C. Power-On Stalls",
+      "page": 54,
+      "raw_title": "Task C.  Power-On Stalls",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VII. Slow Flight and Stalls"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task D. Accelerated Stalls",
+      "page": 55,
+      "raw_title": "Task D.  Accelerated Stalls",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VII. Slow Flight and Stalls"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task E. Spin Awareness",
+      "page": 56,
+      "raw_title": "Task E.  Spin Awareness",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VII. Slow Flight and Stalls"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation VIII. High-Altitude Operations",
+      "page": 57,
+      "raw_title": "Area of Operation VIII.  High-Altitude Operations",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Supplemental Oxygen",
+      "page": 57,
+      "raw_title": "Task A.  Supplemental Oxygen",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VIII. High-Altitude Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Pressurization",
+      "page": 57,
+      "raw_title": "Task B.  Pressurization",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation VIII. High-Altitude Operations"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation IX. Emergency Operations",
+      "page": 59,
+      "raw_title": "Area of Operation IX.  Emergency Operations",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Emergency Descent",
+      "page": 59,
+      "raw_title": "Task A.  Emergency Descent",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IX. Emergency Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Emergency Approach and Landing (Simulated) (ASEL, ASES)",
+      "page": 59,
+      "raw_title": "Task B.  Emergency Approach and Landing (Simulated) (ASEL, ASES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IX. Emergency Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task C. Systems and Equipment Malfunctions",
+      "page": 60,
+      "raw_title": "Task C.  Systems and Equipment Malfunctions",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IX. Emergency Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task D. Emergency Equipment and Survival Gear",
+      "page": 61,
+      "raw_title": "Task D.  Emergency Equipment and Survival Gear",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IX. Emergency Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task E. Engine Failure During Takeoff Before VMC (Simulated) (AMEL, AMES)",
+      "page": 62,
+      "raw_title": "Task E.  Engine Failure During Takeoff Before VMC (Simulated) (AMEL, AMES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IX. Emergency Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task F. Engine Failure After Liftoff (Simulated) (AMEL, AMES)",
+      "page": 63,
+      "raw_title": "Task F.  Engine Failure After Liftoff (Simulated) (AMEL, AMES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IX. Emergency Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task G. Approach and Landing with an Inoperative Engine (Simulated)(AMEL, AMES)",
+      "page": 64,
+      "raw_title": "Task G.  Approach and Landing with an Inoperative Engine (Simulated)(AMEL, AMES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation IX. Emergency Operations"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation X. Multiengine Operations",
+      "page": 66,
+      "raw_title": "Area of Operation X.  Multiengine Operations",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Maneuvering with One Engine Inoperative (AMEL, AMES)",
+      "page": 66,
+      "raw_title": "Task A.  Maneuvering with One Engine Inoperative (AMEL, AMES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation X. Multiengine Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. VMC Demonstration (AMEL, AMES)",
+      "page": 67,
+      "raw_title": "Task B.  VMC Demonstration (AMEL, AMES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation X. Multiengine Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task C. One Engine Inoperative (Simulated) (solely by Reference to Instruments) During Straight-and-Level Flight and Turns (AMEL, AMES)",
+      "page": 68,
+      "raw_title": "Task C.  One Engine Inoperative (Simulated) (solely by Reference to Instruments) During Straight-and-Level Flight and Turns (AMEL, AMES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation X. Multiengine Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task D. Instrument Approach and Landing with an Inoperative Engine (Simulated) (AMEL, AMES)",
+      "page": 69,
+      "raw_title": "Task D.  Instrument Approach and Landing with an Inoperative Engine (Simulated) (AMEL, AMES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation X. Multiengine Operations"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation XI. Postflight Procedures",
+      "page": 71,
+      "raw_title": "Area of Operation XI.  Postflight Procedures",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. After Landing, Parking, and Securing (ASEL, AMEL)",
+      "page": 71,
+      "raw_title": "Task A.  After Landing, Parking, and Securing (ASEL, AMEL)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation XI. Postflight Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Seaplane Post-Landing Procedures (ASES, AMES)",
+      "page": 71,
+      "raw_title": "Task B.  Seaplane Post-Landing Procedures (ASES, AMES)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Area of Operation XI. Postflight Procedures"
+    },
+    {
+      "toc_level": 1,
+      "title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes",
+      "page": 73,
+      "raw_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Eligibility Requirements for a Commercial Pilot Certificate",
+      "page": 73,
+      "raw_title": "Eligibility Requirements for a Commercial Pilot Certificate",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Commercial Pilot Airplane Airman Knowledge Test Table",
+      "page": 73,
+      "raw_title": "Commercial Pilot Airplane Airman Knowledge Test Table",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Use of the ACS During a Practical Test",
+      "page": 73,
+      "raw_title": "Use of the ACS During a Practical Test",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Instructor Responsibilities",
+      "page": 74,
+      "raw_title": "Instructor Responsibilities",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Evaluator Responsibilities",
+      "page": 74,
+      "raw_title": "Evaluator Responsibilities",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Possible Outcomes of the Test",
+      "page": 75,
+      "raw_title": "Possible Outcomes of the Test",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Time Limit and Credit after a Discontinued Practical Test",
+      "page": 76,
+      "raw_title": "Time Limit and Credit after a Discontinued Practical Test",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Additional Rating Task Table",
+      "page": 76,
+      "raw_title": "Additional Rating Task Table",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Addition of an Airplane Single-Engine Land Rating to an Existing Commercial Pilot Certificate",
+      "page": 77,
+      "raw_title": "Addition of an Airplane Single-Engine Land Rating to an Existing Commercial Pilot Certificate",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Addition of an Airplane Single-Engine Sea Rating to an Existing Commercial Pilot Certificate",
+      "page": 78,
+      "raw_title": "Addition of an Airplane Single-Engine Sea Rating to an Existing Commercial Pilot Certificate",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Addition of an Airplane Multiengine Land Rating to an Existing Commercial Pilot Certificate",
+      "page": 79,
+      "raw_title": "Addition of an Airplane Multiengine Land Rating to an Existing Commercial Pilot Certificate",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Addition of an Airplane Multiengine Sea Rating to an Existing Commercial Pilot Certificate",
+      "page": 80,
+      "raw_title": "Addition of an Airplane Multiengine Sea Rating to an Existing Commercial Pilot Certificate",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Removal of the \u201cAirplane Multiengine VFR Only\u201d Limitation",
+      "page": 81,
+      "raw_title": "Removal of the \u201cAirplane Multiengine VFR Only\u201d Limitation",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Removal of the \u201cLimited to Center Thrust\u201d Limitation",
+      "page": 81,
+      "raw_title": "Removal of the \u201cLimited to Center Thrust\u201d Limitation",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 1,
+      "title": "Appendix 2: Safety of Flight",
+      "page": 82,
+      "raw_title": "Appendix 2: Safety of Flight",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "General",
+      "page": 82,
+      "raw_title": "General ",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Stall and Spin Awareness",
+      "page": 82,
+      "raw_title": "Stall and Spin Awareness",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Use of Checklists",
+      "page": 82,
+      "raw_title": "Use of Checklists",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Positive Exchange of Flight Controls",
+      "page": 82,
+      "raw_title": "Positive Exchange of Flight Controls",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Use of Distractions",
+      "page": 82,
+      "raw_title": "Use of Distractions",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Aeronautical Decision-Making, Risk Management, Crew Resource Management, and Single-Pilot Resource Management",
+      "page": 82,
+      "raw_title": "Aeronautical Decision-Making, Risk Management, Crew Resource Management, and Single-Pilot Resource Management",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Multiengine Considerations",
+      "page": 83,
+      "raw_title": "Multiengine Considerations",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Single-Engine Considerations",
+      "page": 83,
+      "raw_title": "Single-Engine Considerations ",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 1,
+      "title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations",
+      "page": 84,
+      "raw_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Aircraft Requirements & Limitations",
+      "page": 84,
+      "raw_title": "Aircraft Requirements & Limitations",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Equipment Requirements & Limitations",
+      "page": 84,
+      "raw_title": "Equipment Requirements & Limitations",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Use of Flight Simulation Training Devices (FSTD)",
+      "page": 84,
+      "raw_title": "Use of Flight Simulation Training Devices (FSTD)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Credit for Pilot Time in an FSTD",
+      "page": 84,
+      "raw_title": "Credit for Pilot Time in an FSTD",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Use of Aviation Training Devices (ATD)",
+      "page": 84,
+      "raw_title": "Use of Aviation Training Devices (ATD)",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Credit for Pilot Time in an ATD",
+      "page": 84,
+      "raw_title": "Credit for Pilot Time in an ATD",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Operational Requirements, Limitations, & Task Information",
+      "page": 85,
+      "raw_title": "Operational Requirements, Limitations, & Task Information",
+      "source_file": "FAA-S-ACS-7B_Commercial_Pilot_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    },
+    {
+      "toc_level": 1,
+      "title": "Introduction",
+      "page": 7,
+      "raw_title": "Introduction",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Airman Certification Standards Concept",
+      "page": 7,
+      "raw_title": "Airman Certification Standards Concept",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Introduction"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation I. Preflight Preparation",
+      "page": 8,
+      "raw_title": "Area of Operation I.  Preflight Preparation",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Pilot Qualifications",
+      "page": 8,
+      "raw_title": "Task A.  Pilot Qualifications",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Weather Information",
+      "page": 8,
+      "raw_title": "Task B.  Weather Information",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task C. Cross-Country Flight Planning",
+      "page": 10,
+      "raw_title": "Task C.  Cross-Country Flight Planning",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation I. Preflight Preparation"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation II. Preflight Procedures",
+      "page": 12,
+      "raw_title": "Area of Operation II.  Preflight Procedures",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Aircraft Systems Related to Instrument Flight Rules (IFR) Operations",
+      "page": 12,
+      "raw_title": "Task A.  Aircraft Systems Related to Instrument Flight Rules (IFR) Operations",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation II. Preflight Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Aircraft Flight Instruments and Navigation Equipment",
+      "page": 12,
+      "raw_title": "Task B.  Aircraft Flight Instruments and Navigation Equipment",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation II. Preflight Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task C. Instrument Flight Deck Check",
+      "page": 13,
+      "raw_title": "Task C.  Instrument Flight Deck Check",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation II. Preflight Procedures"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation III. Air Traffic Control (ATC) Clearances and Procedures",
+      "page": 14,
+      "raw_title": "Area of Operation III.  Air Traffic Control (ATC) Clearances and Procedures",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Compliance with Air Traffic Control Clearances",
+      "page": 14,
+      "raw_title": "Task A.  Compliance with Air Traffic Control Clearances",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation III. Air Traffic Control (ATC) Clearances and Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Holding Procedures",
+      "page": 14,
+      "raw_title": "Task B.  Holding Procedures",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation III. Air Traffic Control (ATC) Clearances and Procedures"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation IV. Flight by Reference to Instruments",
+      "page": 16,
+      "raw_title": "Area of Operation IV.  Flight by Reference to Instruments",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Instrument Flight",
+      "page": 16,
+      "raw_title": "Task A.  Instrument Flight",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation IV. Flight by Reference to Instruments"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Recovery from Unusual Flight Attitudes",
+      "page": 16,
+      "raw_title": "Task B.  Recovery from Unusual Flight Attitudes",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation IV. Flight by Reference to Instruments"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation V. Navigation Systems",
+      "page": 18,
+      "raw_title": "Area of Operation V.  Navigation Systems",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Intercepting and Tracking Navigational Systems and DME Arcs",
+      "page": 18,
+      "raw_title": "Task A.  Intercepting and Tracking Navigational Systems and DME Arcs",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation V. Navigation Systems"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Departure, En Route, and Arrival Operations",
+      "page": 19,
+      "raw_title": "Task B.  Departure, En Route, and Arrival Operations",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation V. Navigation Systems"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation VI. Instrument Approach Procedures",
+      "page": 20,
+      "raw_title": "Area of Operation VI.  Instrument Approach Procedures",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Non-precision Approach",
+      "page": 20,
+      "raw_title": "Task A.  Non-precision Approach",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation VI. Instrument Approach Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. Precision Approach",
+      "page": 21,
+      "raw_title": "Task B.  Precision Approach",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation VI. Instrument Approach Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task C. Missed Approach",
+      "page": 22,
+      "raw_title": "Task C.  Missed Approach",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation VI. Instrument Approach Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task D. Circling Approach",
+      "page": 23,
+      "raw_title": "Task D.  Circling Approach",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation VI. Instrument Approach Procedures"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task E. Landing from an Instrument Approach",
+      "page": 24,
+      "raw_title": "Task E.  Landing from an Instrument Approach",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation VI. Instrument Approach Procedures"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation VII. Emergency Operations",
+      "page": 26,
+      "raw_title": "Area of Operation VII.  Emergency Operations",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Loss of Communications",
+      "page": 26,
+      "raw_title": "Task A.  Loss of Communications",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation VII. Emergency Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task B. One Engine Inoperative (Simulated) during Straight-and-Level Flight and Turns (AMEL, AMES)",
+      "page": 26,
+      "raw_title": "Task B.  One Engine Inoperative (Simulated) during Straight-and-Level Flight and Turns (AMEL, AMES)",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation VII. Emergency Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task C. Instrument Approach and Landing with an Inoperative Engine (Simulated) (AMEL, AMES)",
+      "page": 27,
+      "raw_title": "Task C.  Instrument Approach and Landing with an Inoperative Engine (Simulated) (AMEL, AMES)",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation VII. Emergency Operations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Task D. Approach with Loss of Primary Flight Instrument Indicators",
+      "page": 28,
+      "raw_title": "Task D.  Approach with Loss of Primary Flight Instrument Indicators",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation VII. Emergency Operations"
+    },
+    {
+      "toc_level": 1,
+      "title": "Area of Operation VIII. Postflight Procedures",
+      "page": 30,
+      "raw_title": "Area of Operation VIII.  Postflight Procedures",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Task A. Checking Instruments and Equipment",
+      "page": 30,
+      "raw_title": "Task A.  Checking Instruments and Equipment",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Area of Operation VIII. Postflight Procedures"
+    },
+    {
+      "toc_level": 1,
+      "title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes",
+      "page": 31,
+      "raw_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Eligibility Requirements for an Instrument Rating",
+      "page": 31,
+      "raw_title": "Eligibility Requirements for an Instrument Rating",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Use of the ACS During a Practical Test",
+      "page": 31,
+      "raw_title": "Use of the ACS During a Practical Test",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Combined Private/Instrument Test",
+      "page": 32,
+      "raw_title": "Combined Private/Instrument Test",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Instructor Responsibilities",
+      "page": 32,
+      "raw_title": "Instructor Responsibilities",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Evaluator Responsibilities",
+      "page": 32,
+      "raw_title": "Evaluator Responsibilities",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Possible Outcomes of the Test",
+      "page": 33,
+      "raw_title": "Possible Outcomes of the Test",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Time Limit and Credit after a Discontinued Practical Test",
+      "page": 34,
+      "raw_title": "Time Limit and Credit after a Discontinued Practical Test",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Additional Rating Task Table",
+      "page": 34,
+      "raw_title": "Additional Rating Task Table",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Addition of an Airplane Rating to an Existing Instrument Rating Certificate",
+      "page": 35,
+      "raw_title": "Addition of an Airplane Rating to an Existing Instrument Rating Certificate",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Instrument Proficiency Check",
+      "page": 35,
+      "raw_title": "Instrument Proficiency Check",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 1: Practical Test Roles, Responsibilities, and Outcomes"
+    },
+    {
+      "toc_level": 1,
+      "title": "Appendix 2: Safety of Flight",
+      "page": 37,
+      "raw_title": "Appendix 2: Safety of Flight",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "General",
+      "page": 37,
+      "raw_title": "General ",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Stall and Spin Awareness",
+      "page": 37,
+      "raw_title": "Stall and Spin Awareness",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Use of Checklists",
+      "page": 37,
+      "raw_title": "Use of Checklists",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Positive Exchange of Flight Controls",
+      "page": 37,
+      "raw_title": "Positive Exchange of Flight Controls",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Use of Distractions",
+      "page": 37,
+      "raw_title": "Use of Distractions",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Aeronautical Decision-Making, Risk Management, Crew Resource Management, and Single-Pilot Resource Management",
+      "page": 37,
+      "raw_title": "Aeronautical Decision-Making, Risk Management, Crew Resource Management, and Single-Pilot Resource Management",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Multiengine Considerations",
+      "page": 38,
+      "raw_title": "Multiengine Considerations",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 2: Safety of Flight"
+    },
+    {
+      "toc_level": 1,
+      "title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations",
+      "page": 39,
+      "raw_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Aircraft Requirements & Limitations",
+      "page": 39,
+      "raw_title": "Aircraft Requirements & Limitations",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Equipment Requirements & Limitations",
+      "page": 39,
+      "raw_title": "Equipment Requirements & Limitations",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Use of Flight Simulation Training Devices (FSTD)",
+      "page": 39,
+      "raw_title": "Use of Flight Simulation Training Devices (FSTD)",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Credit for Pilot Time in an FSTD",
+      "page": 39,
+      "raw_title": "Credit for Pilot Time in an FSTD",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Use of Aviation Training Devices (ATD)",
+      "page": 39,
+      "raw_title": "Use of Aviation Training Devices (ATD)",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Credit for Pilot Time in an ATD",
+      "page": 39,
+      "raw_title": "Credit for Pilot Time in an ATD",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    },
+    {
+      "toc_level": 2,
+      "title": "Operational Requirements, Limitations, & Task Information",
+      "page": 40,
+      "raw_title": "Operational Requirements, Limitations, & Task Information",
+      "source_file": "FAA-S-ACS-8C_Instrument_Rating_ACS.pdf",
+      "parent_title": "Appendix 3: Aircraft, Equipment, and Operational Requirements & Limitations"
+    }
+  ]
+}

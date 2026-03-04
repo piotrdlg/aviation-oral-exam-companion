@@ -1,0 +1,1769 @@
+{
+  "date": "2026-02-25",
+  "mode": "dry-run",
+  "total": 200,
+  "classified": 196,
+  "unclassified": 4,
+  "cache_read_tokens": 7682805,
+  "cache_creation_tokens": 196995,
+  "slug_counts": {
+    "tax:regulations": 15,
+    "tax:national-airspace-system": 13,
+    "tax:human-factors": 27,
+    "tax:aerodynamics": 30,
+    "tax:aviation-weather": 3,
+    "tax:aircraft-systems": 61,
+    "tax:flight-operations": 30,
+    "tax:instrument-flying": 1,
+    "tax:task-b-ground-reference-maneuvers": 4,
+    "unclassified": 4,
+    "tax:section-2-radio-communications-phraseology-and-techniques": 7,
+    "tax:section-1-services-available-to-pilots": 4,
+    "tax:section-3-airport-operations": 1
+  },
+  "results": [
+    {
+      "chunk_id": "86a6dc7c-d291-4d74-97d0-d084c7f667d5",
+      "primary_slug": "tax:regulations",
+      "secondary_slugs": [
+        "tax:navigation"
+      ],
+      "confidence": 0.8,
+      "notes": "Content discusses FAA regulatory publications (Advisory Circulars), revision processes, and flight publications essential for regulatory compliance and navigation"
+    },
+    {
+      "chunk_id": "5b5d09f6-f3bd-419c-aabc-377f0e0ce340",
+      "primary_slug": "tax:regulations",
+      "secondary_slugs": [
+        "tax:national-airspace-system"
+      ],
+      "confidence": 0.9,
+      "notes": "Content about aircraft certification categories, types, airman certificate requirements, and regulatory definitions from PHAK - clearly regulatory content about compliance and certification requirements"
+    },
+    {
+      "chunk_id": "489f0598-34e1-42ec-b596-952bafee8dd3",
+      "primary_slug": "tax:national-airspace-system",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Content details NOTAM keywords and examples related to airport operations, lighting aids, and airspace management - fits national airspace system with secondary relevance to flight operations procedures"
+    },
+    {
+      "chunk_id": "8c536027-9637-42f4-a096-7c487d731920",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Discusses flight instructor as role model and student-instructor relationship, which are core human factors concepts in aviation training"
+    },
+    {
+      "chunk_id": "6cf6bff4-b998-4f11-af9f-cf3c6e11860e",
+      "primary_slug": "tax:regulations",
+      "secondary_slugs": [
+        "tax:national-airspace-system"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses FAA regulatory documents (ACs, POHs) and their role in standardizing regulations and implementation"
+    },
+    {
+      "chunk_id": "d96e27ab-80c9-4921-8ce4-c95f96a77e1e",
+      "primary_slug": "tax:regulations",
+      "secondary_slugs": [],
+      "confidence": 0.75,
+      "notes": "Content discusses FAA Flight Standards Service certification, inspection, surveillance, enforcement, regulations, standards, and FSDO operations - clearly regulatory/compliance focused"
+    },
+    {
+      "chunk_id": "b63ce2cf-f4f9-43e1-aec8-80523dda98c4",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:regulations"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses CFI responsibilities, training quality, learning process, teaching fundamentals, and communication skills - core human factors concepts in aviation education and training"
+    },
+    {
+      "chunk_id": "9b5a6607-2468-4ceb-a5b8-a4633154fea7",
+      "primary_slug": "tax:regulations",
+      "secondary_slugs": [
+        "tax:national-airspace-system"
+      ],
+      "confidence": 0.95,
+      "notes": "Content discusses 14 CFR regulations structure and pilot certificate requirements, clearly focused on regulations and compliance"
+    },
+    {
+      "chunk_id": "d25366b9-07ed-4fee-8376-18b10b2fb726",
+      "primary_slug": "tax:regulations",
+      "secondary_slugs": [
+        "tax:national-airspace-system"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses pilot certification requirements and limitations (PIC restrictions, compensation rules, certificate types) which are regulatory matters under 14 CFR Part 61"
+    },
+    {
+      "chunk_id": "21731310-a180-4b9a-824f-2ebdfd502ad6",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [],
+      "confidence": 0.8,
+      "notes": "Historical content about early aviation pioneers and basic principles of aeronautics and flight development"
+    },
+    {
+      "chunk_id": "fc3ebad0-3ef7-49ec-b723-954c8a9f0542",
+      "primary_slug": "tax:national-airspace-system",
+      "secondary_slugs": [],
+      "confidence": 0.95,
+      "notes": "Discusses FAA's NAS Plan, air traffic control systems, and the PATCO strike - all core NAS components and history"
+    },
+    {
+      "chunk_id": "59827952-7039-4900-9ab6-8df124ecac4d",
+      "primary_slug": "tax:national-airspace-system",
+      "secondary_slugs": [
+        "tax:regulations"
+      ],
+      "confidence": 0.9,
+      "notes": "Detailed content about NOTAMs (Notices to Airmen) including their composition, format, and elements - fundamental NAS operational information"
+    },
+    {
+      "chunk_id": "3bc0c9ff-9325-41e4-a58c-7b62aebefabc",
+      "primary_slug": "tax:regulations",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses FAA certification requirements for training centers and flight schools, including regulatory compliance under 14 CFR parts 61, 121, 135, and 141, which are regulatory topics. Secondary classification relates to flight training operations."
+    },
+    {
+      "chunk_id": "7cbd6fa1-bc17-4ec7-834a-d98dcd5c7a84",
+      "primary_slug": "tax:regulations",
+      "secondary_slugs": [],
+      "confidence": 0.85,
+      "notes": "Content about medical certificate requirements, AME authorization, and certificate classes - regulatory compliance topic"
+    },
+    {
+      "chunk_id": "e2da0c22-17a8-49a4-8c48-97a1f4a7af69",
+      "primary_slug": "tax:national-airspace-system",
+      "secondary_slugs": [],
+      "confidence": 0.75,
+      "notes": "Historical aviation content about early airline operations and transcontinental airmail routes, foundational to NAS development"
+    },
+    {
+      "chunk_id": "ba4bd82b-0746-4ed3-b47f-31650cba3c99",
+      "primary_slug": "tax:national-airspace-system",
+      "secondary_slugs": [],
+      "confidence": 0.95,
+      "notes": "Content about aviation history, regulatory development, and the organizational evolution of U.S. aviation agencies (Aeronautics Branch to Bureau of Air Commerce). Mentions airway beacons which are part of NAS infrastructure."
+    },
+    {
+      "chunk_id": "29f854df-c14a-49d2-aaa4-43737b382b56",
+      "primary_slug": "tax:national-airspace-system",
+      "secondary_slugs": [],
+      "confidence": 0.75,
+      "notes": "Introduction chapter covering pilot certificates, flight training structure, CFI/DPE roles, PTS/ACS - foundational aviation knowledge and system overview"
+    },
+    {
+      "chunk_id": "916d8130-6336-43e1-a09c-7f4a1b5bbcdd",
+      "primary_slug": "tax:regulations",
+      "secondary_slugs": [
+        "tax:national-airspace-system"
+      ],
+      "confidence": 0.88,
+      "notes": "Content discusses 14 CFR 103 regulations for ultralight vehicles and 14 CFR 1.1 aircraft definitions/classifications - clearly regulatory content with some NAS system classification aspects"
+    },
+    {
+      "chunk_id": "f6619dd5-9300-4faf-98e5-1e082eccbd54",
+      "primary_slug": "tax:regulations",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.92,
+      "notes": "Content discusses sport pilot privileges and limitations under 14 CFR regulations, plus recreational pilot solo flight authorization requirements"
+    },
+    {
+      "chunk_id": "7e7bb566-1d7b-41f3-a285-7f1bfc813f5c",
+      "primary_slug": "tax:regulations",
+      "secondary_slugs": [
+        "tax:national-airspace-system"
+      ],
+      "confidence": 0.82,
+      "notes": "Content focuses on FAA knowledge test requirements, procedures, and standards which are regulatory compliance topics. Secondary classification as national airspace system due to FAA administrative processes."
+    },
+    {
+      "chunk_id": "13c833bc-4d2a-4e08-93d4-e824cfc69035",
+      "primary_slug": "tax:regulations",
+      "secondary_slugs": [
+        "tax:national-airspace-system"
+      ],
+      "confidence": 0.88,
+      "notes": "Content discusses 14 CFR part 61 requirements for pilot certification, practical tests, and regulatory standards for flight proficiency - clearly regulatory/compliance focused with secondary connection to overall airspace system certification processes"
+    },
+    {
+      "chunk_id": "254c33fa-399e-40df-8e2b-bfe2ffa8dc08",
+      "primary_slug": "tax:national-airspace-system",
+      "secondary_slugs": [
+        "tax:regulations"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses FAA certification offices (FSDO), ATC procedures, and NAS fundamentals - core NAS administrative and operational information"
+    },
+    {
+      "chunk_id": "4db4f382-d9c3-482f-8c74-8bdd34843672",
+      "primary_slug": "tax:national-airspace-system",
+      "secondary_slugs": [],
+      "confidence": 0.95,
+      "notes": "Content about early aviation administration, CAA/CAB roles, Federal Aviation Act of 1958, and development of civil aviation infrastructure - core NAS history"
+    },
+    {
+      "chunk_id": "5a4d3e53-35f8-4894-adfd-40d8e5608feb",
+      "primary_slug": "tax:regulations",
+      "secondary_slugs": [
+        "tax:national-airspace-system"
+      ],
+      "confidence": 0.8,
+      "notes": "Introduction to FAA regulations, standards, pilot certification, and flight instruction structure - primarily regulatory content with NAS system context"
+    },
+    {
+      "chunk_id": "0a365152-750b-4262-b15d-276d6938ddb2",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:national-airspace-system"
+      ],
+      "confidence": 0.9,
+      "notes": "Content covers atmospheric composition and introduces principles of flight, clearly fitting aerodynamics with secondary relevance to atmospheric structure in NAS"
+    },
+    {
+      "chunk_id": "da885908-ebd8-41c0-9b90-ffc4d8e8d3f7",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [],
+      "confidence": 0.95,
+      "notes": "Content explains Bernoulli's principle, airflow over airfoil surfaces, pressure distribution, center of pressure (CP), and angle of attack (AOA) - all fundamental aerodynamics concepts"
+    },
+    {
+      "chunk_id": "6b8f4cd0-41b0-4059-9c9d-2b697c5e4695",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.9,
+      "notes": "Content discusses standard atmosphere, pressure altitude, and aircraft performance - core aerodynamics/flight principles topics from PHAK"
+    },
+    {
+      "chunk_id": "220daece-39a1-4a45-8142-1500aa7494b9",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:national-airspace-system"
+      ],
+      "confidence": 0.92,
+      "notes": "Introduction to fundamental physical laws governing aircraft forces and atmospheric composition - core aerodynamics content with airspace system context"
+    },
+    {
+      "chunk_id": "96436344-7353-4ef1-8813-45790e5e3add",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:aviation-weather"
+      ],
+      "confidence": 0.92,
+      "notes": "Content describes boundary layer formation and air flow over wing surfaces, plus atmospheric pressure data - classic aerodynamics with weather reference data"
+    },
+    {
+      "chunk_id": "89b2fd83-4b75-4172-af1b-8045c0f90df4",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.95,
+      "notes": "Content covers Newton's laws, force, inertia, and venturi tube pressure effects - fundamental aerodynamic principles. From PHAK (Pilot's Handbook of Aeronautical Knowledge) which covers aerodynamic theory."
+    },
+    {
+      "chunk_id": "10c81f77-e9fd-4604-bfd7-88a9348e6221",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.95,
+      "notes": "Clear discussion of lift production, airfoil characteristics, symmetrical airfoils, and tip vortices - core aerodynamics concepts from PHAK"
+    },
+    {
+      "chunk_id": "0df56e00-68e8-4118-8a99-d4cac9e310f8",
+      "primary_slug": "tax:aviation-weather",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.88,
+      "notes": "Discusses atmospheric density variations with temperature, pressure, altitude, and humidity - key weather concepts that affect aircraft performance and aerodynamic principles"
+    },
+    {
+      "chunk_id": "b423bb26-81c7-433e-83c2-660561c5bee7",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [],
+      "confidence": 0.95,
+      "notes": "Content discusses airfoil design, camber, chord line, leading/trailing edges - core aerodynamic concepts about wing geometry and design"
+    },
+    {
+      "chunk_id": "12508bc1-fc49-46a9-bed9-0788f848a172",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses aircraft performance factors like braking effectiveness, runway surface conditions, and runway gradient - relates to aircraft systems and performance with secondary relevance to flight operations"
+    },
+    {
+      "chunk_id": "1e584a22-1405-4fd6-8e31-432093f5b696",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.9,
+      "notes": "Content discusses aircraft landing performance calculations using charts/graphs - core aircraft systems knowledge for performance and limitations"
+    },
+    {
+      "chunk_id": "dd79b0d7-6a61-4022-b105-7b2372e16df4",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:regulations"
+      ],
+      "confidence": 0.9,
+      "notes": "Content discusses aircraft design speeds (VA, VNO) and structural limitations related to flaps and maneuvering, which are core aircraft systems and performance topics. Secondary classification for regulations due to regulatory nature of airspeed limitations."
+    },
+    {
+      "chunk_id": "0e7c2e32-14bd-4bc8-b0dd-8b71bd6f7725",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.9,
+      "notes": "Chapter introduction discussing aircraft performance factors, AFM/POH data usage, and operational considerations - fits aircraft systems and performance taxonomy with flight operations as secondary"
+    },
+    {
+      "chunk_id": "b97b961e-07a9-4b7f-939d-bda73cc0d4ca",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:national-airspace-system"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses dynamic hydroplaning on runways, tire pressure calculations, and runway surface conditions - primarily operational procedures and safety considerations during landing operations"
+    },
+    {
+      "chunk_id": "ab3e83b4-536a-4760-84b9-ad5f67119bcf",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:navigation"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses aircraft range calculations and cruise performance charts, covering TAS performance based on altitude/power settings - core aircraft systems and performance topic"
+    },
+    {
+      "chunk_id": "7873a3ef-f5ef-4a09-ae7c-591c4a320176",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.9,
+      "notes": "Content discusses aircraft performance, fuel efficiency, range calculations, and weight effects - core aircraft systems and performance topics with aerodynamic considerations"
+    },
+    {
+      "chunk_id": "dd97f25f-10f2-48e6-905e-dffe1e00336a",
+      "primary_slug": "tax:aviation-weather",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.85,
+      "notes": "Standard atmosphere tables with altitude, pressure, and temperature data - fundamental aviation weather/atmospheric knowledge with aircraft performance implications"
+    },
+    {
+      "chunk_id": "945d3094-53ec-4dd6-8aed-084a01871d46",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.82,
+      "notes": "Content covers landing distance factors including runway conditions, tailwind effects, and approach procedures - primarily flight operations with aircraft performance elements"
+    },
+    {
+      "chunk_id": "511abf48-ed9d-4700-80d9-b7988a9f2dcd",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [],
+      "confidence": 0.95,
+      "notes": "Clear discussion of parasite drag, induced drag, and their relationship to airspeed, with specific aerodynamic concepts and figures. This is core aerodynamics and principles of flight content."
+    },
+    {
+      "chunk_id": "915b2020-b1ad-4985-8a54-4c327f52d464",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.85,
+      "notes": "Content about stall speed table with gear/flap configurations and weight calculations relates to aircraft performance systems, with secondary relevance to aerodynamics principles"
+    },
+    {
+      "chunk_id": "b0ad412c-1f63-4ee5-93d0-38cb97db0955",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses density altitude charts and weight/balance calculations, which are core aircraft performance and systems topics. Secondary classification for aerodynamics due to density altitude's impact on flight performance."
+    },
+    {
+      "chunk_id": "ba7818ef-a584-4d7b-921a-9286a6fcc241",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.88,
+      "notes": "Content discusses takeoff procedures, speeds, and safety considerations from AFM/POH with performance aspects"
+    },
+    {
+      "chunk_id": "5792f752-e643-45fd-994a-d1f100115ab0",
+      "primary_slug": "tax:aviation-weather",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.82,
+      "notes": "Content discusses atmospheric pressure and temperature effects on air density - fundamental aviation weather concepts that directly impact aircraft performance. Secondary tag for aircraft systems due to performance implications."
+    },
+    {
+      "chunk_id": "03b18734-652d-4457-a117-870e344d7740",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.85,
+      "notes": "Discusses aircraft power loading, wing loading, takeoff/climb performance capabilities, and service/absolute ceiling characteristics - core aircraft systems and performance concepts with aerodynamic relationships"
+    },
+    {
+      "chunk_id": "4aa2c78d-178c-4899-9071-90a39c25dec3",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses aircraft climb performance, power settings, thrust concepts, and airspeed/energy relationships - core aircraft systems and performance topics with aerodynamic principles"
+    },
+    {
+      "chunk_id": "cf6cf2d5-7632-41b9-9498-0f25f1583eb9",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.95,
+      "notes": "Covers region of reversed command, power required curves, minimum control speed concepts - core aerodynamic principles"
+    },
+    {
+      "chunk_id": "26e5b332-1676-48ce-bdc5-c32cc1147541",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses aircraft performance parameters (max range, power required, L/D ratios) and cruise control procedures, which relates to aircraft systems and performance. Secondary classification includes aerodynamics due to lift/drag ratio concepts."
+    },
+    {
+      "chunk_id": "ad7f8ee5-14ad-495c-9a53-4638fc348717",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:navigation"
+      ],
+      "confidence": 0.8,
+      "notes": "Crosswind component calculation using charts for aircraft performance and flight planning - relates to aircraft systems and performance with navigation elements for wind calculations"
+    },
+    {
+      "chunk_id": "41b4249d-9eb3-4096-8b01-bff64569b297",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses aircraft performance concepts including maximum angle of climb (AOC), rate of climb (ROC), and power relationships - core aircraft systems/performance topics with operational flight procedures context"
+    },
+    {
+      "chunk_id": "a93af5bb-2b13-4cc0-bc09-ee8093460a35",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:navigation",
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Content covers aircraft performance calculations including takeoff distance charts and fuel/time/distance climb calculations, which are core aircraft systems and performance topics. Secondary classification includes navigation for flight planning calculations and flight operations for takeoff procedures."
+    },
+    {
+      "chunk_id": "1273e7d4-fe4e-4ac1-92d8-71d256231d30",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:regulations"
+      ],
+      "confidence": 0.85,
+      "notes": "Content focuses on aircraft performance data and use of AFM/POH, which falls under Aircraft Systems and Performance. Secondary classification for regulations due to mention of mandatory use of data."
+    },
+    {
+      "chunk_id": "466df435-1da4-454b-8297-e1939ff94a03",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.85,
+      "notes": "Content explains density altitude and its relationship to aircraft performance, which involves both aircraft systems/performance concepts and aerodynamic principles"
+    },
+    {
+      "chunk_id": "74abdf6e-e0e0-4008-b4fd-8601eae9af31",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.92,
+      "notes": "Content discusses aircraft performance charts, flight planning, and interpreting performance data - core aircraft systems and performance topic with flight operations overlap"
+    },
+    {
+      "chunk_id": "d4e2928e-bd71-4fcb-bf05-ab7cb2086bc0",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:navigation"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses aircraft performance calculations including takeoff weight, cruise altitude, fuel consumption, and range performance - core aircraft systems and performance topics"
+    },
+    {
+      "chunk_id": "6fc97c9e-d13d-4c44-a88f-80b89af20f32",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses aircraft landing performance factors including aerodynamic drag, braking systems, powerplant thrust, and effects of gross weight - primarily aircraft systems with flight operations aspects"
+    },
+    {
+      "chunk_id": "b5a8e978-a678-4d31-87ab-56875c450a63",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.9,
+      "notes": "Performance chart showing takeoff speeds, climb performance data, and associated operating conditions - classic aircraft systems performance content"
+    },
+    {
+      "chunk_id": "ad7d060c-facc-460e-8442-5756d39c7761",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.88,
+      "notes": "Content discusses aircraft takeoff performance including powerplant thrust, lift/drag relationships, and wind effects on takeoff distance with technical diagram"
+    },
+    {
+      "chunk_id": "0a4682a8-6ef9-440e-8c06-1d90735f5353",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.9,
+      "notes": "Content discusses spatial disorientation illusions and false sensations experienced by pilots, which is a core human factors aviation safety topic. Secondary classification for aerodynamics due to discussion of aircraft attitudes and maneuvers."
+    },
+    {
+      "chunk_id": "99e3d933-e2dd-47b3-a359-5ea078c5c320",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:instrument-flying"
+      ],
+      "confidence": 0.92,
+      "notes": "Content discusses spatial disorientation illusions (somatogravic, inversion illusion) and physiological effects on pilots during flight, which are core human factors topics. Secondary classification for instrument flying as these illusions are critical concerns in IMC conditions."
+    },
+    {
+      "chunk_id": "4b1a0448-709d-4992-9c6c-2e29b74ef5ec",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:instrument-flying"
+      ],
+      "confidence": 0.9,
+      "notes": "Content discusses vestibular illusions (spatial disorientation), night flying techniques, and physiological factors affecting pilot performance - core human factors topics with instrument flying applications."
+    },
+    {
+      "chunk_id": "ace7baf3-38cf-496e-84cd-c9f55261c15f",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [],
+      "confidence": 0.95,
+      "notes": "Clear introduction to aeromedical factors and medical standards for pilots - core human factors content"
+    },
+    {
+      "chunk_id": "65ffbfd7-bd90-4b75-9860-f9794101896a",
+      "primary_slug": "tax:regulations",
+      "secondary_slugs": [
+        "tax:human-factors"
+      ],
+      "confidence": 0.95,
+      "notes": "Content discusses specific CFR regulations (14 CFR part 91 and 61) regarding blood alcohol requirements and medication usage restrictions for pilots, which is core regulatory compliance material with human factors implications"
+    },
+    {
+      "chunk_id": "7445bbc4-2ea4-411f-b76a-fb25d096d51d",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:instrument-flying"
+      ],
+      "confidence": 0.95,
+      "notes": "Content discusses spatial disorientation, prevention methods, illusions, and relying on flight instruments - core human factors topics with instrument flying applications"
+    },
+    {
+      "chunk_id": "8028f794-7810-4c98-996e-c82f65bb6667",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.92,
+      "notes": "Content covers night vision protection and self-imposed stress factors (hypoglycemia, alcohol, drugs, etc.) that affect pilot performance - core human factors topics"
+    },
+    {
+      "chunk_id": "8c87ef72-e20b-4c75-853b-5d377b71e706",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:aviation-weather"
+      ],
+      "confidence": 0.9,
+      "notes": "Content discusses hypoxia types and physiological effects on pilots, including time of useful consciousness at altitude - core human factors/physiological topics. Secondary weather due to altitude effects."
+    },
+    {
+      "chunk_id": "b7a05c79-3b37-4027-bfc5-2966db026ade",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:aviation-weather"
+      ],
+      "confidence": 0.88,
+      "notes": "Content discusses visual illusions affecting pilot perception and decision-making, including night vision challenges and perspective illusions - core human factors topics with weather-related visibility considerations"
+    },
+    {
+      "chunk_id": "983773aa-27e9-45af-a9a5-ac3eb382f423",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:aviation-weather"
+      ],
+      "confidence": 0.92,
+      "notes": "Content discusses hyperventilation and hypoxia symptoms, physiological effects on pilots, and medical considerations - core human factors topics. Aviation weather secondary due to altitude-related content."
+    },
+    {
+      "chunk_id": "5c3d45e3-36ef-4707-bd82-68050511c1bb",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:aviation-weather"
+      ],
+      "confidence": 0.88,
+      "notes": "Content discusses visual illusions and perception concepts including motion parallax and geometric perspective cues, which are fundamental human factors topics in aviation safety and pilot training"
+    },
+    {
+      "chunk_id": "f47ebdba-0c6e-461c-b22d-ea49701284fe",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.9,
+      "notes": "Content about visual illusions during approach/landing, which is a key human factors topic covering perception errors and their prevention. Secondary classification for flight operations due to approach procedures."
+    },
+    {
+      "chunk_id": "d9767a29-7e1b-47cb-9ee5-f4ca075c90af",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:human-factors"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses Enhanced Night Vision Systems (SVS and EFVS) as aircraft systems technology, with secondary relevance to human factors regarding night vision limitations and pilot capabilities"
+    },
+    {
+      "chunk_id": "eed260f5-fb20-4321-81c3-2668c5b5f18f",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:aviation-weather"
+      ],
+      "confidence": 0.95,
+      "notes": "Content about decompression sickness (DCS) from scuba diving and altitude effects on human physiology, directly related to human factors in aviation with physiological implications."
+    },
+    {
+      "chunk_id": "5f3173be-5a19-4dc6-83bb-9605999b8e29",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [],
+      "confidence": 0.85,
+      "notes": "Content about hydraulic fluid safety procedures and first aid measures for aircraft systems"
+    },
+    {
+      "chunk_id": "8ca50554-f6b1-4e8c-81d7-f7f5fc285293",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Chunk discusses visual illusions and perceptual factors that affect pilots during approach and landing, which are core human factors topics. Secondary classification as flight operations due to specific approach/landing procedures mentioned."
+    },
+    {
+      "chunk_id": "68136a06-4ad4-4cc2-b50c-d774cc6ed514",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:regulations"
+      ],
+      "confidence": 0.95,
+      "notes": "Content discusses stress and fatigue effects on pilot performance, decision-making, and airman privileges - core human factors topics"
+    },
+    {
+      "chunk_id": "2a2264ae-9672-4d1a-88a9-607d53010bb6",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:aviation-weather"
+      ],
+      "confidence": 0.9,
+      "notes": "Content covers sinus blocks, medical conditions affecting pilots, and spatial orientation systems (semicircular canals) - all core human factors topics in aviation physiology"
+    },
+    {
+      "chunk_id": "2f0b6188-c67b-451a-9047-32b4076db974",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:regulations"
+      ],
+      "confidence": 0.92,
+      "notes": "Content about medical certification, aeromedical factors, and mental/physical standards for pilots. Primarily human factors with regulatory aspects."
+    },
+    {
+      "chunk_id": "f80b9a72-20b6-4334-b7ef-5c5237f1066b",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:instrument-flying"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses SVS and EFVS systems for aircraft operations in low visibility conditions, with regulatory context for instrument approaches"
+    },
+    {
+      "chunk_id": "ff5bb010-9850-418a-91db-9601840bc659",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:instrument-flying"
+      ],
+      "confidence": 0.85,
+      "notes": "Content describes night vision blind spot test and physiological limitations of human vision, clearly falling under human factors. Secondary classification for instrument flying given night vision relevance to flight operations."
+    },
+    {
+      "chunk_id": "f2872a71-36ef-419a-be59-09c108de3609",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.95,
+      "notes": "Content discusses night vision, dark adaptation, visual scanning techniques, and physiological limitations - core human factors topics for aviation safety"
+    },
+    {
+      "chunk_id": "3a04b1d6-c101-4560-b38d-6a4fa8bbdf1f",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [],
+      "confidence": 0.9,
+      "notes": "Content focuses on human vision physiology and techniques for maintaining night vision, which is clearly human factors content. Secondary classification for night operations as it specifically addresses night flying considerations."
+    },
+    {
+      "chunk_id": "d89bf4de-5d5c-48c1-b3d9-30da8e79e6af",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [],
+      "confidence": 0.95,
+      "notes": "Content about photopic vision, eye anatomy, and visual perception - core human factors physiology topic from PHAK"
+    },
+    {
+      "chunk_id": "e38a24e3-b819-45c7-bdfc-39500f5b7120",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.92,
+      "notes": "Content discusses human eye physiology, vision types (photopic/mesopic/scotopic), and visual acuity - all directly related to human factors in aviation. Secondary classification as flight operations due to operational vision considerations."
+    },
+    {
+      "chunk_id": "2f649e0a-3a5c-4b25-9e89-6c11ee938563",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:regulations"
+      ],
+      "confidence": 0.9,
+      "notes": "Content discusses medications, drugs, and their effects on pilot safety and decision-making, directly relating to human factors and aviation medicine"
+    },
+    {
+      "chunk_id": "89899b2b-a643-46c3-8e3b-08df0a8f7f6b",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:regulations"
+      ],
+      "confidence": 0.9,
+      "notes": "Content discusses drugs/medication effects on pilot physiology and performance, which is core human factors material. Secondary classification as regulations due to medical certification implications."
+    },
+    {
+      "chunk_id": "c6a13c5c-fe7e-4ff2-b56c-bc436c918c47",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [],
+      "confidence": 0.92,
+      "notes": "Content discusses physiological factors affecting pilots including dehydration, heatstroke, caffeine/alcohol intake, and blood alcohol content effects on performance - all core human factors topics for aviation safety"
+    },
+    {
+      "chunk_id": "0a1f1cd4-7406-44e2-93f3-316d5eba7c34",
+      "primary_slug": "tax:human-factors",
+      "secondary_slugs": [
+        "tax:regulations"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses medical conditions and their impact on aviation certification, which is a core human factors topic covering medical fitness to fly. Also relates to regulations regarding medical certification requirements."
+    },
+    {
+      "chunk_id": "e8d42015-3a71-4cf8-b255-535ea459ba7d",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses aircraft control systems (trim control surfaces) and flight control inputs, with secondary aerodynamics relevance for attitude control and flight characteristics"
+    },
+    {
+      "chunk_id": "4fcc8d28-1020-410e-91da-c57f6b80d69f",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.92,
+      "notes": "Content discusses lift generation, overbanking tendency, and aerodynamic principles during steep turns. Secondary classification for aircraft systems due to control surface (aileron/rudder) usage discussion."
+    },
+    {
+      "chunk_id": "944a028d-c421-4a28-b7cc-8779938f98b1",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.85,
+      "notes": "Chapter summary discussing fundamental flight maneuvers and airmanship principles - covers operational procedures with aerodynamic elements"
+    },
+    {
+      "chunk_id": "78d18936-2703-429a-b940-79b3518e90ee",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.92,
+      "notes": "Content discusses fundamental aerodynamic principles of flight controls (rudder, vertical fin, throttle) and their effects on aircraft behavior during turns, including bank angles and stability characteristics."
+    },
+    {
+      "chunk_id": "05877f6f-923d-47d2-b247-f7c0b4be7c66",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:instrument-flying"
+      ],
+      "confidence": 0.85,
+      "notes": "Content covers airplane attitude control components (pitch, bank, power, trim) and references to IMC flight and instruments, fitting aircraft systems with secondary instrument flying relevance"
+    },
+    {
+      "chunk_id": "329bfec5-578b-4a71-b552-33cbd0e47b09",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Content focuses on flight control inputs, roll rates, and aircraft turning dynamics - fundamental aerodynamic principles. Secondary classification for flight operations due to practical piloting techniques discussed."
+    },
+    {
+      "chunk_id": "ccfd0938-b136-4ced-a15f-b55ccb4699d7",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses basic flight maneuvers including steep turns, control inputs, trim usage, and coordination of elevator/aileron controls - core flight operations procedures with aircraft systems considerations"
+    },
+    {
+      "chunk_id": "0a47c393-a7fc-490b-b636-5a748ba8aa00",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.92,
+      "notes": "Discusses coordinated flight, adverse yaw, rudder control, skids/slips - core aerodynamic concepts with flight operations application"
+    },
+    {
+      "chunk_id": "9ddf86da-90ab-456f-9701-82072cd959a1",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.88,
+      "notes": "Content describes rudder control inputs and their effects on aircraft movement, plus control surface behavior during flight - fundamental flight operations concepts with aircraft systems elements"
+    },
+    {
+      "chunk_id": "a56742e6-3ef6-42e5-9148-76b7af875404",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [],
+      "confidence": 0.85,
+      "notes": "Content discusses flight attitude control, bank angles, and basic flight techniques - core aerodynamics and flight control principles."
+    },
+    {
+      "chunk_id": "fec43e56-abf4-4d14-8c27-e894f9914e3b",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.9,
+      "notes": "Content describes flight controls, their physical operation, and control movements - core aircraft systems knowledge with aerodynamics principles"
+    },
+    {
+      "chunk_id": "78acf804-cf0b-41e3-ba38-60b273c6aaa8",
+      "primary_slug": "tax:instrument-flying",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses straight flight techniques using attitude and heading indicators, which are fundamental instrument flying skills. Secondary classification for basic flight principles."
+    },
+    {
+      "chunk_id": "d20dde3a-ddfa-4421-b780-38f4c6ea1769",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:instrument-flying"
+      ],
+      "confidence": 0.88,
+      "notes": "Content covers straight-and-level flight control techniques using attitude indicator, heading indicator, visual references, and proper control coordination - core flight operations skills that also relate to instrument flying fundamentals"
+    },
+    {
+      "chunk_id": "a616aa1c-7a45-4ef8-9d1c-ed1a5e179db9",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses basic flight control techniques, trim usage, and bank/turn mechanics - core aerodynamic principles with aircraft system components"
+    },
+    {
+      "chunk_id": "ee53a34b-ae18-423c-b1e4-ea37a44f0501",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.95,
+      "notes": "Content discusses glide ratio, L/D ratio, drag effects on airspeed, and weight effects on glide performance - core aerodynamic principles"
+    },
+    {
+      "chunk_id": "e2ecffb9-de68-48a2-9ece-85d47b5d019b",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.9,
+      "notes": "Content discusses gliding flight aerodynamics, lift characteristics, and flight control coordination during unpowered flight"
+    },
+    {
+      "chunk_id": "d31f0f2c-86e3-4682-9e96-839de38677e7",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.92,
+      "notes": "Content explains glide ratio, L/D ratio, and aerodynamic principles of gliding flight, with secondary relevance to flight operations for emergency procedures"
+    },
+    {
+      "chunk_id": "e395d2b5-160e-4119-88be-02e0518d1400",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Content covers basic flight maneuvers including the fundamental principles of flight (straight-and-level, turns, climbs, descents) and aircraft motion in multiple axes, which are core aerodynamics and flight principles concepts"
+    },
+    {
+      "chunk_id": "0b5538df-40be-44e1-9628-4925b1e051e5",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.88,
+      "notes": "Content covers climb performance, pitch attitude control, and flight dynamics principles with some operational procedures"
+    },
+    {
+      "chunk_id": "3e562880-a188-46f8-a08d-ae9b91e41153",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.9,
+      "notes": "Content covers aerodynamic principles of descent including forces (weight, lift, drag, thrust) and their relationships during flight, plus flight operations aspects of descent procedures"
+    },
+    {
+      "chunk_id": "329862f9-c3b9-4f78-b61e-c11574aeb220",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:human-factors"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses flight training concepts including developing 'feel' for airplane and attitude flying fundamentals - core flight operations topics with human factors elements about perception and learning"
+    },
+    {
+      "chunk_id": "f9ff3aa5-315e-44dc-a0a0-3c5c9908013e",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:instrument-flying",
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.85,
+      "notes": "Flight control techniques and attitude management, with cross-references to instrument validation and aircraft performance monitoring"
+    },
+    {
+      "chunk_id": "3ac97a2d-812c-407b-896e-e50aef66f278",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.92,
+      "notes": "Content discusses best angle vs. best rate of climb, absolute ceiling, and climb establishment techniques - core aerodynamic principles and performance concepts"
+    },
+    {
+      "chunk_id": "13681e31-d97e-4eba-866b-3f01b3c415ec",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.9,
+      "notes": "Content discusses climb performance airspeed relationships, absolute ceiling, and aerodynamic concepts. AFH source indicates aerodynamics as primary topic."
+    },
+    {
+      "chunk_id": "8050f68a-b02e-47d3-8bee-da82c07935a4",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:national-airspace-system"
+      ],
+      "confidence": 0.95,
+      "notes": "Content covers takeoff and departure climb procedures, pilot workload, and accident statistics - core flight operations topics with safety considerations"
+    },
+    {
+      "chunk_id": "4c9e9682-e1fe-4824-a2f1-8a74b67b4981",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.88,
+      "notes": "Content discusses crosswind takeoff procedures, ground control, and aircraft handling during departure - core flight operations concepts with some aerodynamic principles"
+    },
+    {
+      "chunk_id": "f85f343d-50c1-4aa3-9e57-ba8a84a67ba2",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.9,
+      "notes": "Content describes takeoff procedures with aileron and rudder control techniques for crosswind conditions, including P-factor effects"
+    },
+    {
+      "chunk_id": "fd4d217d-05a0-49a2-907e-de6ee2356e7e",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.9,
+      "notes": "Content covers crosswind takeoff procedures, climb techniques, and common errors - core flight operations content with aircraft control aspects"
+    },
+    {
+      "chunk_id": "e36053ac-f56e-4c27-b6cb-5ad44d53fe28",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses climb performance, ground effect, airspeed control, and aerodynamic principles like drag reduction in ground effect - core aerodynamics topics with flight operations application"
+    },
+    {
+      "chunk_id": "871b2ea6-2857-4b1c-9768-a5b8f09f4b06",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.9,
+      "notes": "Content covers takeoff procedures, ground reference points for directional control, and performance considerations - core flight operations topics with some aircraft systems/performance elements"
+    },
+    {
+      "chunk_id": "48c26baf-cb0f-436b-87ff-439d9dad3092",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.9,
+      "notes": "Covers soft-field takeoff procedures including climb speeds (VX, VY), obstacle clearance, and common pilot errors - primarily flight operations with aerodynamics elements"
+    },
+    {
+      "chunk_id": "5c00666a-4997-4ee4-b36b-90b8be9fcb9b",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [],
+      "confidence": 0.92,
+      "notes": "Text discusses takeoff procedures including runway entry, directional control, and ground reference point selection during climb out - core flight operations topics"
+    },
+    {
+      "chunk_id": "e6f96bd1-e2df-4d4d-abbc-4c9bff995375",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.85,
+      "notes": "Text describes takeoff procedures including roll, lift-off, and pitch control techniques - core flight operations content with aerodynamics elements related to AOA and drag concepts"
+    },
+    {
+      "chunk_id": "75957982-ed0c-4748-8414-2b100635c6dc",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.85,
+      "notes": "Content covers soft-field takeoff techniques including common errors and operational procedures. Flight operations is primary due to focus on takeoff procedures, with aerodynamics as secondary for ground effect concepts."
+    },
+    {
+      "chunk_id": "46718c65-5606-4115-ae55-a5376358db2c",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.85,
+      "notes": "Content describes takeoff procedures, control movements, lift-off techniques, and pitch attitude adjustments - core flight operations topics with aerodynamic considerations"
+    },
+    {
+      "chunk_id": "82392517-e2fa-4f3e-ba69-68890e4c913b",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.9,
+      "notes": "Content describes takeoff procedures, techniques, and aircraft control during takeoff roll - core flight operations topics with aircraft systems considerations"
+    },
+    {
+      "chunk_id": "ed1a9bc6-8fd4-47f7-88a4-0e817dca23ff",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.85,
+      "notes": "Content covers climb procedures, airspeed control, power settings, and aircraft control during initial climb phase - core flight operations with some aerodynamic principles"
+    },
+    {
+      "chunk_id": "8b0d43a7-5487-423b-a2b9-7d2a3837df4c",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:aviation-weather"
+      ],
+      "confidence": 0.85,
+      "notes": "Content covers wind drift effects on aircraft, using an analogy with a boat in a river. Discusses crosswind forces, drift acceleration, and the physical effects of wind on aircraft movement - core aerodynamics principles with weather influence."
+    },
+    {
+      "chunk_id": "699999a5-d772-4d7f-b70b-8ffdd1153491",
+      "primary_slug": "tax:task-b-ground-reference-maneuvers",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.92,
+      "notes": "Content specifically describes S-turns ground reference maneuver with objectives and techniques - directly matches ground reference maneuvers task"
+    },
+    {
+      "chunk_id": "5d60a3e2-d6a5-443d-9de7-ffc428fd2e58",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.82,
+      "notes": "Content about ground reference maneuvers combining four flight fundamentals, with applications to traffic patterns and specific flight operations"
+    },
+    {
+      "chunk_id": "8d71bef3-119f-4df2-b9a6-47d5d92bfa9a",
+      "primary_slug": "tax:task-b-ground-reference-maneuvers",
+      "secondary_slugs": [],
+      "confidence": 0.95,
+      "notes": "Content describes eights across a road and eights around pylons, which are specific ground reference maneuvers taught in flight training"
+    },
+    {
+      "chunk_id": "780d8170-9e16-40f7-9dce-e791702f5af4",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.75,
+      "notes": "Content discusses ground reference maneuvers involving aircraft control and hazard awareness at low altitude, fitting aircraft systems category with operational procedure elements"
+    },
+    {
+      "chunk_id": "43f7bcbf-1569-45de-b164-1b63d970bd34",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:navigation"
+      ],
+      "confidence": 0.75,
+      "notes": "Content covers aircraft control techniques during turns, specifically managing bank angle, rollout rate, and wind correction - primarily flight control systems with navigation elements"
+    },
+    {
+      "chunk_id": "9d48067d-e81b-445c-a564-1f5cbf29d75d",
+      "primary_slug": "tax:task-b-ground-reference-maneuvers",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.95,
+      "notes": "Content describes ground reference maneuvers, specifically developing pilot skills for visualizing and executing maneuvers like eights along a road, with focus on bank angle manipulation and ground track maintenance."
+    },
+    {
+      "chunk_id": "0a8d51cf-900a-44ec-9157-0aac1b6eaf93",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics",
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses ground reference maneuvers, bank angle adjustments relative to wind effects, and aircraft control during turns - fits aircraft systems and performance category with aerodynamics and flight operations relevance"
+    },
+    {
+      "chunk_id": "b6d9fdb2-5004-4eb0-8ab3-e26153ec69f5",
+      "primary_slug": "unclassified",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0,
+      "notes": "Content describes ground reference maneuvers, specifically constant-radius turns compensating for wind effects, with aerodynamics principles of turn radius and bank angle relationships. (invalid slug: tax:ground-reference-maneuvers)"
+    },
+    {
+      "chunk_id": "7c467f76-1be8-4f22-bf31-66260c2566ae",
+      "primary_slug": "unclassified",
+      "secondary_slugs": [],
+      "confidence": 0,
+      "notes": "Content describes eights on pylons maneuver with specific reference to wind correction angles, ground references, and common errors. Matches exactly with the eights on pylons task for single-engine aircraft. (invalid slug: tax:eights-on-pylons-asel-ases)"
+    },
+    {
+      "chunk_id": "475230fa-469e-4078-aabc-b7761ee5f35c",
+      "primary_slug": "tax:task-b-ground-reference-maneuvers",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.95,
+      "notes": "Content discusses rectangular course ground reference maneuver with detailed flight techniques, bank angles, and wind compensation - directly matches ground reference maneuvers task"
+    },
+    {
+      "chunk_id": "e83773c3-2592-4735-b6fb-ec6891f1d4f2",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses aircraft maneuvering concepts including pivotal altitude, visual reference lines, bank angles, and flight path relationships during pylon turns - classic aircraft systems/performance topics with aerodynamic principles"
+    },
+    {
+      "chunk_id": "7b4c2ecc-b239-49fe-8741-ad222c659915",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Describes eights on pylons maneuver technique with pivotal altitude calculations and wind considerations - primarily performance maneuver content with flight operations aspects"
+    },
+    {
+      "chunk_id": "48692ec2-0d25-45fb-99ab-6e975b89d918",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.85,
+      "notes": "Content describes eights on pylons maneuver, visual reference techniques, and pivotal altitude concepts - advanced flight training maneuver involving aircraft control systems and aerodynamic principles"
+    },
+    {
+      "chunk_id": "cf4a1a0e-d863-46b3-b56d-c97c6b43251d",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:navigation"
+      ],
+      "confidence": 0.85,
+      "notes": "Discusses aircraft ground reference maneuvering, bank angle adjustments for wind compensation, and groundspeed effects - core flight technique and aircraft handling concepts"
+    },
+    {
+      "chunk_id": "8189d76a-476a-489c-9be0-fd7c6156bea6",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.75,
+      "notes": "Discusses ground reference maneuvers (rectangular course) with detailed pilot techniques for managing bank angles, aerodynamic load factors, and wind corrections during flight training maneuvers"
+    },
+    {
+      "chunk_id": "ce1bf372-8ed8-4829-b8a1-511bced771dc",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.85,
+      "notes": "Discusses advanced flight maneuvers (pylon turns) involving bank angles, pivotal altitude concepts, and common pilot errors - fits aircraft systems and performance with aerodynamic principles"
+    },
+    {
+      "chunk_id": "cc1f1d7b-804c-48bd-822b-1cc952c466db",
+      "primary_slug": "unclassified",
+      "secondary_slugs": [],
+      "confidence": 0,
+      "notes": "JSON parse error: Looking at this content about turns around a point, I can see it's discussing ground reference maneu"
+    },
+    {
+      "chunk_id": "6e7b0e16-0cda-4761-8a18-69df73156e4f",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.9,
+      "notes": "Content defines critical airspeeds for multiengine aircraft including VMC (minimum control speed) and VREF (reference landing speed), which are aircraft systems/performance parameters with aerodynamic implications"
+    },
+    {
+      "chunk_id": "238043f0-ddc9-4f93-86d8-c78010033ca9",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [],
+      "confidence": 0.92,
+      "notes": "Content discusses engine counterweights, overboosting, propeller feathering, and engine failure - all related to aircraft systems and performance"
+    },
+    {
+      "chunk_id": "2ce6a5dc-c661-4568-8504-5a033e71ec36",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Content covers multiengine aircraft handling, touch-and-go procedures, and flight training considerations specific to twin-engine systems"
+    },
+    {
+      "chunk_id": "c2d82b34-a978-4237-b769-1c35f129ac86",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Content about multiengine aircraft systems (engine failure management, shutdown procedures) with operational flight procedures context"
+    },
+    {
+      "chunk_id": "e8c7e7a8-2f16-4caa-939a-6980b1d0e4db",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.88,
+      "notes": "Content describes approach and landing procedures for single-engine operations, including specific techniques for power management, airspeed control, and trim adjustments during the landing phase"
+    },
+    {
+      "chunk_id": "480e550e-e403-4723-b349-cfc6195bacdb",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.9,
+      "notes": "Content covers multiengine aircraft control techniques and VMC procedures, focusing on proper use of flight controls during engine-out operations - core aircraft systems knowledge"
+    },
+    {
+      "chunk_id": "4e4823db-d1c8-4e0a-89b7-6d9a49186213",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.9,
+      "notes": "Content discusses critical takeoff procedures, engine failure scenarios, and operational safety considerations for multiengine aircraft. Primary focus on flight operations with secondary emphasis on aircraft systems performance."
+    },
+    {
+      "chunk_id": "222fe169-4e2c-45c8-98c6-5ef01397f82d",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Discusses OEI performance charts and control techniques for multiengine aircraft, specifically zero sideslip technique and control inputs (rudder and aileron). This is primarily about aircraft systems and performance, with secondary flight operations aspects."
+    },
+    {
+      "chunk_id": "7bc6c5bb-e0d3-46ec-9dc9-885c126c1f68",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.9,
+      "notes": "Text discusses engine failure on takeoff procedures, emergency landing strategies, and critical flight performance decisions - core flight operations concepts. Secondary classification for aerodynamics due to discussion of stall-spin scenarios and performance limitations."
+    },
+    {
+      "chunk_id": "9937fa5e-1930-48bc-8a37-241682718a50",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.92,
+      "notes": "Discusses multiengine aircraft engine failure procedures including specific system identification, verification, and configuration steps. Strong match for aircraft systems with secondary relevance to flight operations procedures."
+    },
+    {
+      "chunk_id": "471afd3e-dd00-41a0-8178-45a07667f45f",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.85,
+      "notes": "Content about VMC demonstration and stall avoidance in multiengine aircraft, focusing on aircraft systems performance and aerodynamic principles"
+    },
+    {
+      "chunk_id": "19f98360-28e9-4715-a1af-1b31b7ab36b6",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.9,
+      "notes": "Content discusses multiengine aircraft emergency procedures, securing failed engine checklists, and aircraft control priorities - directly relates to aircraft systems and emergency flight operations"
+    },
+    {
+      "chunk_id": "359c64ee-d555-4e5c-82db-c483666bf868",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.9,
+      "notes": "Content covers yaw damper systems and alternator/generator systems in multiengine aircraft, which are aircraft systems topics with some operational considerations"
+    },
+    {
+      "chunk_id": "073f1e88-45b7-4347-a0f2-dc60abb9035f",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Discusses aircraft systems including static pressure systems, pressurization, anti-icing/deicing equipment, and AFM/POH procedures"
+    },
+    {
+      "chunk_id": "89db81c2-479e-4672-8256-e63870f1d844",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.92,
+      "notes": "Go-around procedure details including power application, flap retraction, gear retraction, and traffic considerations during approach/landing operations"
+    },
+    {
+      "chunk_id": "fe1a8171-0677-4b47-b7ba-cee880387f3a",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.92,
+      "notes": "Discusses stall recovery procedures, spin characteristics, angle of attack, and stall training - clearly aerodynamics concepts with some operational guidance"
+    },
+    {
+      "chunk_id": "c3725063-7919-4dc0-9fb2-34aebcc7a618",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.95,
+      "notes": "Content covers stall recovery procedures, speeds (VX, VY), and full stall practice - core aerodynamics concepts with flight operations procedures"
+    },
+    {
+      "chunk_id": "74873846-0f1e-4040-9390-1109c206d714",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.85,
+      "notes": "Content covers takeoff and climb procedures, including manifold pressure, propeller synchronization, and short-field techniques - core flight operations procedures"
+    },
+    {
+      "chunk_id": "8b382733-e38e-4417-abd0-336ff7bb6574",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.85,
+      "notes": "Content covers multiengine airplane landing procedures and techniques, including power management, touchdown characteristics, and runway operations - core flight operations content with aircraft systems considerations"
+    },
+    {
+      "chunk_id": "4b91f621-ea2d-4b1f-b0d8-8d4724716898",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses weight calculations, payload, fuel capacity, and aircraft limitations - core aircraft systems knowledge for multiengine operations"
+    },
+    {
+      "chunk_id": "23cef420-1135-47db-8ad3-73000a9d7a3a",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.85,
+      "notes": "Content covers ground operations, taxi procedures, and takeoff preparations - core flight operations with aircraft systems components"
+    },
+    {
+      "chunk_id": "de5cf245-a228-422f-a073-eef535540af0",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.92,
+      "notes": "Introduction to multiengine airplane operations covering aircraft characteristics, weight classifications, and engine configurations - clearly falls under aircraft systems and performance with secondary relevance to flight operations"
+    },
+    {
+      "chunk_id": "39e62e96-97f2-4910-9375-f0da33da5bff",
+      "primary_slug": "tax:aerodynamics",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Discusses climb performance, airspeed vs altitude trade-offs, and aerodynamic principles like VY (best rate of climb speed). Secondary classification for flight operations due to procedural guidance on climb techniques."
+    },
+    {
+      "chunk_id": "6b05a864-f9b9-4f56-a6db-d241fdc2415b",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [],
+      "confidence": 0.9,
+      "notes": "Content describes crosswind landing techniques including crab-to-sideslip transition and control inputs during touchdown sequence - core flight operations procedures"
+    },
+    {
+      "chunk_id": "c6be3e67-3150-4672-910a-813281c69bb5",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses VMC, aircraft configuration effects, and center of gravity impacts on multiengine aircraft performance. Primarily aircraft systems and performance with aerodynamics principles."
+    },
+    {
+      "chunk_id": "760f2676-31de-4bdb-9837-41433773b24e",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Discussion of propeller governor, accumulator, feathering/unfeathering procedures - primarily aircraft systems with operational considerations"
+    },
+    {
+      "chunk_id": "87b608bb-1c94-44be-84eb-e22b4a00814d",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.88,
+      "notes": "Detailed technical content about propeller systems, blade angles, and drag characteristics - primarily aircraft systems with aerodynamic principles"
+    },
+    {
+      "chunk_id": "c884a73b-71e4-4cf0-8022-6cf4b1030e51",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.92,
+      "notes": "Detailed technical content about propeller feathering mechanisms, blade angle control forces, and engine shutdown procedures in multiengine aircraft"
+    },
+    {
+      "chunk_id": "4d637773-4ffa-4d73-84e6-018599713769",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses fuel management systems, engine temperatures, and operational procedures specific to multiengine aircraft systems"
+    },
+    {
+      "chunk_id": "67b8d280-9a2f-44e2-9266-9654504f8710",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses multiengine aircraft crossfeed systems and combustion heater systems - specific aircraft equipment and systems operation"
+    },
+    {
+      "chunk_id": "5766ba53-0c13-434d-86b2-61f6a1edc427",
+      "primary_slug": "tax:flight-operations",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.87,
+      "notes": "Content covers multiengine aircraft takeoff procedures, including preflight planning, weight/balance, runway requirements, and engine failure considerations. Primary focus is on operational procedures with secondary emphasis on aircraft performance systems."
+    },
+    {
+      "chunk_id": "bd6a2a06-dd29-4cf3-bc3d-fab2f25081b7",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.9,
+      "notes": "Content covers climb gradient, accelerate-stop/go distances, and service ceilings for multiengine aircraft - key aircraft performance and systems concepts"
+    },
+    {
+      "chunk_id": "b682ada3-fc3c-4189-aae1-1d7609e219b5",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.9,
+      "notes": "Content discusses multiengine aircraft systems including asymmetric thrust, critical engine concepts, VMC demonstrations, and counter-rotating engines - primarily aircraft systems with aerodynamic principles"
+    },
+    {
+      "chunk_id": "c549c65c-f2ae-4a1a-b896-b4274bfddd28",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics"
+      ],
+      "confidence": 0.88,
+      "notes": "Content discusses aircraft performance metrics (rate of climb, climb gradient) and multiengine aircraft performance loss with engine failure. Technical discussion of thrust horsepower and climb performance characteristics fits aircraft systems with aerodynamic principles secondary."
+    },
+    {
+      "chunk_id": "d12ca9a1-7641-49ea-a57a-6899e3680903",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:regulations"
+      ],
+      "confidence": 0.85,
+      "notes": "Covers aircraft weight and balance terminology, basic empty weight calculations, and equipment classifications which are fundamental aircraft systems concepts with regulatory compliance aspects"
+    },
+    {
+      "chunk_id": "dbc0ef3e-7d2c-4352-9598-973ca4bf9b76",
+      "primary_slug": "tax:aircraft-systems",
+      "secondary_slugs": [
+        "tax:aerodynamics",
+        "tax:flight-operations"
+      ],
+      "confidence": 0.92,
+      "notes": "Content describes VMC demonstration procedures in multiengine aircraft, focusing on engine inoperative conditions, control characteristics, and safety considerations. Strong match for aircraft systems with secondary relevance to aerodynamics (flight characteristics) and flight operations (safety procedures)."
+    },
+    {
+      "chunk_id": "9ba3e74e-b6e0-4e3b-9aa3-8cdd8d350f30",
+      "primary_slug": "tax:regulations",
+      "secondary_slugs": [
+        "tax:national-airspace-system"
+      ],
+      "confidence": 0.95,
+      "notes": "Content covers FAA standard phraseology for numbers and phonetic alphabet from AIM Chapter 4, which is regulatory guidance for radio communications procedures"
+    },
+    {
+      "chunk_id": "5068bf91-0116-49af-b4df-ac12c97809aa",
+      "primary_slug": "tax:section-2-radio-communications-phraseology-and-techniques",
+      "secondary_slugs": [],
+      "confidence": 0.95,
+      "notes": "Content specifically covers radio communications phraseology and procedures, including format for subsequent contacts and responses to ground facility callups"
+    },
+    {
+      "chunk_id": "c943ddba-8e15-4da6-a999-7171090452c5",
+      "primary_slug": "tax:section-2-radio-communications-phraseology-and-techniques",
+      "secondary_slugs": [],
+      "confidence": 0.95,
+      "notes": "Content directly covers radio communication phraseology and techniques, specifically aircraft call sign procedures and ATC communication protocols"
+    },
+    {
+      "chunk_id": "501c5143-4659-4e4a-bf21-d1dca3062c3c",
+      "primary_slug": "tax:section-2-radio-communications-phraseology-and-techniques",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.8,
+      "notes": "Content discusses radio communications and phraseology for MEDEVAC, HOSP, and AIR EVAC flights, including ATC priority handling procedures"
+    },
+    {
+      "chunk_id": "94cfab97-7137-4201-bab5-99cacdb53aba",
+      "primary_slug": "tax:section-2-radio-communications-phraseology-and-techniques",
+      "secondary_slugs": [],
+      "confidence": 0.95,
+      "notes": "Content discusses radio communications procedures including equipment considerations, phraseology, and contact procedures - clearly matches the radio communications taxonomy node"
+    },
+    {
+      "chunk_id": "eb17849d-da29-457c-ac68-7e63ed975ada",
+      "primary_slug": "unclassified",
+      "secondary_slugs": [],
+      "confidence": 0,
+      "notes": "Content covers radio communication procedures, time announcements, and tower communications with inoperative equipment - all core airport operations and communication topics (invalid slug: tax:communications-light-signals-and-runway-lighting-systems)"
+    },
+    {
+      "chunk_id": "bc4d78f4-70c2-476b-b6fa-b2f3481c5a53",
+      "primary_slug": "tax:section-2-radio-communications-phraseology-and-techniques",
+      "secondary_slugs": [
+        "tax:national-airspace-system"
+      ],
+      "confidence": 0.95,
+      "notes": "Content specifically covers radio communications phraseology for directions, headings, and speeds - matches section 2 of AIM Chapter 4 exactly"
+    },
+    {
+      "chunk_id": "1a993cf3-16e1-4dd4-abc4-188934b9b276",
+      "primary_slug": "tax:national-airspace-system",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.9,
+      "notes": "Content about transponder operations, ADS-B requirements, and airport reservation procedures - core ATC communication/operational guidance within the NAS"
+    },
+    {
+      "chunk_id": "76fdd813-3621-4731-ac13-d777fa9414e5",
+      "primary_slug": "tax:national-airspace-system",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.85,
+      "notes": "Content covers waiver cancellation procedures and Weather Systems Processor for National Airspace System operations. Primary focus on NAS systems and procedures, with secondary operational aspects."
+    },
+    {
+      "chunk_id": "a5e9c915-1866-4535-8940-af4d4c868671",
+      "primary_slug": "tax:section-2-radio-communications-phraseology-and-techniques",
+      "secondary_slugs": [],
+      "confidence": 0.95,
+      "notes": "Direct match with taxonomy node for radio communications section from AIM. Content discusses radio communications procedures and techniques for pilots and ATC."
+    },
+    {
+      "chunk_id": "4ee4d158-9f6b-4516-950c-21a5f6071516",
+      "primary_slug": "tax:section-2-radio-communications-phraseology-and-techniques",
+      "secondary_slugs": [],
+      "confidence": 0.95,
+      "notes": "Content directly covers radio communications phraseology including phonetic alphabet and ATC facility naming conventions - exactly matches section 2"
+    },
+    {
+      "chunk_id": "641e090c-d0c9-400b-ab0e-f7ac896063ff",
+      "primary_slug": "tax:section-1-services-available-to-pilots",
+      "secondary_slugs": [
+        "tax:national-airspace-system",
+        "tax:section-2-controlled-airspace"
+      ],
+      "confidence": 0.95,
+      "notes": "Content describes TRSA operations, pilot separation procedures, and ATC services - clearly matches services available to pilots section"
+    },
+    {
+      "chunk_id": "fffec354-b47e-425e-8db9-d3f0dad408ef",
+      "primary_slug": "tax:section-1-services-available-to-pilots",
+      "secondary_slugs": [
+        "tax:national-airspace-system"
+      ],
+      "confidence": 0.95,
+      "notes": "Content about TEC (Tower En Route Control) program, which is a pilot service within approach control airspace - fits perfectly under Services Available to Pilots section from AIM"
+    },
+    {
+      "chunk_id": "74c2873a-7b6d-4509-907b-b54bda896764",
+      "primary_slug": "tax:national-airspace-system",
+      "secondary_slugs": [
+        "tax:aircraft-systems"
+      ],
+      "confidence": 0.85,
+      "notes": "Content discusses ADS-B and transponder operations, ATC communications, and altitude reporting procedures - all core NAS operational topics. Secondary classification for aircraft systems due to transponder/ADS-B equipment discussion."
+    },
+    {
+      "chunk_id": "1a25a874-2ba0-4a39-a4d2-0f256e0effbb",
+      "primary_slug": "tax:section-1-services-available-to-pilots",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.92,
+      "notes": "Content discusses VFR aircraft contact with approach control, sequencing services, and ATC instructions for following aircraft - clearly fits under services available to pilots from AIM Chapter 4 Section 1"
+    },
+    {
+      "chunk_id": "aa6ff701-0a7f-43f7-b64f-af8d1c1cbc83",
+      "primary_slug": "tax:national-airspace-system",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.95,
+      "notes": "Content covers ATC transponder and ADS-B operating requirements and procedures in controlled/uncontrolled airspace, which is core NAS operations. Secondary classification for flight operations due to pilot procedural guidance."
+    },
+    {
+      "chunk_id": "7194c93d-c5de-448b-9fdf-38d3952f0012",
+      "primary_slug": "tax:section-3-airport-operations",
+      "secondary_slugs": [],
+      "confidence": 0.92,
+      "notes": "Content discusses runway condition reports, runway condition codes (RwyCC), aircraft braking coefficient, and runway surface conditions - all core airport operations topics from AIM section 4-3"
+    },
+    {
+      "chunk_id": "16d16e19-ea7e-4b7a-b21d-d5bc634c73cf",
+      "primary_slug": "tax:section-1-services-available-to-pilots",
+      "secondary_slugs": [],
+      "confidence": 0.95,
+      "notes": "Content discusses traffic information service provisions and controller discretion in providing services to pilots, directly matching the Services Available to Pilots section"
+    },
+    {
+      "chunk_id": "741acf6c-80d8-44a7-aa01-dcb42b9f95a4",
+      "primary_slug": "tax:national-airspace-system",
+      "secondary_slugs": [
+        "tax:flight-operations"
+      ],
+      "confidence": 0.95,
+      "notes": "Content about ATC terrain/obstruction alerts, altitude monitoring procedures, and traffic alert procedures in the National Airspace System. Secondary classification as flight operations due to operational procedures involving pilots and controllers."
+    }
+  ]
+}

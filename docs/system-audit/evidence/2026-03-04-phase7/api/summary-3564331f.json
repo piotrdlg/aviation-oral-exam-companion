@@ -1,0 +1,116 @@
+{
+  "session_id": "3564331f-bf0a-412c-a221-86e8b6319fd0",
+  "timestamp": "2026-03-03T03:07:50.906Z",
+  "rating": "private",
+  "study_mode": "linear",
+  "exchange_count": 4,
+  "v2_status": "incomplete",
+  "v2_score": 0.17,
+  "weak_elements_total": 10,
+  "weak_elements_audited": 10,
+  "grounded_count": 10,
+  "insufficient_count": 0,
+  "grounding_rate": 100,
+  "elements": [
+    {
+      "element_code": "PA.I.A.K2",
+      "area": "I",
+      "severity": "not_asked",
+      "transcript_citations": 0,
+      "evidence_citations": 3,
+      "total_citations": 3,
+      "grounded": true,
+      "sample_citation": "FAA-S-ACS-6C Private Pilot ACS"
+    },
+    {
+      "element_code": "PA.I.A.K3",
+      "area": "I",
+      "severity": "not_asked",
+      "transcript_citations": 0,
+      "evidence_citations": 10,
+      "total_citations": 10,
+      "grounded": true,
+      "sample_citation": "14 CFR Part 43"
+    },
+    {
+      "element_code": "PA.I.A.K5",
+      "area": "I",
+      "severity": "not_asked",
+      "transcript_citations": 0,
+      "evidence_citations": 5,
+      "total_citations": 5,
+      "grounded": true,
+      "sample_citation": "AC AC 68-1A BasicMed"
+    },
+    {
+      "element_code": "PA.I.A.R1",
+      "area": "I",
+      "severity": "not_asked",
+      "transcript_citations": 0,
+      "evidence_citations": 4,
+      "total_citations": 4,
+      "grounded": true,
+      "sample_citation": "14 CFR Part 61"
+    },
+    {
+      "element_code": "PA.I.A.R2",
+      "area": "I",
+      "severity": "not_asked",
+      "transcript_citations": 0,
+      "evidence_citations": 10,
+      "total_citations": 10,
+      "grounded": true,
+      "sample_citation": "AIM aim 04 ch4"
+    },
+    {
+      "element_code": "PA.I.B.K1",
+      "area": "I",
+      "severity": "not_asked",
+      "transcript_citations": 0,
+      "evidence_citations": 10,
+      "total_citations": 10,
+      "grounded": true,
+      "sample_citation": "14 CFR Part 68"
+    },
+    {
+      "element_code": "PA.I.B.K2",
+      "area": "I",
+      "severity": "not_asked",
+      "transcript_citations": 0,
+      "evidence_citations": 10,
+      "total_citations": 10,
+      "grounded": true,
+      "sample_citation": "14 CFR Part 91"
+    },
+    {
+      "element_code": "PA.I.B.K3",
+      "area": "I",
+      "severity": "not_asked",
+      "transcript_citations": 0,
+      "evidence_citations": 10,
+      "total_citations": 10,
+      "grounded": true,
+      "sample_citation": "AIM aim 04 ch4"
+    },
+    {
+      "element_code": "PA.I.B.K4",
+      "area": "I",
+      "severity": "not_asked",
+      "transcript_citations": 0,
+      "evidence_citations": 10,
+      "total_citations": 10,
+      "grounded": true,
+      "sample_citation": "14 CFR Part 91"
+    },
+    {
+      "element_code": "PA.I.B.R1",
+      "area": "I",
+      "severity": "not_asked",
+      "transcript_citations": 0,
+      "evidence_citations": 11,
+      "total_citations": 11,
+      "grounded": true,
+      "sample_citation": "PHAK 11 phak ch9"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+
+> aviation-oral-exam-companion@0.1.0 eval:prompts
+> tsx scripts/eval/prompt-selection-audit.ts
+
+[dotenv@17.3.1] injecting env (17) from .env.local -- tip: 🤖 agentic secret storage: https://dotenvx.com/as2
+=== Prompt Selection Audit (R8) ===
+
+Step 1: Surveying prompt_versions table...
+  Published prompt versions: 22
+  Prompt keys:
+    assessment_system: 9 version(s) | ratings: (null) | modes: (null), linear, cross_acs
+    examiner_system: 9 version(s) | ratings: (null) | modes: linear, cross_acs, (null)
+    persona_bob_mitchell: 1 version(s) | ratings: (null) | modes: (null)
+    persona_jim_hayes: 1 version(s) | ratings: (null) | modes: (null)
+    persona_karen_sullivan: 1 version(s) | ratings: (null) | modes: (null)
+    persona_maria_torres: 1 version(s) | ratings: (null) | modes: (null)
+
+Step 2: Validating fallback prompts...
+  ✅ examiner_system: 573 chars
+  ✅ assessment_system: 1189 chars
+  ✅ IMMUTABLE_SAFETY_PREFIX: 504 chars
+
+Step 3: Simulating prompt selection for all config combos...
+  Total config combos tested: 96
+  DB prompt selected: 96 (100.0%)
+  Fallback selected:  0 (0.0%)
+  Safety prefix present: 96/96
+
+Step 4: Checking persona prompt fragments...
+  Found 4 persona fragment(s)
+    persona_bob_mitchell: 609 chars (v1)
+    persona_jim_hayes: 521 chars (v1)
+    persona_karen_sullivan: 547 chars (v1)
+    persona_maria_torres: 504 chars (v1)
+
+=== AUDIT CHECKS ===
+✅ fallback_prompts_valid: Both fallback prompts have content (examiner_system:573, assessment_system:1189)
+✅ safety_prefix_exists: IMMUTABLE_SAFETY_PREFIX: 504 chars
+✅ no_empty_prompts: All 96 combos produce non-empty content
+✅ specificity_scoring: 2 distinct specificity level(s): 0, 2
+✅ getPromptContent_never_empty: getPromptContent() returns fallback when DB is null — validated by non-empty content check
+
+Evidence saved to /Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/docs/system-audit/evidence/2026-03-04-phase7/eval/prompt-selection-audit.{json,md}
+
+OVERALL: PASS

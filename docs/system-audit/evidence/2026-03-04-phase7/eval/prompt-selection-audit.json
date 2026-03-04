@@ -1,0 +1,938 @@
+{
+  "timestamp": "2026-03-04T03:18:38.025Z",
+  "db_prompt_count": 22,
+  "total_combos": 96,
+  "db_selected": 96,
+  "fallback_selected": 0,
+  "safety_prefix_length": 504,
+  "fallback_checks": [
+    {
+      "key": "examiner_system",
+      "has_content": true,
+      "has_safety": true,
+      "length": 573
+    },
+    {
+      "key": "assessment_system",
+      "has_content": true,
+      "has_safety": true,
+      "length": 1189
+    }
+  ],
+  "persona_fragments": [
+    {
+      "persona_key": "persona_bob_mitchell",
+      "exists": true,
+      "content_length": 609
+    },
+    {
+      "persona_key": "persona_jim_hayes",
+      "exists": true,
+      "content_length": 521
+    },
+    {
+      "persona_key": "persona_karen_sullivan",
+      "exists": true,
+      "content_length": 547
+    },
+    {
+      "persona_key": "persona_maria_torres",
+      "exists": true,
+      "content_length": 504
+    }
+  ],
+  "checks": [
+    {
+      "check": "fallback_prompts_valid",
+      "pass": true,
+      "detail": "Both fallback prompts have content (examiner_system:573, assessment_system:1189)"
+    },
+    {
+      "check": "safety_prefix_exists",
+      "pass": true,
+      "detail": "IMMUTABLE_SAFETY_PREFIX: 504 chars"
+    },
+    {
+      "check": "no_empty_prompts",
+      "pass": true,
+      "detail": "All 96 combos produce non-empty content"
+    },
+    {
+      "check": "specificity_scoring",
+      "pass": true,
+      "detail": "2 distinct specificity level(s): 0, 2"
+    },
+    {
+      "check": "getPromptContent_never_empty",
+      "pass": true,
+      "detail": "getPromptContent() returns fallback when DB is null — validated by non-empty content check"
+    }
+  ],
+  "selection_matrix": [
+    {
+      "prompt_key": "examiner_system",
+      "rating": "private",
+      "study_mode": "full_exam",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "private",
+      "study_mode": "full_exam",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "private",
+      "study_mode": "full_exam",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "private",
+      "study_mode": "full_exam",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "private",
+      "study_mode": "topic_focus",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "private",
+      "study_mode": "topic_focus",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "private",
+      "study_mode": "topic_focus",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "private",
+      "study_mode": "topic_focus",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "private",
+      "study_mode": "cross_acs",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 2348
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "private",
+      "study_mode": "cross_acs",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 2724
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "private",
+      "study_mode": "cross_acs",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 3245
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "private",
+      "study_mode": "cross_acs",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 2412
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "private",
+      "study_mode": "quick_drill",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "private",
+      "study_mode": "quick_drill",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "private",
+      "study_mode": "quick_drill",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "private",
+      "study_mode": "quick_drill",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "commercial",
+      "study_mode": "full_exam",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "commercial",
+      "study_mode": "full_exam",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "commercial",
+      "study_mode": "full_exam",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "commercial",
+      "study_mode": "full_exam",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "commercial",
+      "study_mode": "topic_focus",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "commercial",
+      "study_mode": "topic_focus",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "commercial",
+      "study_mode": "topic_focus",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "commercial",
+      "study_mode": "topic_focus",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "commercial",
+      "study_mode": "cross_acs",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 2348
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "commercial",
+      "study_mode": "cross_acs",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 2724
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "commercial",
+      "study_mode": "cross_acs",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 3245
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "commercial",
+      "study_mode": "cross_acs",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 2412
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "commercial",
+      "study_mode": "quick_drill",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "commercial",
+      "study_mode": "quick_drill",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "commercial",
+      "study_mode": "quick_drill",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "commercial",
+      "study_mode": "quick_drill",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "instrument",
+      "study_mode": "full_exam",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "instrument",
+      "study_mode": "full_exam",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "instrument",
+      "study_mode": "full_exam",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "instrument",
+      "study_mode": "full_exam",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "instrument",
+      "study_mode": "topic_focus",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "instrument",
+      "study_mode": "topic_focus",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "instrument",
+      "study_mode": "topic_focus",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "instrument",
+      "study_mode": "topic_focus",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "instrument",
+      "study_mode": "cross_acs",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 2348
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "instrument",
+      "study_mode": "cross_acs",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 2724
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "instrument",
+      "study_mode": "cross_acs",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 3245
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "instrument",
+      "study_mode": "cross_acs",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 2412
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "instrument",
+      "study_mode": "quick_drill",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "instrument",
+      "study_mode": "quick_drill",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "instrument",
+      "study_mode": "quick_drill",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "examiner_system",
+      "rating": "instrument",
+      "study_mode": "quick_drill",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1949
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "private",
+      "study_mode": "full_exam",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "private",
+      "study_mode": "full_exam",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "private",
+      "study_mode": "full_exam",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "private",
+      "study_mode": "full_exam",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "private",
+      "study_mode": "topic_focus",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "private",
+      "study_mode": "topic_focus",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "private",
+      "study_mode": "topic_focus",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "private",
+      "study_mode": "topic_focus",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "private",
+      "study_mode": "cross_acs",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 1828
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "private",
+      "study_mode": "cross_acs",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 1906
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "private",
+      "study_mode": "cross_acs",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 2008
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "private",
+      "study_mode": "cross_acs",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 2196
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "private",
+      "study_mode": "quick_drill",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "private",
+      "study_mode": "quick_drill",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "private",
+      "study_mode": "quick_drill",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "private",
+      "study_mode": "quick_drill",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "commercial",
+      "study_mode": "full_exam",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "commercial",
+      "study_mode": "full_exam",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "commercial",
+      "study_mode": "full_exam",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "commercial",
+      "study_mode": "full_exam",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "commercial",
+      "study_mode": "topic_focus",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "commercial",
+      "study_mode": "topic_focus",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "commercial",
+      "study_mode": "topic_focus",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "commercial",
+      "study_mode": "topic_focus",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "commercial",
+      "study_mode": "cross_acs",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 1828
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "commercial",
+      "study_mode": "cross_acs",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 1906
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "commercial",
+      "study_mode": "cross_acs",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 2008
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "commercial",
+      "study_mode": "cross_acs",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 2196
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "commercial",
+      "study_mode": "quick_drill",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "commercial",
+      "study_mode": "quick_drill",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "commercial",
+      "study_mode": "quick_drill",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "commercial",
+      "study_mode": "quick_drill",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "instrument",
+      "study_mode": "full_exam",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "instrument",
+      "study_mode": "full_exam",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "instrument",
+      "study_mode": "full_exam",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "instrument",
+      "study_mode": "full_exam",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "instrument",
+      "study_mode": "topic_focus",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "instrument",
+      "study_mode": "topic_focus",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "instrument",
+      "study_mode": "topic_focus",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "instrument",
+      "study_mode": "topic_focus",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "instrument",
+      "study_mode": "cross_acs",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 1828
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "instrument",
+      "study_mode": "cross_acs",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 1906
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "instrument",
+      "study_mode": "cross_acs",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 2008
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "instrument",
+      "study_mode": "cross_acs",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 2,
+      "content_length": 2196
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "instrument",
+      "study_mode": "quick_drill",
+      "difficulty": "easy",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "instrument",
+      "study_mode": "quick_drill",
+      "difficulty": "medium",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "instrument",
+      "study_mode": "quick_drill",
+      "difficulty": "hard",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    },
+    {
+      "prompt_key": "assessment_system",
+      "rating": "instrument",
+      "study_mode": "quick_drill",
+      "difficulty": "mixed",
+      "source": "db",
+      "specificity": 0,
+      "content_length": 1862
+    }
+  ],
+  "overall_pass": true
+}

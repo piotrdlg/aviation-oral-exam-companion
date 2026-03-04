@@ -1,0 +1,1360 @@
+{
+  "doc_abbrev": "wbh",
+  "doc_title": "Weight & Balance Handbook (FAA-H-8083-1B)",
+  "faa_number": "FAA-H-8083-1B",
+  "files_processed": [
+    "FAA-H-8083-1B_Weight_Balance.pdf"
+  ],
+  "total_entries": 168,
+  "level_counts": {
+    "level_1": 168,
+    "level_2": 0,
+    "level_3": 0
+  },
+  "entries": [
+    {
+      "toc_level": 1,
+      "title": "Preface",
+      "page": 5,
+      "raw_title": "Preface",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Introduction",
+      "page": 7,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Acknowledgments",
+      "page": 9,
+      "raw_title": "Acknowledgments",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Table of Contents",
+      "page": 11,
+      "raw_title": "Table of Contents",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter",
+      "page": 15,
+      "raw_title": "Chapter 1",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Weight and Balance Control",
+      "page": 15,
+      "raw_title": "Weight and Balance Control",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Introduction",
+      "page": 15,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Responsibility for Weight and Balance Control",
+      "page": 16,
+      "raw_title": "Responsibility for Weight and Balance Control",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Terminology",
+      "page": 16,
+      "raw_title": "Terminology",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Weight Control",
+      "page": 16,
+      "raw_title": "Weight Control ",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Effects of Weight",
+      "page": 17,
+      "raw_title": "Effects of Weight",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Weight Changes",
+      "page": 17,
+      "raw_title": "Weight Changes",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Stability and Balance Control",
+      "page": 18,
+      "raw_title": "Stability and Balance Control",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Weight Control for Aircraft Other Than Fixed and Rotor-wing",
+      "page": 19,
+      "raw_title": "Weight Control for Aircraft Other Than Fixed and Rotor-wing",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Weight-Shift Control Aircraft",
+      "page": 19,
+      "raw_title": "Weight-Shift Control Aircraft",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Powered Parachutes",
+      "page": 20,
+      "raw_title": "Powered Parachutes",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Balloons",
+      "page": 20,
+      "raw_title": "Balloons",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Underestimating the Importance of Weight and Balance",
+      "page": 20,
+      "raw_title": "Underestimating the Importance of Weight and Balance",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter",
+      "page": 21,
+      "raw_title": "Chapter 2",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Weight and Balance Theory",
+      "page": 21,
+      "raw_title": "Weight and Balance Theory",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Introduction",
+      "page": 21,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Weight and Balance Theory",
+      "page": 22,
+      "raw_title": "Weight and Balance Theory",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Arm",
+      "page": 22,
+      "raw_title": "Arm ",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Moment",
+      "page": 22,
+      "raw_title": "Moment",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "The Law of the Lever",
+      "page": 22,
+      "raw_title": "The Law of the Lever",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Shifting the Balance Point or CG",
+      "page": 24,
+      "raw_title": "Shifting the Balance Point or CG",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Solution by Chart",
+      "page": 24,
+      "raw_title": "Solution by Chart",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Basic Weight and Balance Equation",
+      "page": 24,
+      "raw_title": "Basic Weight and Balance Equation",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Solution by Formula",
+      "page": 25,
+      "raw_title": "Solution by Formula",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Mean Aerodynamic Chord",
+      "page": 25,
+      "raw_title": "Mean Aerodynamic Chord",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "FAA-Furnished Weight and Balance Information",
+      "page": 26,
+      "raw_title": "FAA-Furnished Weight and Balance Information ",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "CG Range",
+      "page": 26,
+      "raw_title": "CG Range",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Empty Weight CG Range (EWCG)",
+      "page": 26,
+      "raw_title": "Empty Weight CG Range (EWCG)",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Maximum Weights",
+      "page": 26,
+      "raw_title": "Maximum Weights",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Number of Seats",
+      "page": 26,
+      "raw_title": "Number of Seats",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Maximum Baggage",
+      "page": 26,
+      "raw_title": "Maximum Baggage ",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Fuel Capacity",
+      "page": 26,
+      "raw_title": "Fuel Capacity",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Oil Capacity (Wet Sump)",
+      "page": 26,
+      "raw_title": "Oil Capacity (Wet Sump)",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Data Pertinent to all Models",
+      "page": 30,
+      "raw_title": "Data Pertinent to all Models",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Manufacturer-Furnished Information",
+      "page": 30,
+      "raw_title": "Manufacturer-Furnished Information",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter",
+      "page": 33,
+      "raw_title": "Chapter 3",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Weighing the Aircraft and Determining the Empty Weight Center of Gravity",
+      "page": 33,
+      "raw_title": "Weighing the Aircraft and Determining the Empty Weight Center of Gravity",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Introduction",
+      "page": 33,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Requirements",
+      "page": 34,
+      "raw_title": "Requirements",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Equipment for Weighing",
+      "page": 34,
+      "raw_title": "Equipment for Weighing",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Preparation for Weighing",
+      "page": 35,
+      "raw_title": "Preparation for Weighing",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Scale Preparation",
+      "page": 35,
+      "raw_title": "Scale Preparation",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Weigh Clean Aircraft Inside Hangar",
+      "page": 36,
+      "raw_title": "Weigh Clean Aircraft Inside Hangar",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Equipment List",
+      "page": 36,
+      "raw_title": "Equipment List",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Ballast",
+      "page": 36,
+      "raw_title": "Ballast",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Standard Weights",
+      "page": 36,
+      "raw_title": "Standard Weights",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Draining the Fuel",
+      "page": 36,
+      "raw_title": "Draining the Fuel",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Oil",
+      "page": 36,
+      "raw_title": "Oil",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Other Fluids",
+      "page": 36,
+      "raw_title": "Other Fluids",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Configuration of the Aircraft",
+      "page": 37,
+      "raw_title": "Configuration of the Aircraft",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Jacking the Aircraft",
+      "page": 37,
+      "raw_title": "Jacking the Aircraft",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Leveling the Aircraft",
+      "page": 37,
+      "raw_title": "Leveling the Aircraft",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Safety Considerations",
+      "page": 37,
+      "raw_title": "Safety Considerations",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining the CG",
+      "page": 37,
+      "raw_title": "Determining the CG",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "EWCG Formulas",
+      "page": 38,
+      "raw_title": "EWCG Formulas",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Datum Forward of the Airplane\u2014Nosewheel Landing Gear",
+      "page": 38,
+      "raw_title": "Datum Forward of the Airplane\u2014Nosewheel Landing Gear",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Datum Aft of the Main Wheels\u2014Nosewheel Landing Gear",
+      "page": 38,
+      "raw_title": "Datum Aft of the Main Wheels\u2014Nosewheel Landing Gear",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Location of Datum",
+      "page": 39,
+      "raw_title": "Location of Datum",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Datum Forward of the Main Wheels\u2014Tailwheel Landing Gear",
+      "page": 39,
+      "raw_title": "Datum Forward of the Main Wheels\u2014Tailwheel Landing Gear",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Datum Aft of the Main Wheels\u2014Tailwheel Landing Gear",
+      "page": 39,
+      "raw_title": "Datum Aft of the Main Wheels\u2014Tailwheel Landing Gear",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Center of Gravity (CG) and Mean Aerodynamic Chord (MAC)",
+      "page": 40,
+      "raw_title": "Center of Gravity (CG) and Mean Aerodynamic Chord (MAC)",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Center of Gravity (CG)",
+      "page": 40,
+      "raw_title": "Center of Gravity (CG)",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Mean Aerodynamic Chord (MAC)",
+      "page": 40,
+      "raw_title": "Mean Aerodynamic Chord (MAC)",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter",
+      "page": 43,
+      "raw_title": "Chapter 4",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Light Sport Aircraft Weight and Balance Control",
+      "page": 43,
+      "raw_title": "Light Sport Aircraft Weight and Balance Control",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Introduction",
+      "page": 43,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "LSA Definition of Terms",
+      "page": 44,
+      "raw_title": "LSA Definition of Terms",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Weight and Balance",
+      "page": 45,
+      "raw_title": "Weight and Balance",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "WSC Aircraft",
+      "page": 45,
+      "raw_title": "WSC Aircraft",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Powered Parachutes",
+      "page": 46,
+      "raw_title": "Powered Parachutes",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Weight and Balance Computations (Amateur-Built Aircraft)",
+      "page": 46,
+      "raw_title": "Weight and Balance Computations (Amateur-Built Aircraft)",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter",
+      "page": 49,
+      "raw_title": "Chapter 5",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Single-Engine Aircraft Weight and Balance Computations",
+      "page": 49,
+      "raw_title": "Single-Engine Aircraft Weight and Balance Computations",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Introduction",
+      "page": 49,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining the Loaded Weight and CG",
+      "page": 50,
+      "raw_title": "Determining the Loaded Weight and CG",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Manual Computational Method",
+      "page": 50,
+      "raw_title": "Manual Computational Method",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Loading Graph Method",
+      "page": 52,
+      "raw_title": "Loading Graph Method",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Moment Indexes",
+      "page": 52,
+      "raw_title": "Moment Indexes",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Loading Graph",
+      "page": 52,
+      "raw_title": "Loading Graph",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Compute Weight and Balance Using the Loading Graph",
+      "page": 52,
+      "raw_title": "Compute Weight and Balance Using the Loading Graph",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter",
+      "page": 55,
+      "raw_title": "Chapter 6",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Multiengine Aircraft",
+      "page": 55,
+      "raw_title": "Multiengine Aircraft ",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Weight and Balance Computations",
+      "page": 55,
+      "raw_title": "Weight and Balance Computations",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Introduction",
+      "page": 55,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determine the Loaded CG",
+      "page": 56,
+      "raw_title": "Determine the Loaded CG",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Chart Method Using Weight, Arm, and Moments",
+      "page": 56,
+      "raw_title": "Chart Method Using Weight, Arm, and Moments",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining the CG in Percentage of Mean Aerodynamic Chord (MAC)",
+      "page": 57,
+      "raw_title": "Determining the CG in Percentage of Mean Aerodynamic Chord (MAC)",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "The Chart Method Using Weight and Moment Indexes",
+      "page": 57,
+      "raw_title": "The Chart Method Using Weight and Moment Indexes",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter",
+      "page": 61,
+      "raw_title": "Chapter 7",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Center of Gravity Change After a Repair or Alteration",
+      "page": 61,
+      "raw_title": "Center of Gravity Change After a Repair or Alteration",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Introduction",
+      "page": 61,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Equipment List",
+      "page": 62,
+      "raw_title": "Equipment List",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Major Alteration and Repair",
+      "page": 63,
+      "raw_title": "Major Alteration and Repair",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Weight and Balance Revision Record",
+      "page": 63,
+      "raw_title": "Weight and Balance Revision Record",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Weight Changes Caused by a Repair or Alteration",
+      "page": 65,
+      "raw_title": "Weight Changes Caused by a Repair or Alteration",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Computations Using Weight, Arm, and Moment",
+      "page": 65,
+      "raw_title": "Computations Using Weight, Arm, and Moment",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Computations Using Weight and Moment Indexes",
+      "page": 65,
+      "raw_title": "Computations Using Weight and Moment Indexes",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining the CG in Percentage of Mean Aerodynamic Chord (Percent MAC)",
+      "page": 66,
+      "raw_title": "Determining the CG in Percentage of Mean Aerodynamic Chord (Percent MAC)",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Empty Weight CG (EWCG) Range",
+      "page": 66,
+      "raw_title": "Empty Weight CG (EWCG) Range",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Adverse-Load CG Checks",
+      "page": 66,
+      "raw_title": "Adverse-Load CG Checks",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Forward Adverse-Load CG Check",
+      "page": 67,
+      "raw_title": "Forward Adverse-Load CG Check",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Aft Adverse-Load CG Check",
+      "page": 67,
+      "raw_title": "Aft Adverse-Load CG Check",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Ballast",
+      "page": 67,
+      "raw_title": "Ballast",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Temporary Ballast",
+      "page": 68,
+      "raw_title": "Temporary Ballast",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Temporary Ballast Formula",
+      "page": 68,
+      "raw_title": "Temporary Ballast Formula",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Permanent Ballast",
+      "page": 68,
+      "raw_title": "Permanent Ballast",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter",
+      "page": 69,
+      "raw_title": "Chapter 8",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Weight and Balance Control\u2014Helicopter",
+      "page": 69,
+      "raw_title": "Weight and Balance Control\u2014Helicopter",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Introduction",
+      "page": 69,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining the Loaded CG of a Helicopter",
+      "page": 71,
+      "raw_title": "Determining the Loaded CG of a Helicopter",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Effects of Offloading Passengers and Using Fuel",
+      "page": 71,
+      "raw_title": "Effects of Offloading Passengers and Using Fuel",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter",
+      "page": 73,
+      "raw_title": "Chapter 9",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Weight and Balance Control\u2014Commuter Category and",
+      "page": 73,
+      "raw_title": "Weight and Balance Control\u2014Commuter Category and",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Large Aircraft",
+      "page": 73,
+      "raw_title": "Large Aircraft",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Introduction",
+      "page": 73,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Establishing the Initial Weight of an Aircraft",
+      "page": 74,
+      "raw_title": "Establishing the Initial Weight of an Aircraft ",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining the Empty Weight and Empty Weight CG (EWCG)",
+      "page": 74,
+      "raw_title": "Determining the Empty Weight and Empty Weight CG (EWCG)",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Documenting Changes to an Aircraft\u2019s Weight and Balance",
+      "page": 75,
+      "raw_title": "Documenting Changes to an Aircraft\u2019s Weight and Balance ",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining the Loaded CG of the Airplane in Percent MAC",
+      "page": 75,
+      "raw_title": "Determining the Loaded CG of the Airplane in Percent MAC",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Operational Empty Weight (OEW)",
+      "page": 77,
+      "raw_title": "Operational Empty Weight (OEW)",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Reestablishing the OEW",
+      "page": 77,
+      "raw_title": "Reestablishing the OEW",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Fleet Operating Empty Weights (FOEW)",
+      "page": 77,
+      "raw_title": "Fleet Operating Empty Weights (FOEW) ",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Onboard Aircraft Weighing System",
+      "page": 77,
+      "raw_title": "Onboard Aircraft Weighing System",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining the Correct Stabilizer Trim Setting",
+      "page": 78,
+      "raw_title": "Determining the Correct Stabilizer Trim Setting",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining CG Changes Caused by Modifying the Cargo",
+      "page": 78,
+      "raw_title": "Determining CG Changes Caused by Modifying the Cargo",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Effects of Loading or Offloading Cargo",
+      "page": 78,
+      "raw_title": "Effects of Loading or Offloading Cargo ",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Effects of Shifting Cargo From One Hold to Another",
+      "page": 80,
+      "raw_title": "Effects of Shifting Cargo From One Hold to Another",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining Cargo Pallet Loads and Floor Loading Limits",
+      "page": 81,
+      "raw_title": "Determining Cargo Pallet Loads and Floor Loading Limits",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining the Maximum Amount of Payload That Can Be Carried",
+      "page": 82,
+      "raw_title": "Determining the Maximum Amount of Payload That Can Be Carried",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining the Landing Weight",
+      "page": 82,
+      "raw_title": "Determining the Landing Weight",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining Fuel Dump Time in Minutes",
+      "page": 84,
+      "raw_title": "Determining Fuel Dump Time in Minutes",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Weight and Balance of Commuter Category Airplanes",
+      "page": 84,
+      "raw_title": "Weight and Balance of Commuter Category Airplanes",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining the Loaded Weight and CG",
+      "page": 84,
+      "raw_title": "Determining the Loaded Weight and CG",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining the Changes in CG When Passengers Are Shifted",
+      "page": 88,
+      "raw_title": "Determining the Changes in CG When Passengers Are Shifted",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining Changes in Weight and CG When the Aircraft Is Operated in Its Cargo Configuration",
+      "page": 90,
+      "raw_title": "Determining Changes in Weight and CG When the Aircraft Is Operated in Its Cargo Configuration",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining the CG Shift When Cargo Is Moved From One Section to Another",
+      "page": 90,
+      "raw_title": "Determining the CG Shift When Cargo Is Moved From One Section to Another",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining the CG Shift When Cargo Is Added or Removed",
+      "page": 90,
+      "raw_title": "Determining the CG Shift When Cargo Is Added or Removed",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining Which Limits Are Exceeded",
+      "page": 90,
+      "raw_title": "Determining Which Limits Are Exceeded",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter",
+      "page": 93,
+      "raw_title": "Chapter 10",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Use of Computer for Weight and Balance Computations",
+      "page": 93,
+      "raw_title": "Use of Computer for Weight and Balance Computations",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Introduction",
+      "page": 93,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Electronic Calculator",
+      "page": 94,
+      "raw_title": "Electronic Calculator",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "E6-B Flight Computer",
+      "page": 94,
+      "raw_title": "E6-B Flight Computer",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Dedicated Electronic Flight Computer",
+      "page": 95,
+      "raw_title": "Dedicated Electronic Flight Computer",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Typical Weight and Balance Problems",
+      "page": 96,
+      "raw_title": "Typical Weight and Balance Problems",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining CG in Inches From the Datum",
+      "page": 96,
+      "raw_title": "Determining CG in Inches From the Datum",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Nosewheel Airplane With Datum Ahead of the Main Wheels",
+      "page": 96,
+      "raw_title": "Nosewheel Airplane With Datum Ahead of the Main Wheels",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Nosewheel Airplane With Datum Behind the Main Wheels",
+      "page": 96,
+      "raw_title": "Nosewheel Airplane With Datum Behind the Main Wheels",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Tailwheel Airplane With Datum Ahead of the Main Wheels",
+      "page": 96,
+      "raw_title": "Tailwheel Airplane With Datum Ahead of the Main Wheels",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Tailwheel Airplane With Datum Behind the Main Wheels",
+      "page": 96,
+      "raw_title": "Tailwheel Airplane With Datum Behind the Main Wheels",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining CG, Given Weights, and Arms",
+      "page": 97,
+      "raw_title": "Determining CG, Given Weights, and Arms",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining CG, Given Weights, and Moment Indexes",
+      "page": 97,
+      "raw_title": "Determining CG, Given Weights, and Moment Indexes",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining CG in Percent Mean Aerodynamic Chord (MAC)",
+      "page": 97,
+      "raw_title": "Determining CG in Percent Mean Aerodynamic Chord (MAC)",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining Lateral CG of a Helicopter",
+      "page": 97,
+      "raw_title": "Determining Lateral CG of a Helicopter",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining \u0394CG Caused by Shifting Weights",
+      "page": 98,
+      "raw_title": "Determining \u0394CG Caused by Shifting Weights",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining Weight Shifted to Cause Specified \u0394CG",
+      "page": 98,
+      "raw_title": "Determining Weight Shifted to Cause Specified \u0394CG",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining Distance Weight Is Shifted to Move CG a Specific Distance",
+      "page": 98,
+      "raw_title": "Determining Distance Weight Is Shifted to Move CG a Specific Distance",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining Total Weight of an Aircraft With a Specified \u0394CG When Cargo Is Moved",
+      "page": 99,
+      "raw_title": "Determining Total Weight of an Aircraft With a Specified \u0394CG When Cargo Is Moved",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Determining Amount of Ballast Needed to Move CG to a Desired Location",
+      "page": 99,
+      "raw_title": "Determining Amount of Ballast Needed to Move CG to a Desired Location",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Appendix A",
+      "page": 101,
+      "raw_title": "Appendix A",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Appendix B",
+      "page": 103,
+      "raw_title": "Appendix B",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Glossary",
+      "page": 105,
+      "raw_title": "Glossary",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Index",
+      "page": 111,
+      "raw_title": "Index",
+      "source_file": "FAA-H-8083-1B_Weight_Balance.pdf",
+      "parent_title": null
+    }
+  ]
+}

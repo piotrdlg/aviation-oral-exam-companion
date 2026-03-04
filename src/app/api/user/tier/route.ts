@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { TIER_FEATURES } from '@/lib/voice/types';
 import type { VoiceTier } from '@/lib/voice/types';
+import { EXAMINER_PROFILES, type ExaminerProfileKey } from '@/lib/examiner-profile';
 
 const serviceSupabase = createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,7 +22,7 @@ export async function GET() {
     const [profileResult, voiceOptionsResult] = await Promise.all([
       serviceSupabase
         .from('user_profiles')
-        .select('tier, preferred_voice, preferred_rating, preferred_aircraft_class, aircraft_type, home_airport, onboarding_completed, preferred_theme, subscription_status, cancel_at_period_end, current_period_end, display_name, avatar_url, voice_enabled')
+        .select('tier, preferred_voice, preferred_rating, preferred_aircraft_class, aircraft_type, home_airport, onboarding_completed, preferred_theme, subscription_status, cancel_at_period_end, current_period_end, display_name, avatar_url, voice_enabled, examiner_profile')
         .eq('user_id', user.id)
         .single(),
       serviceSupabase
@@ -84,6 +85,7 @@ export async function GET() {
       displayName: profile?.display_name || null,
       avatarUrl: profile?.avatar_url || null,
       voiceEnabled: profile?.voice_enabled ?? true,
+      examinerProfile: profile?.examiner_profile || null,
       voiceOptions: voiceOptionsResult.data?.value || [],
     });
   } catch (error) {
@@ -108,7 +110,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { preferredVoice, preferredRating, preferredAircraftClass, aircraftType, homeAirport, onboardingCompleted, preferredTheme, displayName, avatarUrl, voiceEnabled } = body;
+    const { preferredVoice, preferredRating, preferredAircraftClass, aircraftType, homeAirport, onboardingCompleted, preferredTheme, displayName, avatarUrl, voiceEnabled, examinerProfile } = body;
 
     const updateFields: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
@@ -199,6 +201,20 @@ export async function POST(request: NextRequest) {
     // Update voice enabled preference
     if (voiceEnabled !== undefined) {
       updateFields.voice_enabled = Boolean(voiceEnabled);
+    }
+
+    // Validate examiner profile if provided (Phase 12)
+    const VALID_PROFILES = Object.keys(EXAMINER_PROFILES) as ExaminerProfileKey[];
+    if (examinerProfile !== undefined) {
+      if (examinerProfile && !VALID_PROFILES.includes(examinerProfile)) {
+        return NextResponse.json({ error: 'Invalid examiner profile' }, { status: 400 });
+      }
+      updateFields.examiner_profile = examinerProfile || null;
+      // Sync preferred_voice for backward compat with TTS route
+      if (examinerProfile && examinerProfile in EXAMINER_PROFILES) {
+        const profile = EXAMINER_PROFILES[examinerProfile as ExaminerProfileKey];
+        updateFields.preferred_voice = profile.voiceId;
+      }
     }
 
     const { error: updateError } = await serviceSupabase

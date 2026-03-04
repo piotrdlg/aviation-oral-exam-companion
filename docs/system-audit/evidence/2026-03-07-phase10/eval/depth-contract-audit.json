@@ -1,0 +1,369 @@
+{
+  "timestamp": "2026-03-04T03:18:40.201Z",
+  "checks": [
+    {
+      "name": "all_combinations_valid",
+      "pass": true,
+      "detail": "32 contracts generated, all fields populated: true"
+    },
+    {
+      "name": "deterministic",
+      "pass": true,
+      "detail": "All contracts deterministic"
+    },
+    {
+      "name": "examiner_format_sections",
+      "pass": true,
+      "detail": "6 required sections: all present"
+    },
+    {
+      "name": "assessment_format_sections",
+      "pass": true,
+      "detail": "6 required sections: all present"
+    },
+    {
+      "name": "difficulty_gradient",
+      "pass": true,
+      "detail": "easy→hard gradient verified for all ratings"
+    },
+    {
+      "name": "rating_gradient",
+      "pass": true,
+      "detail": "private→instrument gradient verified for all difficulties"
+    },
+    {
+      "name": "summary_char_counts",
+      "pass": true,
+      "detail": "All contract summaries have reasonable char counts (depth>=100, prec>=50, tol>=50)"
+    },
+    {
+      "name": "depth_profiles_complete",
+      "pass": true,
+      "detail": "4 depth profiles: all defined"
+    }
+  ],
+  "contracts_generated": 32,
+  "overall_pass": true,
+  "contract_details": [
+    {
+      "rating": "private",
+      "difficulty": "easy",
+      "elementType": "knowledge",
+      "targetDepthLen": 443,
+      "precisionLen": 422,
+      "toleranceLen": 463,
+      "examinerFormatLen": 1661,
+      "assessmentFormatLen": 1205
+    },
+    {
+      "rating": "private",
+      "difficulty": "easy",
+      "elementType": "risk",
+      "targetDepthLen": 345,
+      "precisionLen": 422,
+      "toleranceLen": 463,
+      "examinerFormatLen": 1563,
+      "assessmentFormatLen": 1205
+    },
+    {
+      "rating": "private",
+      "difficulty": "medium",
+      "elementType": "knowledge",
+      "targetDepthLen": 443,
+      "precisionLen": 452,
+      "toleranceLen": 403,
+      "examinerFormatLen": 1729,
+      "assessmentFormatLen": 1177
+    },
+    {
+      "rating": "private",
+      "difficulty": "medium",
+      "elementType": "risk",
+      "targetDepthLen": 345,
+      "precisionLen": 452,
+      "toleranceLen": 403,
+      "examinerFormatLen": 1631,
+      "assessmentFormatLen": 1177
+    },
+    {
+      "rating": "private",
+      "difficulty": "hard",
+      "elementType": "knowledge",
+      "targetDepthLen": 443,
+      "precisionLen": 434,
+      "toleranceLen": 409,
+      "examinerFormatLen": 1786,
+      "assessmentFormatLen": 1163
+    },
+    {
+      "rating": "private",
+      "difficulty": "hard",
+      "elementType": "risk",
+      "targetDepthLen": 345,
+      "precisionLen": 434,
+      "toleranceLen": 409,
+      "examinerFormatLen": 1688,
+      "assessmentFormatLen": 1163
+    },
+    {
+      "rating": "private",
+      "difficulty": "mixed",
+      "elementType": "knowledge",
+      "targetDepthLen": 443,
+      "precisionLen": 443,
+      "toleranceLen": 399,
+      "examinerFormatLen": 1689,
+      "assessmentFormatLen": 1163
+    },
+    {
+      "rating": "private",
+      "difficulty": "mixed",
+      "elementType": "risk",
+      "targetDepthLen": 345,
+      "precisionLen": 443,
+      "toleranceLen": 399,
+      "examinerFormatLen": 1591,
+      "assessmentFormatLen": 1163
+    },
+    {
+      "rating": "commercial",
+      "difficulty": "easy",
+      "elementType": "knowledge",
+      "targetDepthLen": 457,
+      "precisionLen": 422,
+      "toleranceLen": 538,
+      "examinerFormatLen": 1768,
+      "assessmentFormatLen": 1308
+    },
+    {
+      "rating": "commercial",
+      "difficulty": "easy",
+      "elementType": "risk",
+      "targetDepthLen": 403,
+      "precisionLen": 422,
+      "toleranceLen": 538,
+      "examinerFormatLen": 1714,
+      "assessmentFormatLen": 1308
+    },
+    {
+      "rating": "commercial",
+      "difficulty": "medium",
+      "elementType": "knowledge",
+      "targetDepthLen": 457,
+      "precisionLen": 452,
+      "toleranceLen": 478,
+      "examinerFormatLen": 1836,
+      "assessmentFormatLen": 1280
+    },
+    {
+      "rating": "commercial",
+      "difficulty": "medium",
+      "elementType": "risk",
+      "targetDepthLen": 403,
+      "precisionLen": 452,
+      "toleranceLen": 478,
+      "examinerFormatLen": 1782,
+      "assessmentFormatLen": 1280
+    },
+    {
+      "rating": "commercial",
+      "difficulty": "hard",
+      "elementType": "knowledge",
+      "targetDepthLen": 457,
+      "precisionLen": 434,
+      "toleranceLen": 484,
+      "examinerFormatLen": 1893,
+      "assessmentFormatLen": 1266
+    },
+    {
+      "rating": "commercial",
+      "difficulty": "hard",
+      "elementType": "risk",
+      "targetDepthLen": 403,
+      "precisionLen": 434,
+      "toleranceLen": 484,
+      "examinerFormatLen": 1839,
+      "assessmentFormatLen": 1266
+    },
+    {
+      "rating": "commercial",
+      "difficulty": "mixed",
+      "elementType": "knowledge",
+      "targetDepthLen": 457,
+      "precisionLen": 443,
+      "toleranceLen": 474,
+      "examinerFormatLen": 1796,
+      "assessmentFormatLen": 1266
+    },
+    {
+      "rating": "commercial",
+      "difficulty": "mixed",
+      "elementType": "risk",
+      "targetDepthLen": 403,
+      "precisionLen": 443,
+      "toleranceLen": 474,
+      "examinerFormatLen": 1742,
+      "assessmentFormatLen": 1266
+    },
+    {
+      "rating": "instrument",
+      "difficulty": "easy",
+      "elementType": "knowledge",
+      "targetDepthLen": 439,
+      "precisionLen": 462,
+      "toleranceLen": 522,
+      "examinerFormatLen": 1791,
+      "assessmentFormatLen": 1315
+    },
+    {
+      "rating": "instrument",
+      "difficulty": "easy",
+      "elementType": "risk",
+      "targetDepthLen": 416,
+      "precisionLen": 462,
+      "toleranceLen": 522,
+      "examinerFormatLen": 1768,
+      "assessmentFormatLen": 1315
+    },
+    {
+      "rating": "instrument",
+      "difficulty": "medium",
+      "elementType": "knowledge",
+      "targetDepthLen": 439,
+      "precisionLen": 492,
+      "toleranceLen": 462,
+      "examinerFormatLen": 1859,
+      "assessmentFormatLen": 1287
+    },
+    {
+      "rating": "instrument",
+      "difficulty": "medium",
+      "elementType": "risk",
+      "targetDepthLen": 416,
+      "precisionLen": 492,
+      "toleranceLen": 462,
+      "examinerFormatLen": 1836,
+      "assessmentFormatLen": 1287
+    },
+    {
+      "rating": "instrument",
+      "difficulty": "hard",
+      "elementType": "knowledge",
+      "targetDepthLen": 439,
+      "precisionLen": 474,
+      "toleranceLen": 468,
+      "examinerFormatLen": 1916,
+      "assessmentFormatLen": 1273
+    },
+    {
+      "rating": "instrument",
+      "difficulty": "hard",
+      "elementType": "risk",
+      "targetDepthLen": 416,
+      "precisionLen": 474,
+      "toleranceLen": 468,
+      "examinerFormatLen": 1893,
+      "assessmentFormatLen": 1273
+    },
+    {
+      "rating": "instrument",
+      "difficulty": "mixed",
+      "elementType": "knowledge",
+      "targetDepthLen": 439,
+      "precisionLen": 483,
+      "toleranceLen": 458,
+      "examinerFormatLen": 1819,
+      "assessmentFormatLen": 1273
+    },
+    {
+      "rating": "instrument",
+      "difficulty": "mixed",
+      "elementType": "risk",
+      "targetDepthLen": 416,
+      "precisionLen": 483,
+      "toleranceLen": 458,
+      "examinerFormatLen": 1796,
+      "assessmentFormatLen": 1273
+    },
+    {
+      "rating": "atp",
+      "difficulty": "easy",
+      "elementType": "knowledge",
+      "targetDepthLen": 215,
+      "precisionLen": 317,
+      "toleranceLen": 397,
+      "examinerFormatLen": 1207,
+      "assessmentFormatLen": 953
+    },
+    {
+      "rating": "atp",
+      "difficulty": "easy",
+      "elementType": "risk",
+      "targetDepthLen": 240,
+      "precisionLen": 317,
+      "toleranceLen": 397,
+      "examinerFormatLen": 1232,
+      "assessmentFormatLen": 953
+    },
+    {
+      "rating": "atp",
+      "difficulty": "medium",
+      "elementType": "knowledge",
+      "targetDepthLen": 215,
+      "precisionLen": 347,
+      "toleranceLen": 337,
+      "examinerFormatLen": 1275,
+      "assessmentFormatLen": 925
+    },
+    {
+      "rating": "atp",
+      "difficulty": "medium",
+      "elementType": "risk",
+      "targetDepthLen": 240,
+      "precisionLen": 347,
+      "toleranceLen": 337,
+      "examinerFormatLen": 1300,
+      "assessmentFormatLen": 925
+    },
+    {
+      "rating": "atp",
+      "difficulty": "hard",
+      "elementType": "knowledge",
+      "targetDepthLen": 215,
+      "precisionLen": 329,
+      "toleranceLen": 343,
+      "examinerFormatLen": 1332,
+      "assessmentFormatLen": 911
+    },
+    {
+      "rating": "atp",
+      "difficulty": "hard",
+      "elementType": "risk",
+      "targetDepthLen": 240,
+      "precisionLen": 329,
+      "toleranceLen": 343,
+      "examinerFormatLen": 1357,
+      "assessmentFormatLen": 911
+    },
+    {
+      "rating": "atp",
+      "difficulty": "mixed",
+      "elementType": "knowledge",
+      "targetDepthLen": 215,
+      "precisionLen": 338,
+      "toleranceLen": 333,
+      "examinerFormatLen": 1235,
+      "assessmentFormatLen": 911
+    },
+    {
+      "rating": "atp",
+      "difficulty": "mixed",
+      "elementType": "risk",
+      "targetDepthLen": 240,
+      "precisionLen": 338,
+      "toleranceLen": 333,
+      "examinerFormatLen": 1260,
+      "assessmentFormatLen": 911
+    }
+  ]
+}

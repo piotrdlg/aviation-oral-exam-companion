@@ -1,0 +1,984 @@
+{
+  "doc_abbrev": "rmh",
+  "doc_title": "Risk Management Handbook (FAA-H-8083-2A)",
+  "faa_number": "FAA-H-8083-2A",
+  "files_processed": [
+    "FAA-H-8083-2A_Risk_Management.pdf"
+  ],
+  "total_entries": 121,
+  "level_counts": {
+    "level_1": 18,
+    "level_2": 57,
+    "level_3": 46
+  },
+  "entries": [
+    {
+      "toc_level": 1,
+      "title": "Preface",
+      "page": 3,
+      "raw_title": "Preface",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Introduction",
+      "page": 4,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Major Enhancements",
+      "page": 5,
+      "raw_title": "Major Enhancements",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 1: Introduction to Risk Management",
+      "page": 10,
+      "raw_title": "Chapter 1:  Introduction to Risk Management",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Introduction",
+      "page": 10,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 1: Introduction to Risk Management"
+    },
+    {
+      "toc_level": 2,
+      "title": "Safety Management Systems in Aviation",
+      "page": 10,
+      "raw_title": "Safety Management Systems in Aviation",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 1: Introduction to Risk Management"
+    },
+    {
+      "toc_level": 2,
+      "title": "Accident Causality & Responsibility",
+      "page": 10,
+      "raw_title": "Accident Causality & Responsibility",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 1: Introduction to Risk Management"
+    },
+    {
+      "toc_level": 2,
+      "title": "Risk Management Analysis Using the PAVE Checklist",
+      "page": 11,
+      "raw_title": "Risk Management Analysis Using the PAVE Checklist",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 1: Introduction to Risk Management"
+    },
+    {
+      "toc_level": 2,
+      "title": "Chapter Summary",
+      "page": 12,
+      "raw_title": "Chapter Summary",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 1: Introduction to Risk Management"
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 2: Personal Minimums",
+      "page": 13,
+      "raw_title": "Chapter 2:  Personal Minimums",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Introduction",
+      "page": 13,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 2: Personal Minimums"
+    },
+    {
+      "toc_level": 2,
+      "title": "Personal Minimums",
+      "page": 13,
+      "raw_title": "Personal Minimums",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 2: Personal Minimums"
+    },
+    {
+      "toc_level": 3,
+      "title": "Step 1\u2014Review Weather Flight Categories",
+      "page": 13,
+      "raw_title": "Step 1\u2014Review Weather Flight Categories",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Personal Minimums"
+    },
+    {
+      "toc_level": 3,
+      "title": "Step 2\u2014Assess Experience and Comfort Level",
+      "page": 13,
+      "raw_title": "Step 2\u2014Assess Experience and Comfort Level",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Personal Minimums"
+    },
+    {
+      "toc_level": 3,
+      "title": "Step 3\u2014Consider Other Conditions",
+      "page": 15,
+      "raw_title": "Step 3\u2014Consider Other Conditions",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Personal Minimums"
+    },
+    {
+      "toc_level": 3,
+      "title": "Step 4\u2014Assemble and Evaluate",
+      "page": 16,
+      "raw_title": "Step 4\u2014Assemble and Evaluate",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Personal Minimums"
+    },
+    {
+      "toc_level": 3,
+      "title": "Step 5\u2014Adjust for Specific Conditions",
+      "page": 17,
+      "raw_title": "Step 5\u2014Adjust for Specific Conditions",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Personal Minimums"
+    },
+    {
+      "toc_level": 3,
+      "title": "Step 6\u2014Stick to the Plan",
+      "page": 17,
+      "raw_title": "Step 6\u2014Stick to the Plan",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Personal Minimums"
+    },
+    {
+      "toc_level": 2,
+      "title": "Using the FAA WINGS Program for Risk Mitigation & Safety",
+      "page": 17,
+      "raw_title": "Using the FAA WINGS Program for Risk Mitigation & Safety",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 2: Personal Minimums"
+    },
+    {
+      "toc_level": 2,
+      "title": "Chapter Summary",
+      "page": 18,
+      "raw_title": "Chapter Summary",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 2: Personal Minimums"
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 3: Identifying Hazards & Associated Risks",
+      "page": 19,
+      "raw_title": "Chapter 3:  Identifying Hazards & Associated Risks",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Introduction",
+      "page": 19,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 3: Identifying Hazards & Associated Risks"
+    },
+    {
+      "toc_level": 3,
+      "title": "Hazard Exposure",
+      "page": 19,
+      "raw_title": "Hazard Exposure",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Introduction"
+    },
+    {
+      "toc_level": 2,
+      "title": "Why Hazards Result in Aviation Accidents",
+      "page": 19,
+      "raw_title": "Why Hazards Result in Aviation Accidents",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 3: Identifying Hazards & Associated Risks"
+    },
+    {
+      "toc_level": 3,
+      "title": "Understanding the Risks Posed by Hazards",
+      "page": 20,
+      "raw_title": "Understanding the Risks Posed by Hazards",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Why Hazards Result in Aviation Accidents"
+    },
+    {
+      "toc_level": 2,
+      "title": "Leading Accident Causes",
+      "page": 21,
+      "raw_title": "Leading Accident Causes",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 3: Identifying Hazards & Associated Risks"
+    },
+    {
+      "toc_level": 3,
+      "title": "Identifying Hazards",
+      "page": 22,
+      "raw_title": "Identifying Hazards",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Leading Accident Causes"
+    },
+    {
+      "toc_level": 2,
+      "title": "Using the PAVE Checklist to Identify Hazards",
+      "page": 22,
+      "raw_title": "Using the PAVE Checklist to Identify Hazards",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 3: Identifying Hazards & Associated Risks"
+    },
+    {
+      "toc_level": 3,
+      "title": "Pilot Hazards",
+      "page": 22,
+      "raw_title": "Pilot Hazards",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Using the PAVE Checklist to Identify Hazards"
+    },
+    {
+      "toc_level": 3,
+      "title": "Aircraft Hazards",
+      "page": 24,
+      "raw_title": "Aircraft Hazards",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Using the PAVE Checklist to Identify Hazards"
+    },
+    {
+      "toc_level": 3,
+      "title": "Environmental Hazards",
+      "page": 25,
+      "raw_title": "Environmental Hazards",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Using the PAVE Checklist to Identify Hazards"
+    },
+    {
+      "toc_level": 3,
+      "title": "External Pressure Hazards",
+      "page": 26,
+      "raw_title": "External Pressure Hazards",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Using the PAVE Checklist to Identify Hazards"
+    },
+    {
+      "toc_level": 2,
+      "title": "Hazard Combinations",
+      "page": 26,
+      "raw_title": "Hazard Combinations",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 3: Identifying Hazards & Associated Risks"
+    },
+    {
+      "toc_level": 2,
+      "title": "Hazards and Associated Risks",
+      "page": 27,
+      "raw_title": "Hazards and Associated Risks",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 3: Identifying Hazards & Associated Risks"
+    },
+    {
+      "toc_level": 3,
+      "title": "Using a Flight Risk Assessment Tool (FRAT)",
+      "page": 28,
+      "raw_title": "Using a Flight Risk Assessment Tool (FRAT)",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Hazards and Associated Risks"
+    },
+    {
+      "toc_level": 2,
+      "title": "Case Study",
+      "page": 29,
+      "raw_title": "Case Study",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 3: Identifying Hazards & Associated Risks"
+    },
+    {
+      "toc_level": 3,
+      "title": "Background and Setting",
+      "page": 29,
+      "raw_title": "Background and Setting",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Case Study"
+    },
+    {
+      "toc_level": 3,
+      "title": "Data",
+      "page": 31,
+      "raw_title": "Data",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Case Study"
+    },
+    {
+      "toc_level": 3,
+      "title": "Hazard Identification and Risk Analysis",
+      "page": 32,
+      "raw_title": "Hazard Identification and Risk Analysis",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Case Study"
+    },
+    {
+      "toc_level": 2,
+      "title": "Chapter Summary",
+      "page": 33,
+      "raw_title": "Chapter Summary",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 3: Identifying Hazards & Associated Risks"
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 4: Assessing Risk",
+      "page": 34,
+      "raw_title": "Chapter 4:  Assessing Risk",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Introduction",
+      "page": 34,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 4: Assessing Risk"
+    },
+    {
+      "toc_level": 3,
+      "title": "Risk Assessment Components",
+      "page": 34,
+      "raw_title": "Risk Assessment Components",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Introduction"
+    },
+    {
+      "toc_level": 2,
+      "title": "Using a Risk Assessment Matrix",
+      "page": 35,
+      "raw_title": "Using a Risk Assessment Matrix",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 4: Assessing Risk"
+    },
+    {
+      "toc_level": 3,
+      "title": "Matrix Errors",
+      "page": 35,
+      "raw_title": "Matrix Errors",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Using a Risk Assessment Matrix"
+    },
+    {
+      "toc_level": 2,
+      "title": "Case Study",
+      "page": 36,
+      "raw_title": "Case Study",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 4: Assessing Risk"
+    },
+    {
+      "toc_level": 3,
+      "title": "Risk Assessment Analysis",
+      "page": 36,
+      "raw_title": "Risk Assessment Analysis",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Case Study"
+    },
+    {
+      "toc_level": 2,
+      "title": "Chapter Summary",
+      "page": 38,
+      "raw_title": "Chapter Summary",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 4: Assessing Risk"
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 5: Mitigating Risk",
+      "page": 39,
+      "raw_title": "Chapter 5:  Mitigating Risk",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Introduction",
+      "page": 39,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 5: Mitigating Risk"
+    },
+    {
+      "toc_level": 2,
+      "title": "Preflight Risk Mitigation Strategies",
+      "page": 39,
+      "raw_title": "Preflight Risk Mitigation Strategies",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 5: Mitigating Risk"
+    },
+    {
+      "toc_level": 3,
+      "title": "Mitigating Pilot Risks",
+      "page": 39,
+      "raw_title": "Mitigating Pilot Risks",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Preflight Risk Mitigation Strategies"
+    },
+    {
+      "toc_level": 3,
+      "title": "Mitigating Aircraft Risks",
+      "page": 39,
+      "raw_title": "Mitigating Aircraft Risks",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Preflight Risk Mitigation Strategies"
+    },
+    {
+      "toc_level": 3,
+      "title": "Mitigating Environmental Risks",
+      "page": 40,
+      "raw_title": "Mitigating Environmental Risks",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Preflight Risk Mitigation Strategies"
+    },
+    {
+      "toc_level": 3,
+      "title": "Mitigating External Pressure Risks",
+      "page": 40,
+      "raw_title": "Mitigating External Pressure Risks",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Preflight Risk Mitigation Strategies"
+    },
+    {
+      "toc_level": 2,
+      "title": "Case Study",
+      "page": 40,
+      "raw_title": "Case Study",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 5: Mitigating Risk"
+    },
+    {
+      "toc_level": 3,
+      "title": "Risk Mitigation Analysis",
+      "page": 40,
+      "raw_title": "Risk Mitigation Analysis",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Case Study"
+    },
+    {
+      "toc_level": 2,
+      "title": "Balanced Approach to Risk Management",
+      "page": 42,
+      "raw_title": "Balanced Approach to Risk Management",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 5: Mitigating Risk"
+    },
+    {
+      "toc_level": 2,
+      "title": "Chapter Summary",
+      "page": 43,
+      "raw_title": "Chapter Summary",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 5: Mitigating Risk"
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 6: Threat and Error Management",
+      "page": 44,
+      "raw_title": "Chapter 6:  Threat and Error Management",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Introduction",
+      "page": 44,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 6: Threat and Error Management"
+    },
+    {
+      "toc_level": 2,
+      "title": "Threats",
+      "page": 44,
+      "raw_title": "Threats",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 6: Threat and Error Management"
+    },
+    {
+      "toc_level": 2,
+      "title": "What is an Error?",
+      "page": 44,
+      "raw_title": "What is an Error?",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 6: Threat and Error Management"
+    },
+    {
+      "toc_level": 3,
+      "title": "Causes of Errors",
+      "page": 44,
+      "raw_title": "Causes of Errors",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "What is an Error?"
+    },
+    {
+      "toc_level": 2,
+      "title": "What is an Undesired Aircraft State?",
+      "page": 46,
+      "raw_title": "What is an Undesired Aircraft State?",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 6: Threat and Error Management"
+    },
+    {
+      "toc_level": 2,
+      "title": "Defenses against Threats, Errors, and Undesired Aircraft States",
+      "page": 46,
+      "raw_title": "Defenses against Threats, Errors, and Undesired Aircraft States",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 6: Threat and Error Management"
+    },
+    {
+      "toc_level": 3,
+      "title": "Defenses Provided to the Pilot or Crew",
+      "page": 46,
+      "raw_title": "Defenses Provided to the Pilot or Crew",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Defenses against Threats, Errors, and Undesired Aircraft States"
+    },
+    {
+      "toc_level": 3,
+      "title": "Defenses Provided by the Pilot or Crew",
+      "page": 47,
+      "raw_title": "Defenses Provided by the Pilot or Crew",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Defenses against Threats, Errors, and Undesired Aircraft States"
+    },
+    {
+      "toc_level": 2,
+      "title": "Chapter Summary",
+      "page": 48,
+      "raw_title": "Chapter Summary",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 6: Threat and Error Management"
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 7: Automation & Flight Path Management",
+      "page": 50,
+      "raw_title": "Chapter 7:  Automation & Flight Path Management",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Introduction",
+      "page": 50,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 7: Automation & Flight Path Management"
+    },
+    {
+      "toc_level": 2,
+      "title": "Reliance on Automation",
+      "page": 51,
+      "raw_title": "Reliance on Automation",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 7: Automation & Flight Path Management"
+    },
+    {
+      "toc_level": 2,
+      "title": "Balancing Automated & Manual Flight",
+      "page": 51,
+      "raw_title": "Balancing Automated & Manual Flight",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 7: Automation & Flight Path Management"
+    },
+    {
+      "toc_level": 2,
+      "title": "Interacting with Automation",
+      "page": 51,
+      "raw_title": "Interacting with Automation",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 7: Automation & Flight Path Management"
+    },
+    {
+      "toc_level": 2,
+      "title": "Failure to Anticipate, Act, & Verify",
+      "page": 52,
+      "raw_title": "Failure to Anticipate, Act, & Verify",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 7: Automation & Flight Path Management"
+    },
+    {
+      "toc_level": 2,
+      "title": "Integrated Flight Path Automation Systems",
+      "page": 52,
+      "raw_title": "Integrated Flight Path Automation Systems",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 7: Automation & Flight Path Management"
+    },
+    {
+      "toc_level": 2,
+      "title": "Chapter Summary",
+      "page": 53,
+      "raw_title": "Chapter Summary",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 7: Automation & Flight Path Management"
+    },
+    {
+      "toc_level": 1,
+      "title": "Chapter 8: Aeronautical Decision-Making in Flight",
+      "page": 54,
+      "raw_title": "Chapter 8:  Aeronautical Decision-Making in Flight",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Introduction",
+      "page": 54,
+      "raw_title": "Introduction",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 8: Aeronautical Decision-Making in Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "ADM Background",
+      "page": 54,
+      "raw_title": "ADM Background",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 8: Aeronautical Decision-Making in Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Analytical Decision-Making",
+      "page": 54,
+      "raw_title": "Analytical Decision-Making",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 8: Aeronautical Decision-Making in Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Naturalistic Decision-Making",
+      "page": 56,
+      "raw_title": "Naturalistic Decision-Making",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 8: Aeronautical Decision-Making in Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Single-Pilot Resource Management",
+      "page": 56,
+      "raw_title": "Single-Pilot Resource Management",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 8: Aeronautical Decision-Making in Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Chapter Summary",
+      "page": 57,
+      "raw_title": "Chapter Summary",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Chapter 8: Aeronautical Decision-Making in Flight"
+    },
+    {
+      "toc_level": 1,
+      "title": "Appendix Introduction",
+      "page": 58,
+      "raw_title": "Appendix Introduction",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Scope",
+      "page": 58,
+      "raw_title": "Scope",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Appendix Introduction"
+    },
+    {
+      "toc_level": 2,
+      "title": "How to Use",
+      "page": 58,
+      "raw_title": "How to Use",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Appendix Introduction"
+    },
+    {
+      "toc_level": 2,
+      "title": "Using Appendices as a Workbook",
+      "page": 58,
+      "raw_title": "Using Appendices as a Workbook",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Appendix Introduction"
+    },
+    {
+      "toc_level": 1,
+      "title": "Appendix A: Risk Management Training",
+      "page": 59,
+      "raw_title": "Appendix A:  Risk Management Training",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Integrating Risk Management Training and Other Training Requirements",
+      "page": 59,
+      "raw_title": "Integrating Risk Management Training and Other Training Requirements",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Appendix A: Risk Management Training"
+    },
+    {
+      "toc_level": 1,
+      "title": "Appendix B: Risk Management Tools",
+      "page": 60,
+      "raw_title": "Appendix B:  Risk Management Tools",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Risk Assessment Tools Identifying, Assessing, & Mitigating Risk",
+      "page": 60,
+      "raw_title": "Risk Assessment Tools Identifying, Assessing, & Mitigating Risk",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Appendix B: Risk Management Tools"
+    },
+    {
+      "toc_level": 3,
+      "title": "Risk Identification Tools",
+      "page": 60,
+      "raw_title": "Risk Identification Tools",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Risk Assessment Tools Identifying, Assessing, & Mitigating Risk"
+    },
+    {
+      "toc_level": 2,
+      "title": "Additional Risk Assessment Tools",
+      "page": 62,
+      "raw_title": "Additional Risk Assessment Tools",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Appendix B: Risk Management Tools"
+    },
+    {
+      "toc_level": 3,
+      "title": "Risk Mitigation Tools",
+      "page": 62,
+      "raw_title": "Risk Mitigation Tools",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Additional Risk Assessment Tools"
+    },
+    {
+      "toc_level": 1,
+      "title": "Appendix C: Accident Case Studies",
+      "page": 64,
+      "raw_title": "Appendix C:  Accident Case Studies",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "General Information",
+      "page": 64,
+      "raw_title": "General Information",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Appendix C: Accident Case Studies"
+    },
+    {
+      "toc_level": 2,
+      "title": "Accident Profile 1: Fatal Accident in a Single-Engine Airplane with a Piston Engine",
+      "page": 64,
+      "raw_title": "Accident Profile 1: Fatal Accident in a Single-Engine Airplane with a Piston Engine",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Appendix C: Accident Case Studies"
+    },
+    {
+      "toc_level": 3,
+      "title": "NTSB Probable Cause",
+      "page": 64,
+      "raw_title": "NTSB Probable Cause",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Accident Profile 1: Fatal Accident in a Single-Engine Airplane with a Piston Engine"
+    },
+    {
+      "toc_level": 3,
+      "title": "NTSB Factual Summary Excerpts (edited)",
+      "page": 64,
+      "raw_title": "NTSB Factual Summary Excerpts (edited)",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Accident Profile 1: Fatal Accident in a Single-Engine Airplane with a Piston Engine"
+    },
+    {
+      "toc_level": 3,
+      "title": "Risk Identification, Assessment, and Mitigation",
+      "page": 64,
+      "raw_title": "Risk Identification, Assessment, and Mitigation",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Accident Profile 1: Fatal Accident in a Single-Engine Airplane with a Piston Engine"
+    },
+    {
+      "toc_level": 2,
+      "title": "Accident Profile 2: Fatal Accident, Turboprop-Powered, Transportation",
+      "page": 65,
+      "raw_title": "Accident Profile 2: Fatal Accident, Turboprop-Powered, Transportation",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Appendix C: Accident Case Studies"
+    },
+    {
+      "toc_level": 3,
+      "title": "NTSB Probable Cause",
+      "page": 65,
+      "raw_title": "NTSB Probable Cause",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Accident Profile 2: Fatal Accident, Turboprop-Powered, Transportation"
+    },
+    {
+      "toc_level": 3,
+      "title": "NTSB Factual Summary Excerpts (edited)",
+      "page": 65,
+      "raw_title": "NTSB Factual Summary Excerpts (edited)",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Accident Profile 2: Fatal Accident, Turboprop-Powered, Transportation"
+    },
+    {
+      "toc_level": 3,
+      "title": "Risk Identification, Assessment, and Mitigation",
+      "page": 66,
+      "raw_title": "Risk Identification, Assessment, and Mitigation",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Accident Profile 2: Fatal Accident, Turboprop-Powered, Transportation"
+    },
+    {
+      "toc_level": 2,
+      "title": "Accident Profile 3: Fatal Accident, Helicopter, Personal Flight",
+      "page": 66,
+      "raw_title": "Accident Profile 3: Fatal Accident, Helicopter, Personal Flight",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Appendix C: Accident Case Studies"
+    },
+    {
+      "toc_level": 3,
+      "title": "NTSB Probable Cause",
+      "page": 66,
+      "raw_title": "NTSB Probable Cause",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Accident Profile 3: Fatal Accident, Helicopter, Personal Flight"
+    },
+    {
+      "toc_level": 3,
+      "title": "NTSB Factual Summary Excerpts (edited)",
+      "page": 66,
+      "raw_title": "NTSB Factual Summary Excerpts (edited)",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Accident Profile 3: Fatal Accident, Helicopter, Personal Flight"
+    },
+    {
+      "toc_level": 3,
+      "title": "Risk Identification, Assessment, and Mitigation",
+      "page": 67,
+      "raw_title": "Risk Identification, Assessment, and Mitigation",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Accident Profile 3: Fatal Accident, Helicopter, Personal Flight"
+    },
+    {
+      "toc_level": 2,
+      "title": "Accident Profile 4: Fatal Turbojet-Powered Airplane Accident",
+      "page": 67,
+      "raw_title": "Accident Profile 4: Fatal Turbojet-Powered Airplane Accident",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Appendix C: Accident Case Studies"
+    },
+    {
+      "toc_level": 3,
+      "title": "NTSB Probable Cause",
+      "page": 67,
+      "raw_title": "NTSB Probable Cause",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Accident Profile 4: Fatal Turbojet-Powered Airplane Accident"
+    },
+    {
+      "toc_level": 3,
+      "title": "NTSB Factual Summary Excerpts (edited)",
+      "page": 67,
+      "raw_title": "NTSB Factual Summary Excerpts (edited)",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Accident Profile 4: Fatal Turbojet-Powered Airplane Accident"
+    },
+    {
+      "toc_level": 3,
+      "title": "Risk Identification, Assessment, and Mitigation",
+      "page": 67,
+      "raw_title": "Risk Identification, Assessment, and Mitigation",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Accident Profile 4: Fatal Turbojet-Powered Airplane Accident"
+    },
+    {
+      "toc_level": 1,
+      "title": "Appendix D: Risk Management Exercises",
+      "page": 69,
+      "raw_title": "Appendix D:  Risk Management Exercises",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 2,
+      "title": "Four Scenarios",
+      "page": 69,
+      "raw_title": "Four Scenarios",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Appendix D: Risk Management Exercises"
+    },
+    {
+      "toc_level": 3,
+      "title": "Scenario 1: Recreational Aviation",
+      "page": 69,
+      "raw_title": "Scenario 1: Recreational Aviation",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Four Scenarios"
+    },
+    {
+      "toc_level": 3,
+      "title": "Scenario 2: Turboprop-Powered, Personal Transportation",
+      "page": 70,
+      "raw_title": "Scenario 2: Turboprop-Powered, Personal Transportation",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Four Scenarios"
+    },
+    {
+      "toc_level": 3,
+      "title": "Scenario 3: Turbine Helicopter",
+      "page": 70,
+      "raw_title": "Scenario 3: Turbine Helicopter",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Four Scenarios"
+    },
+    {
+      "toc_level": 3,
+      "title": "Scenario 4: Turbojet-Powered Airplane",
+      "page": 71,
+      "raw_title": "Scenario 4: Turbojet-Powered Airplane",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": "Four Scenarios"
+    },
+    {
+      "toc_level": 1,
+      "title": "Glossary",
+      "page": 73,
+      "raw_title": "Glossary",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": null
+    },
+    {
+      "toc_level": 1,
+      "title": "Index",
+      "page": 77,
+      "raw_title": "Index",
+      "source_file": "FAA-H-8083-2A_Risk_Management.pdf",
+      "parent_title": null
+    }
+  ]
+}

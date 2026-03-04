@@ -9,11 +9,13 @@ import {
   generateExaminerTurnStreaming,
   assessAnswer,
   fetchRagContext,
+  loadPromptFromDB,
   type ExamMessage,
   type AssessmentData,
   type LlmUsage,
 } from '@/lib/exam-engine';
 import { computeExamResult } from '@/lib/exam-logic';
+import { buildTransitionHint } from '@/lib/transition-explanation';
 import { computeExamResultV2 } from '@/lib/exam-result';
 import {
   initPlanner,
@@ -23,14 +25,33 @@ import {
   creditMentionedElements,
   canFollowUp,
   type ExamPlanV1,
+  type DepthDifficultyContract,
 } from '@/lib/exam-planner';
+import {
+  buildDepthDifficultyContract,
+  formatContractForExaminer,
+  formatContractForAssessment,
+  contractSummary,
+} from '@/lib/difficulty-contract';
 import { getSystemConfig } from '@/lib/system-config';
 import { checkKillSwitch } from '@/lib/kill-switch';
 import { requireSafeDbTarget } from '@/lib/app-env';
 import { getUserTier } from '@/lib/voice/tier-lookup';
 import { enforceOneActiveExam, getSessionTokenHash } from '@/lib/session-enforcement';
 import { createTimingContext, writeTimings } from '@/lib/timing';
+import {
+  resolvePersonaKey,
+  getPersonaContract,
+  formatPersonaForExaminer,
+  personaSummary,
+} from '@/lib/persona-contract';
+import {
+  resolveExaminerProfile,
+  formatProfilePersonaSection,
+  examinerProfileSummary,
+} from '@/lib/examiner-profile';
 import type { SessionConfig, PlannerState } from '@/types/database';
+import type { AssetSelectionContext, SelectedAsset } from '@/lib/asset-selector';
 
 // Service-role client for usage logging + config lookups (bypasses RLS)
 const serviceSupabase = createServiceClient(
@@ -193,6 +214,59 @@ export async function GET(request: NextRequest) {
         );
       }
 
+      // Fire-and-forget: persist quality_metrics + PostHog events
+      if (report.quality_metrics) {
+        after(async () => {
+          try {
+            const svc = createServiceClient(
+              process.env.NEXT_PUBLIC_SUPABASE_URL!,
+              process.env.SUPABASE_SERVICE_ROLE_KEY!,
+            );
+            const { data: current } = await svc
+              .from('exam_sessions')
+              .select('metadata')
+              .eq('id', sessionId)
+              .single();
+            const meta = (current?.metadata as Record<string, unknown>) || {};
+            await svc
+              .from('exam_sessions')
+              .update({ metadata: { ...meta, grounding_quality_metrics: report.quality_metrics } })
+              .eq('id', sessionId);
+          } catch (err) {
+            console.error('Failed to persist grounding quality_metrics:', err);
+          }
+
+          // PostHog server-side events
+          try {
+            const { captureServerEvent } = await import('@/lib/posthog-server');
+            const qm = report.quality_metrics!;
+            captureServerEvent(user.id, 'weak_area_report_generated', {
+              session_id: sessionId,
+              candidate_count: qm.candidate_count,
+              returned_count: qm.returned_count,
+              filtered_out_count: qm.filtered_out_count,
+              avg_relevance_score: qm.avg_relevance_score,
+              low_confidence_count: qm.low_confidence_count,
+              insufficient_sources_count: qm.insufficient_sources_count,
+              top_doc_types: qm.top_doc_types,
+              weak_element_count: report.stats.total_weak,
+              grounded_count: report.stats.grounded_count,
+            });
+
+            if (qm.low_confidence_count > 0 || qm.insufficient_sources_count > 0) {
+              captureServerEvent(user.id, 'weak_area_report_low_confidence', {
+                session_id: sessionId,
+                low_confidence_count: qm.low_confidence_count,
+                insufficient_sources_count: qm.insufficient_sources_count,
+                weak_element_count: report.stats.total_weak,
+              });
+            }
+          } catch (err) {
+            console.error('PostHog event capture failed:', err);
+          }
+        });
+      }
+
       return NextResponse.json({ report });
     }
 
@@ -250,7 +324,7 @@ export async function POST(request: NextRequest) {
     // Persona resolution depends on the profile result but is fast (cached config).
     const profilePromise = serviceSupabase
       .from('user_profiles')
-      .select('display_name, preferred_voice')
+      .select('display_name, preferred_voice, examiner_profile')
       .eq('user_id', user.id)
       .single();
 
@@ -281,17 +355,16 @@ export async function POST(request: NextRequest) {
     }
     const enforcementPausedSessionId = enforcementResult.pausedSessionId;
 
-    // Persona resolution (depends on profile, but voice.user_options is TTL-cached)
-    let personaId: string | undefined;
-    if (examUserProfile?.preferred_voice) {
-      const { data: voiceConfig } = await serviceSupabase
-        .from('system_config')
-        .select('value')
-        .eq('key', 'voice.user_options')
-        .maybeSingle();
-      const personas = ((voiceConfig?.value || []) as Array<{ persona_id: string; model: string }>);
-      personaId = personas.find(p => p.model === examUserProfile.preferred_voice)?.persona_id;
-    }
+    // Examiner Profile resolution (Phase 12 — ExaminerProfileV1)
+    // Priority: sessionConfig.examinerProfileKey > DB examiner_profile > DB preferred_voice > legacy persona > default
+    const { profile: resolvedProfile, source: profileSource } = resolveExaminerProfile({
+      savedProfile: sessionConfig?.examinerProfileKey || examUserProfile?.examiner_profile || undefined,
+      savedVoice: examUserProfile?.preferred_voice || undefined,
+      savedPersona: sessionConfig?.persona || undefined,
+    });
+    const resolvedPersonaKey = resolvedProfile.personaKey;
+    const personaContract = getPersonaContract(resolvedPersonaKey);
+    const personaSection = formatProfilePersonaSection(resolvedProfile);
     const studentName = examUserProfile?.display_name || undefined;
 
     timing.end('prechecks');
@@ -315,8 +388,20 @@ export async function POST(request: NextRequest) {
         }
 
         const rating = sessionConfig.rating || 'private';
+
+        // Prompt audit: capture which prompt version powers this session
+        const { versionId: examinerVersionId } = await loadPromptFromDB(
+          serviceSupabase, 'examiner_system', rating, sessionConfig.studyMode, sessionConfig.difficulty
+        );
+        const examinerProfileKey = resolvedProfile.profileKey;
+
+        // Format depth & difficulty contract for examiner prompt (Phase 10)
+        const examinerContractSection = plannerResult.depthDifficultyContract
+          ? formatContractForExaminer(plannerResult.depthDifficultyContract)
+          : undefined;
+
         const turn = await generateExaminerTurn(
-          plannerResult.task, [], plannerResult.difficulty, sessionConfig.aircraftClass, undefined, rating, sessionConfig.studyMode, personaId, studentName
+          plannerResult.task, [], plannerResult.difficulty, sessionConfig.aircraftClass, undefined, rating, sessionConfig.studyMode, personaSection, studentName, undefined, examinerContractSection
         );
 
         // Log LLM usage (non-blocking)
@@ -333,14 +418,74 @@ export async function POST(request: NextRequest) {
           if (openErr) console.error('Opening examiner transcript write error:', openErr.message);
         }
 
-        // Persist planner state + session config + taskData + examPlan to metadata for resume
+        // Persist planner state + session config + taskData + examPlan + fingerprintMeta + contract + persona + promptTrace to metadata for resume
         if (sessionId) {
           const { error: metaErr } = await serviceSupabase
             .from('exam_sessions')
-            .update({ metadata: { plannerState: plannerResult.plannerState, sessionConfig, taskData: plannerResult.task, examPlan: plannerResult.examPlan } })
+            .update({ metadata: {
+              plannerState: plannerResult.plannerState,
+              sessionConfig,
+              taskData: plannerResult.task,
+              examPlan: plannerResult.examPlan,
+              ...(plannerResult.fingerprintMeta ? { fingerprintMeta: plannerResult.fingerprintMeta } : {}),
+              ...(plannerResult.depthDifficultyContract ? { depthDifficultyContract: plannerResult.depthDifficultyContract } : {}),
+              persona: { key: resolvedPersonaKey, label: personaContract.label, version: personaContract.version },
+              promptTrace: {
+                examiner_prompt_version_id: examinerVersionId,
+                source: examinerVersionId ? 'db' : 'fallback',
+                rating: sessionConfig.rating,
+                study_mode: sessionConfig.studyMode,
+                difficulty: sessionConfig.difficulty,
+                profile_key: examinerProfileKey,
+                timestamp: new Date().toISOString(),
+              },
+            } })
             .eq('id', sessionId);
           if (metaErr) console.error('Planner state persist error:', metaErr.message);
         }
+
+        // Fire PostHog event for flow quality monitoring (Phase 9, non-blocking)
+        if (plannerResult.fingerprintMeta && sessionConfig.studyMode === 'cross_acs') {
+          after(async () => {
+            const { captureServerEvent } = await import('@/lib/posthog-server');
+            captureServerEvent(user.id, 'flow_fingerprints_loaded', {
+              session_id: sessionId,
+              source: plannerResult.fingerprintMeta!.source,
+              fingerprint_count: plannerResult.fingerprintMeta!.fingerprintCount,
+              element_count: plannerResult.fingerprintMeta!.elementCount,
+              coverage_pct: plannerResult.fingerprintMeta!.coveragePercent,
+              unique_slugs: plannerResult.fingerprintMeta!.uniqueSlugs,
+              rating: sessionConfig.rating,
+            });
+          });
+        }
+
+        // Fire PostHog event for depth contract monitoring (Phase 10, non-blocking)
+        if (plannerResult.depthDifficultyContract) {
+          after(async () => {
+            const { captureServerEvent } = await import('@/lib/posthog-server');
+            captureServerEvent(user.id, 'depth_contract_applied', {
+              session_id: sessionId,
+              ...contractSummary(plannerResult.depthDifficultyContract!),
+              element_code: plannerResult.elementCode,
+              study_mode: sessionConfig.studyMode,
+              action: 'start',
+            });
+          });
+        }
+
+        // Fire PostHog event for examiner profile monitoring (Phase 12, non-blocking)
+        after(async () => {
+          const { captureServerEvent } = await import('@/lib/posthog-server');
+          captureServerEvent(user.id, 'examiner_profile_resolved', {
+            session_id: sessionId,
+            ...examinerProfileSummary(resolvedProfile, profileSource, studentName),
+            rating: sessionConfig.rating,
+            difficulty: sessionConfig.difficulty,
+            study_mode: sessionConfig.studyMode,
+            action: 'start',
+          });
+        });
 
         return NextResponse.json({
           taskId: plannerResult.task.id,
@@ -366,7 +511,7 @@ export async function POST(request: NextRequest) {
       // Support streaming for start — no chunkedResponse here intentionally:
       // the opening examiner question has no student feedback to split into 3 chunks.
       if (stream) {
-        const { stream: readableStream, fullTextPromise: startTextPromise } = await generateExaminerTurnStreaming(task, [], undefined, undefined, undefined, undefined, undefined, undefined, undefined, personaId, studentName);
+        const { stream: readableStream, fullTextPromise: startTextPromise } = await generateExaminerTurnStreaming(task, [], undefined, undefined, undefined, undefined, undefined, undefined, undefined, personaSection, studentName);
 
         after(async () => {
           try {
@@ -396,7 +541,7 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      const turn = await generateExaminerTurn(task, [], undefined, undefined, undefined, undefined, undefined, personaId, studentName);
+      const turn = await generateExaminerTurn(task, [], undefined, undefined, undefined, undefined, undefined, personaSection, studentName);
 
       // Log LLM usage (non-blocking)
       logLlmUsage(user.id, turn.usage, tier, sessionId, { action: 'start', call: 'generateExaminerTurn' });
@@ -473,16 +618,50 @@ export async function POST(request: NextRequest) {
       const respondRating = sessionConfig?.rating || 'private';
       // Pass difficulty as-is (including 'mixed') for prompt selection
       const respondDifficulty = sessionConfig?.difficulty || undefined;
+
+      // Build depth & difficulty contract sections for examiner + assessment (Phase 10)
+      let respondExaminerContract: string | undefined;
+      let respondGradingContract: string | undefined;
+      if (sessionConfig) {
+        const currentElementCode = clientPlannerState?.recent?.length
+          ? clientPlannerState.recent[clientPlannerState.recent.length - 1]
+          : undefined;
+        const elementType = currentElementCode?.match(/\.(K|R|S)\d+$/)?.[1] === 'R' ? 'risk' as const
+          : currentElementCode?.match(/\.(K|R|S)\d+$/)?.[1] === 'S' ? 'skill' as const
+          : 'knowledge' as const;
+        const respondContract = buildDepthDifficultyContract(
+          respondRating, respondDifficulty || 'medium', elementType
+        );
+        respondExaminerContract = formatContractForExaminer(respondContract);
+        respondGradingContract = formatContractForAssessment(respondContract);
+      }
+
       if (stream) {
         // Streaming path: start assessment in background, stream examiner immediately
         timing.start('llm.assessment.total');
         timing.start('llm.examiner.total');
         timing.start('llm.examiner.ttft');
-        const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty)
+        const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty, respondGradingContract)
           .then(a => { timing.end('llm.assessment.total'); return a; });
 
+        // Build semantic asset selection context (Phase 13)
+        // Extract area roman numeral from task ID (e.g., "PA.I.A" → "I", "IR.XI.B" → "XI")
+        const currentElementCode = clientPlannerState?.queue?.[clientPlannerState?.cursor] ?? undefined;
+        const areaRoman = taskData.id?.split('.')?.[1] || '';
+        const assetContext: AssetSelectionContext = {
+          acsArea: areaRoman,
+          acsTaskCode: taskData.id || '',
+          elementCode: currentElementCode,
+          rating: respondRating,
+          questionText: updatedHistory[updatedHistory.length - 1]?.text || '',
+          difficulty: respondDifficulty,
+        };
+
+        let selectedAssetData: SelectedAsset | null = null;
+        const onAssetSelected = (asset: SelectedAsset) => { selectedAssetData = asset; };
+
         const { stream: readableStream, fullTextPromise } = await generateExaminerTurnStreaming(
-          taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessmentPromise, undefined, respondRating, sessionConfig?.studyMode, personaId, studentName, chunkedResponse, timing
+          taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessmentPromise, undefined, respondRating, sessionConfig?.studyMode, personaSection, studentName, chunkedResponse, timing, respondExaminerContract, assetContext, onAssetSelected
         );
 
         // Use after() to ensure ALL DB writes complete even after stream closes.
@@ -564,6 +743,26 @@ export async function POST(request: NextRequest) {
             console.error('Background DB write error:', err);
           }
 
+          // Fire PostHog event for multimodal asset selection (Phase 13, non-blocking)
+          if (selectedAssetData) {
+            try {
+              const { captureServerEvent } = await import('@/lib/posthog-server');
+              captureServerEvent(user.id, 'multimodal_asset_selected', {
+                session_id: sessionId,
+                element_code: currentElementCode,
+                rating: respondRating,
+                difficulty: respondDifficulty,
+                total_candidates: selectedAssetData.totalCandidates,
+                images_shown: selectedAssetData.images.length,
+                text_cards_shown: selectedAssetData.textCards.length,
+                top_image_score: selectedAssetData.images[0]?.totalScore ?? null,
+                threshold: selectedAssetData.thresholdApplied,
+              });
+            } catch (posthogErr) {
+              console.error('PostHog multimodal event error:', posthogErr);
+            }
+          }
+
           // Write latency instrumentation (non-blocking, best-effort)
           if (sessionId) {
             await writeTimings(serviceSupabase, sessionId, exchangeNumber, timing);
@@ -584,9 +783,9 @@ export async function POST(request: NextRequest) {
       timing.start('llm.assessment.total');
       timing.start('llm.examiner.total');
       const [assessment, turn] = await Promise.all([
-        assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty)
+        assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty, respondGradingContract)
           .then(a => { timing.end('llm.assessment.total'); return a; }),
-        generateExaminerTurn(taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass as import('@/types/database').AircraftClass | undefined, rag, respondRating, sessionConfig?.studyMode, personaId, studentName)
+        generateExaminerTurn(taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass as import('@/types/database').AircraftClass | undefined, rag, respondRating, sessionConfig?.studyMode, personaSection, studentName, undefined, respondExaminerContract)
           .then(t => { timing.end('llm.examiner.total'); return t; }),
       ]);
       timing.end('exchange.total');
@@ -813,12 +1012,54 @@ export async function POST(request: NextRequest) {
         }
 
         const nextTaskRating = sessionConfig.rating || 'private';
+
+        // Compute transition hint for cross_acs mode (Phase 9)
+        const previousElementCode = clientPlannerState.recent?.length
+          ? clientPlannerState.recent[clientPlannerState.recent.length - 1]
+          : undefined;
+        const transitionHint = buildTransitionHint(
+          previousElementCode, plannerResult.elementCode,
+          sessionConfig.studyMode, nextTaskRating
+        );
+
+        // Format depth & difficulty contract for next-task examiner prompt (Phase 10)
+        const nextTaskExaminerContract = plannerResult.depthDifficultyContract
+          ? formatContractForExaminer(plannerResult.depthDifficultyContract)
+          : undefined;
+
         const turn = await generateExaminerTurn(
-          plannerResult.task, sessionHistory, plannerResult.difficulty, sessionConfig.aircraftClass, undefined, nextTaskRating, sessionConfig.studyMode, personaId, studentName
+          plannerResult.task, sessionHistory, plannerResult.difficulty, sessionConfig.aircraftClass, undefined, nextTaskRating, sessionConfig.studyMode, personaSection, studentName, transitionHint, nextTaskExaminerContract
         );
 
         // Log LLM usage (non-blocking)
         logLlmUsage(user.id, turn.usage, tier, sessionId, { action: 'next-task', call: 'generateExaminerTurn' });
+
+        // Fire PostHog event for cross-area transitions (Phase 9, non-blocking)
+        if (transitionHint && sessionConfig.studyMode === 'cross_acs') {
+          after(async () => {
+            const { captureServerEvent } = await import('@/lib/posthog-server');
+            captureServerEvent(user.id, 'flow_transition_generated', {
+              session_id: sessionId,
+              from_element: previousElementCode,
+              to_element: plannerResult.elementCode,
+              rating: nextTaskRating,
+            });
+          });
+        }
+
+        // Fire PostHog event for depth contract (Phase 10, non-blocking)
+        if (plannerResult.depthDifficultyContract) {
+          after(async () => {
+            const { captureServerEvent } = await import('@/lib/posthog-server');
+            captureServerEvent(user.id, 'depth_contract_applied', {
+              session_id: sessionId,
+              ...contractSummary(plannerResult.depthDifficultyContract!),
+              element_code: plannerResult.elementCode,
+              study_mode: sessionConfig.studyMode,
+              action: 'next-task',
+            });
+          });
+        }
 
         if (sessionId) {
           const { count } = await supabase
@@ -835,11 +1076,17 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        // Persist updated planner state + taskData + examPlan to metadata for resume
+        // Persist updated planner state + taskData + examPlan + contract to metadata for resume
         if (sessionId) {
           const { error: metaErr } = await serviceSupabase
             .from('exam_sessions')
-            .update({ metadata: { plannerState: plannerResult.plannerState, sessionConfig, taskData: plannerResult.task, examPlan: plannerResult.examPlan } })
+            .update({ metadata: {
+              plannerState: plannerResult.plannerState,
+              sessionConfig,
+              taskData: plannerResult.task,
+              examPlan: plannerResult.examPlan,
+              ...(plannerResult.depthDifficultyContract ? { depthDifficultyContract: plannerResult.depthDifficultyContract } : {}),
+            } })
             .eq('id', sessionId);
           if (metaErr) console.error('Planner state persist error:', metaErr.message);
         }
@@ -865,7 +1112,7 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      const turn = await generateExaminerTurn(task, sessionHistory, undefined, undefined, undefined, undefined, undefined, personaId, studentName);
+      const turn = await generateExaminerTurn(task, sessionHistory, undefined, undefined, undefined, undefined, undefined, personaSection, studentName);
 
       // Log LLM usage (non-blocking)
       logLlmUsage(user.id, turn.usage, tier, sessionId, { action: 'next-task', call: 'generateExaminerTurn' });

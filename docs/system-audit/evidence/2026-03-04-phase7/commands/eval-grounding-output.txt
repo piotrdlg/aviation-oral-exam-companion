@@ -1,0 +1,32 @@
+
+> aviation-oral-exam-companion@0.1.0 eval:grounding
+> tsx scripts/eval/grounding-citation-audit.ts
+
+[dotenv@17.3.1] injecting env (17) from .env.local -- tip: ⚙️  enable debug logging with { debug: true }
+=== Grounding / Citation Accuracy Audit ===
+
+Found 2 session(s) with V2 data (limit: 10)
+
+Session 6cc31bb3... | instrument | linear | 14 weak elements
+  SUPPORTS: 4 | WEAK_SUPPORT: 29 | UNSUPPORTED: 20 | Score: 34.9%
+Session 3564331f... | private | linear | 10 weak elements
+  SUPPORTS: 3 | WEAK_SUPPORT: 23 | UNSUPPORTED: 13 | Score: 37.2%
+
+=== AGGREGATE RESULTS ===
+Total citations audited: 92
+SUPPORTS:      7 (7.6%)
+WEAK_SUPPORT:  52 (56.5%)
+UNSUPPORTED:   33 (35.9%)
+Aggregate grounding score: 35.9%
+Unsupported rate: 35.9% (threshold: <=10%)
+
+Failure patterns:
+  Area I: 17 unsupported citation(s)
+  Area II: 8 unsupported citation(s)
+  Area V: 4 unsupported citation(s)
+  Area IV: 3 unsupported citation(s)
+  Area VI: 1 unsupported citation(s)
+
+Evidence saved to /Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/docs/system-audit/evidence/2026-03-04-phase7/eval/grounding-citation-audit.{json,md}
+
+❌ FAIL: Unsupported rate exceeds 10% threshold

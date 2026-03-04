@@ -1,0 +1,96 @@
+{
+  "timestamp": "2026-03-04T03:20:34.021Z",
+  "overall_verdict": "REVIEW",
+  "categories": [
+    {
+      "name": "Core Exam Behavior",
+      "verdict": "GO",
+      "checks": [
+        {
+          "check": "acs_task_coverage",
+          "verdict": "GO",
+          "detail": "PA=61, CA=60, IR=22"
+        },
+        {
+          "check": "prompt_versions",
+          "verdict": "GO",
+          "detail": "examiner_system + assessment_system published"
+        },
+        {
+          "check": "knowledge_graph",
+          "verdict": "GO",
+          "detail": "24613 concepts"
+        },
+        {
+          "check": "source_chunks",
+          "verdict": "GO",
+          "detail": "4674 chunks"
+        }
+      ]
+    },
+    {
+      "name": "Operational Readiness",
+      "verdict": "REVIEW",
+      "checks": [
+        {
+          "check": "session_tracking",
+          "verdict": "GO",
+          "detail": "78 sessions in last 90 days"
+        },
+        {
+          "check": "prompt_trace_adoption",
+          "verdict": "REVIEW",
+          "detail": "0/20 recent sessions have promptTrace (0%)"
+        },
+        {
+          "check": "image_assets",
+          "verdict": "GO",
+          "detail": "1596 images"
+        }
+      ]
+    },
+    {
+      "name": "Commercial Readiness",
+      "verdict": "GO",
+      "checks": [
+        {
+          "check": "auth_system",
+          "verdict": "GO",
+          "detail": "NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY set"
+        },
+        {
+          "check": "ai_provider",
+          "verdict": "GO",
+          "detail": "ANTHROPIC_API_KEY set"
+        },
+        {
+          "check": "user_profiles",
+          "verdict": "GO",
+          "detail": "Table queryable (11 rows)"
+        }
+      ]
+    },
+    {
+      "name": "PromptOps Readiness",
+      "verdict": "GO",
+      "checks": [
+        {
+          "check": "persona_prompts",
+          "verdict": "GO",
+          "detail": "4 distinct published persona prompts: persona_bob_mitchell, persona_jim_hayes, persona_karen_sullivan, persona_maria_torres"
+        },
+        {
+          "check": "version_ambiguity",
+          "verdict": "GO",
+          "detail": "No published dimension groups have multiple rows"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_checks": 12,
+    "go_count": 11,
+    "review_count": 1,
+    "nogo_count": 0
+  }
+}

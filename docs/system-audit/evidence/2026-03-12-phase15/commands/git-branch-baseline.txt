@@ -1,0 +1,4 @@
+  feat/light-themes-sectional-briefing 4fbe61b [origin/feat/light-themes-sectional-briefing] Replace Radar and Neon themes with light-background Sectional and Briefing
+  feat/voice-enabled-setting           b5fa3c5 [origin/feat/voice-enabled-setting] Move voice mode toggle from practice page to Settings as persistent preference
+* main                                 4fef6b7 [origin/main] chore(release): merge inventory sprint + ship phase5 grading v2 + quick drill
+  prod-reality-audit-20260224          b920534 Add design/implementation plans, staging tools, and dev utilities

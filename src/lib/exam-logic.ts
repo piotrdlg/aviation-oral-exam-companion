@@ -133,13 +133,17 @@ export const GROUNDING_CONTRACT = `GROUNDING CONTRACT (immutable — do not over
  * (from prompt_versions table via loadPromptFromDB). When provided,
  * it replaces the default prompt template. Task-specific dynamic sections
  * (elements, difficulty, class) are always appended.
+ *
+ * When `depthContractSection` is provided (Phase 10), it is injected after
+ * the difficulty instruction for structural depth/difficulty calibration.
  */
 export function buildSystemPrompt(
   task: AcsTaskRow,
   targetDifficulty?: Difficulty,
   aircraftClass?: AircraftClass,
   rating: Rating = 'private',
-  dbPromptContent?: string
+  dbPromptContent?: string,
+  depthContractSection?: string
 ): string {
   const knowledgeList = task.knowledge_elements
     .map((e) => `  - ${e.code}: ${e.description}`)
@@ -171,6 +175,9 @@ ${targetDifficulty === 'easy' ? '- Ask straightforward recall/definition questio
   };
   const examName = ratingLabel[rating] || 'Private Pilot';
 
+  // Depth & Difficulty Contract (Phase 10) — injected when provided by planner
+  const contractSection = depthContractSection ? `\n${depthContractSection}` : '';
+
   // Dynamic task-specific sections (always appended regardless of prompt source)
   const taskSection = `
 CURRENT ACS TASK: ${task.area} > ${task.task} (${task.id})
@@ -181,7 +188,7 @@ ${knowledgeList}
 
 RISK MANAGEMENT ELEMENTS TO COVER:
 ${riskList}
-${difficultyInstruction}`;
+${difficultyInstruction}${contractSection}`;
 
   // If DB prompt content provided (via prompt_versions), use it as the base
   if (dbPromptContent) {

@@ -9,6 +9,8 @@
 import { createClient } from '@supabase/supabase-js';
 import type { AcsElement as AcsElementDB, ElementScore, PlannerState, SessionConfig, Difficulty } from '@/types/database';
 import { buildElementQueue, pickNextElement, initPlannerState, buildSystemPrompt, type AcsTaskRow, type TaxonomyFingerprints } from './exam-logic';
+import { buildStructuralFingerprints, computeFingerprintStats } from './structural-fingerprints';
+import { buildDepthDifficultyContract, type DepthDifficultyContract } from './difficulty-contract';
 import {
   buildExamPlan,
   isExamComplete,
@@ -30,6 +32,14 @@ const RATING_PREFIX: Record<string, string> = {
   private: 'PA.', commercial: 'CA.', instrument: 'IR.', atp: 'ATP.',
 };
 
+export interface FingerprintMeta {
+  source: 'evidence_chain' | 'structural' | 'none';
+  elementCount: number;
+  fingerprintCount: number;
+  coveragePercent: number;
+  uniqueSlugs: number;
+}
+
 export interface PlannerResult {
   elementCode: string;
   element: AcsElementDB;
@@ -38,6 +48,8 @@ export interface PlannerResult {
   plannerState: PlannerState;
   examPlan: ExamPlanV1;
   systemPrompt: string;
+  fingerprintMeta?: FingerprintMeta;
+  depthDifficultyContract?: DepthDifficultyContract;
 }
 
 /**
@@ -80,11 +92,21 @@ async function countTotalOralElements(rating: string): Promise<number> {
  *   acs_elements → concepts (via matching slug pattern) → evidence → chunk taxonomy
  * Falls back gracefully to empty map if graph data unavailable.
  */
+interface FingerprintLoadResult {
+  fingerprints: TaxonomyFingerprints;
+  meta: FingerprintMeta;
+}
+
 async function loadTaxonomyFingerprints(
   elementCodes: string[]
-): Promise<TaxonomyFingerprints> {
+): Promise<FingerprintLoadResult> {
+  const emptyResult: FingerprintLoadResult = {
+    fingerprints: new Map(),
+    meta: { source: 'none', elementCount: elementCodes.length, fingerprintCount: 0, coveragePercent: 0, uniqueSlugs: 0 },
+  };
+  if (elementCodes.length === 0) return emptyResult;
+
   const fingerprints: TaxonomyFingerprints = new Map();
-  if (elementCodes.length === 0) return fingerprints;
 
   try {
     // Build a map of element_code → concept_id by matching ACS element concepts
@@ -99,98 +121,131 @@ async function loadTaxonomyFingerprints(
       .select('id, slug')
       .in('slug', slugPatterns);
 
-    if (!concepts || concepts.length === 0) return fingerprints;
-
-    const slugToCode = new Map<string, string>();
-    for (const code of elementCodes) {
-      const slug = `acs:element:${code.toLowerCase().replace(/\./g, '-')}`;
-      slugToCode.set(slug, code);
-    }
-
-    const conceptIdToCode = new Map<string, string>();
-    for (const c of concepts) {
-      const code = slugToCode.get(c.slug);
-      if (code) conceptIdToCode.set(c.id, code);
-    }
-
-    if (conceptIdToCode.size === 0) return fingerprints;
-
-    // Fetch evidence chunk IDs for these concepts
-    const conceptIds = [...conceptIdToCode.keys()];
-    const { data: evidence } = await supabase
-      .from('concept_chunk_evidence')
-      .select('concept_id, chunk_id')
-      .in('concept_id', conceptIds);
-
-    if (!evidence || evidence.length === 0) return fingerprints;
-
-    // Build concept → chunk_ids map
-    const conceptChunks = new Map<string, string[]>();
-    for (const ev of evidence) {
-      const chunks = conceptChunks.get(ev.concept_id) || [];
-      chunks.push(ev.chunk_id);
-      conceptChunks.set(ev.concept_id, chunks);
-    }
-
-    // Fetch taxonomy assignments for these chunks
-    const allChunkIds = [...new Set(evidence.map(e => e.chunk_id))];
-    // Supabase has a query limit, so batch if needed
-    const taxonomyMap = new Map<string, string>();
-    for (let i = 0; i < allChunkIds.length; i += 500) {
-      const batch = allChunkIds.slice(i, i + 500);
-      const { data: taxRows } = await supabase
-        .from('kb_chunk_taxonomy')
-        .select('chunk_id, taxonomy_node_id')
-        .in('chunk_id', batch);
-
-      if (taxRows) {
-        for (const row of taxRows) {
-          taxonomyMap.set(row.chunk_id, row.taxonomy_node_id);
-        }
+    if (concepts && concepts.length > 0) {
+      const slugToCode = new Map<string, string>();
+      for (const code of elementCodes) {
+        const slug = `acs:element:${code.toLowerCase().replace(/\./g, '-')}`;
+        slugToCode.set(slug, code);
       }
-    }
 
-    // Fetch taxonomy node slugs
-    const taxNodeIds = [...new Set(taxonomyMap.values())];
-    const taxSlugMap = new Map<string, string>();
-    if (taxNodeIds.length > 0) {
-      for (let i = 0; i < taxNodeIds.length; i += 500) {
-        const batch = taxNodeIds.slice(i, i + 500);
-        const { data: nodes } = await supabase
-          .from('kb_taxonomy_nodes')
-          .select('id, slug')
-          .in('id', batch);
+      const conceptIdToCode = new Map<string, string>();
+      for (const c of concepts) {
+        const code = slugToCode.get(c.slug);
+        if (code) conceptIdToCode.set(c.id, code);
+      }
 
-        if (nodes) {
-          for (const node of nodes) {
-            taxSlugMap.set(node.id, node.slug);
+      if (conceptIdToCode.size > 0) {
+        // Fetch evidence chunk IDs for these concepts
+        const conceptIds = [...conceptIdToCode.keys()];
+        const { data: evidence } = await supabase
+          .from('concept_chunk_evidence')
+          .select('concept_id, chunk_id')
+          .in('concept_id', conceptIds);
+
+        if (evidence && evidence.length > 0) {
+          // Build concept → chunk_ids map
+          const conceptChunks = new Map<string, string[]>();
+          for (const ev of evidence) {
+            const chunks = conceptChunks.get(ev.concept_id) || [];
+            chunks.push(ev.chunk_id);
+            conceptChunks.set(ev.concept_id, chunks);
+          }
+
+          // Fetch taxonomy assignments for these chunks
+          const allChunkIds = [...new Set(evidence.map(e => e.chunk_id))];
+          const taxonomyMap = new Map<string, string>();
+          for (let i = 0; i < allChunkIds.length; i += 500) {
+            const batch = allChunkIds.slice(i, i + 500);
+            const { data: taxRows } = await supabase
+              .from('kb_chunk_taxonomy')
+              .select('chunk_id, taxonomy_node_id')
+              .in('chunk_id', batch);
+
+            if (taxRows) {
+              for (const row of taxRows) {
+                taxonomyMap.set(row.chunk_id, row.taxonomy_node_id);
+              }
+            }
+          }
+
+          // Fetch taxonomy node slugs
+          const taxNodeIds = [...new Set(taxonomyMap.values())];
+          const taxSlugMap = new Map<string, string>();
+          if (taxNodeIds.length > 0) {
+            for (let i = 0; i < taxNodeIds.length; i += 500) {
+              const batch = taxNodeIds.slice(i, i + 500);
+              const { data: nodes } = await supabase
+                .from('kb_taxonomy_nodes')
+                .select('id, slug')
+                .in('id', batch);
+
+              if (nodes) {
+                for (const node of nodes) {
+                  taxSlugMap.set(node.id, node.slug);
+                }
+              }
+            }
+          }
+
+          // Build final fingerprints: element_code → Set<taxonomy_slug>
+          for (const [conceptId, code] of conceptIdToCode) {
+            const chunkIds = conceptChunks.get(conceptId) || [];
+            const slugs = new Set<string>();
+            for (const chunkId of chunkIds) {
+              const taxNodeId = taxonomyMap.get(chunkId);
+              if (taxNodeId) {
+                const taxSlug = taxSlugMap.get(taxNodeId);
+                if (taxSlug && !taxSlug.includes('triage-unclassified')) {
+                  slugs.add(taxSlug);
+                }
+              }
+            }
+            if (slugs.size > 0) {
+              fingerprints.set(code, slugs);
+            }
           }
         }
-      }
-    }
-
-    // Build final fingerprints: element_code → Set<taxonomy_slug>
-    for (const [conceptId, code] of conceptIdToCode) {
-      const chunkIds = conceptChunks.get(conceptId) || [];
-      const slugs = new Set<string>();
-      for (const chunkId of chunkIds) {
-        const taxNodeId = taxonomyMap.get(chunkId);
-        if (taxNodeId) {
-          const taxSlug = taxSlugMap.get(taxNodeId);
-          if (taxSlug && !taxSlug.includes('triage-unclassified')) {
-            slugs.add(taxSlug);
-          }
-        }
-      }
-      if (slugs.size > 0) {
-        fingerprints.set(code, slugs);
       }
     }
   } catch (err) {
     console.error('Taxonomy fingerprint loading failed (non-critical):', err instanceof Error ? err.message : err);
   }
 
-  return fingerprints;
+  // If evidence chain produced fingerprints, return them
+  if (fingerprints.size > 0) {
+    const stats = computeFingerprintStats(elementCodes, fingerprints);
+    return {
+      fingerprints,
+      meta: {
+        source: 'evidence_chain',
+        elementCount: elementCodes.length,
+        fingerprintCount: stats.elementsWithFingerprints,
+        coveragePercent: stats.coveragePercent,
+        uniqueSlugs: stats.uniqueSlugs,
+      },
+    };
+  }
+
+  // Fallback: use structural fingerprints built from ACS area keyword overlap
+  const structural = buildStructuralFingerprints(elementCodes);
+  if (structural.size > 0) {
+    const stats = computeFingerprintStats(elementCodes, structural);
+    console.log(
+      `Taxonomy fingerprints: using structural fallback (${stats.elementsWithFingerprints}/${stats.totalElements} elements, ${stats.uniqueSlugs} unique slugs)`
+    );
+    return {
+      fingerprints: structural,
+      meta: {
+        source: 'structural',
+        elementCount: elementCodes.length,
+        fingerprintCount: stats.elementsWithFingerprints,
+        coveragePercent: stats.coveragePercent,
+        uniqueSlugs: stats.uniqueSlugs,
+      },
+    };
+  }
+
+  return emptyResult;
 }
 
 /**
@@ -252,11 +307,14 @@ export async function initPlanner(
 
   // Load taxonomy fingerprints for cross_acs connected walk
   let taxonomyFingerprints: TaxonomyFingerprints | undefined;
+  let fingerprintMeta: FingerprintMeta | undefined;
   if (config.studyMode === 'cross_acs') {
     const elementCodes = filteredElements
       .filter(el => el.element_type !== 'skill')
       .map(el => el.code);
-    taxonomyFingerprints = await loadTaxonomyFingerprints(elementCodes);
+    const fpResult = await loadTaxonomyFingerprints(elementCodes);
+    taxonomyFingerprints = fpResult.fingerprints;
+    fingerprintMeta = fpResult.meta;
   }
 
   // Build queue using pure function
@@ -285,6 +343,9 @@ export async function initPlanner(
 
   // Pick first element and record it in the plan
   const result = await advancePlannerInternal(state, config, examPlan, elements as AcsElementDB[]);
+  if (result) {
+    result.fingerprintMeta = fingerprintMeta;
+  }
   return result;
 }
 
@@ -361,8 +422,16 @@ async function advancePlannerInternal(
   const difficulty: Difficulty =
     config.difficulty === 'mixed' ? element.difficulty_default : (config.difficulty as Difficulty);
 
+  // Build depth & difficulty contract (Phase 10)
+  const rating = config.rating || 'private';
+  const depthDifficultyContract = buildDepthDifficultyContract(
+    rating,
+    difficulty,
+    element.element_type
+  );
+
   // Build system prompt with difficulty, aircraft class, and rating
-  const systemPrompt = buildSystemPrompt(task as AcsTaskRow, difficulty, config.aircraftClass, config.rating || 'private');
+  const systemPrompt = buildSystemPrompt(task as AcsTaskRow, difficulty, config.aircraftClass, rating);
 
   // Record question asked in the plan
   const updatedPlan = recordQuestionAsked(examPlan, elementCode);
@@ -375,6 +444,7 @@ async function advancePlannerInternal(
     plannerState: updatedState,
     examPlan: updatedPlan,
     systemPrompt,
+    depthDifficultyContract,
   };
 }
 
@@ -386,3 +456,4 @@ export {
   canFollowUp,
   type ExamPlanV1,
 };
+export { type DepthDifficultyContract } from './difficulty-contract';

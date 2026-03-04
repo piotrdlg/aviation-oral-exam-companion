@@ -1,0 +1,34 @@
+{
+  "timestamp": "2026-03-03T11:21:28.262Z",
+  "instruction_validation": [
+    {
+      "difficulty": "easy",
+      "found": true,
+      "detail": "Contains: \"Ask straightforward recall/definition questions....\""
+    },
+    {
+      "difficulty": "medium",
+      "found": true,
+      "detail": "Contains: \"Ask application and scenario-based questions....\""
+    },
+    {
+      "difficulty": "hard",
+      "found": true,
+      "detail": "Contains: \"Ask complex edge cases, \"what if\" chains, and regu...\""
+    },
+    {
+      "difficulty": "mixed",
+      "found": true,
+      "detail": "Contains: \"Vary difficulty naturally: mix recall, scenario-ba...\""
+    },
+    {
+      "difficulty": "(none)",
+      "found": true,
+      "detail": "No DIFFICULTY LEVEL header when omitted"
+    }
+  ],
+  "difficulty_buckets": [],
+  "calibration_checks": [],
+  "all_instructions_pass": true,
+  "overall_pass": true
+}

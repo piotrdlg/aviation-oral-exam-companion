@@ -14,6 +14,7 @@
 import 'server-only';
 import { createClient } from '@supabase/supabase-js';
 import type { ExamResultV2, WeakElement } from '@/lib/exam-result';
+import { filterCitations, type CitationCandidate, type ScoredCitation } from '@/lib/citation-relevance';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -58,6 +59,8 @@ export interface WeakElementReport {
   citations: SourceCitation[];
   /** Whether sufficient sources were found */
   grounded: boolean;
+  /** True if citations were available but all scored below relevance threshold */
+  low_confidence?: boolean;
 }
 
 export interface WeakAreaReport {
@@ -80,6 +83,17 @@ export interface WeakAreaReport {
     not_asked_count: number;
     grounded_count: number;
     insufficient_sources_count: number;
+  };
+  /** Grounding quality metrics for monitoring (Phase 8) */
+  quality_metrics?: {
+    candidate_count: number;
+    returned_count: number;
+    filtered_out_count: number;
+    avg_relevance_score: number;
+    low_confidence_count: number;
+    insufficient_sources_count: number;
+    top_doc_types: string[];
+    generated_at: string;
   };
 }
 
@@ -110,10 +124,10 @@ const MIN_CITATIONS_FOR_GROUNDED = 1;
 export async function buildWeakAreaReport(
   sessionId: string
 ): Promise<WeakAreaReport | null> {
-  // 1. Load session with metadata
+  // 1. Load session with metadata + rating
   const { data: session, error: sessionErr } = await supabase
     .from('exam_sessions')
-    .select('id, metadata, result')
+    .select('id, metadata, result, rating')
     .eq('id', sessionId)
     .single();
 
@@ -157,15 +171,54 @@ export async function buildWeakAreaReport(
   const elementCodes = weakElements.map(w => w.element_code);
   const elementDescriptions = await loadElementDescriptions(elementCodes);
 
-  // 4. Build per-element reports
+  // 4. Build per-element reports with relevance filtering
+  const sessionRating = (session.rating as string) || undefined;
   const elementReports: WeakElementReport[] = [];
+  let totalCandidates = 0;
+  let totalReturned = 0;
+  let totalFiltered = 0;
+  let totalRelevanceScore = 0;
+  let relevanceScoreCount = 0;
+  let lowConfidenceCount = 0;
+  const docTypeCounts = new Map<string, number>();
 
-  // Process weak elements in batches to avoid overwhelming the RPC
   for (const weak of weakElements) {
-    const citations = await gatherCitations(
+    const { citations: allCandidates, candidateCount } = await gatherCitationCandidates(
       weak,
       transcriptCitations,
     );
+
+    totalCandidates += candidateCount;
+
+    // Score and filter citations for relevance
+    const { kept, filtered } = filterCitations(
+      allCandidates,
+      {
+        element_code: weak.element_code,
+        area: weak.area,
+        rating: sessionRating,
+      },
+      MAX_CITATIONS_PER_ELEMENT,
+    );
+
+    const keptCitations: SourceCitation[] = kept.map(s => s.citation);
+    totalReturned += keptCitations.length;
+    totalFiltered += filtered.length;
+
+    // Track relevance scores
+    for (const s of kept) {
+      totalRelevanceScore += s.relevance.score;
+      relevanceScoreCount++;
+    }
+
+    // Track doc types
+    for (const c of keptCitations) {
+      docTypeCounts.set(c.doc_abbreviation, (docTypeCounts.get(c.doc_abbreviation) || 0) + 1);
+    }
+
+    // Determine if low confidence: had candidates but none passed filter
+    const isLowConfidence = candidateCount > 0 && keptCitations.length === 0;
+    if (isLowConfidence) lowConfidenceCount++;
 
     elementReports.push({
       element_code: weak.element_code,
@@ -173,8 +226,9 @@ export async function buildWeakAreaReport(
       area: weak.area,
       score: weak.score,
       severity: weak.severity,
-      citations: citations.slice(0, MAX_CITATIONS_PER_ELEMENT),
-      grounded: citations.length >= MIN_CITATIONS_FOR_GROUNDED,
+      citations: keptCitations,
+      grounded: keptCitations.length >= MIN_CITATIONS_FOR_GROUNDED,
+      low_confidence: isLowConfidence || undefined,
     });
   }
 
@@ -188,6 +242,25 @@ export async function buildWeakAreaReport(
     insufficient_sources_count: elementReports.filter(e => !e.grounded).length,
   };
 
+  // 6. Compute quality metrics
+  const topDocTypes = [...docTypeCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([doc]) => doc);
+
+  const quality_metrics = {
+    candidate_count: totalCandidates,
+    returned_count: totalReturned,
+    filtered_out_count: totalFiltered,
+    avg_relevance_score: relevanceScoreCount > 0
+      ? Math.round((totalRelevanceScore / relevanceScoreCount) * 100) / 100
+      : 0,
+    low_confidence_count: lowConfidenceCount,
+    insufficient_sources_count: stats.insufficient_sources_count,
+    top_doc_types: topDocTypes,
+    generated_at: new Date().toISOString(),
+  };
+
   return {
     session_id: sessionId,
     generated_at: new Date().toISOString(),
@@ -196,6 +269,7 @@ export async function buildWeakAreaReport(
     elements: elementReports,
     failed_areas: examResultV2.failed_areas,
     stats,
+    quality_metrics,
   };
 }
 
@@ -308,13 +382,18 @@ async function loadElementDescriptions(
 }
 
 /**
- * Gather citations for a single weak element from multiple sources.
- * Priority: transcript citations first (actually used in exam), then evidence.
+ * Gather ALL citation candidates for a single weak element from multiple sources.
+ * Returns unfiltered candidates — filtering happens at the caller level via
+ * the citation-relevance scorer (Phase 8).
+ *
+ * Collects up to 20 candidates (generous) so the relevance filter can pick the best.
  */
-async function gatherCitations(
+const MAX_CANDIDATES = 20;
+
+async function gatherCitationCandidates(
   weak: WeakElement,
   transcriptCitations: Map<string, TranscriptCitationRow[]>,
-): Promise<SourceCitation[]> {
+): Promise<{ citations: SourceCitation[]; candidateCount: number }> {
   const citations: SourceCitation[] = [];
   const seenChunkIds = new Set<string>();
 
@@ -335,11 +414,11 @@ async function gatherCitations(
       confidence: tc.score ?? 0.5,
     });
 
-    if (citations.length >= MAX_CITATIONS_PER_ELEMENT) return citations;
+    if (citations.length >= MAX_CANDIDATES) break;
   }
 
   // Source 2: Evidence from concept bundle RPC (pre-computed concept→chunk)
-  if (citations.length < MAX_CITATIONS_PER_ELEMENT) {
+  if (citations.length < MAX_CANDIDATES) {
     try {
       const { data: bundleRows } = await supabase.rpc('get_concept_bundle', {
         p_element_code: weak.element_code,
@@ -376,8 +455,9 @@ async function gatherCitations(
               confidence: chunk.confidence,
             });
 
-            if (citations.length >= MAX_CITATIONS_PER_ELEMENT) return citations;
+            if (citations.length >= MAX_CANDIDATES) break;
           }
+          if (citations.length >= MAX_CANDIDATES) break;
         }
       }
     } catch (err) {
@@ -386,8 +466,5 @@ async function gatherCitations(
     }
   }
 
-  // Sort by confidence desc
-  citations.sort((a, b) => b.confidence - a.confidence);
-
-  return citations;
+  return { citations, candidateCount: citations.length };
 }

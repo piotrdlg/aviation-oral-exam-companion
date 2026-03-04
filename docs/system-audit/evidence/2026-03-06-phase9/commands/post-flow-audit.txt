@@ -1,0 +1,45 @@
+[dotenv@17.3.1] injecting env (17) from .env.local -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+=== Flow Coherence Audit (R5) ===
+
+Step 1: Loading ACS elements + taxonomy fingerprints...
+  Loaded 535 PA elements
+  RPC not available. Building fingerprints from evidence chain...
+  Built fingerprints for 0 elements from evidence chain
+  Evidence chain empty. Building structural fingerprints (Phase 9 fallback)...
+  Structural fingerprints: 535/535 (100%), 267 unique slugs
+
+Step 2: Running connectedWalk vs random baseline...
+  Using 50 elements for comparison
+
+  Connected Walk (5 trials):
+    Avg Jaccard:  70.9%
+    Pct shared:   99.6%
+
+  Random Baseline (5 trials):
+    Avg Jaccard:  14.3%
+    Pct shared:   63.4%
+
+  Improvement: 395.3%
+
+Step 3: Sample pair analysis...
+  First 10 consecutive pairs:
+    PA.I.B.R1 → PA.I.G.K2: J=0.882, shared=[topic:preflight, topic:airworthiness, topic:certificate, topic:document, topic:logbook]
+    PA.I.G.K2 → PA.II.B.K2: J=0.061, shared=[topic:preflight, topic:inspection, etype:knowledge]
+    PA.II.B.K2 → PA.II.E.R1: J=0.818, shared=[topic:preflight, topic:procedures, topic:inspection, topic:cockpit, topic:checklist]
+    PA.II.E.R1 → PA.II.F.R1: J=0.905, shared=[topic:preflight, topic:procedures, topic:inspection, topic:cockpit, topic:checklist]
+    PA.II.F.R1 → PA.IV.I.R5: J=0.054, shared=[topic:configuration, etype:risk]
+    PA.IV.I.R5 → PA.IV.I.R1: J=1, shared=[topic:takeoff, topic:landing, topic:pattern, topic:approach, topic:crosswind]
+    PA.IV.I.R1 → PA.IV.I.K2: J=0.9, shared=[topic:takeoff, topic:landing, topic:pattern, topic:approach, topic:crosswind]
+    PA.IV.I.K2 → PA.IV.D.K3: J=0.9, shared=[topic:takeoff, topic:landing, topic:pattern, topic:approach, topic:crosswind]
+    PA.IV.D.K3 → PA.IV.D.K1: J=1, shared=[topic:takeoff, topic:landing, topic:pattern, topic:approach, topic:crosswind]
+    PA.IV.D.K1 → PA.IV.D.R3: J=0.9, shared=[topic:takeoff, topic:landing, topic:pattern, topic:approach, topic:crosswind]
+
+=== CALIBRATION CHECKS ===
+✅ walk_beats_random: walk 70.9% > random 14.3% (395.3% improvement)
+✅ shared_slug_coverage: 99.6% of pairs share >= 1 taxonomy slug (threshold: 50%)
+✅ function_exported: connectedWalk() is exported from exam-logic.ts
+✅ no_fp_appended: 50 with FP, 0 without (correctly appended)
+
+Evidence saved to /Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/docs/system-audit/evidence/2026-03-06-phase9/eval/flow-coherence-audit.{json,md}
+
+OVERALL: PASS

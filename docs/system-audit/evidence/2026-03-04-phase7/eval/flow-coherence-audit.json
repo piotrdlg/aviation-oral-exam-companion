@@ -1,0 +1,219 @@
+{
+  "timestamp": "2026-03-03T03:44:41.850Z",
+  "sample_size": 50,
+  "trials": 5,
+  "fingerprints_loaded": 0,
+  "walk_results": [
+    {
+      "avg_jaccard": 0,
+      "pct_shared": 0
+    },
+    {
+      "avg_jaccard": 0,
+      "pct_shared": 0
+    },
+    {
+      "avg_jaccard": 0,
+      "pct_shared": 0
+    },
+    {
+      "avg_jaccard": 0,
+      "pct_shared": 0
+    },
+    {
+      "avg_jaccard": 0,
+      "pct_shared": 0
+    }
+  ],
+  "random_results": [
+    {
+      "avg_jaccard": 0,
+      "pct_shared": 0
+    },
+    {
+      "avg_jaccard": 0,
+      "pct_shared": 0
+    },
+    {
+      "avg_jaccard": 0,
+      "pct_shared": 0
+    },
+    {
+      "avg_jaccard": 0,
+      "pct_shared": 0
+    },
+    {
+      "avg_jaccard": 0,
+      "pct_shared": 0
+    }
+  ],
+  "avg_walk_jaccard": 0,
+  "avg_random_jaccard": 0,
+  "improvement_pct": 0,
+  "avg_walk_pct_shared": 0,
+  "checks": [
+    {
+      "check": "walk_beats_random",
+      "pass": true,
+      "detail": "SKIP: no fingerprints available (walk degrades to shuffle)"
+    },
+    {
+      "check": "shared_slug_coverage",
+      "pass": true,
+      "detail": "SKIP: no fingerprints available"
+    },
+    {
+      "check": "function_exported",
+      "pass": true,
+      "detail": "connectedWalk() is exported from exam-logic.ts"
+    },
+    {
+      "check": "no_fp_appended",
+      "pass": true,
+      "detail": "0 with FP, 50 without (correctly appended)"
+    }
+  ],
+  "sample_pairs": [
+    {
+      "from_code": "PA.IX.A.R1",
+      "to_code": "PA.VIII.C.R5",
+      "jaccard": 0,
+      "shared_slugs": 0,
+      "shared_slug_list": []
+    },
+    {
+      "from_code": "PA.VIII.C.R5",
+      "to_code": "PA.IX.G.R5",
+      "jaccard": 0,
+      "shared_slugs": 0,
+      "shared_slug_list": []
+    },
+    {
+      "from_code": "PA.IX.G.R5",
+      "to_code": "PA.II.B.K3",
+      "jaccard": 0,
+      "shared_slugs": 0,
+      "shared_slug_list": []
+    },
+    {
+      "from_code": "PA.II.B.K3",
+      "to_code": "PA.IV.C.R3",
+      "jaccard": 0,
+      "shared_slugs": 0,
+      "shared_slug_list": []
+    },
+    {
+      "from_code": "PA.IV.C.R3",
+      "to_code": "PA.I.E.K4",
+      "jaccard": 0,
+      "shared_slugs": 0,
+      "shared_slug_list": []
+    },
+    {
+      "from_code": "PA.I.E.K4",
+      "to_code": "PA.II.E.K6",
+      "jaccard": 0,
+      "shared_slugs": 0,
+      "shared_slug_list": []
+    },
+    {
+      "from_code": "PA.II.E.K6",
+      "to_code": "PA.II.D.R3",
+      "jaccard": 0,
+      "shared_slugs": 0,
+      "shared_slug_list": []
+    },
+    {
+      "from_code": "PA.II.D.R3",
+      "to_code": "PA.X.B.R1",
+      "jaccard": 0,
+      "shared_slugs": 0,
+      "shared_slug_list": []
+    },
+    {
+      "from_code": "PA.X.B.R1",
+      "to_code": "PA.IV.C.R2",
+      "jaccard": 0,
+      "shared_slugs": 0,
+      "shared_slug_list": []
+    },
+    {
+      "from_code": "PA.IV.C.R2",
+      "to_code": "PA.IV.L.R3",
+      "jaccard": 0,
+      "shared_slugs": 0,
+      "shared_slug_list": []
+    },
+    {
+      "from_code": "PA.IV.L.R3",
+      "to_code": "PA.I.D.K3",
+      "jaccard": 0,
+      "shared_slugs": 0,
+      "shared_slug_list": []
+    },
+    {
+      "from_code": "PA.I.D.K3",
+      "to_code": "PA.II.E.K4",
+      "jaccard": 0,
+      "shared_slugs": 0,
+      "shared_slug_list": []
+    },
+    {
+      "from_code": "PA.II.E.K4",
+      "to_code": "PA.X.B.K1",
+      "jaccard": 0,
+      "shared_slugs": 0,
+      "shared_slug_list": []
+    },
+    {
+      "from_code": "PA.X.B.K1",
+      "to_code": "PA.IV.B.R5",
+      "jaccard": 0,
+      "shared_slugs": 0,
+      "shared_slug_list": []
+    },
+    {
+      "from_code": "PA.IV.B.R5",
+      "to_code": "PA.IX.G.R4",
+      "jaccard": 0,
+      "shared_slugs": 0,
+      "shared_slug_list": []
+    },
+    {
+      "from_code": "PA.IX.G.R4",
+      "to_code": "PA.VIII.F.K1",
+      "jaccard": 0,
+      "shared_slugs": 0,
+      "shared_slug_list": []
+    },
+    {
+      "from_code": "PA.VIII.F.K1",
+      "to_code": "PA.IX.F.R3",
+      "jaccard": 0,
+      "shared_slugs": 0,
+      "shared_slug_list": []
+    },
+    {
+      "from_code": "PA.IX.F.R3",
+      "to_code": "PA.VIII.F.R2",
+      "jaccard": 0,
+      "shared_slugs": 0,
+      "shared_slug_list": []
+    },
+    {
+      "from_code": "PA.VIII.F.R2",
+      "to_code": "PA.VI.C.R2",
+      "jaccard": 0,
+      "shared_slugs": 0,
+      "shared_slug_list": []
+    },
+    {
+      "from_code": "PA.VI.C.R2",
+      "to_code": "PA.I.A.R2",
+      "jaccard": 0,
+      "shared_slugs": 0,
+      "shared_slug_list": []
+    }
+  ],
+  "overall_pass": true
+}

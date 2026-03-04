@@ -1,0 +1,119 @@
+## main...origin/main
+ M "docs/system-audit/00 - Index.md"
+ M "docs/system-audit/23 - Feature Matrix vs Oral Exam Problem Statement.md"
+ M "docs/system-audit/26 - Deployment and PR Status.md"
+ M package-lock.json
+ M package.json
+ M src/app/(dashboard)/practice/components/SessionConfig.tsx
+ M src/app/(dashboard)/practice/page.tsx
+ M src/app/(dashboard)/settings/page.tsx
+ M src/app/api/exam/route.ts
+ M src/app/api/session/route.ts
+ M src/app/api/user/tier/route.ts
+ M src/lib/__tests__/exam-result.test.ts
+ M src/lib/exam-engine.ts
+ M src/lib/exam-logic.ts
+ M src/lib/exam-planner.ts
+ M src/lib/weak-area-report.ts
+ M src/types/database.ts
+?? .playwright-mcp/
+?? data/
+?? "docs/system-audit/28 - Results UI and Quick Drill Entry.md"
+?? "docs/system-audit/29 - Exam Quality Harness and Calibration.md"
+?? "docs/system-audit/30 - Grounding Repair and Monitoring.md"
+?? "docs/system-audit/31 - Flow Coherence Activation.md"
+?? "docs/system-audit/32 - Certificate Depth and Difficulty Engine.md"
+?? "docs/system-audit/33 - Rating Parity Audit (Private, Commercial, Instrument).md"
+?? "docs/system-audit/34 - Examiner Personality Engine.md"
+?? "docs/system-audit/35 - Examiner Identity Unification.md"
+?? "docs/system-audit/36 - Multimodal Semantic Asset Engine.md"
+?? "docs/system-audit/37 - PromptOps Hardening and Launch Readiness Gate.md"
+?? "docs/system-audit/38 - Commercial Launch Preparation Checklist.md"
+?? docs/system-audit/evidence/2026-03-03-phase6/
+?? docs/system-audit/evidence/2026-03-04-phase7/
+?? docs/system-audit/evidence/2026-03-05-phase8/
+?? docs/system-audit/evidence/2026-03-06-phase9/
+?? docs/system-audit/evidence/2026-03-07-phase10/
+?? docs/system-audit/evidence/2026-03-08-parity/
+?? docs/system-audit/evidence/2026-03-08-phase11/
+?? docs/system-audit/evidence/2026-03-09-phase12/
+?? docs/system-audit/evidence/2026-03-10-phase13/
+?? docs/system-audit/evidence/2026-03-11-phase14/
+?? docs/system-audit/evidence/2026-03-12-phase15/
+?? e2e-graph-2d-label-blocks.png
+?? e2e-graph-3d-airspace.png
+?? e2e-graph-3d-label-blocks.png
+?? e2e-graph-3d-view.png
+?? e2e-graph-airspace-nodes.png
+?? e2e-graph-health-tab.png
+?? e2e-graph-page-loaded.png
+?? e2e-graph-search-results.png
+?? exam-images-test.png
+?? favicon-in-tab.png
+?? favicon-preview.png
+?? landing-page.png
+?? login-page.png
+?? mockups/
+?? playwright-report/
+?? scripts/_reload-schema.ts
+?? scripts/_reload-schema2.ts
+?? scripts/audit/launch-readiness.ts
+?? scripts/eval/depth-contract-audit.ts
+?? scripts/eval/difficulty-calibration.ts
+?? scripts/eval/examiner-identity-audit.ts
+?? scripts/eval/fingerprint-coverage.ts
+?? scripts/eval/flow-coherence-audit.ts
+?? scripts/eval/grounding-citation-audit.ts
+?? scripts/eval/multimodal-asset-audit.ts
+?? scripts/eval/persona-separation-audit.ts
+?? scripts/eval/prompt-selection-audit.ts
+?? scripts/eval/promptops-audit.ts
+?? scripts/eval/rating-parity-audit.ts
+?? scripts/extract-images/__pycache__/
+?? scripts/extract-images/tests/__pycache__/
+?? scripts/smoke/
+?? signup-page.png
+?? src/app/api/admin/quality/
+?? src/components/ui/TextAssetCard.tsx
+?? src/lib/__tests__/asset-selector.test.ts
+?? src/lib/__tests__/citation-relevance.test.ts
+?? src/lib/__tests__/depth-profile.test.ts
+?? src/lib/__tests__/difficulty-contract.test.ts
+?? src/lib/__tests__/examiner-profile.test.ts
+?? src/lib/__tests__/persona-contract.test.ts
+?? src/lib/__tests__/rating-parity.test.ts
+?? src/lib/__tests__/structural-fingerprints.test.ts
+?? src/lib/__tests__/transition-explanation.test.ts
+?? src/lib/asset-selector.ts
+?? src/lib/citation-relevance.ts
+?? src/lib/depth-profile.ts
+?? src/lib/difficulty-contract.ts
+?? src/lib/examiner-profile.ts
+?? src/lib/persona-contract.ts
+?? src/lib/posthog-server.ts
+?? src/lib/structural-fingerprints.ts
+?? src/lib/transition-explanation.ts
+?? supabase/migrations/20260309000001_examiner_profile.sql
+?? test-landing-page.png
+?? test-login-page.png
+?? test-results/
+?? test1_landing_page.png
+?? test2_login_page.png
+?? test3_mobile_landing.png
+?? test3_practice_config.png
+?? test4_commercial_tasks.png
+?? test4_pricing_page.png
+?? test5_404_page.png
+?? test5_instrument_tasks.png
+?? test6_tablet_landing.png
+?? test7_commercial_session.png
+?? test7_tablet_login.png
+?? test8_mobile_pricing.png
+?? test8_progress_page.png
+?? test9_mobile_404.png
+?? theme-cockpit-default.png
+?? theme-glass-landing.png
+?? theme-glass-test.png
+?? theme-glass-verified.png
+?? theme-neon-verified.png
+?? theme-radar-verified.png

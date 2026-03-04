@@ -3,9 +3,10 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { VoiceTier, TierFeatures } from '@/lib/voice/types';
-import type { Rating, AircraftClass } from '@/types/database';
+import type { Rating, AircraftClass, ExaminerProfileKey } from '@/types/database';
 import { THEMES, setTheme } from '@/lib/theme';
 import { DEFAULT_AVATARS } from '@/lib/avatar-options';
+import { EXAMINER_PROFILES, ALL_PROFILE_KEYS, type ExaminerProfileV1 } from '@/lib/examiner-profile';
 
 type TestStatus = 'idle' | 'running' | 'pass' | 'fail';
 
@@ -47,6 +48,7 @@ interface TierInfo {
   voiceOptions: VoiceOption[];
   displayName: string | null;
   avatarUrl: string | null;
+  examinerProfile: ExaminerProfileKey | null;
 }
 
 interface SubscriptionInfo {
@@ -142,6 +144,7 @@ export default function SettingsPage() {
             voiceOptions: data.voiceOptions || [],
             displayName: data.displayName || null,
             avatarUrl: data.avatarUrl || null,
+            examinerProfile: data.examinerProfile || null,
           });
         }
       })
@@ -219,6 +222,32 @@ export default function SettingsPage() {
       setVoiceMessage({ text: `Voice changed to ${label}`, type: 'success' });
     } catch (err) {
       setVoiceMessage({ text: err instanceof Error ? err.message : 'Failed to update voice', type: 'error' });
+    } finally {
+      setVoiceSaving(false);
+    }
+  }
+
+  async function switchExaminerProfile(profileKey: ExaminerProfileKey) {
+    if (tierInfo?.examinerProfile === profileKey || voiceSaving) return;
+    setVoiceSaving(true);
+    setVoiceMessage(null);
+    try {
+      const res = await fetch('/api/user/tier', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ examinerProfile: profileKey }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update examiner');
+      const profile = EXAMINER_PROFILES[profileKey];
+      setTierInfo((prev) => prev ? {
+        ...prev,
+        examinerProfile: profileKey,
+        preferredVoice: profile.voiceId,
+      } : null);
+      setVoiceMessage({ text: `Examiner changed to ${profile.defaultDisplayName}`, type: 'success' });
+    } catch (err) {
+      setVoiceMessage({ text: err instanceof Error ? err.message : 'Failed to update examiner', type: 'error' });
     } finally {
       setVoiceSaving(false);
     }
@@ -1057,26 +1086,28 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* 4. Examiner Voice */}
+      {/* 4. Your Examiner (unified profile selector) */}
       <div className="bezel rounded-lg border border-c-border p-6">
-        <h2 className="font-mono font-semibold text-base text-c-amber mb-1 tracking-wider uppercase">EXAMINER VOICE</h2>
+        <h2 className="font-mono font-semibold text-base text-c-amber mb-1 tracking-wider uppercase">YOUR EXAMINER</h2>
         <p className="font-mono text-xs text-c-muted mb-5">
-          Choose the voice your DPE examiner will use during sessions.
+          Choose your DPE examiner. This sets personality, voice, and identity for all sessions.
         </p>
 
         {tierLoading ? (
-          <div className="font-mono text-sm text-c-dim uppercase">LOADING VOICE OPTIONS...</div>
-        ) : tierInfo?.voiceOptions && tierInfo.voiceOptions.length > 0 ? (
+          <div className="font-mono text-sm text-c-dim uppercase">LOADING EXAMINERS...</div>
+        ) : (
           <>
             <div className="grid gap-3 sm:grid-cols-2">
-              {tierInfo.voiceOptions.map((option) => {
-                const isActive = tierInfo.preferredVoice === option.model
-                  || (!tierInfo.preferredVoice && option === tierInfo.voiceOptions[0]);
-                const isPreviewing = previewingVoice === option.model;
+              {ALL_PROFILE_KEYS.map((profileKey) => {
+                const profile = EXAMINER_PROFILES[profileKey];
+                const isActive = tierInfo?.examinerProfile === profileKey
+                  || (!tierInfo?.examinerProfile && profileKey === 'maria_methodical');
+                const voiceOption = tierInfo?.voiceOptions?.find((v: VoiceOption) => v.persona_id === profile.voiceId);
+                const isPreviewing = previewingVoice === (voiceOption?.model || profile.voiceId);
                 return (
                   <div
-                    key={option.model}
-                    data-testid={`voice-card-${option.model}`}
+                    key={profileKey}
+                    data-testid={`examiner-card-${profileKey}`}
                     className={`iframe rounded-lg p-4 transition-colors ${
                       isActive
                         ? 'border-l-2 border-c-amber ring-1 ring-c-amber/20'
@@ -1085,39 +1116,50 @@ export default function SettingsPage() {
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-start gap-3">
-                        {option.image && (
+                        {voiceOption?.image && (
                           <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-c-border flex-shrink-0 bg-c-bezel">
-                            <img data-testid="voice-card-persona-img" src={option.image} alt={option.label} className="w-full h-full object-cover" />
+                            <img src={voiceOption.image} alt={profile.defaultDisplayName} className="w-full h-full object-cover" />
                           </div>
                         )}
                         <div>
                           <span className={`font-mono text-sm font-semibold uppercase ${isActive ? 'text-c-amber' : 'font-medium text-c-text'}`}>
-                            {option.label}
+                            {profile.defaultDisplayName}
                           </span>
-                          {option.desc && <p className="font-mono text-xs text-c-dim mt-0.5">{option.desc}</p>}
+                          <p className="font-mono text-xs text-c-dim mt-0.5">{profile.description}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className={`font-mono text-xs px-1.5 py-0.5 rounded border uppercase ${
+                              profile.voiceGender === 'female'
+                                ? 'bg-c-cyan-lo text-c-cyan border-c-cyan/20'
+                                : 'bg-c-green-lo text-c-green border-c-green/20'
+                            }`}>
+                              {profile.voiceGender === 'female' ? 'F' : 'M'}
+                            </span>
+                          </div>
                         </div>
                       </div>
                       {isActive && (
-                        <span className="font-mono text-xs bg-c-amber-lo text-c-amber px-2 py-0.5 rounded border border-c-amber/20 uppercase">
+                        <span className="font-mono text-xs bg-c-amber-lo text-c-amber px-2 py-0.5 rounded border border-c-amber/20 uppercase flex-shrink-0">
                           ACTIVE
                         </span>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-3">
-                      <button
-                        onClick={() => isPreviewing ? (() => { previewAudioRef.current?.pause(); previewAudioRef.current = null; setPreviewingVoice(null); })() : previewVoice(option.model)}
-                        disabled={previewingVoice !== null && !isPreviewing}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded font-mono text-xs font-medium transition-colors ${
-                          isPreviewing
-                            ? 'bg-c-amber text-c-bg'
-                            : 'bg-c-bezel border border-c-border text-c-muted hover:bg-c-border hover:text-c-text'
-                        } disabled:opacity-40 uppercase`}
-                      >
-                        {isPreviewing ? '\u25A0' : '\u25B6'} {isPreviewing ? 'STOP' : 'PREVIEW'}
-                      </button>
+                      {voiceOption && (
+                        <button
+                          onClick={() => isPreviewing ? (() => { previewAudioRef.current?.pause(); previewAudioRef.current = null; setPreviewingVoice(null); })() : previewVoice(voiceOption.model)}
+                          disabled={previewingVoice !== null && !isPreviewing}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded font-mono text-xs font-medium transition-colors ${
+                            isPreviewing
+                              ? 'bg-c-amber text-c-bg'
+                              : 'bg-c-bezel border border-c-border text-c-muted hover:bg-c-border hover:text-c-text'
+                          } disabled:opacity-40 uppercase`}
+                        >
+                          {isPreviewing ? '\u25A0' : '\u25B6'} {isPreviewing ? 'STOP' : 'PREVIEW'}
+                        </button>
+                      )}
                       {!isActive && (
                         <button
-                          onClick={() => switchVoice(option.model)}
+                          onClick={() => switchExaminerProfile(profileKey)}
                           disabled={voiceSaving}
                           className="px-3 py-1.5 rounded font-mono text-xs font-medium bg-c-amber-lo text-c-amber hover:bg-c-amber hover:text-c-bg transition-colors border border-c-amber/30 disabled:opacity-40 uppercase"
                         >
@@ -1136,8 +1178,6 @@ export default function SettingsPage() {
               </p>
             )}
           </>
-        ) : (
-          <div className="font-mono text-sm text-c-dim uppercase">NO VOICE OPTIONS AVAILABLE FOR YOUR CURRENT PLAN.</div>
         )}
       </div>
 
