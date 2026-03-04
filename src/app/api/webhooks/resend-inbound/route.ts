@@ -6,7 +6,7 @@ import {
   extractEmailAddress,
   extractEmailName,
 } from '@/lib/email-routing';
-import { forwardEmail } from '@/lib/email';
+import { forwardEmail, sendTicketAutoReply } from '@/lib/email';
 
 const serviceSupabase = createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -148,6 +148,12 @@ export async function POST(request: Request) {
             insertError
           );
         }
+      }
+
+      // Send auto-reply confirmation (non-blocking, best-effort)
+      // Only send if ticket was actually created (not a duplicate)
+      if (!insertError) {
+        sendTicketAutoReply(fromEmail, subject || undefined).catch(() => {});
       }
     } else if (route.action === 'forward') {
       await forwardEmail(

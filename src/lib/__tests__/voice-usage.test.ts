@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { checkQuota, type UsageSummary } from '../voice/usage';
+import { checkQuota, hasTtsAccess, type UsageSummary } from '../voice/usage';
 
 const emptyUsage: UsageSummary = {
   sessionsThisMonth: 0,
@@ -56,5 +56,19 @@ describe('checkQuota', () => {
       exchangesThisSession: 50,
     });
     expect(result.allowed).toBe(false);
+  });
+});
+
+describe('hasTtsAccess', () => {
+  it('denies TTS for ground_school tier', () => {
+    expect(hasTtsAccess('ground_school')).toBe(false);
+  });
+
+  it('allows TTS for checkride_prep tier', () => {
+    expect(hasTtsAccess('checkride_prep')).toBe(true);
+  });
+
+  it('allows TTS for dpe_live tier', () => {
+    expect(hasTtsAccess('dpe_live')).toBe(true);
   });
 });

@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import UTMCapture from '@/components/UTMCapture';
 import Footer from '@/components/Footer';
+import { createClient } from '@/lib/supabase/client';
 
 const plans = [
   {
@@ -92,6 +93,35 @@ const valueComparison = [
 export default function PricingPage() {
   const [loadingPlan, setLoadingPlan] = useState<'monthly' | 'annual' | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [userTier, setUserTier] = useState<string | null>(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function checkUserTier() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data } = await supabase
+          .from('user_profiles')
+          .select('tier, subscription_status')
+          .eq('user_id', user.id)
+          .single();
+
+        if (data) {
+          setUserTier(data.tier);
+          setSubscriptionStatus(data.subscription_status);
+        }
+      } catch {
+        // Ignore — treat as anonymous
+      }
+    }
+    checkUserTier();
+  }, []);
+
+  const isActiveSubscriber = userTier === 'dpe_live' &&
+    (subscriptionStatus === 'active' || subscriptionStatus === 'trialing');
 
   async function handleCheckout(plan: 'monthly' | 'annual') {
     setLoadingPlan(plan);
@@ -211,7 +241,7 @@ export default function PricingPage() {
               </ul>
 
               <button
-                onClick={() => handleCheckout(plan.id)}
+                onClick={() => isActiveSubscriber ? window.location.href = '/settings' : handleCheckout(plan.id)}
                 disabled={loadingPlan !== null}
                 className={`w-full py-3 rounded-lg font-mono font-semibold transition-colors text-sm uppercase tracking-wide ${
                   plan.popular
@@ -219,7 +249,11 @@ export default function PricingPage() {
                     : 'bg-c-bezel hover:bg-c-border text-c-text border border-c-border'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {loadingPlan === plan.id ? 'REDIRECTING TO CHECKOUT...' : plan.cta.toUpperCase()}
+                {loadingPlan === plan.id
+                  ? 'REDIRECTING TO CHECKOUT...'
+                  : isActiveSubscriber
+                    ? 'MANAGE SUBSCRIPTION'
+                    : plan.cta.toUpperCase()}
               </button>
             </div>
           ))}
@@ -338,24 +372,37 @@ export default function PricingPage() {
             7 days free. Cancel anytime. Walk into your checkride knowing you&apos;ve covered every ACS area.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={() => handleCheckout('annual')}
-              disabled={loadingPlan !== null}
-              className="px-8 py-3.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm transition-colors shadow-lg shadow-c-amber/20 uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loadingPlan === 'annual' ? 'REDIRECTING...' : 'START FREE TRIAL — ANNUAL (BEST VALUE)'}
-            </button>
-            <button
-              onClick={() => handleCheckout('monthly')}
-              disabled={loadingPlan !== null}
-              className="px-8 py-3.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-mono font-medium text-sm border border-c-border transition-colors uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loadingPlan === 'monthly' ? 'REDIRECTING...' : 'START FREE TRIAL — MONTHLY'}
-            </button>
+            {isActiveSubscriber ? (
+              <button
+                onClick={() => window.location.href = '/settings'}
+                className="px-8 py-3.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm transition-colors shadow-lg shadow-c-amber/20 uppercase tracking-wide"
+              >
+                MANAGE YOUR SUBSCRIPTION
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => handleCheckout('annual')}
+                  disabled={loadingPlan !== null}
+                  className="px-8 py-3.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm transition-colors shadow-lg shadow-c-amber/20 uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loadingPlan === 'annual' ? 'REDIRECTING...' : 'START FREE TRIAL — ANNUAL (BEST VALUE)'}
+                </button>
+                <button
+                  onClick={() => handleCheckout('monthly')}
+                  disabled={loadingPlan !== null}
+                  className="px-8 py-3.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-mono font-medium text-sm border border-c-border transition-colors uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loadingPlan === 'monthly' ? 'REDIRECTING...' : 'START FREE TRIAL — MONTHLY'}
+                </button>
+              </>
+            )}
           </div>
-          <p className="mt-6 font-mono text-xs text-c-dim">
-            Not ready to commit? <Link href="/signup" className="text-c-cyan hover:text-c-cyan/80 transition-colors">CREATE A FREE ACCOUNT</Link> and try limited sessions first.
-          </p>
+          {!isActiveSubscriber && (
+            <p className="mt-6 font-mono text-xs text-c-dim">
+              Not ready to commit? <Link href="/signup" className="text-c-cyan hover:text-c-cyan/80 transition-colors">CREATE A FREE ACCOUNT</Link> and try limited sessions first.
+            </p>
+          )}
         </div>
 
       </div>

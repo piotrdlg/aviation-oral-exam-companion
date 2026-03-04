@@ -55,3 +55,11 @@ export function checkQuota(
 
   return { allowed: true, reason: null };
 }
+
+/**
+ * Check if a tier has TTS access.
+ * ground_school (free) does not include TTS.
+ */
+export function hasTtsAccess(tier: VoiceTier): boolean {
+  return tier !== 'ground_school';
+}

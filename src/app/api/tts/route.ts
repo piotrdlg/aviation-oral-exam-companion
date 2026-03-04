@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getUserTier, getUserPreferredVoice } from '@/lib/voice/tier-lookup';
 import { createTTSProvider, getTTSProviderName } from '@/lib/voice/provider-factory';
+import { checkQuota, hasTtsAccess } from '@/lib/voice/usage';
 import { getSystemConfig } from '@/lib/system-config';
 import { checkKillSwitch } from '@/lib/kill-switch';
 import { requireSafeDbTarget } from '@/lib/app-env';
@@ -37,6 +38,14 @@ export async function POST(request: NextRequest) {
       getUserPreferredVoice(serviceSupabase, user.id),
     ]);
 
+    // Hard gate: free tier does not include TTS
+    if (!hasTtsAccess(tier)) {
+      return NextResponse.json(
+        { error: 'tts_not_available', message: 'TTS is not available on the free plan. Upgrade to access voice mode.', upgrade_url: '/pricing' },
+        { status: 403 }
+      );
+    }
+
     // Kill switch check for TTS provider
     const ttsProviderName = getTTSProviderName(tier);
     const killResult = checkKillSwitch(config, ttsProviderName, tier);
@@ -52,7 +61,7 @@ export async function POST(request: NextRequest) {
     // If kill switch suggests a fallback tier, we still proceed — the provider factory
     // has its own fallback chain. The kill switch fallback is informational here.
 
-    // Check TTS quota
+    // Query monthly TTS usage
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
     const { count: ttsCharsThisMonth } = await serviceSupabase
@@ -63,8 +72,7 @@ export async function POST(request: NextRequest) {
       .eq('status', 'ok')
       .gte('created_at', monthStart);
 
-    // Import quota check
-    const { checkQuota } = await import('@/lib/voice/usage');
+    // Check TTS quota
     const quotaResult = checkQuota(tier, {
       sessionsThisMonth: 0, // Not checked here
       ttsCharsThisMonth: ttsCharsThisMonth || 0,

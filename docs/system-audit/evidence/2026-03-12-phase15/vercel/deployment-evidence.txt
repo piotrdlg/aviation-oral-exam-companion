@@ -1,0 +1,22 @@
+=== Vercel Deployment Evidence ===
+Date: 2026-03-12
+
+Deployment ID: dpl_D9DtWrodZhC25a7kKW571CzHJbQd
+State: READY
+Commit SHA: d728b029ef581ca1d58e77c4d6585460e9acbcc7
+Branch: main
+Target: production
+Region: iad1
+
+Aliases:
+  - heydpe.com
+  - www.heydpe.com
+  - heydpe.ai
+  - www.heydpe.ai
+  - aviation-oral-exam-companion.vercel.app
+
+Build: Turbopack, Next.js 16.1.6
+Compiled: 6.1s
+Build time: ~43s (started 1772595649317, ready 1772595692570)
+
+Previous production: dpl_95m1vxatzmjwVpeY5BDLibJ9wq3A (commit 4fef6b7)

@@ -27,13 +27,21 @@ vi.mock('@/emails/subscription-cancelled', () => ({
 vi.mock('@/emails/payment-failed', () => ({
   PaymentFailedEmail: vi.fn(() => 'PaymentFailedEmail'),
 }));
+vi.mock('@/emails/trial-ending', () => ({
+  TrialEndingEmail: vi.fn((props: { name?: string; daysLeft: number; plan: string }) => `TrialEndingEmail(${JSON.stringify(props)})`),
+}));
+vi.mock('@/emails/ticket-auto-reply', () => ({
+  TicketAutoReplyEmail: vi.fn((props: { subject?: string }) => `TicketAutoReplyEmail(${JSON.stringify(props)})`),
+}));
 
 import {
   sendWelcomeEmail,
   sendSubscriptionConfirmed,
   sendSubscriptionCancelled,
   sendPaymentFailed,
+  sendTrialEndingReminder,
   sendTicketReply,
+  sendTicketAutoReply,
   forwardEmail,
 } from '../email';
 
@@ -177,6 +185,57 @@ describe('email service', () => {
   });
 
   // -------------------------------------------------------------------
+  // sendTrialEndingReminder
+  // -------------------------------------------------------------------
+  describe('sendTrialEndingReminder', () => {
+    it('sends from billing sender with days-left subject', async () => {
+      await sendTrialEndingReminder('pilot@example.com', 2, 'monthly', 'Maverick');
+
+      expect(mockSend).toHaveBeenCalledOnce();
+      const call = mockSend.mock.calls[0][0];
+      expect(call.from).toBe('HeyDPE Billing <billing@heydpe.com>');
+      expect(call.to).toBe('pilot@example.com');
+      expect(call.subject).toBe('Your HeyDPE trial ends in 2 days');
+    });
+
+    it('uses singular "day" for 1 day left', async () => {
+      await sendTrialEndingReminder('pilot@example.com', 1, 'annual');
+
+      const call = mockSend.mock.calls[0][0];
+      expect(call.subject).toBe('Your HeyDPE trial ends in 1 day');
+    });
+
+    it('passes plan and name to template', async () => {
+      await sendTrialEndingReminder('pilot@example.com', 2, 'annual', 'Goose');
+
+      const call = mockSend.mock.calls[0][0];
+      expect(call.react).toContain('"annual"');
+      expect(call.react).toContain('Goose');
+    });
+
+    it('works without name', async () => {
+      await sendTrialEndingReminder('pilot@example.com', 3, 'monthly');
+
+      expect(mockSend).toHaveBeenCalledOnce();
+    });
+
+    it('does not throw when Resend fails', async () => {
+      mockSend.mockRejectedValue(new Error('API down'));
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      await expect(
+        sendTrialEndingReminder('pilot@example.com', 2, 'monthly')
+      ).resolves.toBeUndefined();
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[email] Failed to send trial ending reminder:',
+        expect.any(Error)
+      );
+      consoleSpy.mockRestore();
+    });
+  });
+
+  // -------------------------------------------------------------------
   // sendTicketReply
   // -------------------------------------------------------------------
   describe('sendTicketReply', () => {
@@ -261,6 +320,47 @@ describe('email service', () => {
       expect(result).toBeNull();
       expect(consoleSpy).toHaveBeenCalledWith(
         '[email] Failed to send ticket reply:',
+        expect.any(Error)
+      );
+      consoleSpy.mockRestore();
+    });
+  });
+
+  // -------------------------------------------------------------------
+  // sendTicketAutoReply
+  // -------------------------------------------------------------------
+  describe('sendTicketAutoReply', () => {
+    it('sends from support sender with correct subject', async () => {
+      await sendTicketAutoReply('pilot@example.com', 'Voice not working');
+
+      expect(mockSend).toHaveBeenCalledOnce();
+      const call = mockSend.mock.calls[0][0];
+      expect(call.from).toBe('HeyDPE Support <support@heydpe.com>');
+      expect(call.to).toBe('pilot@example.com');
+      expect(call.subject).toBe('We received your message — HeyDPE Support');
+    });
+
+    it('passes subject to template', async () => {
+      await sendTicketAutoReply('pilot@example.com', 'Voice not working');
+
+      const call = mockSend.mock.calls[0][0];
+      expect(call.react).toContain('Voice not working');
+    });
+
+    it('works without subject', async () => {
+      await sendTicketAutoReply('pilot@example.com');
+
+      expect(mockSend).toHaveBeenCalledOnce();
+    });
+
+    it('does not throw when Resend fails', async () => {
+      mockSend.mockRejectedValue(new Error('API down'));
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      await expect(sendTicketAutoReply('pilot@example.com')).resolves.toBeUndefined();
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[email] Failed to send ticket auto-reply:',
         expect.any(Error)
       );
       consoleSpy.mockRestore();

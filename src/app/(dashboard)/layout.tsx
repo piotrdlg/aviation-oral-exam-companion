@@ -13,6 +13,7 @@ const navItems = [
   { href: '/practice', label: 'Practice' },
   { href: '/progress', label: 'Progress' },
   { href: '/settings', label: 'Settings' },
+  { href: '/help', label: 'Help' },
 ];
 
 export default function DashboardLayout({

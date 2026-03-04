@@ -1,0 +1,2 @@
+$ npx tsc --noEmit
+(no output — 0 errors)

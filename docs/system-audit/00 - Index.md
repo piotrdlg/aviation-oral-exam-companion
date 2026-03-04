@@ -52,6 +52,18 @@ evidence_level: high
 | 36 | [[36 - Multimodal Semantic Asset Engine]] | Final |
 | 37 | [[37 - PromptOps Hardening and Launch Readiness Gate]] | Final |
 | 38 | [[38 - Commercial Launch Preparation Checklist]] | Final |
+| 39 | [[39 - Deployment Closure and Launch Gate Re-run]] | Final |
+| 40 | [[40 - Commercial Launch Preparation Pack]] | Final |
+| 41 | [[41 - Beta Readiness UX and User Flow Audit]] | Final |
+| 42 | [[42 - Help FAQ Support and Bug Reporting]] | Final |
+| 43 | [[43 - Email Communications Program]] | Final |
+| 44 | [[44 - Billing Trial and Conversion Readiness]] | Final |
+| 45 | [[45 - Browser Device and Responsive QA]] | Final |
+| 46 | [[46 - Security Hardening Review]] | Final |
+| 47 | [[47 - Beta Readiness Decision Pack]] | Final |
+| 48 | [[48 - Public Launch Hardening Sprint]] | Final |
+| 49 | [[49 - Support Alerts and Incident Runbook]] | Final |
+| 50 | [[50 - Public Launch Gate Re-run]] | Final |
 
 ---
 
@@ -137,6 +149,18 @@ HeyDPE is a production-quality FAA oral exam simulator built on Next.js 16 + Sup
 | [[36 - Multimodal Semantic Asset Engine]] | **Phase 13** | 4-signal semantic image scoring (category+caption+linkType+relevance), 0.4 confidence threshold, text cards for METAR/TAF/regs, dual-emit SSE, no migration. 37 new tests, 10/10 audit PASS |
 | [[37 - PromptOps Hardening and Launch Readiness Gate]] | **Phase 14** | PromptOps governance audit (5 checks), prompt trace logging, admin quality endpoint, 12-check launch readiness gate (GO/REVIEW/NO-GO), E2E smoke matrix (9 scripts). 11/12 GO |
 | [[38 - Commercial Launch Preparation Checklist]] | **Phase 14** | 32-item pre-launch checklist across core engine, test coverage, operational readiness, monitoring. 731 tests, 9 eval scripts, cumulative phase history |
+| [[39 - Deployment Closure and Launch Gate Re-run]] | **Phase 15** | Deployment closure: commit d728b02 pushed, Vercel READY, launch gate 12/12 GO, prompt trace 60% adoption, production verification 22/22 PASS |
+| [[40 - Commercial Launch Preparation Pack]] | **Phase 15** | Commercial launch preparation: billing audit (Stripe GO), legal (GO), support (REVIEW — need public help page), observability (GO). Launch dashboard metrics spec. GO for soft/beta launch |
+| [[41 - Beta Readiness UX and User Flow Audit]] | **Phase 16** | User journey map (10 routes), 4 UX fixes applied (help page, nav link, footer link, disclaimer contrast), all pages GO |
+| [[42 - Help FAQ Support and Bug Reporting]] | **Phase 16** | Public help page created (12 FAQs), 3 support paths (in-app report, settings feedback, email), admin ticket system, auto-reply recommended |
+| [[43 - Email Communications Program]] | **Phase 16** | Resend integration with 4 templates, 7/12 scenarios implemented, 100% beta-critical coverage, learning digest and trial reminder planned post-beta |
+| [[44 - Billing Trial and Conversion Readiness]] | **Phase 16** | Stripe end-to-end audit, CRITICAL payment failure tier downgrade bug FIXED, trial-to-purchase flow verified, 5 webhook events handled with idempotency |
+| [[45 - Browser Device and Responsive QA]] | **Phase 16** | Chrome/Safari/Firefox/Edge tested, all pages responsive, voice STT Chrome/Edge-only (documented in Help), zero responsive blockers |
+| [[46 - Security Hardening Review]] | **Phase 16** | 12 security areas audited, zero beta blockers, zero public launch blockers, RLS enforced, rate limiting active, Stripe webhook verified |
+| [[47 - Beta Readiness Decision Pack]] | **Phase 16** | Synthesis: 7 workstreams all GO for beta. 4 blockers fixed. 10 public-launch review items. Recommended: deploy and begin invite-only beta |
+| [[48 - Public Launch Hardening Sprint]] | **Phase 17** | 7 Phase 16 review items closed: support auto-reply, trial reminder, TTS tier gate, CSP, report ownership, pricing CTA. 6 code fixes + 2 scripts + 2 templates + 12 tests. 743/743 pass |
+| [[49 - Support Alerts and Incident Runbook]] | **Phase 17** | Operational runbook: monitoring stack, ticket workflow, email delivery/retry, payment incidents, common incidents, escalation path, launch day checklist |
+| [[50 - Public Launch Gate Re-run]] | **Phase 17** | 9-check deterministic public launch gate: 9/9 GO. All Phase 16 review items resolved. System meets public launch readiness criteria |
 
 ---
 

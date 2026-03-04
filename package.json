@@ -59,7 +59,9 @@
     "eval:examiner-identity": "tsx scripts/eval/examiner-identity-audit.ts",
     "eval:multimodal": "tsx scripts/eval/multimodal-asset-audit.ts",
     "eval:promptops": "tsx scripts/eval/promptops-audit.ts",
-    "audit:launch": "tsx scripts/audit/launch-readiness.ts"
+    "audit:launch": "tsx scripts/audit/launch-readiness.ts",
+    "email:trial-reminders": "tsx scripts/email/send-trial-ending-reminders.ts",
+    "audit:public-launch": "tsx scripts/audit/public-launch-gate.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",

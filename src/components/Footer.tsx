@@ -24,6 +24,7 @@ export default function Footer({ variant = 'public' }: FooterProps) {
                 <Link href="/signup" className="hover:text-c-text transition-colors">GET STARTED</Link>
               </>
             )}
+            <Link href="/help" className="hover:text-c-text transition-colors">HELP</Link>
             <Link href="/privacy" className="hover:text-c-text transition-colors">PRIVACY</Link>
             <Link href="/terms" className="hover:text-c-text transition-colors">TERMS</Link>
           </div>

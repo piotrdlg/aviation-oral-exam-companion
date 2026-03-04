@@ -1,0 +1,316 @@
+{
+  "timestamp": "2026-03-04T03:45:04.120Z",
+  "overall_pass": true,
+  "total_checks": 22,
+  "checks_passing": 22,
+  "checks": [
+    {
+      "check": "rating_private",
+      "category": "Rating Coverage",
+      "pass": true,
+      "detail": "61 tasks"
+    },
+    {
+      "check": "rating_commercial",
+      "category": "Rating Coverage",
+      "pass": true,
+      "detail": "60 tasks"
+    },
+    {
+      "check": "rating_instrument",
+      "category": "Rating Coverage",
+      "pass": true,
+      "detail": "22 tasks"
+    },
+    {
+      "check": "mode_full_exam",
+      "category": "Study Modes",
+      "pass": true,
+      "detail": "available (code-defined)"
+    },
+    {
+      "check": "mode_topic_focus",
+      "category": "Study Modes",
+      "pass": true,
+      "detail": "available (code-defined)"
+    },
+    {
+      "check": "mode_cross_acs",
+      "category": "Study Modes",
+      "pass": true,
+      "detail": "available (code-defined)"
+    },
+    {
+      "check": "mode_quick_drill",
+      "category": "Study Modes",
+      "pass": true,
+      "detail": "available (code-defined)"
+    },
+    {
+      "check": "prompt_trace_present",
+      "category": "Prompt Trace",
+      "pass": true,
+      "detail": "12/20 (60%)"
+    },
+    {
+      "check": "trace_private",
+      "category": "Prompt Trace",
+      "pass": true,
+      "detail": "4/9"
+    },
+    {
+      "check": "trace_commercial",
+      "category": "Prompt Trace",
+      "pass": true,
+      "detail": "4/4"
+    },
+    {
+      "check": "trace_instrument",
+      "category": "Prompt Trace",
+      "pass": true,
+      "detail": "4/7"
+    },
+    {
+      "check": "examiner_profile_set",
+      "category": "Examiner Profiles",
+      "pass": true,
+      "detail": "0/0 have examiner_profile"
+    },
+    {
+      "check": "concepts",
+      "category": "Knowledge Graph",
+      "pass": true,
+      "detail": "24613"
+    },
+    {
+      "check": "source_chunks",
+      "category": "Knowledge Graph",
+      "pass": true,
+      "detail": "4674"
+    },
+    {
+      "check": "source_images",
+      "category": "Knowledge Graph",
+      "pass": true,
+      "detail": "1596"
+    },
+    {
+      "check": "chunk_image_links",
+      "category": "Knowledge Graph",
+      "pass": true,
+      "detail": "7460"
+    },
+    {
+      "check": "prompt_keys",
+      "category": "Prompt Versions",
+      "pass": true,
+      "detail": "6 published, missing: none"
+    },
+    {
+      "check": "admin_prompts",
+      "category": "Admin Endpoints",
+      "pass": true,
+      "detail": "prompt_versions: 24 rows"
+    },
+    {
+      "check": "admin_grounding",
+      "category": "Admin Endpoints",
+      "pass": true,
+      "detail": "source_chunks: 4674 rows"
+    },
+    {
+      "check": "admin_multimodal",
+      "category": "Admin Endpoints",
+      "pass": true,
+      "detail": "source_images: 1596 rows"
+    },
+    {
+      "check": "admin_examiner_identity",
+      "category": "Admin Endpoints",
+      "pass": true,
+      "detail": "user_profiles: 11 rows"
+    },
+    {
+      "check": "admin_persona",
+      "category": "Admin Endpoints",
+      "pass": true,
+      "detail": "user_profiles: 11 rows"
+    }
+  ],
+  "categories": [
+    {
+      "name": "Rating Coverage",
+      "pass": true,
+      "checks": [
+        {
+          "check": "rating_private",
+          "category": "Rating Coverage",
+          "pass": true,
+          "detail": "61 tasks"
+        },
+        {
+          "check": "rating_commercial",
+          "category": "Rating Coverage",
+          "pass": true,
+          "detail": "60 tasks"
+        },
+        {
+          "check": "rating_instrument",
+          "category": "Rating Coverage",
+          "pass": true,
+          "detail": "22 tasks"
+        }
+      ]
+    },
+    {
+      "name": "Study Modes",
+      "pass": true,
+      "checks": [
+        {
+          "check": "mode_full_exam",
+          "category": "Study Modes",
+          "pass": true,
+          "detail": "available (code-defined)"
+        },
+        {
+          "check": "mode_topic_focus",
+          "category": "Study Modes",
+          "pass": true,
+          "detail": "available (code-defined)"
+        },
+        {
+          "check": "mode_cross_acs",
+          "category": "Study Modes",
+          "pass": true,
+          "detail": "available (code-defined)"
+        },
+        {
+          "check": "mode_quick_drill",
+          "category": "Study Modes",
+          "pass": true,
+          "detail": "available (code-defined)"
+        }
+      ]
+    },
+    {
+      "name": "Prompt Trace",
+      "pass": true,
+      "checks": [
+        {
+          "check": "prompt_trace_present",
+          "category": "Prompt Trace",
+          "pass": true,
+          "detail": "12/20 (60%)"
+        },
+        {
+          "check": "trace_private",
+          "category": "Prompt Trace",
+          "pass": true,
+          "detail": "4/9"
+        },
+        {
+          "check": "trace_commercial",
+          "category": "Prompt Trace",
+          "pass": true,
+          "detail": "4/4"
+        },
+        {
+          "check": "trace_instrument",
+          "category": "Prompt Trace",
+          "pass": true,
+          "detail": "4/7"
+        }
+      ]
+    },
+    {
+      "name": "Examiner Profiles",
+      "pass": true,
+      "checks": [
+        {
+          "check": "examiner_profile_set",
+          "category": "Examiner Profiles",
+          "pass": true,
+          "detail": "0/0 have examiner_profile"
+        }
+      ]
+    },
+    {
+      "name": "Knowledge Graph",
+      "pass": true,
+      "checks": [
+        {
+          "check": "concepts",
+          "category": "Knowledge Graph",
+          "pass": true,
+          "detail": "24613"
+        },
+        {
+          "check": "source_chunks",
+          "category": "Knowledge Graph",
+          "pass": true,
+          "detail": "4674"
+        },
+        {
+          "check": "source_images",
+          "category": "Knowledge Graph",
+          "pass": true,
+          "detail": "1596"
+        },
+        {
+          "check": "chunk_image_links",
+          "category": "Knowledge Graph",
+          "pass": true,
+          "detail": "7460"
+        }
+      ]
+    },
+    {
+      "name": "Prompt Versions",
+      "pass": true,
+      "checks": [
+        {
+          "check": "prompt_keys",
+          "category": "Prompt Versions",
+          "pass": true,
+          "detail": "6 published, missing: none"
+        }
+      ]
+    },
+    {
+      "name": "Admin Endpoints",
+      "pass": true,
+      "checks": [
+        {
+          "check": "admin_prompts",
+          "category": "Admin Endpoints",
+          "pass": true,
+          "detail": "prompt_versions: 24 rows"
+        },
+        {
+          "check": "admin_grounding",
+          "category": "Admin Endpoints",
+          "pass": true,
+          "detail": "source_chunks: 4674 rows"
+        },
+        {
+          "check": "admin_multimodal",
+          "category": "Admin Endpoints",
+          "pass": true,
+          "detail": "source_images: 1596 rows"
+        },
+        {
+          "check": "admin_examiner_identity",
+          "category": "Admin Endpoints",
+          "pass": true,
+          "detail": "user_profiles: 11 rows"
+        },
+        {
+          "check": "admin_persona",
+          "category": "Admin Endpoints",
+          "pass": true,
+          "detail": "user_profiles: 11 rows"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+$ npx vitest run
+
+Test Files  35 passed (35)
+     Tests  731 passed (731)
+  Start at  06:18:45
+  Duration  944ms

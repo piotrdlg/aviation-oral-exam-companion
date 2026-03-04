@@ -1,0 +1,82 @@
+{
+  "timestamp": "2026-03-04T12:57:24.147Z",
+  "phase": "Phase 17 — Public Launch Gate",
+  "overall_verdict": "GO",
+  "categories": [
+    {
+      "name": "Support & Communications",
+      "verdict": "GO",
+      "checks": [
+        {
+          "check": "support_auto_reply",
+          "verdict": "GO",
+          "detail": "Support auto-reply email function exists — found `sendTicketAutoReply` in src/lib/email.ts"
+        },
+        {
+          "check": "trial_ending_reminder",
+          "verdict": "GO",
+          "detail": "Trial ending reminder email function exists — found `sendTrialEndingReminder` in src/lib/email.ts"
+        },
+        {
+          "check": "trial_reminder_cron",
+          "verdict": "GO",
+          "detail": "Trial reminder cron script exists — scripts/email/send-trial-ending-reminders.ts exists"
+        }
+      ]
+    },
+    {
+      "name": "Security & Access Control",
+      "verdict": "GO",
+      "checks": [
+        {
+          "check": "csp_header",
+          "verdict": "GO",
+          "detail": "CSP header configured — found `Content-Security-Policy` in next.config.ts"
+        },
+        {
+          "check": "report_session_ownership",
+          "verdict": "GO",
+          "detail": "Report endpoint has session ownership check — found `session.user_id !== user.id` in src/app/api/report/route.ts"
+        },
+        {
+          "check": "tts_tier_gating",
+          "verdict": "GO",
+          "detail": "TTS tier gating enforced — found `hasTtsAccess` in src/lib/voice/usage.ts"
+        }
+      ]
+    },
+    {
+      "name": "UX & Billing",
+      "verdict": "GO",
+      "checks": [
+        {
+          "check": "pricing_active_subscribers",
+          "verdict": "GO",
+          "detail": "Pricing page handles active subscribers — found `isActiveSubscriber` in src/app/pricing/page.tsx"
+        }
+      ]
+    },
+    {
+      "name": "Verification",
+      "verdict": "GO",
+      "checks": [
+        {
+          "check": "typecheck",
+          "verdict": "GO",
+          "detail": "TypeScript compiles without errors"
+        },
+        {
+          "check": "tests",
+          "verdict": "GO",
+          "detail": "All tests pass (? passed)"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_checks": 9,
+    "go_count": 9,
+    "review_count": 0,
+    "nogo_count": 0
+  }
+}

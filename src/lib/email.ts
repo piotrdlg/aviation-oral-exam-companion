@@ -3,6 +3,8 @@ import { WelcomeEmail } from '@/emails/welcome';
 import { SubscriptionConfirmedEmail } from '@/emails/subscription-confirmed';
 import { SubscriptionCancelledEmail } from '@/emails/subscription-cancelled';
 import { PaymentFailedEmail } from '@/emails/payment-failed';
+import { TrialEndingEmail } from '@/emails/trial-ending';
+import { TicketAutoReplyEmail } from '@/emails/ticket-auto-reply';
 
 // Lazy-initialize Resend client to avoid build-time errors when env vars are unavailable
 let _resend: Resend | null = null;
@@ -101,6 +103,28 @@ export async function sendPaymentFailed(to: string): Promise<void> {
 }
 
 /**
+ * Send trial ending soon reminder email.
+ * Never throws — logs errors and returns silently.
+ */
+export async function sendTrialEndingReminder(
+  to: string,
+  daysLeft: number,
+  plan: 'monthly' | 'annual',
+  name?: string
+): Promise<void> {
+  try {
+    await getResend().emails.send({
+      from: SENDERS.billing,
+      to,
+      subject: `Your HeyDPE trial ends in ${daysLeft} day${daysLeft === 1 ? '' : 's'}`,
+      react: TrialEndingEmail({ name, daysLeft, plan }),
+    });
+  } catch (error) {
+    console.error('[email] Failed to send trial ending reminder:', error);
+  }
+}
+
+/**
  * Send a support ticket reply email.
  * Sets In-Reply-To and References headers when inReplyTo is provided
  * for proper email threading.
@@ -138,6 +162,26 @@ export async function sendTicketReply(
   } catch (error) {
     console.error('[email] Failed to send ticket reply:', error);
     return null;
+  }
+}
+
+/**
+ * Send an auto-reply confirming receipt of a support ticket.
+ * Never throws — logs errors and returns silently.
+ */
+export async function sendTicketAutoReply(
+  to: string,
+  subject?: string
+): Promise<void> {
+  try {
+    await getResend().emails.send({
+      from: SENDERS.support,
+      to,
+      subject: 'We received your message — HeyDPE Support',
+      react: TicketAutoReplyEmail({ subject }),
+    });
+  } catch (error) {
+    console.error('[email] Failed to send ticket auto-reply:', error);
   }
 }
 

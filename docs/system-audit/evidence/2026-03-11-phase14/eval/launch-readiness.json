@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-03-04T03:20:34.021Z",
-  "overall_verdict": "REVIEW",
+  "timestamp": "2026-03-04T03:43:31.025Z",
+  "overall_verdict": "GO",
   "categories": [
     {
       "name": "Core Exam Behavior",
@@ -30,17 +30,17 @@
     },
     {
       "name": "Operational Readiness",
-      "verdict": "REVIEW",
+      "verdict": "GO",
       "checks": [
         {
           "check": "session_tracking",
           "verdict": "GO",
-          "detail": "78 sessions in last 90 days"
+          "detail": "90 sessions in last 90 days"
         },
         {
           "check": "prompt_trace_adoption",
-          "verdict": "REVIEW",
-          "detail": "0/20 recent sessions have promptTrace (0%)"
+          "verdict": "GO",
+          "detail": "12/20 recent sessions have promptTrace (60%)"
         },
         {
           "check": "image_assets",
@@ -89,8 +89,8 @@
   ],
   "summary": {
     "total_checks": 12,
-    "go_count": 11,
-    "review_count": 1,
+    "go_count": 12,
+    "review_count": 0,
     "nogo_count": 0
   }
 }

@@ -288,9 +288,11 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, eventId: string) {
   const eventTs = new Date().toISOString();
 
   // Guard against out-of-order event delivery
+  // CRITICAL: Downgrade tier to prevent free access after payment failure
   await serviceSupabase
     .from('user_profiles')
     .update({
+      tier: 'checkride_prep',
       subscription_status: 'past_due',
       latest_invoice_status: 'failed',
       last_webhook_event_id: eventId,

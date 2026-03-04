@@ -1,0 +1,158 @@
+{
+  "timestamp": "2026-03-04T03:43:23.033Z",
+  "published_prompt_versions": 22,
+  "examiner_system_versions": 9,
+  "seed_user_id": "068d07ba-cfa7-40c1-bc64-4b3ed1d6e097",
+  "seeds": [
+    {
+      "config": {
+        "rating": "private",
+        "study_mode": "full_exam",
+        "difficulty": "medium",
+        "profile_key": "jim_strict"
+      },
+      "session_id": "fa9169ef-a655-4559-b769-15f1488926ca",
+      "version_id": "b6399dc7-27e9-48c7-8fba-beed52fe1e4a",
+      "source": "db",
+      "success": true
+    },
+    {
+      "config": {
+        "rating": "commercial",
+        "study_mode": "full_exam",
+        "difficulty": "hard",
+        "profile_key": "bob_supportive"
+      },
+      "session_id": "fda8c621-ded5-4ff1-b0c8-db92e1db42cf",
+      "version_id": "b6399dc7-27e9-48c7-8fba-beed52fe1e4a",
+      "source": "db",
+      "success": true
+    },
+    {
+      "config": {
+        "rating": "instrument",
+        "study_mode": "cross_acs",
+        "difficulty": "medium",
+        "profile_key": "maria_methodical"
+      },
+      "session_id": "d5fcedbd-5d85-4752-a10a-0d9204e210bd",
+      "version_id": "f8a3a403-8804-4eb8-bdd2-df86cd5b6e62",
+      "source": "db",
+      "success": true
+    },
+    {
+      "config": {
+        "rating": "private",
+        "study_mode": "quick_drill",
+        "difficulty": "easy",
+        "profile_key": "karen_scenario"
+      },
+      "session_id": "3879e9ad-8d0a-4f23-af8b-97f2360d2da6",
+      "version_id": "b6399dc7-27e9-48c7-8fba-beed52fe1e4a",
+      "source": "db",
+      "success": true
+    },
+    {
+      "config": {
+        "rating": "commercial",
+        "study_mode": "topic_focus",
+        "difficulty": "medium",
+        "profile_key": "jim_strict"
+      },
+      "session_id": "24835981-d887-48dc-966e-68995514f586",
+      "version_id": "b6399dc7-27e9-48c7-8fba-beed52fe1e4a",
+      "source": "db",
+      "success": true
+    },
+    {
+      "config": {
+        "rating": "instrument",
+        "study_mode": "full_exam",
+        "difficulty": "hard",
+        "profile_key": "bob_supportive"
+      },
+      "session_id": "c6619ca7-1241-4171-8dd2-4c0100ea2aab",
+      "version_id": "b6399dc7-27e9-48c7-8fba-beed52fe1e4a",
+      "source": "db",
+      "success": true
+    },
+    {
+      "config": {
+        "rating": "private",
+        "study_mode": "cross_acs",
+        "difficulty": "hard",
+        "profile_key": "maria_methodical"
+      },
+      "session_id": "73abc4af-9eec-4a3b-b003-36ae744ac44a",
+      "version_id": "79cdcab0-3838-45c0-af1f-378fcaf59133",
+      "source": "db",
+      "success": true
+    },
+    {
+      "config": {
+        "rating": "commercial",
+        "study_mode": "quick_drill",
+        "difficulty": "easy",
+        "profile_key": "karen_scenario"
+      },
+      "session_id": "c1982de7-bb8f-413b-8673-fff85809f397",
+      "version_id": "b6399dc7-27e9-48c7-8fba-beed52fe1e4a",
+      "source": "db",
+      "success": true
+    },
+    {
+      "config": {
+        "rating": "instrument",
+        "study_mode": "topic_focus",
+        "difficulty": "medium",
+        "profile_key": "jim_strict"
+      },
+      "session_id": "ecaf6731-0f22-4c62-aec3-cf7b83cf7a4e",
+      "version_id": "b6399dc7-27e9-48c7-8fba-beed52fe1e4a",
+      "source": "db",
+      "success": true
+    },
+    {
+      "config": {
+        "rating": "private",
+        "study_mode": "full_exam",
+        "difficulty": "easy",
+        "profile_key": "bob_supportive"
+      },
+      "session_id": "66dc7fa9-7682-458a-a972-3966ca745228",
+      "version_id": "b6399dc7-27e9-48c7-8fba-beed52fe1e4a",
+      "source": "db",
+      "success": true
+    },
+    {
+      "config": {
+        "rating": "commercial",
+        "study_mode": "cross_acs",
+        "difficulty": "medium",
+        "profile_key": "maria_methodical"
+      },
+      "session_id": "d83ffecb-24a4-4c14-b1dc-827e2c243b1c",
+      "version_id": "f8a3a403-8804-4eb8-bdd2-df86cd5b6e62",
+      "source": "db",
+      "success": true
+    },
+    {
+      "config": {
+        "rating": "instrument",
+        "study_mode": "quick_drill",
+        "difficulty": "hard",
+        "profile_key": "karen_scenario"
+      },
+      "session_id": "ac17beb0-8ce3-452d-ab6a-c17d49c198df",
+      "version_id": "b6399dc7-27e9-48c7-8fba-beed52fe1e4a",
+      "source": "db",
+      "success": true
+    }
+  ],
+  "summary": {
+    "attempted": 12,
+    "successful": 12,
+    "db_source": 12,
+    "fallback_source": 0
+  }
+}

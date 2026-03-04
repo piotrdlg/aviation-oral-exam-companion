@@ -1553,7 +1553,7 @@ export default function PracticePage() {
             />
 
             {/* Disclaimer — always visible but low visual weight */}
-            <p className="text-c-amber/25 text-xs font-mono leading-relaxed mt-4 text-center uppercase">
+            <p className="text-c-amber/50 text-xs font-mono leading-relaxed mt-4 text-center uppercase">
               FOR STUDY PURPOSES ONLY. NOT A SUBSTITUTE FOR CFI INSTRUCTION OR AN ACTUAL DPE CHECKRIDE.
               ALWAYS VERIFY INFORMATION AGAINST CURRENT FAA PUBLICATIONS.
             </p>

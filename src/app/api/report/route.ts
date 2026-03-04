@@ -60,6 +60,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Verify session ownership when session_id is provided
+    if (session_id) {
+      const { data: session, error: sessionError } = await serviceSupabase
+        .from('exam_sessions')
+        .select('user_id')
+        .eq('id', session_id)
+        .single();
+
+      if (sessionError || !session || session.user_id !== user.id) {
+        return NextResponse.json(
+          { error: 'Session not found or not owned by you' },
+          { status: 403 }
+        );
+      }
+    }
+
     // Insert into moderation_queue using service role (bypasses RLS)
     const { data, error } = await serviceSupabase
       .from('moderation_queue')
