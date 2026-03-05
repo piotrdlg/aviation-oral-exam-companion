@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getUserTier, getUserPreferredVoice } from '@/lib/voice/tier-lookup';
 import { createTTSProvider, getTTSProviderName } from '@/lib/voice/provider-factory';
@@ -6,6 +7,7 @@ import { checkQuota, hasTtsAccess } from '@/lib/voice/usage';
 import { getSystemConfig } from '@/lib/system-config';
 import { checkKillSwitch } from '@/lib/kill-switch';
 import { requireSafeDbTarget } from '@/lib/app-env';
+import { captureServerEvent, flushPostHog } from '@/lib/posthog-server';
 
 // Service-role client for usage logging (bypasses RLS)
 import { createClient as createServiceClient } from '@supabase/supabase-js';
@@ -16,6 +18,8 @@ const serviceSupabase = createServiceClient(
 );
 
 export async function POST(request: NextRequest) {
+  after(() => flushPostHog());
+
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -40,6 +44,7 @@ export async function POST(request: NextRequest) {
 
     // Hard gate: free tier does not include TTS
     if (!hasTtsAccess(tier)) {
+      captureServerEvent(user.id, 'tts_denied_by_tier', { tier, reason: 'tier_not_eligible' });
       return NextResponse.json(
         { error: 'tts_not_available', message: 'TTS is not available on the free plan. Upgrade to access voice mode.', upgrade_url: '/pricing' },
         { status: 403 }
@@ -81,6 +86,7 @@ export async function POST(request: NextRequest) {
     }, 'tts');
 
     if (!quotaResult.allowed) {
+      captureServerEvent(user.id, 'tts_denied_by_tier', { tier, reason: 'quota_exceeded' });
       return NextResponse.json(
         { error: 'quota_exceeded', limit: quotaResult.limit, upgrade_url: '/pricing' },
         { status: 429 }

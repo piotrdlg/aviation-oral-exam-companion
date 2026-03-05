@@ -278,6 +278,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // Flush PostHog buffer before the serverless function exits
+  after(async () => {
+    const { flushPostHog } = await import('@/lib/posthog-server');
+    await flushPostHog();
+  });
+
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -484,6 +490,18 @@ export async function POST(request: NextRequest) {
             difficulty: sessionConfig.difficulty,
             study_mode: sessionConfig.studyMode,
             action: 'start',
+          });
+        });
+
+        // Launch funnel: exam session started (Phase 18)
+        after(async () => {
+          const { captureServerEvent } = await import('@/lib/posthog-server');
+          captureServerEvent(user.id, 'exam_session_started', {
+            session_id: sessionId,
+            rating: sessionConfig.rating,
+            study_mode: sessionConfig.studyMode,
+            difficulty: sessionConfig.difficulty,
+            tier,
           });
         });
 

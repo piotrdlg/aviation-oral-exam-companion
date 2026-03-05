@@ -1,0 +1,121 @@
+{
+  "generatedAt": "2026-03-04T23:24:07.386Z",
+  "recipient": "pd@imagineflying.com",
+  "subjectPrefix": "[REVIEW SAMPLE] ",
+  "totalScenarios": 10,
+  "sent": 10,
+  "renderedOnly": 0,
+  "failed": 0,
+  "results": [
+    {
+      "scenario": "Welcome Email",
+      "id": "welcome",
+      "subject": "[REVIEW SAMPLE] Welcome to HeyDPE — Your DPE is ready",
+      "recipient": "pd@imagineflying.com",
+      "from": "HeyDPE <hello@heydpe.com>",
+      "timestamp": "2026-03-04T23:24:00.131Z",
+      "status": "sent",
+      "resendId": "2a4c9cb6-a956-4276-b3c6-81b6aafc3426",
+      "htmlFile": "welcome.html"
+    },
+    {
+      "scenario": "Subscription Confirmed (Monthly)",
+      "id": "subscription-confirmed-monthly",
+      "subject": "[REVIEW SAMPLE] Your HeyDPE subscription is active",
+      "recipient": "pd@imagineflying.com",
+      "from": "HeyDPE Billing <billing@heydpe.com>",
+      "timestamp": "2026-03-04T23:24:01.214Z",
+      "status": "sent",
+      "resendId": "15d352d3-77ef-4988-9bce-4de89ea56a4d",
+      "htmlFile": "subscription-confirmed-monthly.html"
+    },
+    {
+      "scenario": "Subscription Confirmed (Annual)",
+      "id": "subscription-confirmed-annual",
+      "subject": "[REVIEW SAMPLE] Your HeyDPE subscription is active",
+      "recipient": "pd@imagineflying.com",
+      "from": "HeyDPE Billing <billing@heydpe.com>",
+      "timestamp": "2026-03-04T23:24:01.886Z",
+      "status": "sent",
+      "resendId": "bc845e9f-dc79-4e14-b85c-c46b481a50cb",
+      "htmlFile": "subscription-confirmed-annual.html"
+    },
+    {
+      "scenario": "Subscription Cancelled",
+      "id": "subscription-cancelled",
+      "subject": "[REVIEW SAMPLE] Your HeyDPE subscription has been cancelled",
+      "recipient": "pd@imagineflying.com",
+      "from": "HeyDPE Billing <billing@heydpe.com>",
+      "timestamp": "2026-03-04T23:24:02.673Z",
+      "status": "sent",
+      "resendId": "62b5ec41-0fc0-45d9-9989-8cc3f7716b52",
+      "htmlFile": "subscription-cancelled.html"
+    },
+    {
+      "scenario": "Payment Failed",
+      "id": "payment-failed",
+      "subject": "[REVIEW SAMPLE] Action needed — Payment failed for HeyDPE",
+      "recipient": "pd@imagineflying.com",
+      "from": "HeyDPE Billing <billing@heydpe.com>",
+      "timestamp": "2026-03-04T23:24:03.346Z",
+      "status": "sent",
+      "resendId": "a4992d64-f4c4-43de-95a7-735f3fb38b2a",
+      "htmlFile": "payment-failed.html"
+    },
+    {
+      "scenario": "Trial Ending (2 days)",
+      "id": "trial-ending-2days",
+      "subject": "[REVIEW SAMPLE] Your HeyDPE trial ends in 2 days",
+      "recipient": "pd@imagineflying.com",
+      "from": "HeyDPE Billing <billing@heydpe.com>",
+      "timestamp": "2026-03-04T23:24:04.004Z",
+      "status": "sent",
+      "resendId": "0140f19c-7f7e-4c80-a582-e91286ae770f",
+      "htmlFile": "trial-ending-2days.html"
+    },
+    {
+      "scenario": "Trial Ending (1 day)",
+      "id": "trial-ending-1day",
+      "subject": "[REVIEW SAMPLE] Your HeyDPE trial ends in 1 day",
+      "recipient": "pd@imagineflying.com",
+      "from": "HeyDPE Billing <billing@heydpe.com>",
+      "timestamp": "2026-03-04T23:24:04.779Z",
+      "status": "sent",
+      "resendId": "2e9d429e-2813-4886-8ae6-fe4be74894a2",
+      "htmlFile": "trial-ending-1day.html"
+    },
+    {
+      "scenario": "Support Ticket Auto-Reply",
+      "id": "ticket-auto-reply",
+      "subject": "[REVIEW SAMPLE] We received your message — HeyDPE Support",
+      "recipient": "pd@imagineflying.com",
+      "from": "HeyDPE Support <support@heydpe.com>",
+      "timestamp": "2026-03-04T23:24:05.444Z",
+      "status": "sent",
+      "resendId": "e30b46c3-9f93-4d03-ae1f-9bb005a3b69c",
+      "htmlFile": "ticket-auto-reply.html"
+    },
+    {
+      "scenario": "Support Ticket Reply (Admin)",
+      "id": "ticket-reply",
+      "subject": "[REVIEW SAMPLE] Re: Voice mode not working on Safari",
+      "recipient": "pd@imagineflying.com",
+      "from": "HeyDPE Support <support@heydpe.com>",
+      "timestamp": "2026-03-04T23:24:06.090Z",
+      "status": "sent",
+      "resendId": "831c0ea6-917b-425c-b4c7-a237376a916b",
+      "htmlFile": "ticket-reply.html"
+    },
+    {
+      "scenario": "Email Forward (Catch-all)",
+      "id": "email-forward",
+      "subject": "[REVIEW SAMPLE] [Fwd] Partnership inquiry for HeyDPE",
+      "recipient": "pd@imagineflying.com",
+      "from": "HeyDPE <noreply@heydpe.com>",
+      "timestamp": "2026-03-04T23:24:06.740Z",
+      "status": "sent",
+      "resendId": "305e953e-55c0-46ff-ba74-b5ac447f88b9",
+      "htmlFile": "email-forward.html"
+    }
+  ]
+}

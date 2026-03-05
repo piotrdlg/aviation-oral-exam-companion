@@ -20,6 +20,7 @@ import type { TimingContext } from './timing';
 import { getPromptContent } from './prompts';
 import { TtlCache } from './ttl-cache';
 import { fetchConceptBundle, formatBundleForPrompt } from './graph-retrieval';
+import { captureServerEvent } from './posthog-server';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
@@ -114,6 +115,15 @@ export async function loadPromptFromDB(
     .sort((a, b) => b.specificity - a.specificity || b.version - a.version);
 
   const best = scored[0] ?? null;
+  if (!best) {
+    captureServerEvent('system', 'prompt_fallback', {
+      reason: 'no_matching_prompt',
+      prompt_key: promptKey,
+      rating,
+      study_mode: studyMode,
+      difficulty,
+    });
+  }
   return {
     content: getPromptContent(best, promptKey),
     versionId: best?.id ?? null,

@@ -1,0 +1,277 @@
+================================================================================
+  LAUNCH FUNNEL INSTRUMENTATION AUDIT
+  Generated: 2026-03-05T01:12:49.524Z
+================================================================================
+
+## SUMMARY
+--------------------------------------------------------------------------------
+Total events found in codebase:    32
+Unique event names:                25
+Required funnel events:            20
+  FOUND:                           9
+  PARTIAL:                         8
+  MISSING:                         3
+
+VERDICT: NEEDS WORK
+  9/20 events fully instrumented, 8 partial, 3 missing. Coverage: 65%. Some funnel events need dedicated analytics events added.
+
+## ALL UNIQUE EVENT NAMES
+--------------------------------------------------------------------------------
+  - $pageview
+  - checkout_completed
+  - consent_update
+  - depth_contract_applied
+  - email_preference_changed
+  - email_sent
+  - email_unsubscribed
+  - exam_session_completed
+  - exam_session_started
+  - examiner_profile_resolved
+  - flow_fingerprints_loaded
+  - flow_transition_generated
+  - llm_request
+  - multimodal_asset_selected
+  - page_data
+  - purchase
+  - sign_up
+  - stt_session
+  - token_issued
+  - trial_start
+  - tts_denied_by_tier
+  - tts_request
+  - utm_captured
+  - weak_area_report_generated
+  - weak_area_report_low_confidence
+
+## REQUIRED FUNNEL EVENTS
+--------------------------------------------------------------------------------
+[OK] page_viewed — FOUND
+    Description: Page view tracking (landing, pricing, help, etc.)
+    Notes: Found 2 event source(s) with dedicated analytics tracking.
+    Sources:
+      - $pageview (posthog-client, client-side) in src/components/PostHogProvider.tsx
+        Properties: current_url, children, e
+      - page_data (dataLayer, client-side) in src/lib/analytics.ts
+        Properties: pageType, userStatus, userPlan, user_status, user_plan
+
+[OK] signup_started_or_completed — FOUND
+    Description: User signup event (started or completed)
+    Notes: Found 1 event source(s) with dedicated analytics tracking.
+    Sources:
+      - sign_up (dataLayer, client-side) in src/lib/analytics.ts
+        Properties: event, rating, transactionId, value, plan, ecommerce, currency, items
+
+[!!] login_completed — PARTIAL
+    Description: User login completion event
+    Notes: Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Login tracked via DB update to user_profiles.last_login_at + auth_method
+    Sources:
+      - [code-level] login_completed (db-write, server-side) in src/app/auth/callback/route.ts
+        Properties: trackLogin, last_login_at, auth_method
+
+[OK] trial_started — FOUND
+    Description: Free trial initiation event
+    Notes: Found 1 event source(s) with dedicated analytics tracking.
+    Sources:
+      - trial_start (dataLayer, client-side) in src/lib/analytics.ts
+        Properties: event, transactionId, value, plan, ecommerce, currency, items
+
+[OK] checkout_started_or_completed — FOUND
+    Description: Stripe checkout initiation or completion
+    Notes: Found 3 event source(s) with dedicated analytics tracking.
+    Sources:
+      - checkout_completed (posthog-server, server-side) in src/app/api/stripe/webhook/route.ts
+        Properties: plan, amount, currency, subscription_id, is_trial
+      - [code-level] checkout_started_or_completed (stripe-webhook, server-side) in src/app/api/stripe/checkout/route.ts
+        Properties: stripecheckoutsessionscreate
+      - [code-level] checkout_started_or_completed (stripe-webhook, server-side) in src/app/api/stripe/webhook/route.ts
+        Properties: checkoutsessioncompleted, handleCheckoutCompleted
+
+[!!] subscription_created_or_confirmed — PARTIAL
+    Description: Subscription creation/confirmation event
+    Notes: Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Subscription tracked via Stripe webhook + DB tier update + confirmation email
+    Sources:
+      - [code-level] subscription_created_or_confirmed (stripe-webhook, server-side) in src/app/api/stripe/webhook/route.ts
+        Properties: customersubscriptionupdated, handleSubscriptionUpdated, sendSubscriptionConfirmed, tierdpe_live
+
+[!!] payment_failed — PARTIAL
+    Description: Payment failure event
+    Notes: Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Payment failure tracked via Stripe webhook + DB update + failure email
+    Sources:
+      - [code-level] payment_failed (stripe-webhook, server-side) in src/app/api/stripe/webhook/route.ts
+        Properties: invoicepayment_failed, handlePaymentFailed, sendPaymentFailed, latest_invoice_statusfailed
+
+[OK] exam_session_started — FOUND
+    Description: Exam session creation/start event
+    Notes: Found 3 event source(s) with dedicated analytics tracking.
+    Sources:
+      - exam_session_started (posthog-server, server-side) in src/app/api/exam/route.ts
+        Properties: session_id, rating, study_mode, difficulty, taskId, taskData, examinerMessage, elementCode, plannerState
+      - [code-level] exam_session_started (db-write, server-side) in src/app/api/exam/route.ts
+        Properties: action==='"start'"
+      - [code-level] exam_session_started (db-write, server-side) in src/app/api/session/route.ts
+        Properties: action==='"create'", statusactive
+
+[OK] exam_session_completed — FOUND
+    Description: Exam session completion event
+    Notes: Found 4 event source(s) with dedicated analytics tracking.
+    Sources:
+      - exam_session_completed (posthog-server, server-side) in src/app/api/session/route.ts
+        Properties: session_id, exchange_count, has_result, ok, result, resultV2
+      - [code-level] exam_session_completed (db-write, server-side) in src/app/api/admin/sessions/[id]/transcript/route.ts
+        Properties: ended_at
+      - [code-level] exam_session_completed (db-write, server-side) in src/app/api/exam/route.ts
+        Properties: statuscompleted, computeExamResult, ended_at, computeExamResultV2
+      - [code-level] exam_session_completed (db-write, server-side) in src/app/api/session/route.ts
+        Properties: statuscompleted, computeExamResult, ended_at, computeExamResultV2
+
+[!!] exam_answer_assessed — PARTIAL
+    Description: Individual answer assessment event
+    Notes: Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Answer assessment tracked via DB: session_transcripts.assessment + element_attempts rows
+    Sources:
+      - [code-level] exam_answer_assessed (db-write, server-side) in src/app/api/exam/route.ts
+        Properties: assessAnswer, element_attempts, writeElementAttempts
+
+[!!] quick_drill_started — PARTIAL
+    Description: Quick drill mode session start
+    Notes: Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Quick drill tracked via exam_sessions.study_mode = quick_drill
+    Sources:
+      - [code-level] quick_drill_started (db-write, client-side) in src/app/(dashboard)/practice/components/SessionConfig.tsx
+        Properties: quick_drill, studyModequick_drill
+      - [code-level] quick_drill_started (db-write, client-side) in src/lib/exam-planner.ts
+        Properties: quick_drill, studyModequick_drill
+
+[!!] support_ticket_created — PARTIAL
+    Description: Support ticket creation event
+    Notes: Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Support tickets tracked via DB insert to support_tickets table (Resend inbound webhook)
+    Sources:
+      - [code-level] support_ticket_created (db-write, server-side) in src/app/api/webhooks/resend-inbound/route.ts
+        Properties: create_ticket
+
+[!!] tts_request — PARTIAL
+    Description: Text-to-speech usage event (in usage_logs)
+    Notes: Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. 
+    Sources:
+      - tts_request (usage_logs, server-side) in src/app/api/tts/route.ts
+        Properties: event_type, provider, quantity, latency_ms, status, metadata, sample_rate, error, headers
+      - tts_request (usage_logs, server-side) in src/types/database.ts
+        Properties: event_type, created_at
+
+[!!] prompt_trace — PARTIAL
+    Description: Prompt version trace (in session metadata)
+    Notes: Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Prompt trace persisted in exam_sessions.metadata.promptTrace with version ID + source
+    Sources:
+      - [code-level] prompt_trace (session-metadata, server-side) in src/app/api/exam/route.ts
+        Properties: promptTrace, examiner_prompt_version_id, promptversion
+
+[OK] multimodal_asset_selected — FOUND
+    Description: Multimodal asset (image/card) selection event
+    Notes: Found 1 event source(s) with dedicated analytics tracking.
+    Sources:
+      - multimodal_asset_selected (posthog-server, server-side) in src/app/api/exam/route.ts
+        Properties: session_id, element_code, rating, difficulty, total_candidates, images_shown, text_cards_shown, top_image_score, threshold, error
+
+[OK] grounding_low_confidence — FOUND
+    Description: RAG grounding low confidence alert event
+    Notes: Found 1 event source(s) with dedicated analytics tracking.
+    Sources:
+      - weak_area_report_low_confidence (posthog-server, server-side) in src/app/api/exam/route.ts
+        Properties: session_id, low_confidence_count, insufficient_sources_count, weak_element_count, failed
+
+[XX] landing_page_viewed — MISSING
+    Description: Landing page view with UTM attribution
+    Notes: No events matching 'landing_page_viewed' found in codebase.
+
+[OK] tts_denied_by_tier — FOUND
+    Description: TTS denied due to tier restriction
+    Notes: Found 1 event source(s) with dedicated analytics tracking.
+    Sources:
+      - tts_denied_by_tier (posthog-server, server-side) in src/app/api/tts/route.ts
+        Properties: reason, error, message, upgrade_url, status
+
+[XX] prompt_fallback — MISSING
+    Description: Examiner prompt fallback to default
+    Notes: No events matching 'prompt_fallback' found in codebase.
+
+[XX] health_check — MISSING
+    Description: Health endpoint availability
+    Notes: No events matching 'health_check' found in codebase.
+
+## OBSERVABLE DASHBOARDS
+--------------------------------------------------------------------------------
+  [+] Acquisition Funnel: page_view -> signup -> login (PostHog + GA4/GTM)
+  [+] Conversion Funnel: trial -> checkout -> subscription (PostHog + GA4 Measurement Protocol)
+  [+] Engagement Funnel: session_start -> answers -> session_complete (DB + PostHog)
+  [+] Voice Usage Dashboard: TTS/STT usage per tier, quota utilization (usage_logs table)
+  [+] Revenue Health: payment failures, churn signals (Stripe webhooks + DB)
+  [+] Prompt Ops: prompt version tracking per session (session metadata)
+  [+] Multimodal Engagement: asset selection rates, image/card usage (PostHog)
+  [+] RAG Quality: grounding confidence, citation health (PostHog + session metadata)
+  [+] Support Volume: ticket creation rate, response times (support_tickets table)
+
+## GAPS & RECOMMENDATIONS
+--------------------------------------------------------------------------------
+Missing events that need adding:
+  [ADD] landing_page_viewed: Landing page view with UTM attribution
+  [ADD] prompt_fallback: Examiner prompt fallback to default
+  [ADD] health_check: Health endpoint availability
+
+Partial events that need dedicated analytics:
+  [UPGRADE] login_completed: Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Login tracked via DB update to user_profiles.last_login_at + auth_method
+  [UPGRADE] subscription_created_or_confirmed: Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Subscription tracked via Stripe webhook + DB tier update + confirmation email
+  [UPGRADE] payment_failed: Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Payment failure tracked via Stripe webhook + DB update + failure email
+  [UPGRADE] exam_answer_assessed: Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Answer assessment tracked via DB: session_transcripts.assessment + element_attempts rows
+  [UPGRADE] quick_drill_started: Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Quick drill tracked via exam_sessions.study_mode = quick_drill
+  [UPGRADE] support_ticket_created: Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Support tickets tracked via DB insert to support_tickets table (Resend inbound webhook)
+  [UPGRADE] tts_request: Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. 
+  [UPGRADE] prompt_trace: Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Prompt trace persisted in exam_sessions.metadata.promptTrace with version ID + source
+
+## ALL FOUND EVENTS (BY MECHANISM)
+--------------------------------------------------------------------------------
+
+### POSTHOG-SERVER (16 events)
+  email_unsubscribed — src/app/api/email/preferences/route.ts:126 (server-side)
+  weak_area_report_generated — src/app/api/exam/route.ts:243 (server-side)
+  weak_area_report_low_confidence — src/app/api/exam/route.ts:257 (server-side)
+  flow_fingerprints_loaded — src/app/api/exam/route.ts:451 (server-side)
+  depth_contract_applied — src/app/api/exam/route.ts:467 (server-side)
+  examiner_profile_resolved — src/app/api/exam/route.ts:480 (server-side)
+  exam_session_started — src/app/api/exam/route.ts:493 (server-side)
+  multimodal_asset_selected — src/app/api/exam/route.ts:762 (server-side)
+  flow_transition_generated — src/app/api/exam/route.ts:1053 (server-side)
+  depth_contract_applied — src/app/api/exam/route.ts:1066 (server-side)
+  exam_session_completed — src/app/api/session/route.ts:235 (server-side)
+  checkout_completed — src/app/api/stripe/webhook/route.ts:184 (server-side)
+  tts_denied_by_tier — src/app/api/tts/route.ts:44 (server-side)
+  tts_denied_by_tier — src/app/api/tts/route.ts:86 (server-side)
+  email_preference_changed — src/app/api/user/email-preferences/route.ts:90 (server-side)
+  email_sent — src/lib/email-logging.ts:51 (server-side)
+
+### USAGE_LOGS (5 events)
+  llm_request — src/app/api/exam/route.ts:79 (server-side)
+  token_issued — src/app/api/stt/token/route.ts:125 (server-side)
+  stt_session — src/app/api/stt/usage/route.ts:80 (server-side)
+  tts_request — src/app/api/tts/route.ts:117 (server-side)
+  tts_request — src/types/database.ts:357 (server-side)
+
+### GA4-MP (1 events)
+  purchase — src/app/api/stripe/webhook/route.ts:162 (server-side)
+
+### GTM (1 events)
+  consent_update — src/components/CookieConsent.tsx:28 (client-side)
+
+### POSTHOG-CLIENT (1 events)
+  $pageview — src/components/PostHogProvider.tsx:44 (client-side)
+
+### DATALAYER (8 events)
+  utm_captured — src/components/UTMCapture.tsx:11 (client-side)
+  sign_up — src/lib/analytics.ts:8 (client-side)
+  trial_start — src/lib/analytics.ts:12 (client-side)
+  purchase — src/lib/analytics.ts:16 (client-side)
+  sign_up — src/lib/analytics.ts:7 (client-side)
+  trial_start — src/lib/analytics.ts:11 (client-side)
+  purchase — src/lib/analytics.ts:15 (client-side)
+  page_data — src/lib/analytics.ts:27 (client-side)
+
+================================================================================
+  END OF AUDIT REPORT
+================================================================================

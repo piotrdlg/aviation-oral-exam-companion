@@ -1,0 +1,58 @@
+Phase 21 — Load & Resilience Validation (Offline)
+=======================================================
+Date: 2026-03-05
+Timestamp: 2026-03-05T01:12:37.469Z
+Total checks: 14
+Passed: 13
+Warned: 1
+Failed: 0
+
+--- 1) API Route Timeouts (2/3 passed) ---
+  [PASS] exam_route_timeout
+         maxDuration = 60s
+  [WARN] tts_route_timeout
+         No maxDuration export found (TTS is typically fast, but explicit timeout is recommended)
+  [PASS] cron_route_timeouts
+         src/app/api/cron/daily-digest/route.ts: maxDuration = 60s; src/app/api/cron/nudges/route.ts: maxDuration = 60s
+
+--- 2) Rate Limiting (2/2 passed) ---
+  [PASS] rate_limiting_middleware
+         Rate limiting in middleware via src/lib/rate-limit.ts (8 route configs)
+  [PASS] api_rate_limiting
+         All critical routes covered: /api/exam, /api/tts, /api/report
+
+--- 3) Connection Handling (3/3 passed) ---
+  [PASS] supabase_client_singleton
+         Service-role clients use module-level singleton in exam, tts, session routes
+  [PASS] posthog_client_singleton
+         PostHog server client uses singleton pattern (module-level let + guard)
+  [PASS] anthropic_client_handling
+         Anthropic client is module-level singleton in exam-engine.ts
+
+--- 4) Error Resilience (3/3 passed) ---
+  [PASS] global_error_boundary
+         Global error boundary exists with error + reset props (use client)
+  [PASS] api_error_handling
+         exam: try/catch with 500 response; tts: try/catch with 500 response; report: try/catch with 500 response
+  [PASS] cron_error_handling
+         daily-digest: try/catch + stats reporting + auth check; nudges: try/catch + stats reporting + auth check
+
+--- 5) Caching (2/2 passed) ---
+  [PASS] ttl_cache_usage
+         TtlCache module exists and is used in exam-engine.ts (1 instance(s))
+  [PASS] embedding_cache
+         Embedding cache present: DB-backed (embedding_cache table) with hash-based lookup
+
+--- 6) Deployment (1/1 passed) ---
+  [PASS] vercel_config_valid
+         Valid JSON: 2 cron job(s)
+
+--- SUMMARY ---
+  1) API Route Timeouts               2/3 passed
+  2) Rate Limiting                    2/2 passed
+  3) Connection Handling              3/3 passed
+  4) Error Resilience                 3/3 passed
+  5) Caching                          2/2 passed
+  6) Deployment                       1/1 passed
+
+  OVERALL: 13/14 passed, 0 failed -- ALL PASS

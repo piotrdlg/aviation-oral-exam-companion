@@ -103,6 +103,12 @@ export default function SettingsPage() {
   const [signOutOthersLoading, setSignOutOthersLoading] = useState(false);
   const [sessionsMessage, setSessionsMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
+  // Email notification preferences state
+  const [emailPrefs, setEmailPrefs] = useState<Record<string, boolean> | null>(null);
+  const [emailPrefsLoading, setEmailPrefsLoading] = useState(true);
+  const [emailPrefsSaving, setEmailPrefsSaving] = useState<string | null>(null);
+  const [emailPrefsMessage, setEmailPrefsMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
   // Voice diagnostics state
   const [diagOpen, setDiagOpen] = useState(false);
   const [diagRunning, setDiagRunning] = useState(false);
@@ -185,6 +191,17 @@ export default function SettingsPage() {
     fetchActiveSessions();
   }, [fetchActiveSessions]);
 
+  // Fetch email notification preferences
+  useEffect(() => {
+    fetch('/api/user/email-preferences')
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data?.preferences) setEmailPrefs(data.preferences);
+      })
+      .catch(() => {})
+      .finally(() => setEmailPrefsLoading(false));
+  }, []);
+
   async function openCustomerPortal() {
     setPortalLoading(true);
     setPortalError(null);
@@ -202,6 +219,26 @@ export default function SettingsPage() {
       setPortalError(err instanceof Error ? err.message : 'Failed to open subscription portal. Please try again.');
     } finally {
       setPortalLoading(false);
+    }
+  }
+
+  async function toggleEmailPref(category: string, enabled: boolean) {
+    setEmailPrefsSaving(category);
+    setEmailPrefsMessage(null);
+    try {
+      const res = await fetch('/api/user/email-preferences', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category, enabled }),
+      });
+      if (!res.ok) throw new Error('Failed to update');
+      setEmailPrefs((prev) => prev ? { ...prev, [category]: enabled } : null);
+      setEmailPrefsMessage({ text: 'Preference saved', type: 'success' });
+      setTimeout(() => setEmailPrefsMessage(null), 2000);
+    } catch (err) {
+      setEmailPrefsMessage({ text: err instanceof Error ? err.message : 'Failed', type: 'error' });
+    } finally {
+      setEmailPrefsSaving(null);
     }
   }
 
@@ -1359,6 +1396,87 @@ export default function SettingsPage() {
           >
             {signOutOthersLoading ? 'SIGNING OUT...' : 'SIGN OUT ALL OTHER SESSIONS'}
           </button>
+        )}
+      </div>
+
+      {/* 6.5 Email Notifications */}
+      <div className="bezel rounded-lg border border-c-border p-6">
+        <h2 className="font-mono font-semibold text-base text-c-amber mb-1 tracking-wider uppercase">EMAIL NOTIFICATIONS</h2>
+        <p className="font-mono text-xs text-c-muted mb-5">
+          Control which emails you receive from HeyDPE.
+        </p>
+
+        {emailPrefsLoading ? (
+          <div className="space-y-3">
+            <div className="iframe rounded-lg p-3 h-14" />
+            <div className="iframe rounded-lg p-3 h-14" />
+            <div className="iframe rounded-lg p-3 h-14" />
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {/* Required categories */}
+            {([
+              { key: 'account_security', label: 'Account & Security', desc: 'Password resets, email verification, login alerts' },
+              { key: 'billing_transactional', label: 'Billing & Payments', desc: 'Subscription confirmations, payment receipts, trial reminders' },
+              { key: 'support_transactional', label: 'Support Tickets', desc: 'Ticket confirmations and replies' },
+            ] as const).map((cat) => (
+              <div key={cat.key} className="flex items-center justify-between p-3 iframe rounded-lg opacity-60">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-c-muted text-sm">&#128274;</span>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-sm text-c-text">{cat.label}</span>
+                      <span className="font-mono text-xs bg-c-bezel text-c-dim px-1.5 py-0.5 rounded border border-c-border uppercase">
+                        REQUIRED
+                      </span>
+                    </div>
+                    <p className="font-mono text-xs text-c-dim mt-0.5">{cat.desc}</p>
+                  </div>
+                </div>
+                <label className="flex-shrink-0 cursor-not-allowed">
+                  <input
+                    type="checkbox"
+                    checked={true}
+                    disabled={true}
+                    className="w-4 h-4 rounded border-c-border bg-c-bezel text-c-green focus:ring-c-green opacity-50"
+                  />
+                </label>
+              </div>
+            ))}
+
+            {/* Optional categories */}
+            {([
+              { key: 'learning_digest', label: 'Daily Learning Digest', desc: 'Morning summary of weak areas and study recommendations' },
+              { key: 'motivation_nudges', label: 'Practice Reminders', desc: 'Friendly reminders when you haven\'t practiced recently' },
+              { key: 'product_updates', label: 'Product Updates', desc: 'New features, improvements, and tips' },
+              { key: 'marketing', label: 'Marketing & Promotions', desc: 'Special offers and promotions' },
+            ] as const).map((cat) => (
+              <div key={cat.key} className="flex items-center justify-between p-3 iframe rounded-lg">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-c-muted text-sm">&#9993;</span>
+                  <div className="min-w-0">
+                    <span className="font-mono text-sm text-c-text">{cat.label}</span>
+                    <p className="font-mono text-xs text-c-dim mt-0.5">{cat.desc}</p>
+                  </div>
+                </div>
+                <label className="flex-shrink-0 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={emailPrefs?.[cat.key] ?? false}
+                    disabled={emailPrefsSaving === cat.key}
+                    onChange={(e) => toggleEmailPref(cat.key, e.target.checked)}
+                    className="w-4 h-4 rounded border-c-border bg-c-bezel text-c-green focus:ring-c-green disabled:opacity-50"
+                  />
+                </label>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {emailPrefsMessage && (
+          <p className={`font-mono text-xs mt-3 ${emailPrefsMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+            {emailPrefsMessage.type === 'success' ? '\u2713 ' : ''}{emailPrefsMessage.text}
+          </p>
         )}
       </div>
 

@@ -64,6 +64,20 @@ evidence_level: high
 | 48 | [[48 - Public Launch Hardening Sprint]] | Final |
 | 49 | [[49 - Support Alerts and Incident Runbook]] | Final |
 | 50 | [[50 - Public Launch Gate Re-run]] | Final |
+| 51 | [[51 - Public Launch Execution Plan]] | Final |
+| 52 | [[52 - Launch Dashboard and Alert Thresholds]] | Final |
+| 53 | [[53 - First 72 Hours Launch Operations]] | Final |
+| 54 | [[54 - Public Launch Execution Report]] | Final |
+| 55 | [[55 - Email System Review and Sample Pack]] | Final |
+| 56 | [[56 - Lifecycle and Transactional Email Matrix]] | Final |
+| 57 | [[57 - Email Gaps and Recommendations]] | Final |
+| 58 | [[58 - Email Preference System Architecture]] | Final |
+| 59 | [[59 - Learning Digest Engine]] | Final |
+| 60 | [[60 - Motivation Nudge Engine]] | Final |
+| 61 | [[61 - Observability Alerting and Resilience Gate]] | Final |
+| 62 | [[62 - Load and Resilience Validation Report]] | Final |
+| 63 | [[63 - Alerting and Synthetic Monitoring Spec]] | Final |
+| 64 | [[64 - Public Launch Final Gate Re-run]] | Draft |
 
 ---
 
@@ -161,6 +175,20 @@ HeyDPE is a production-quality FAA oral exam simulator built on Next.js 16 + Sup
 | [[48 - Public Launch Hardening Sprint]] | **Phase 17** | 7 Phase 16 review items closed: support auto-reply, trial reminder, TTS tier gate, CSP, report ownership, pricing CTA. 6 code fixes + 2 scripts + 2 templates + 12 tests. 743/743 pass |
 | [[49 - Support Alerts and Incident Runbook]] | **Phase 17** | Operational runbook: monitoring stack, ticket workflow, email delivery/retry, payment incidents, common incidents, escalation path, launch day checklist |
 | [[50 - Public Launch Gate Re-run]] | **Phase 17** | 9-check deterministic public launch gate: 9/9 GO. All Phase 16 review items resolved. System meets public launch readiness criteria |
+| [[51 - Public Launch Execution Plan]] | **Phase 18** | Evidence-backed launch plan: Phases 15-17 commit fix, 19/19 production verification, 3 critical funnel events added, go/no-go criteria all GO |
+| [[52 - Launch Dashboard and Alert Thresholds]] | **Phase 18** | 6 monitoring dashboards (Acquisition, Conversion, Engagement, System Health, Revenue, Support), per-metric alert thresholds, P1-P4 escalation path |
+| [[53 - First 72 Hours Launch Operations]] | **Phase 18** | Hour-by-hour operational playbook: pre-launch checklist, active monitoring schedule, known issues watchlist, P1-P3 incident response, rollback plan |
+| [[54 - Public Launch Execution Report]] | **Phase 18** | Final execution report: 19/19 prod verification, 743/743 tests, LAUNCH WITH CAUTION verdict, evidence pack, cumulative phase history |
+| [[55 - Email System Review and Sample Pack]] | **Phase 19** | Complete email system audit: 10 scenarios inventoried, 10 sample emails sent to review inbox, all rendered HTML saved. 8 send functions, 6 templates, 0 failures |
+| [[56 - Lifecycle and Transactional Email Matrix]] | **Phase 19** | Full email scenario matrix: 15 scenarios (8 implemented, 2 Supabase-handled, 5 not implemented), trigger sources, template registry, sender addresses |
+| [[57 - Email Gaps and Recommendations]] | **Phase 19** | 6 email gaps classified: 1 compliance prerequisite (unsubscribe), 1 medium priority (learning summary), 4 deferred. Priority matrix with effort estimates |
+| [[58 - Email Preference System Architecture]] | **Phase 20** | Selective email opt-out with HMAC-SHA256 unsubscribe tokens, `email_preferences` + `email_logs` tables, per-category controls, public preference page, 2 RPC functions |
+| [[59 - Learning Digest Engine]] | **Phase 20** | Daily grounded digest: element scores, 7-day session window, weak/strong areas with progress bars, idempotent cron script with 200ms rate limiting |
+| [[60 - Motivation Nudge Engine]] | **Phase 20** | Decaying cadence nudge system (day 1/3/7/14/30), tolerance-window milestone matching, variant-specific templates, deduplication via `email_logs` |
+| [[61 - Observability Alerting and Resilience Gate]] | **Phase 21** | Health endpoint, event inventory expansion (20 events), synthetic monitoring (12/12 PASS), load/resilience validation (13/14 PASS), cron hardening, 756 tests |
+| [[62 - Load and Resilience Validation Report]] | **Phase 21** | 14-check static analysis: timeouts, rate limiting, singletons, error handling, caching, deployment. 13 PASS, 1 WARN (TTS maxDuration) |
+| [[63 - Alerting and Synthetic Monitoring Spec]] | **Phase 21** | 12-check offline monitoring: health endpoint, PostHog, cron reliability, admin endpoints, email infrastructure, error boundaries. 12/12 PASS |
+| [[64 - Public Launch Final Gate Re-run]] | **Phase 21** | Planned 16-check comprehensive gate (not yet created). Documents gate evolution from Phase 14 (12 checks) to Phase 17 (9 checks) to Phase 21 |
 
 ---
 

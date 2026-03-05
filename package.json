@@ -61,7 +61,16 @@
     "eval:promptops": "tsx scripts/eval/promptops-audit.ts",
     "audit:launch": "tsx scripts/audit/launch-readiness.ts",
     "email:trial-reminders": "tsx scripts/email/send-trial-ending-reminders.ts",
-    "audit:public-launch": "tsx scripts/audit/public-launch-gate.ts"
+    "email:daily-digest": "tsx scripts/email/send-daily-digest.ts",
+    "email:nudges": "tsx scripts/email/send-nudges.ts",
+    "email:review-samples": "tsx scripts/email/send-email-samples.ts",
+    "audit:public-launch": "tsx scripts/audit/public-launch-gate.ts",
+    "verify:production": "tsx scripts/audit/production-verification-phase18.ts",
+    "audit:launch-funnel": "tsx scripts/audit/launch-funnel-audit.ts",
+    "audit:event-inventory": "tsx scripts/audit/launch-funnel-audit.ts",
+    "smoke:phase21": "tsx scripts/smoke/phase21-synthetic.ts",
+    "audit:load-check": "tsx scripts/load/phase21-load-check.ts",
+    "audit:final-gate": "tsx scripts/audit/public-launch-final-gate.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",

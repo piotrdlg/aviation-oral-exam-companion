@@ -39,3 +39,13 @@ export function captureServerEvent(
     properties,
   });
 }
+
+/**
+ * Flush buffered events to PostHog. Call this before serverless functions exit
+ * to ensure events are delivered (Vercel functions can terminate before the
+ * buffer auto-flushes).
+ */
+export async function flushPostHog(): Promise<void> {
+  if (!client) return;
+  await client.flush();
+}

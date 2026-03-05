@@ -1,0 +1,17 @@
+Vercel Deployment Status — 2026-03-15
+
+Commit: 5cb6725
+Message: feat: ship Phases 15-17 — beta readiness + public launch hardening
+Environment: Production
+State: success
+Description: Deployment has completed
+Created: 2026-03-04T14:07:23Z
+Preview URL: https://aviation-oral-exam-companion-iz947r77j-piotrs-projects-9a129ab9.vercel.app
+Production URL: https://aviation-oral-exam-companion.vercel.app
+
+Previous deployment:
+Commit: d728b02 (Phases 6-14)
+State: success
+
+Deployment progression:
+  d728b02 → 5cb6725 (Phases 15-17 now live)

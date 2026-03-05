@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import type Stripe from 'stripe';
@@ -10,6 +11,11 @@ const serviceSupabase = createServiceClient(
 );
 
 export async function POST(request: NextRequest) {
+  after(async () => {
+    const { flushPostHog } = await import('@/lib/posthog-server');
+    await flushPostHog();
+  });
+
   const body = await request.text();
   const sig = request.headers.get('stripe-signature');
 
@@ -175,6 +181,21 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, eventId
       // Non-critical: don't fail the webhook if GA4 reporting fails
       console.error('GA4 Measurement Protocol error:', err);
     }
+  }
+
+  // Launch funnel: checkout completed (Phase 18)
+  try {
+    const { captureServerEvent } = await import('@/lib/posthog-server');
+    const price = subscription.items.data[0]?.price;
+    captureServerEvent(userId, 'checkout_completed', {
+      plan: price?.recurring?.interval === 'year' ? 'annual' : 'monthly',
+      amount: (session.amount_total ?? 0) / 100,
+      currency: session.currency?.toUpperCase() || 'USD',
+      subscription_id: subscription.id,
+      is_trial: subscription.status === 'trialing',
+    });
+  } catch {
+    // Non-critical
   }
 
   // Send confirmation email

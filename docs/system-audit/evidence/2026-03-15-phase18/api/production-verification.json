@@ -1,0 +1,290 @@
+{
+  "metadata": {
+    "phase": "Phase 18 -- Production Verification Matrix",
+    "timestamp": "2026-03-04T14:10:52.542Z",
+    "base_url": "https://aviation-oral-exam-companion.vercel.app",
+    "total_checks": 19,
+    "passed": 19,
+    "failed": 0,
+    "all_pass": true
+  },
+  "categories": [
+    {
+      "name": "A) Public Pages",
+      "passed": 9,
+      "total": 9,
+      "checks": [
+        {
+          "name": "Landing page (/)",
+          "expected": "HTTP 200 + markers: [HEYDPE]",
+          "actual": "HTTP 200, all markers found",
+          "pass": true
+        },
+        {
+          "name": "Pricing page (/pricing)",
+          "expected": "HTTP 200 + markers: [PRICING, $39]",
+          "actual": "HTTP 200, all markers found",
+          "pass": true
+        },
+        {
+          "name": "Help/FAQ page (/help)",
+          "expected": "HTTP 200 + markers: [HELP, FAQ]",
+          "actual": "HTTP 200, all markers found",
+          "pass": true
+        },
+        {
+          "name": "Login page (/login)",
+          "expected": "HTTP 200 + markers: [SIGN IN]",
+          "actual": "HTTP 200, all markers found",
+          "pass": true
+        },
+        {
+          "name": "Signup page (/signup)",
+          "expected": "HTTP 200 + markers: [GET STARTED]",
+          "actual": "HTTP 200, all markers found",
+          "pass": true
+        },
+        {
+          "name": "Privacy page (/privacy)",
+          "expected": "HTTP 200 + markers: [PRIVACY]",
+          "actual": "HTTP 200, all markers found",
+          "pass": true
+        },
+        {
+          "name": "Terms page (/terms)",
+          "expected": "HTTP 200 + markers: [TERMS]",
+          "actual": "HTTP 200, all markers found",
+          "pass": true
+        },
+        {
+          "name": "Try page (/try)",
+          "expected": "HTTP 200 + markers: []",
+          "actual": "HTTP 200, all markers found",
+          "pass": true
+        },
+        {
+          "name": "404 page (/nonexistent-page-test)",
+          "expected": "HTTP 404",
+          "actual": "HTTP 404",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "name": "B) Security Headers",
+      "passed": 4,
+      "total": 4,
+      "checks": [
+        {
+          "name": "X-Content-Type-Options header",
+          "expected": "nosniff",
+          "actual": "nosniff",
+          "pass": true
+        },
+        {
+          "name": "X-Frame-Options header",
+          "expected": "DENY",
+          "actual": "DENY",
+          "pass": true
+        },
+        {
+          "name": "Content-Security-Policy header",
+          "expected": "present",
+          "actual": "present (default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.s...)",
+          "pass": true
+        },
+        {
+          "name": "Referrer-Policy header",
+          "expected": "present",
+          "actual": "strict-origin-when-cross-origin",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "name": "C) API Auth Gates",
+      "passed": 4,
+      "total": 4,
+      "checks": [
+        {
+          "name": "POST /api/exam",
+          "expected": "HTTP 401",
+          "actual": "HTTP 401",
+          "pass": true
+        },
+        {
+          "name": "POST /api/tts",
+          "expected": "HTTP 401",
+          "actual": "HTTP 401",
+          "pass": true
+        },
+        {
+          "name": "POST /api/report",
+          "expected": "HTTP 401",
+          "actual": "HTTP 401",
+          "pass": true
+        },
+        {
+          "name": "POST /api/session",
+          "expected": "HTTP 401",
+          "actual": "HTTP 401",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "name": "D) Admin Endpoints",
+      "passed": 2,
+      "total": 2,
+      "checks": [
+        {
+          "name": "GET /api/admin/quality/examiner-identity",
+          "expected": "HTTP 401 or 403",
+          "actual": "HTTP 401",
+          "pass": true
+        },
+        {
+          "name": "GET /api/admin/quality/prompts",
+          "expected": "HTTP 401 or 403",
+          "actual": "HTTP 401",
+          "pass": true
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "name": "Landing page (/)",
+      "category": "A) Public Pages",
+      "expected": "HTTP 200 + markers: [HEYDPE]",
+      "actual": "HTTP 200, all markers found",
+      "pass": true
+    },
+    {
+      "name": "Pricing page (/pricing)",
+      "category": "A) Public Pages",
+      "expected": "HTTP 200 + markers: [PRICING, $39]",
+      "actual": "HTTP 200, all markers found",
+      "pass": true
+    },
+    {
+      "name": "Help/FAQ page (/help)",
+      "category": "A) Public Pages",
+      "expected": "HTTP 200 + markers: [HELP, FAQ]",
+      "actual": "HTTP 200, all markers found",
+      "pass": true
+    },
+    {
+      "name": "Login page (/login)",
+      "category": "A) Public Pages",
+      "expected": "HTTP 200 + markers: [SIGN IN]",
+      "actual": "HTTP 200, all markers found",
+      "pass": true
+    },
+    {
+      "name": "Signup page (/signup)",
+      "category": "A) Public Pages",
+      "expected": "HTTP 200 + markers: [GET STARTED]",
+      "actual": "HTTP 200, all markers found",
+      "pass": true
+    },
+    {
+      "name": "Privacy page (/privacy)",
+      "category": "A) Public Pages",
+      "expected": "HTTP 200 + markers: [PRIVACY]",
+      "actual": "HTTP 200, all markers found",
+      "pass": true
+    },
+    {
+      "name": "Terms page (/terms)",
+      "category": "A) Public Pages",
+      "expected": "HTTP 200 + markers: [TERMS]",
+      "actual": "HTTP 200, all markers found",
+      "pass": true
+    },
+    {
+      "name": "Try page (/try)",
+      "category": "A) Public Pages",
+      "expected": "HTTP 200 + markers: []",
+      "actual": "HTTP 200, all markers found",
+      "pass": true
+    },
+    {
+      "name": "404 page (/nonexistent-page-test)",
+      "category": "A) Public Pages",
+      "expected": "HTTP 404",
+      "actual": "HTTP 404",
+      "pass": true
+    },
+    {
+      "name": "X-Content-Type-Options header",
+      "category": "B) Security Headers",
+      "expected": "nosniff",
+      "actual": "nosniff",
+      "pass": true
+    },
+    {
+      "name": "X-Frame-Options header",
+      "category": "B) Security Headers",
+      "expected": "DENY",
+      "actual": "DENY",
+      "pass": true
+    },
+    {
+      "name": "Content-Security-Policy header",
+      "category": "B) Security Headers",
+      "expected": "present",
+      "actual": "present (default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.s...)",
+      "pass": true
+    },
+    {
+      "name": "Referrer-Policy header",
+      "category": "B) Security Headers",
+      "expected": "present",
+      "actual": "strict-origin-when-cross-origin",
+      "pass": true
+    },
+    {
+      "name": "POST /api/exam",
+      "category": "C) API Auth Gates",
+      "expected": "HTTP 401",
+      "actual": "HTTP 401",
+      "pass": true
+    },
+    {
+      "name": "POST /api/tts",
+      "category": "C) API Auth Gates",
+      "expected": "HTTP 401",
+      "actual": "HTTP 401",
+      "pass": true
+    },
+    {
+      "name": "POST /api/report",
+      "category": "C) API Auth Gates",
+      "expected": "HTTP 401",
+      "actual": "HTTP 401",
+      "pass": true
+    },
+    {
+      "name": "POST /api/session",
+      "category": "C) API Auth Gates",
+      "expected": "HTTP 401",
+      "actual": "HTTP 401",
+      "pass": true
+    },
+    {
+      "name": "GET /api/admin/quality/examiner-identity",
+      "category": "D) Admin Endpoints",
+      "expected": "HTTP 401 or 403",
+      "actual": "HTTP 401",
+      "pass": true
+    },
+    {
+      "name": "GET /api/admin/quality/prompts",
+      "category": "D) Admin Endpoints",
+      "expected": "HTTP 401 or 403",
+      "actual": "HTTP 401",
+      "pass": true
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { getUserTier } from '@/lib/voice/tier-lookup';
@@ -226,6 +227,20 @@ export async function POST(request: NextRequest) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    // Launch funnel: exam session completed (Phase 18)
+    if (status === 'completed') {
+      after(async () => {
+        const { captureServerEvent, flushPostHog } = await import('@/lib/posthog-server');
+        captureServerEvent(user.id, 'exam_session_completed', {
+          session_id: sessionId,
+          exchange_count: exchange_count ?? undefined,
+          has_result: !!updateData.result,
+        });
+        await flushPostHog();
+      });
+    }
+
     // Return both V1 and V2 results to the client
     const metadataObj = updateData.metadata as Record<string, unknown> | undefined;
     return NextResponse.json({

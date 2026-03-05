@@ -39,6 +39,17 @@ vi.mock('@/lib/app-env', () => ({
   requireSafeDbTarget: vi.fn(),
 }));
 
+vi.mock('next/server', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('next/server')>();
+  return {
+    ...actual,
+    after: vi.fn(), // no-op — don't execute callback in test env
+  };
+});
+
+vi.mock('@/lib/posthog-server', () => ({
+  captureServerEvent: vi.fn(),
+}));
 
 // Import route handler after mocks are in place
 import { POST, GET } from '@/app/api/session/route';

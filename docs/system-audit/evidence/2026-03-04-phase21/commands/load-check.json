@@ -1,0 +1,223 @@
+{
+  "metadata": {
+    "phase": "Phase 21 -- Load & Resilience Validation",
+    "timestamp": "2026-03-05T01:12:37.469Z",
+    "total_checks": 14,
+    "passed": 13,
+    "warned": 1,
+    "failed": 0,
+    "all_pass": true
+  },
+  "categories": [
+    {
+      "name": "1) API Route Timeouts",
+      "passed": 2,
+      "warned": 1,
+      "failed": 0,
+      "total": 3,
+      "checks": [
+        {
+          "check": "exam_route_timeout",
+          "verdict": "PASS",
+          "detail": "maxDuration = 60s"
+        },
+        {
+          "check": "tts_route_timeout",
+          "verdict": "WARN",
+          "detail": "No maxDuration export found (TTS is typically fast, but explicit timeout is recommended)"
+        },
+        {
+          "check": "cron_route_timeouts",
+          "verdict": "PASS",
+          "detail": "src/app/api/cron/daily-digest/route.ts: maxDuration = 60s; src/app/api/cron/nudges/route.ts: maxDuration = 60s"
+        }
+      ]
+    },
+    {
+      "name": "2) Rate Limiting",
+      "passed": 2,
+      "warned": 0,
+      "failed": 0,
+      "total": 2,
+      "checks": [
+        {
+          "check": "rate_limiting_middleware",
+          "verdict": "PASS",
+          "detail": "Rate limiting in middleware via src/lib/rate-limit.ts (8 route configs)"
+        },
+        {
+          "check": "api_rate_limiting",
+          "verdict": "PASS",
+          "detail": "All critical routes covered: /api/exam, /api/tts, /api/report"
+        }
+      ]
+    },
+    {
+      "name": "3) Connection Handling",
+      "passed": 3,
+      "warned": 0,
+      "failed": 0,
+      "total": 3,
+      "checks": [
+        {
+          "check": "supabase_client_singleton",
+          "verdict": "PASS",
+          "detail": "Service-role clients use module-level singleton in exam, tts, session routes"
+        },
+        {
+          "check": "posthog_client_singleton",
+          "verdict": "PASS",
+          "detail": "PostHog server client uses singleton pattern (module-level let + guard)"
+        },
+        {
+          "check": "anthropic_client_handling",
+          "verdict": "PASS",
+          "detail": "Anthropic client is module-level singleton in exam-engine.ts"
+        }
+      ]
+    },
+    {
+      "name": "4) Error Resilience",
+      "passed": 3,
+      "warned": 0,
+      "failed": 0,
+      "total": 3,
+      "checks": [
+        {
+          "check": "global_error_boundary",
+          "verdict": "PASS",
+          "detail": "Global error boundary exists with error + reset props (use client)"
+        },
+        {
+          "check": "api_error_handling",
+          "verdict": "PASS",
+          "detail": "exam: try/catch with 500 response; tts: try/catch with 500 response; report: try/catch with 500 response"
+        },
+        {
+          "check": "cron_error_handling",
+          "verdict": "PASS",
+          "detail": "daily-digest: try/catch + stats reporting + auth check; nudges: try/catch + stats reporting + auth check"
+        }
+      ]
+    },
+    {
+      "name": "5) Caching",
+      "passed": 2,
+      "warned": 0,
+      "failed": 0,
+      "total": 2,
+      "checks": [
+        {
+          "check": "ttl_cache_usage",
+          "verdict": "PASS",
+          "detail": "TtlCache module exists and is used in exam-engine.ts (1 instance(s))"
+        },
+        {
+          "check": "embedding_cache",
+          "verdict": "PASS",
+          "detail": "Embedding cache present: DB-backed (embedding_cache table) with hash-based lookup"
+        }
+      ]
+    },
+    {
+      "name": "6) Deployment",
+      "passed": 1,
+      "warned": 0,
+      "failed": 0,
+      "total": 1,
+      "checks": [
+        {
+          "check": "vercel_config_valid",
+          "verdict": "PASS",
+          "detail": "Valid JSON: 2 cron job(s)"
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "check": "exam_route_timeout",
+      "category": "1) API Route Timeouts",
+      "verdict": "PASS",
+      "detail": "maxDuration = 60s"
+    },
+    {
+      "check": "tts_route_timeout",
+      "category": "1) API Route Timeouts",
+      "verdict": "WARN",
+      "detail": "No maxDuration export found (TTS is typically fast, but explicit timeout is recommended)"
+    },
+    {
+      "check": "cron_route_timeouts",
+      "category": "1) API Route Timeouts",
+      "verdict": "PASS",
+      "detail": "src/app/api/cron/daily-digest/route.ts: maxDuration = 60s; src/app/api/cron/nudges/route.ts: maxDuration = 60s"
+    },
+    {
+      "check": "rate_limiting_middleware",
+      "category": "2) Rate Limiting",
+      "verdict": "PASS",
+      "detail": "Rate limiting in middleware via src/lib/rate-limit.ts (8 route configs)"
+    },
+    {
+      "check": "api_rate_limiting",
+      "category": "2) Rate Limiting",
+      "verdict": "PASS",
+      "detail": "All critical routes covered: /api/exam, /api/tts, /api/report"
+    },
+    {
+      "check": "supabase_client_singleton",
+      "category": "3) Connection Handling",
+      "verdict": "PASS",
+      "detail": "Service-role clients use module-level singleton in exam, tts, session routes"
+    },
+    {
+      "check": "posthog_client_singleton",
+      "category": "3) Connection Handling",
+      "verdict": "PASS",
+      "detail": "PostHog server client uses singleton pattern (module-level let + guard)"
+    },
+    {
+      "check": "anthropic_client_handling",
+      "category": "3) Connection Handling",
+      "verdict": "PASS",
+      "detail": "Anthropic client is module-level singleton in exam-engine.ts"
+    },
+    {
+      "check": "global_error_boundary",
+      "category": "4) Error Resilience",
+      "verdict": "PASS",
+      "detail": "Global error boundary exists with error + reset props (use client)"
+    },
+    {
+      "check": "api_error_handling",
+      "category": "4) Error Resilience",
+      "verdict": "PASS",
+      "detail": "exam: try/catch with 500 response; tts: try/catch with 500 response; report: try/catch with 500 response"
+    },
+    {
+      "check": "cron_error_handling",
+      "category": "4) Error Resilience",
+      "verdict": "PASS",
+      "detail": "daily-digest: try/catch + stats reporting + auth check; nudges: try/catch + stats reporting + auth check"
+    },
+    {
+      "check": "ttl_cache_usage",
+      "category": "5) Caching",
+      "verdict": "PASS",
+      "detail": "TtlCache module exists and is used in exam-engine.ts (1 instance(s))"
+    },
+    {
+      "check": "embedding_cache",
+      "category": "5) Caching",
+      "verdict": "PASS",
+      "detail": "Embedding cache present: DB-backed (embedding_cache table) with hash-based lookup"
+    },
+    {
+      "check": "vercel_config_valid",
+      "category": "6) Deployment",
+      "verdict": "PASS",
+      "detail": "Valid JSON: 2 cron job(s)"
+    }
+  ]
+}

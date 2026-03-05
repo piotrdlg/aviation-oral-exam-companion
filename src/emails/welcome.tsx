@@ -20,7 +20,7 @@ export function WelcomeEmail({ name }: WelcomeEmailProps) {
       <Text style={paragraph}>Here&apos;s what you can do:</Text>
 
       <Text style={listItem}>
-        &bull; Practice with 143+ ACS tasks across PPL, CPL, and IR
+        &bull; Practice with 143+ ACS tasks across Private, Commercial, and Instrument
       </Text>
       <Text style={listItem}>
         &bull; Get scored on every answer (satisfactory, partial, unsatisfactory)

@@ -344,6 +344,7 @@ export interface UserProfile {
   status_changed_by: string | null;
   last_login_at: string | null;
   auth_method: AuthMethod | null;
+  timezone: string;
   created_at: string;
   updated_at: string;
 }
@@ -494,6 +495,64 @@ export interface SystemConfigStructured {
   killSwitches: Record<string, KillSwitchValue>;
   maintenanceMode: MaintenanceModeValue;
   userHardCaps: UserHardCapsValue;
+}
+
+// ============================================================
+// Support tickets
+// ============================================================
+
+// ============================================================
+// Email preferences
+// ============================================================
+
+export type EmailCategory =
+  | 'account_security'
+  | 'billing_transactional'
+  | 'support_transactional'
+  | 'learning_digest'
+  | 'motivation_nudges'
+  | 'product_updates'
+  | 'marketing';
+
+export const REQUIRED_EMAIL_CATEGORIES: EmailCategory[] = [
+  'account_security',
+  'billing_transactional',
+  'support_transactional',
+];
+
+export const OPTIONAL_EMAIL_CATEGORIES: EmailCategory[] = [
+  'learning_digest',
+  'motivation_nudges',
+  'product_updates',
+  'marketing',
+];
+
+export type EmailPreferenceSource = 'default' | 'user_settings' | 'unsubscribe_link' | 'admin';
+
+export interface EmailPreference {
+  id: string;
+  user_id: string;
+  category: EmailCategory;
+  enabled: boolean;
+  source: EmailPreferenceSource;
+  created_at: string;
+  updated_at: string;
+}
+
+export type EmailLogStatus = 'sent' | 'failed' | 'skipped';
+
+export interface EmailLog {
+  id: string;
+  user_id: string | null;
+  category: EmailCategory;
+  template_id: string;
+  resend_id: string | null;
+  recipient: string;
+  subject: string | null;
+  status: EmailLogStatus;
+  error: string | null;
+  metadata: Record<string, unknown>;
+  sent_at: string;
 }
 
 // ============================================================

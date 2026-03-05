@@ -5,6 +5,10 @@ import { SubscriptionCancelledEmail } from '@/emails/subscription-cancelled';
 import { PaymentFailedEmail } from '@/emails/payment-failed';
 import { TrialEndingEmail } from '@/emails/trial-ending';
 import { TicketAutoReplyEmail } from '@/emails/ticket-auto-reply';
+import { LearningDigestEmail } from '@/emails/learning-digest';
+import { MotivationNudgeEmail } from '@/emails/motivation-nudge';
+import type { DigestData } from '@/lib/digest-builder';
+import type { NudgeVariant } from '@/lib/nudge-engine';
 
 // Lazy-initialize Resend client to avoid build-time errors when env vars are unavailable
 let _resend: Resend | null = null;
@@ -219,5 +223,85 @@ export async function forwardEmail(
     });
   } catch (error) {
     console.error('[email] Failed to forward email:', error);
+  }
+}
+
+/**
+ * Send a daily learning digest email.
+ * Returns the Resend email ID on success, or null on error.
+ * Never throws — logs errors and returns null.
+ */
+export async function sendLearningDigest(
+  to: string,
+  digestData: DigestData,
+): Promise<string | null> {
+  try {
+    const { data, error } = await getResend().emails.send({
+      from: SENDERS.hello,
+      to,
+      subject: `Your HeyDPE study briefing — ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+      react: LearningDigestEmail(digestData),
+      headers: {
+        'List-Unsubscribe': `<${digestData.unsubscribeUrl}>`,
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+      },
+    });
+    if (error) {
+      console.error('[email] Resend error sending digest:', error);
+      return null;
+    }
+    return data?.id ?? null;
+  } catch (error) {
+    console.error('[email] Failed to send learning digest:', error);
+    return null;
+  }
+}
+
+/**
+ * Send a motivation nudge email to an inactive user.
+ * Returns the Resend email ID on success, or null on error.
+ * Never throws — logs errors and returns null.
+ */
+export async function sendMotivationNudge(
+  to: string,
+  opts: {
+    name?: string;
+    variant: NudgeVariant;
+    heading: string;
+    body: string;
+    ctaText: string;
+    subject: string;
+    daysSinceLastSession: number;
+    totalSessions: number;
+    unsubscribeUrl: string;
+  },
+): Promise<string | null> {
+  try {
+    const { data, error } = await getResend().emails.send({
+      from: SENDERS.hello,
+      to,
+      subject: opts.subject,
+      react: MotivationNudgeEmail({
+        name: opts.name,
+        heading: opts.heading,
+        body: opts.body,
+        ctaText: opts.ctaText,
+        daysSinceLastSession: opts.daysSinceLastSession,
+        totalSessions: opts.totalSessions,
+        unsubscribeUrl: opts.unsubscribeUrl,
+      }),
+      headers: {
+        'List-Unsubscribe': `<${opts.unsubscribeUrl}>`,
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+      },
+    });
+    if (error) {
+      console.error('[email] Resend error sending motivation nudge:', error);
+      return null;
+    }
+    return data?.id ?? null;
+  } catch (error) {
+    console.error('[email] Failed to send motivation nudge:', error);
+    return null;
   }
 }

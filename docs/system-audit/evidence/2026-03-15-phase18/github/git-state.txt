@@ -1,0 +1,44 @@
+$ git status -sb
+## main...origin/main
+
+MODIFIED (uncommitted):
+ M docs/system-audit/00 - Index.md
+ M docs/system-audit/evidence/2026-03-11-phase14/eval/launch-readiness.json
+ M docs/system-audit/evidence/2026-03-11-phase14/eval/launch-readiness.md
+ M docs/system-audit/evidence/2026-03-11-phase14/eval/promptops-audit.json
+ M next.config.ts
+ M package.json
+ M src/app/(dashboard)/layout.tsx
+ M src/app/(dashboard)/practice/page.tsx
+ M src/app/api/report/route.ts
+ M src/app/api/stripe/webhook/route.ts
+ M src/app/api/tts/route.ts
+ M src/app/api/webhooks/resend-inbound/route.ts
+ M src/app/pricing/page.tsx
+ M src/components/Footer.tsx
+ M src/lib/__tests__/email.test.ts
+ M src/lib/__tests__/voice-usage.test.ts
+ M src/lib/email.ts
+ M src/lib/voice/usage.ts
+
+UNTRACKED (new files):
+ ?? docs/system-audit/39-50 (12 audit docs)
+ ?? docs/system-audit/evidence/2026-03-12-phase15/
+ ?? docs/system-audit/evidence/2026-03-13-phase16/
+ ?? docs/system-audit/evidence/2026-03-14-phase17/
+ ?? scripts/audit/public-launch-gate.ts
+ ?? scripts/email/
+ ?? src/app/help/
+ ?? src/emails/ticket-auto-reply.tsx
+ ?? src/emails/trial-ending.tsx
+
+$ git branch -vv
+* main  d728b02 [origin/main] feat: ship Phases 6-14
+
+$ git log --oneline -5
+d728b02 (HEAD -> main, origin/main) feat: ship Phases 6-14 — grounding repair through PromptOps hardening
+4fef6b7 chore(release): merge inventory sprint + ship phase5 grading v2 + quick drill
+39fc159 Merge pull request #3
+
+FINDING: Phases 15, 16, 17 are ALL uncommitted local changes.
+Production (origin/main = d728b02) only has through Phase 14.

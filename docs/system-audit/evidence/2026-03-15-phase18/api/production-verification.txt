@@ -1,0 +1,81 @@
+Production Verification Matrix (Phase 18)
+==================================================
+Date: 2026-03-04
+Timestamp: 2026-03-04T14:10:52.542Z
+Base URL: https://aviation-oral-exam-companion.vercel.app
+Total checks: 19
+Passed: 19
+Failed: 0
+
+--- A) Public Pages (9/9 passed) ---
+  [PASS] Landing page (/)
+         Expected: HTTP 200 + markers: [HEYDPE]
+         Actual:   HTTP 200, all markers found
+  [PASS] Pricing page (/pricing)
+         Expected: HTTP 200 + markers: [PRICING, $39]
+         Actual:   HTTP 200, all markers found
+  [PASS] Help/FAQ page (/help)
+         Expected: HTTP 200 + markers: [HELP, FAQ]
+         Actual:   HTTP 200, all markers found
+  [PASS] Login page (/login)
+         Expected: HTTP 200 + markers: [SIGN IN]
+         Actual:   HTTP 200, all markers found
+  [PASS] Signup page (/signup)
+         Expected: HTTP 200 + markers: [GET STARTED]
+         Actual:   HTTP 200, all markers found
+  [PASS] Privacy page (/privacy)
+         Expected: HTTP 200 + markers: [PRIVACY]
+         Actual:   HTTP 200, all markers found
+  [PASS] Terms page (/terms)
+         Expected: HTTP 200 + markers: [TERMS]
+         Actual:   HTTP 200, all markers found
+  [PASS] Try page (/try)
+         Expected: HTTP 200 + markers: []
+         Actual:   HTTP 200, all markers found
+  [PASS] 404 page (/nonexistent-page-test)
+         Expected: HTTP 404
+         Actual:   HTTP 404
+
+--- B) Security Headers (4/4 passed) ---
+  [PASS] X-Content-Type-Options header
+         Expected: nosniff
+         Actual:   nosniff
+  [PASS] X-Frame-Options header
+         Expected: DENY
+         Actual:   DENY
+  [PASS] Content-Security-Policy header
+         Expected: present
+         Actual:   present (default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.s...)
+  [PASS] Referrer-Policy header
+         Expected: present
+         Actual:   strict-origin-when-cross-origin
+
+--- C) API Auth Gates (4/4 passed) ---
+  [PASS] POST /api/exam
+         Expected: HTTP 401
+         Actual:   HTTP 401
+  [PASS] POST /api/tts
+         Expected: HTTP 401
+         Actual:   HTTP 401
+  [PASS] POST /api/report
+         Expected: HTTP 401
+         Actual:   HTTP 401
+  [PASS] POST /api/session
+         Expected: HTTP 401
+         Actual:   HTTP 401
+
+--- D) Admin Endpoints (2/2 passed) ---
+  [PASS] GET /api/admin/quality/examiner-identity
+         Expected: HTTP 401 or 403
+         Actual:   HTTP 401
+  [PASS] GET /api/admin/quality/prompts
+         Expected: HTTP 401 or 403
+         Actual:   HTTP 401
+
+--- SUMMARY ---
+  A) Public Pages                9/9 passed
+  B) Security Headers            4/4 passed
+  C) API Auth Gates              4/4 passed
+  D) Admin Endpoints             2/2 passed
+
+  OVERALL: 19/19 checks passed -- ALL PASS

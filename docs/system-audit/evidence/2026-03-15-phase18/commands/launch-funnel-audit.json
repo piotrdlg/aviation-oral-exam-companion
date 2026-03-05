@@ -1,0 +1,840 @@
+{
+  "timestamp": "2026-03-04T14:17:51.824Z",
+  "totalEventsFound": 24,
+  "uniqueEventNames": [
+    "$pageview",
+    "consent_update",
+    "depth_contract_applied",
+    "examiner_profile_resolved",
+    "flow_fingerprints_loaded",
+    "flow_transition_generated",
+    "llm_request",
+    "multimodal_asset_selected",
+    "page_data",
+    "purchase",
+    "sign_up",
+    "stt_session",
+    "token_issued",
+    "trial_start",
+    "tts_request",
+    "utm_captured",
+    "weak_area_report_generated",
+    "weak_area_report_low_confidence"
+  ],
+  "requiredFunnelTotal": 16,
+  "requiredFunnelPresent": 5,
+  "requiredFunnelMissing": 0,
+  "requiredFunnelPartial": 11,
+  "funnelEvents": [
+    {
+      "requiredEvent": "page_viewed",
+      "description": "Page view tracking (landing, pricing, help, etc.)",
+      "status": "FOUND",
+      "matchedEvents": [
+        {
+          "eventName": "$pageview",
+          "file": "src/components/PostHogProvider.tsx",
+          "emitType": "client-side",
+          "mechanism": "posthog-client",
+          "properties": [
+            "current_url",
+            "children",
+            "e"
+          ]
+        },
+        {
+          "eventName": "page_data",
+          "file": "src/lib/analytics.ts",
+          "emitType": "client-side",
+          "mechanism": "dataLayer",
+          "properties": [
+            "pageType",
+            "userStatus",
+            "userPlan",
+            "user_status",
+            "user_plan"
+          ]
+        }
+      ],
+      "notes": "Found 2 event source(s) with dedicated analytics tracking."
+    },
+    {
+      "requiredEvent": "signup_started_or_completed",
+      "description": "User signup event (started or completed)",
+      "status": "FOUND",
+      "matchedEvents": [
+        {
+          "eventName": "sign_up",
+          "file": "src/lib/analytics.ts",
+          "emitType": "client-side",
+          "mechanism": "dataLayer",
+          "properties": [
+            "event",
+            "rating",
+            "transactionId",
+            "value",
+            "plan",
+            "ecommerce",
+            "currency",
+            "items"
+          ]
+        }
+      ],
+      "notes": "Found 1 event source(s) with dedicated analytics tracking."
+    },
+    {
+      "requiredEvent": "login_completed",
+      "description": "User login completion event",
+      "status": "PARTIAL",
+      "matchedEvents": [
+        {
+          "eventName": "[code-level] login_completed",
+          "file": "src/app/auth/callback/route.ts",
+          "emitType": "server-side",
+          "mechanism": "db-write",
+          "properties": [
+            "trackLogin",
+            "last_login_at",
+            "auth_method"
+          ]
+        }
+      ],
+      "notes": "Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Login tracked via DB update to user_profiles.last_login_at + auth_method"
+    },
+    {
+      "requiredEvent": "trial_started",
+      "description": "Free trial initiation event",
+      "status": "FOUND",
+      "matchedEvents": [
+        {
+          "eventName": "trial_start",
+          "file": "src/lib/analytics.ts",
+          "emitType": "client-side",
+          "mechanism": "dataLayer",
+          "properties": [
+            "event",
+            "transactionId",
+            "value",
+            "plan",
+            "ecommerce",
+            "currency",
+            "items"
+          ]
+        }
+      ],
+      "notes": "Found 1 event source(s) with dedicated analytics tracking."
+    },
+    {
+      "requiredEvent": "checkout_started_or_completed",
+      "description": "Stripe checkout initiation or completion",
+      "status": "PARTIAL",
+      "matchedEvents": [
+        {
+          "eventName": "[code-level] checkout_started_or_completed",
+          "file": "src/app/api/stripe/checkout/route.ts",
+          "emitType": "server-side",
+          "mechanism": "stripe-webhook",
+          "properties": [
+            "stripecheckoutsessionscreate"
+          ]
+        },
+        {
+          "eventName": "[code-level] checkout_started_or_completed",
+          "file": "src/app/api/stripe/webhook/route.ts",
+          "emitType": "server-side",
+          "mechanism": "stripe-webhook",
+          "properties": [
+            "checkoutsessioncompleted",
+            "handleCheckoutCompleted"
+          ]
+        }
+      ],
+      "notes": "Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Checkout tracked via Stripe webhook (checkout.session.completed) + GA4 Measurement Protocol purchase event"
+    },
+    {
+      "requiredEvent": "subscription_created_or_confirmed",
+      "description": "Subscription creation/confirmation event",
+      "status": "PARTIAL",
+      "matchedEvents": [
+        {
+          "eventName": "[code-level] subscription_created_or_confirmed",
+          "file": "src/app/api/stripe/webhook/route.ts",
+          "emitType": "server-side",
+          "mechanism": "stripe-webhook",
+          "properties": [
+            "customersubscriptionupdated",
+            "handleSubscriptionUpdated",
+            "sendSubscriptionConfirmed",
+            "tierdpe_live"
+          ]
+        }
+      ],
+      "notes": "Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Subscription tracked via Stripe webhook + DB tier update + confirmation email"
+    },
+    {
+      "requiredEvent": "payment_failed",
+      "description": "Payment failure event",
+      "status": "PARTIAL",
+      "matchedEvents": [
+        {
+          "eventName": "[code-level] payment_failed",
+          "file": "src/app/api/stripe/webhook/route.ts",
+          "emitType": "server-side",
+          "mechanism": "stripe-webhook",
+          "properties": [
+            "invoicepayment_failed",
+            "handlePaymentFailed",
+            "sendPaymentFailed",
+            "latest_invoice_statusfailed"
+          ]
+        }
+      ],
+      "notes": "Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Payment failure tracked via Stripe webhook + DB update + failure email"
+    },
+    {
+      "requiredEvent": "exam_session_started",
+      "description": "Exam session creation/start event",
+      "status": "PARTIAL",
+      "matchedEvents": [
+        {
+          "eventName": "[code-level] exam_session_started",
+          "file": "src/app/api/exam/route.ts",
+          "emitType": "server-side",
+          "mechanism": "db-write",
+          "properties": [
+            "action==='\"start'\""
+          ]
+        },
+        {
+          "eventName": "[code-level] exam_session_started",
+          "file": "src/app/api/session/route.ts",
+          "emitType": "server-side",
+          "mechanism": "db-write",
+          "properties": [
+            "action==='\"create'\"",
+            "statusactive"
+          ]
+        }
+      ],
+      "notes": "Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Session creation tracked via DB insert to exam_sessions + exam API start action"
+    },
+    {
+      "requiredEvent": "exam_session_completed",
+      "description": "Exam session completion event",
+      "status": "PARTIAL",
+      "matchedEvents": [
+        {
+          "eventName": "[code-level] exam_session_completed",
+          "file": "src/app/api/admin/sessions/[id]/transcript/route.ts",
+          "emitType": "server-side",
+          "mechanism": "db-write",
+          "properties": [
+            "ended_at"
+          ]
+        },
+        {
+          "eventName": "[code-level] exam_session_completed",
+          "file": "src/app/api/exam/route.ts",
+          "emitType": "server-side",
+          "mechanism": "db-write",
+          "properties": [
+            "statuscompleted",
+            "computeExamResult",
+            "ended_at",
+            "computeExamResultV2"
+          ]
+        },
+        {
+          "eventName": "[code-level] exam_session_completed",
+          "file": "src/app/api/session/route.ts",
+          "emitType": "server-side",
+          "mechanism": "db-write",
+          "properties": [
+            "statuscompleted",
+            "computeExamResult",
+            "ended_at",
+            "computeExamResultV2"
+          ]
+        }
+      ],
+      "notes": "Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Session completion tracked via DB update (status=completed, ended_at, result grading)"
+    },
+    {
+      "requiredEvent": "exam_answer_assessed",
+      "description": "Individual answer assessment event",
+      "status": "PARTIAL",
+      "matchedEvents": [
+        {
+          "eventName": "[code-level] exam_answer_assessed",
+          "file": "src/app/api/exam/route.ts",
+          "emitType": "server-side",
+          "mechanism": "db-write",
+          "properties": [
+            "assessAnswer",
+            "element_attempts",
+            "writeElementAttempts"
+          ]
+        }
+      ],
+      "notes": "Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Answer assessment tracked via DB: session_transcripts.assessment + element_attempts rows"
+    },
+    {
+      "requiredEvent": "quick_drill_started",
+      "description": "Quick drill mode session start",
+      "status": "PARTIAL",
+      "matchedEvents": [
+        {
+          "eventName": "[code-level] quick_drill_started",
+          "file": "src/app/(dashboard)/practice/components/SessionConfig.tsx",
+          "emitType": "client-side",
+          "mechanism": "db-write",
+          "properties": [
+            "quick_drill",
+            "studyModequick_drill"
+          ]
+        },
+        {
+          "eventName": "[code-level] quick_drill_started",
+          "file": "src/lib/exam-planner.ts",
+          "emitType": "client-side",
+          "mechanism": "db-write",
+          "properties": [
+            "quick_drill",
+            "studyModequick_drill"
+          ]
+        }
+      ],
+      "notes": "Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Quick drill tracked via exam_sessions.study_mode = quick_drill"
+    },
+    {
+      "requiredEvent": "support_ticket_created",
+      "description": "Support ticket creation event",
+      "status": "PARTIAL",
+      "matchedEvents": [
+        {
+          "eventName": "[code-level] support_ticket_created",
+          "file": "src/app/api/webhooks/resend-inbound/route.ts",
+          "emitType": "server-side",
+          "mechanism": "db-write",
+          "properties": [
+            "create_ticket"
+          ]
+        }
+      ],
+      "notes": "Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Support tickets tracked via DB insert to support_tickets table (Resend inbound webhook)"
+    },
+    {
+      "requiredEvent": "tts_request",
+      "description": "Text-to-speech usage event (in usage_logs)",
+      "status": "PARTIAL",
+      "matchedEvents": [
+        {
+          "eventName": "tts_request",
+          "file": "src/app/api/tts/route.ts",
+          "emitType": "server-side",
+          "mechanism": "usage_logs",
+          "properties": [
+            "event_type",
+            "provider",
+            "quantity",
+            "latency_ms",
+            "status",
+            "metadata",
+            "sample_rate",
+            "error",
+            "headers"
+          ]
+        },
+        {
+          "eventName": "tts_request",
+          "file": "src/types/database.ts",
+          "emitType": "server-side",
+          "mechanism": "usage_logs",
+          "properties": [
+            "event_type",
+            "created_at"
+          ]
+        }
+      ],
+      "notes": "Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. "
+    },
+    {
+      "requiredEvent": "prompt_trace",
+      "description": "Prompt version trace (in session metadata)",
+      "status": "PARTIAL",
+      "matchedEvents": [
+        {
+          "eventName": "[code-level] prompt_trace",
+          "file": "src/app/api/exam/route.ts",
+          "emitType": "server-side",
+          "mechanism": "session-metadata",
+          "properties": [
+            "promptTrace",
+            "examiner_prompt_version_id",
+            "promptversion"
+          ]
+        }
+      ],
+      "notes": "Event tracked at DB/code level but lacks dedicated PostHog/GA4 analytics event. Prompt trace persisted in exam_sessions.metadata.promptTrace with version ID + source"
+    },
+    {
+      "requiredEvent": "multimodal_asset_selected",
+      "description": "Multimodal asset (image/card) selection event",
+      "status": "FOUND",
+      "matchedEvents": [
+        {
+          "eventName": "multimodal_asset_selected",
+          "file": "src/app/api/exam/route.ts",
+          "emitType": "server-side",
+          "mechanism": "posthog-server",
+          "properties": [
+            "session_id",
+            "element_code",
+            "rating",
+            "difficulty",
+            "total_candidates",
+            "images_shown",
+            "text_cards_shown",
+            "top_image_score",
+            "threshold",
+            "error"
+          ]
+        }
+      ],
+      "notes": "Found 1 event source(s) with dedicated analytics tracking."
+    },
+    {
+      "requiredEvent": "grounding_low_confidence",
+      "description": "RAG grounding low confidence alert event",
+      "status": "FOUND",
+      "matchedEvents": [
+        {
+          "eventName": "weak_area_report_low_confidence",
+          "file": "src/app/api/exam/route.ts",
+          "emitType": "server-side",
+          "mechanism": "posthog-server",
+          "properties": [
+            "session_id",
+            "low_confidence_count",
+            "insufficient_sources_count",
+            "weak_element_count",
+            "failed"
+          ]
+        }
+      ],
+      "notes": "Found 1 event source(s) with dedicated analytics tracking."
+    }
+  ],
+  "allFoundEvents": [
+    {
+      "eventName": "weak_area_report_generated",
+      "file": "src/app/api/exam/route.ts",
+      "line": 243,
+      "emitType": "server-side",
+      "mechanism": "posthog-server",
+      "properties": [
+        "session_id",
+        "candidate_count",
+        "returned_count",
+        "filtered_out_count",
+        "avg_relevance_score",
+        "low_confidence_count",
+        "insufficient_sources_count",
+        "top_doc_types",
+        "weak_element_count",
+        "grounded_count"
+      ],
+      "snippet": "const qm = report.quality_metrics!;\n            captureServerEvent(user.id, 'weak_area_report_generated', {\n              session_id: sessionId,\n              candidate_count: qm.candidate_count,"
+    },
+    {
+      "eventName": "weak_area_report_low_confidence",
+      "file": "src/app/api/exam/route.ts",
+      "line": 257,
+      "emitType": "server-side",
+      "mechanism": "posthog-server",
+      "properties": [
+        "session_id",
+        "low_confidence_count",
+        "insufficient_sources_count",
+        "weak_element_count",
+        "failed"
+      ],
+      "snippet": "if (qm.low_confidence_count > 0 || qm.insufficient_sources_count > 0) {\n              captureServerEvent(user.id, 'weak_area_report_low_confidence', {\n                session_id: sessionId,\n          "
+    },
+    {
+      "eventName": "flow_fingerprints_loaded",
+      "file": "src/app/api/exam/route.ts",
+      "line": 451,
+      "emitType": "server-side",
+      "mechanism": "posthog-server",
+      "properties": [
+        "session_id",
+        "source",
+        "fingerprint_count",
+        "element_count",
+        "coverage_pct",
+        "unique_slugs",
+        "rating"
+      ],
+      "snippet": "const { captureServerEvent } = await import('@/lib/posthog-server');\n            captureServerEvent(user.id, 'flow_fingerprints_loaded', {\n              session_id: sessionId,\n              source: pl"
+    },
+    {
+      "eventName": "depth_contract_applied",
+      "file": "src/app/api/exam/route.ts",
+      "line": 467,
+      "emitType": "server-side",
+      "mechanism": "posthog-server",
+      "properties": [
+        "session_id",
+        "element_code",
+        "study_mode",
+        "action"
+      ],
+      "snippet": "const { captureServerEvent } = await import('@/lib/posthog-server');\n            captureServerEvent(user.id, 'depth_contract_applied', {\n              session_id: sessionId,\n              ...contractS"
+    },
+    {
+      "eventName": "examiner_profile_resolved",
+      "file": "src/app/api/exam/route.ts",
+      "line": 480,
+      "emitType": "server-side",
+      "mechanism": "posthog-server",
+      "properties": [
+        "session_id",
+        "rating",
+        "difficulty",
+        "study_mode",
+        "action",
+        "taskId",
+        "taskData",
+        "examinerMessage",
+        "elementCode"
+      ],
+      "snippet": "const { captureServerEvent } = await import('@/lib/posthog-server');\n          captureServerEvent(user.id, 'examiner_profile_resolved', {\n            session_id: sessionId,\n            ...examinerProf"
+    },
+    {
+      "eventName": "multimodal_asset_selected",
+      "file": "src/app/api/exam/route.ts",
+      "line": 750,
+      "emitType": "server-side",
+      "mechanism": "posthog-server",
+      "properties": [
+        "session_id",
+        "element_code",
+        "rating",
+        "difficulty",
+        "total_candidates",
+        "images_shown",
+        "text_cards_shown",
+        "top_image_score",
+        "threshold",
+        "error"
+      ],
+      "snippet": "const { captureServerEvent } = await import('@/lib/posthog-server');\n              captureServerEvent(user.id, 'multimodal_asset_selected', {\n                session_id: sessionId,\n                ele"
+    },
+    {
+      "eventName": "flow_transition_generated",
+      "file": "src/app/api/exam/route.ts",
+      "line": 1041,
+      "emitType": "server-side",
+      "mechanism": "posthog-server",
+      "properties": [
+        "session_id",
+        "from_element",
+        "to_element",
+        "rating"
+      ],
+      "snippet": "const { captureServerEvent } = await import('@/lib/posthog-server');\n            captureServerEvent(user.id, 'flow_transition_generated', {\n              session_id: sessionId,\n              from_elem"
+    },
+    {
+      "eventName": "depth_contract_applied",
+      "file": "src/app/api/exam/route.ts",
+      "line": 1054,
+      "emitType": "server-side",
+      "mechanism": "posthog-server",
+      "properties": [
+        "session_id",
+        "element_code",
+        "study_mode",
+        "action",
+        "count",
+        "head"
+      ],
+      "snippet": "const { captureServerEvent } = await import('@/lib/posthog-server');\n            captureServerEvent(user.id, 'depth_contract_applied', {\n              session_id: sessionId,\n              ...contractS"
+    },
+    {
+      "eventName": "llm_request",
+      "file": "src/app/api/exam/route.ts",
+      "line": 79,
+      "emitType": "server-side",
+      "mechanism": "usage_logs",
+      "properties": [
+        "event_type",
+        "provider",
+        "quantity",
+        "latency_ms",
+        "status",
+        "metadata",
+        "output_tokens",
+        "error"
+      ],
+      "snippet": "session_id: sessionId ?? null,\n      event_type: 'llm_request',\n      provider: 'anthropic',\n      tier,"
+    },
+    {
+      "eventName": "purchase",
+      "file": "src/app/api/stripe/webhook/route.ts",
+      "line": 162,
+      "emitType": "server-side",
+      "mechanism": "ga4-mp",
+      "properties": [
+        "events",
+        "params",
+        "value",
+        "currency",
+        "items",
+        "critical"
+      ],
+      "snippet": "client_id: userId,\n            events: [{\n              name: 'purchase',\n              params: {"
+    },
+    {
+      "eventName": "token_issued",
+      "file": "src/app/api/stt/token/route.ts",
+      "line": 125,
+      "emitType": "server-side",
+      "mechanism": "usage_logs",
+      "properties": [
+        "event_type",
+        "provider",
+        "quantity",
+        "status",
+        "metadata",
+        "method",
+        "error",
+        "token",
+        "url"
+      ],
+      "snippet": "user_id: user.id,\n        event_type: 'token_issued',\n        provider: 'deepgram',\n        tier,"
+    },
+    {
+      "eventName": "stt_session",
+      "file": "src/app/api/stt/usage/route.ts",
+      "line": 80,
+      "emitType": "server-side",
+      "mechanism": "usage_logs",
+      "properties": [
+        "event_type",
+        "provider",
+        "quantity",
+        "status",
+        "metadata",
+        "error"
+      ],
+      "snippet": "session_id: sessionId || null,\n          event_type: 'stt_session',\n          provider: 'deepgram',\n          tier,"
+    },
+    {
+      "eventName": "tts_request",
+      "file": "src/app/api/tts/route.ts",
+      "line": 114,
+      "emitType": "server-side",
+      "mechanism": "usage_logs",
+      "properties": [
+        "event_type",
+        "provider",
+        "quantity",
+        "latency_ms",
+        "status",
+        "metadata",
+        "sample_rate",
+        "error",
+        "headers"
+      ],
+      "snippet": "user_id: user.id,\n        event_type: 'tts_request',\n        provider: provider.name,\n        tier,"
+    },
+    {
+      "eventName": "consent_update",
+      "file": "src/components/CookieConsent.tsx",
+      "line": 28,
+      "emitType": "client-side",
+      "mechanism": "gtm",
+      "properties": [
+        "analytics_storage",
+        "ad_storage",
+        "ad_user_data",
+        "ad_personalization"
+      ],
+      "snippet": "}\n  window.gtag('consent', 'update', {\n    analytics_storage: preferences.analytics ? 'granted' : 'denied',\n    ad_storage: preferences.marketing ? 'granted' : 'denied',"
+    },
+    {
+      "eventName": "$pageview",
+      "file": "src/components/PostHogProvider.tsx",
+      "line": 44,
+      "emitType": "client-side",
+      "mechanism": "posthog-client",
+      "properties": [
+        "current_url",
+        "children",
+        "e"
+      ],
+      "snippet": "const url = window.origin + pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');\n    posthog.capture('$pageview', { $current_url: url });\n  }, [pathname, searchParams]);"
+    },
+    {
+      "eventName": "utm_captured",
+      "file": "src/components/UTMCapture.tsx",
+      "line": 11,
+      "emitType": "client-side",
+      "mechanism": "dataLayer",
+      "properties": [
+        "event"
+      ],
+      "snippet": "window.dataLayer = window.dataLayer ?? [];\n      window.dataLayer.push({ event: 'utm_captured', ...utm });\n    }\n  }, []);"
+    },
+    {
+      "eventName": "sign_up",
+      "file": "src/lib/analytics.ts",
+      "line": 8,
+      "emitType": "client-side",
+      "mechanism": "dataLayer",
+      "properties": [
+        "event",
+        "rating",
+        "transactionId",
+        "value",
+        "plan",
+        "ecommerce",
+        "currency",
+        "items"
+      ],
+      "snippet": "export function trackSignup(method: string) {\n  push({ event: 'sign_up', method });\n}"
+    },
+    {
+      "eventName": "trial_start",
+      "file": "src/lib/analytics.ts",
+      "line": 12,
+      "emitType": "client-side",
+      "mechanism": "dataLayer",
+      "properties": [
+        "event",
+        "transactionId",
+        "value",
+        "plan",
+        "ecommerce",
+        "currency",
+        "items"
+      ],
+      "snippet": "export function trackTrialStart(rating: string) {\n  push({ event: 'trial_start', rating });\n}"
+    },
+    {
+      "eventName": "purchase",
+      "file": "src/lib/analytics.ts",
+      "line": 16,
+      "emitType": "client-side",
+      "mechanism": "dataLayer",
+      "properties": [
+        "event",
+        "ecommerce",
+        "currency",
+        "items",
+        "pageType",
+        "userStatus",
+        "userPlan",
+        "user_status",
+        "user_plan"
+      ],
+      "snippet": "export function trackPurchase(transactionId: string, value: number, plan: string) {\n  push({\n    event: 'purchase',\n    ecommerce: {"
+    },
+    {
+      "eventName": "sign_up",
+      "file": "src/lib/analytics.ts",
+      "line": 7,
+      "emitType": "client-side",
+      "mechanism": "dataLayer",
+      "properties": [
+        "method",
+        "rating",
+        "transactionId",
+        "value",
+        "plan",
+        "ecommerce",
+        "currency"
+      ],
+      "snippet": "export function trackSignup(method: string) {\n  push({ event: 'sign_up', method });\n}"
+    },
+    {
+      "eventName": "trial_start",
+      "file": "src/lib/analytics.ts",
+      "line": 11,
+      "emitType": "client-side",
+      "mechanism": "dataLayer",
+      "properties": [
+        "rating",
+        "transactionId",
+        "value",
+        "plan",
+        "ecommerce",
+        "currency",
+        "items"
+      ],
+      "snippet": "export function trackTrialStart(rating: string) {\n  push({ event: 'trial_start', rating });\n}"
+    },
+    {
+      "eventName": "purchase",
+      "file": "src/lib/analytics.ts",
+      "line": 15,
+      "emitType": "client-side",
+      "mechanism": "dataLayer",
+      "properties": [
+        "transactionId",
+        "value",
+        "plan",
+        "ecommerce",
+        "currency",
+        "items",
+        "pageType",
+        "userStatus",
+        "userPlan",
+        "user_status",
+        "user_plan"
+      ],
+      "snippet": "export function trackPurchase(transactionId: string, value: number, plan: string) {\n  push({\n    event: 'purchase',"
+    },
+    {
+      "eventName": "page_data",
+      "file": "src/lib/analytics.ts",
+      "line": 27,
+      "emitType": "client-side",
+      "mechanism": "dataLayer",
+      "properties": [
+        "pageType",
+        "userStatus",
+        "userPlan",
+        "user_status",
+        "user_plan"
+      ],
+      "snippet": "export function pushPageData(pageType: string, userStatus: string, userPlan: string) {\n  push({ page_type: pageType, user_status: userStatus, user_plan: userPlan });\n}"
+    },
+    {
+      "eventName": "tts_request",
+      "file": "src/types/database.ts",
+      "line": 356,
+      "emitType": "server-side",
+      "mechanism": "usage_logs",
+      "properties": [
+        "event_type",
+        "created_at"
+      ],
+      "snippet": "request_id: string | null;\n  event_type: 'tts_request' | 'stt_session' | 'llm_request' | 'token_issued';\n  provider: string;\n  tier: string;"
+    }
+  ],
+  "observableDashboards": [
+    "Acquisition Funnel: page_view -> signup -> login (PostHog + GA4/GTM)",
+    "Conversion Funnel: trial -> checkout -> subscription (PostHog + GA4 Measurement Protocol)",
+    "Engagement Funnel: session_start -> answers -> session_complete (DB + PostHog)",
+    "Voice Usage Dashboard: TTS/STT usage per tier, quota utilization (usage_logs table)",
+    "Revenue Health: payment failures, churn signals (Stripe webhooks + DB)",
+    "Prompt Ops: prompt version tracking per session (session metadata)",
+    "Multimodal Engagement: asset selection rates, image/card usage (PostHog)",
+    "RAG Quality: grounding confidence, citation health (PostHog + session metadata)",
+    "Support Volume: ticket creation rate, response times (support_tickets table)"
+  ],
+  "verdict": "NEEDS WORK",
+  "verdictReason": "5/16 events fully instrumented, 11 partial, 0 missing. Coverage: 66%. Some funnel events need dedicated analytics events added."
+}
