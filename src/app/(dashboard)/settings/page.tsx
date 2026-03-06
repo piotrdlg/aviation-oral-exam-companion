@@ -787,7 +787,7 @@ export default function SettingsPage() {
     setMicLevel(0);
     setSteps([
       { label: 'Microphone access', status: 'idle', detail: '' },
-      { label: 'Speech recognition', status: 'idle', detail: '' },
+      { label: 'Speech recognition (Deepgram STT)', status: 'idle', detail: '' },
       { label: 'Speaker / TTS playback', status: 'idle', detail: '' },
     ]);
 
@@ -856,111 +856,67 @@ export default function SettingsPage() {
       });
     }
 
-    // --- Step 2: Speech recognition ---
-    updateStep(1, { status: 'running', detail: 'Checking browser support...' });
+    // --- Step 2: Speech recognition (Deepgram STT via WebSocket) ---
+    updateStep(1, { status: 'running', detail: 'Fetching Deepgram STT token...' });
 
-    const SpeechRecognitionAPI =
-      typeof window !== 'undefined'
-        ? window.SpeechRecognition || window.webkitSpeechRecognition
-        : null;
+    try {
+      const tokenRes = await fetch('/api/stt/token');
+      if (!tokenRes.ok) {
+        const errData = await tokenRes.json().catch(() => ({}));
+        throw new Error(errData.error || `Token request failed (HTTP ${tokenRes.status})`);
+      }
+      const tokenData = await tokenRes.json();
+      const token = tokenData.token;
+      const wsUrl = tokenData.url;
 
-    if (!SpeechRecognitionAPI) {
-      updateStep(1, {
-        status: 'fail',
-        detail: 'SpeechRecognition API not available. This feature requires Chrome or Edge.',
-      });
-    } else {
-      // Acquire a fresh stream with the selected device BEFORE starting recognition.
-      // This hints Chrome to route that device to SpeechRecognition.
-      let hintStream: MediaStream | null = null;
-      try {
-        hintStream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
-      } catch {
-        // If this fails, recognition will use Chrome's default mic
+      if (!token || !wsUrl) {
+        throw new Error('Token or WebSocket URL missing from response');
       }
 
-      updateStep(1, { detail: 'Say something (you have 6 seconds)...' });
+      updateStep(1, { detail: 'Connecting to Deepgram STT...' });
 
-      const transcript = await new Promise<string>((resolve) => {
-        const recognition = new SpeechRecognitionAPI();
-        recognition.continuous = false;
-        recognition.interimResults = true;
-        recognition.lang = 'en-US';
-        let lastTranscript = '';
-        let errorMsg = '';
-
-        recognition.onresult = (event: SpeechRecognitionEvent) => {
-          let text = '';
-          for (let i = 0; i < event.results.length; i++) {
-            text += event.results[i][0].transcript;
-          }
-          lastTranscript = text;
-          setRecognizedText(text);
-        };
-
-        recognition.onend = () => {
-          if (errorMsg) {
-            resolve(`ERROR:${errorMsg}`);
-          } else {
-            resolve(lastTranscript);
-          }
-        };
-
-        recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-          errorMsg = event.error;
-          if (event.error !== 'no-speech' && event.error !== 'aborted') {
-            resolve(`ERROR:${event.error}`);
-          }
-        };
-
-        recognition.start();
-
-        setTimeout(() => {
-          try {
-            recognition.stop();
-          } catch {
-            // already stopped
-          }
-        }, 6000);
+      // Test WebSocket connection (just connect and close — validates auth + network)
+      const isJwt = token.startsWith('eyJ');
+      const connected = await new Promise<boolean>((resolve) => {
+        const timeout = setTimeout(() => resolve(false), 8000);
+        try {
+          const ws = new WebSocket(wsUrl, [isJwt ? 'bearer' : 'token', token]);
+          ws.onopen = () => {
+            clearTimeout(timeout);
+            ws.send(JSON.stringify({ type: 'CloseStream' }));
+            setTimeout(() => ws.close(), 500);
+            resolve(true);
+          };
+          ws.onerror = () => { clearTimeout(timeout); resolve(false); };
+          ws.onclose = (e) => {
+            if (e.code !== 1000 && e.code !== 1005) {
+              clearTimeout(timeout);
+              resolve(false);
+            }
+          };
+        } catch {
+          clearTimeout(timeout);
+          resolve(false);
+        }
       });
 
-      // Clean up hint stream
-      hintStream?.getTracks().forEach((t) => t.stop());
-
-      if (transcript.startsWith('ERROR:')) {
-        const errType = transcript.replace('ERROR:', '');
-        let helpText = '';
-        switch (errType) {
-          case 'no-speech':
-            helpText = `No speech detected by Google servers. The SpeechRecognition API may be using a different mic than selected. Check Chrome's mic setting: chrome://settings/content/microphone`;
-            break;
-          case 'audio-capture':
-            helpText = 'Chrome could not capture audio. Another app may be using the microphone exclusively.';
-            break;
-          case 'not-allowed':
-            helpText = 'Microphone permission denied for speech recognition. Allow mic access in Chrome settings.';
-            break;
-          case 'network':
-            helpText = 'Network error — Chrome Speech Recognition requires internet (audio is processed by Google servers).';
-            break;
-          case 'service-not-allowed':
-            helpText = 'Speech service blocked. This can happen if Chrome is not the default browser or speech services are restricted.';
-            break;
-          default:
-            helpText = `Error type: "${errType}". Check Chrome console for details.`;
-        }
-        updateStep(1, { status: 'fail', detail: helpText });
-      } else if (transcript.length > 0) {
+      if (connected) {
         updateStep(1, {
           status: 'pass',
-          detail: `Recognized: "${transcript}"`,
+          detail: 'Deepgram STT connected successfully. Speech recognition works in all browsers.',
         });
       } else {
         updateStep(1, {
           status: 'fail',
-          detail: `No speech detected. The SpeechRecognition API may be using a different mic than "${deviceLabel}". Check Chrome's mic at: chrome://settings/content/microphone`,
+          detail: 'Deepgram STT WebSocket connection failed. Check network or try again.',
         });
       }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      updateStep(1, {
+        status: 'fail',
+        detail: `STT token request failed: ${msg}`,
+      });
     }
 
     // Clean up any remaining mic stream
@@ -982,7 +938,7 @@ export default function SettingsPage() {
       }
 
       const encoding = res.headers.get('X-Audio-Encoding') || 'mp3';
-      const sampleRate = parseInt(res.headers.get('X-Audio-Sample-Rate') || '44100', 10);
+      const sampleRate = parseInt(res.headers.get('X-Audio-Sample-Rate') || '22050', 10);
       const provider = res.headers.get('X-TTS-Provider') || 'unknown';
 
       updateStep(2, { detail: `Playing audio (${provider})...` });
