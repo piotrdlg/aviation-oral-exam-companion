@@ -10,6 +10,8 @@ import { requireAdmin, handleAdminError } from '@/lib/admin-guard';
  * - Top referrers by referral_link connections
  * - Recent referral claims (last 7 days)
  * - Conversion metrics
+ * - Invite event metrics (emails, tokens, claims, rate limits — last 7 days)
+ * - Courtesy access breakdown (direct overrides, paid/trialing students)
  */
 export async function GET(request: NextRequest) {
   try {
@@ -60,6 +62,66 @@ export async function GET(request: NextRequest) {
       .eq('connection_source', 'referral_link')
       .gte('connected_at', sevenDaysAgo);
 
+    // 5. Invite event metrics (last 7 days)
+    const { count: emailsSent7d } = await serviceSupabase
+      .from('instructor_invite_events')
+      .select('id', { count: 'exact', head: true })
+      .eq('event_type', 'email_sent')
+      .gte('created_at', sevenDaysAgo);
+
+    const { count: tokensCreated7d } = await serviceSupabase
+      .from('instructor_invite_events')
+      .select('id', { count: 'exact', head: true })
+      .eq('event_type', 'token_created')
+      .gte('created_at', sevenDaysAgo);
+
+    const { count: claims7d } = await serviceSupabase
+      .from('instructor_invite_events')
+      .select('id', { count: 'exact', head: true })
+      .eq('event_type', 'claimed')
+      .gte('created_at', sevenDaysAgo);
+
+    const { count: rateLimitHits7d } = await serviceSupabase
+      .from('instructor_invite_events')
+      .select('id', { count: 'exact', head: true })
+      .eq('event_type', 'rate_limited')
+      .gte('created_at', sevenDaysAgo);
+
+    // 6. Courtesy access breakdown
+    // 6a. Direct overrides (active and not expired)
+    const { data: directOverrides } = await serviceSupabase
+      .from('instructor_access_overrides')
+      .select('instructor_user_id, active, expires_at')
+      .eq('active', true);
+
+    const activeDirectOverrides = (directOverrides || []).filter(
+      (o: { expires_at: string | null }) => !o.expires_at || new Date(o.expires_at) > new Date()
+    ).length;
+
+    // 6b. Connected students by subscription status
+    const { data: connectedStudentProfiles } = await serviceSupabase
+      .from('student_instructor_connections')
+      .select('student_user_id')
+      .eq('state', 'connected');
+
+    const studentIds = (connectedStudentProfiles || []).map(
+      (c: { student_user_id: string }) => c.student_user_id
+    );
+    let paidActiveCount = 0;
+    let trialingCount = 0;
+
+    if (studentIds.length > 0) {
+      const { data: profiles } = await serviceSupabase
+        .from('user_profiles')
+        .select('subscription_status')
+        .in('user_id', studentIds);
+
+      for (const p of profiles || []) {
+        if (p.subscription_status === 'active') paidActiveCount++;
+        if (p.subscription_status === 'trialing') trialingCount++;
+      }
+    }
+
     return NextResponse.json({
       connectionsBySource,
       identityCoverage: {
@@ -76,6 +138,18 @@ export async function GET(request: NextRequest) {
       conversionMetrics: {
         totalClaims: connectionsBySource['referral_link'] || 0,
         totalViews: 'not tracked yet',
+      },
+      inviteEvents: {
+        emailsSent7d: emailsSent7d || 0,
+        tokensCreated7d: tokensCreated7d || 0,
+        claims7d: claims7d || 0,
+        rateLimitHits7d: rateLimitHits7d || 0,
+      },
+      courtesyBreakdown: {
+        directOverrides: activeDirectOverrides,
+        paidActiveStudents: paidActiveCount,
+        trialingStudents: trialingCount,
+        trialingCountsAsPaid: false,
       },
       generatedAt: new Date().toISOString(),
     });

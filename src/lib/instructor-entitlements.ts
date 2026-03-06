@@ -16,8 +16,8 @@ type SupabaseClientLike = any;
 // Constants
 // ---------------------------------------------------------------------------
 
-/** Subscription statuses that count as "paid-active". Conservative: active + trialing only. */
-const PAID_ACTIVE_STATUSES: SubscriptionStatus[] = ['active', 'trialing'];
+/** Subscription statuses that count as "paid-active". Default: active only. Trialing requires system_config override. */
+const PAID_ACTIVE_STATUSES: SubscriptionStatus[] = ['active'];
 
 /** TTL for entitlement cache: 60 seconds (meets <= 60s freshness requirement). */
 const ENTITLEMENT_CACHE_TTL_MS = 60_000;
@@ -42,6 +42,27 @@ export function clearEntitlementCache(): void {
 }
 
 // ---------------------------------------------------------------------------
+// System config helpers
+// ---------------------------------------------------------------------------
+
+/** Check if system_config has instructor.courtesy_counts_trialing enabled */
+async function shouldCountTrialing(supabase: SupabaseClientLike): Promise<boolean> {
+  try {
+    const { data } = await supabase
+      .from('system_config')
+      .select('value')
+      .eq('key', 'instructor')
+      .single();
+
+    if (!data?.value) return false;
+    const config = data.value as Record<string, unknown>;
+    return config.courtesy_counts_trialing === true;
+  } catch {
+    return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
@@ -56,7 +77,8 @@ export function clearEntitlementCache(): void {
  *   Instructor has courtesy access IF:
  *     - instructor_profiles.status == 'approved'
  *     AND (
- *       has >= 1 connected student with subscription_status IN ('active', 'trialing')
+ *       has >= 1 connected student with subscription_status IN ('active')
+ *         (or 'trialing' when system_config.instructor.courtesy_counts_trialing is true)
  *       OR has >= 1 connected student with active paid_equivalent override
  *       OR has direct instructor_access_override with active=true and not expired
  *     )
@@ -100,6 +122,12 @@ export async function resolveInstructorEntitlements(
 
   // 2. Approved instructor — check for courtesy access sources
 
+  // Check if trialing should count (system_config override)
+  const countsTrialing = await shouldCountTrialing(supabase);
+  const effectivePaidStatuses: SubscriptionStatus[] = countsTrialing
+    ? ['active', 'trialing']
+    : PAID_ACTIVE_STATUSES;
+
   // 2a. Check direct instructor override (existing table)
   const { data: directOverrides } = await supabase
     .from('instructor_access_overrides')
@@ -139,7 +167,7 @@ export async function resolveInstructorEntitlements(
 
   const paidStudentCount = (studentProfiles || []).filter(
     (p: { subscription_status: string | null }) =>
-      PAID_ACTIVE_STATUSES.includes(p.subscription_status as SubscriptionStatus)
+      effectivePaidStatuses.includes(p.subscription_status as SubscriptionStatus)
   ).length;
 
   if (paidStudentCount > 0) {
@@ -174,11 +202,13 @@ export async function resolveInstructorEntitlements(
 }
 
 /**
- * Check if a student is paid-active (has an active/trialing subscription).
+ * Check if a student is paid-active (has an active subscription by default).
+ * Pass `countsTrialing = true` to also count 'trialing' as paid.
  */
 export async function isStudentPaidActive(
   studentUserId: string,
-  supabaseClient: SupabaseClientLike
+  supabaseClient: SupabaseClientLike,
+  countsTrialing = false,
 ): Promise<boolean> {
   const { data } = await supabaseClient
     .from('user_profiles')
@@ -187,7 +217,10 @@ export async function isStudentPaidActive(
     .single();
 
   if (!data) return false;
-  return PAID_ACTIVE_STATUSES.includes(data.subscription_status as SubscriptionStatus);
+  const effectiveStatuses: SubscriptionStatus[] = countsTrialing
+    ? ['active', 'trialing']
+    : PAID_ACTIVE_STATUSES;
+  return effectiveStatuses.includes(data.subscription_status as SubscriptionStatus);
 }
 
 /**
@@ -266,5 +299,5 @@ export function buildResult(
   };
 }
 
-/** Exposed for testing / audit comparisons. */
+/** Exposed for testing / audit comparisons. Default: ['active'] only. */
 export const PAID_ACTIVE_SUBSCRIPTION_STATUSES = PAID_ACTIVE_STATUSES;

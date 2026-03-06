@@ -45,7 +45,7 @@ interface InstructorEntitlementResult {
   cacheTTLSeconds: number;
 }
 
-const PAID_ACTIVE_SUBSCRIPTION_STATUSES: SubscriptionStatus[] = ['active', 'trialing'];
+const PAID_ACTIVE_SUBSCRIPTION_STATUSES: SubscriptionStatus[] = ['active'];
 const COURTESY_TIER = 'checkride_prep' as const;
 const ENTITLEMENT_CACHE_TTL_MS = 60_000;
 
@@ -236,20 +236,19 @@ function runChecks(): CheckResult[] {
     });
   }
 
-  // Check 8: PAID_ACTIVE_SUBSCRIPTION_STATUSES includes exactly 'active' and 'trialing' (2 items)
+  // Check 8: PAID_ACTIVE_SUBSCRIPTION_STATUSES includes exactly 'active' only (1 item — trialing excluded by default)
   {
     const pass =
-      PAID_ACTIVE_SUBSCRIPTION_STATUSES.length === 2 &&
-      PAID_ACTIVE_SUBSCRIPTION_STATUSES.includes('active') &&
-      PAID_ACTIVE_SUBSCRIPTION_STATUSES.includes('trialing');
+      PAID_ACTIVE_SUBSCRIPTION_STATUSES.length === 1 &&
+      PAID_ACTIVE_SUBSCRIPTION_STATUSES.includes('active');
     checks.push({
       id: 8,
-      name: 'PAID_ACTIVE_SUBSCRIPTION_STATUSES contains exactly [active, trialing]',
+      name: 'PAID_ACTIVE_SUBSCRIPTION_STATUSES contains only [active] (trialing excluded by default)',
       pass,
       detail: pass
-        ? 'Constant contains exactly the expected 2 statuses'
+        ? 'Constant contains exactly the expected 1 status (trialing requires system_config override)'
         : `Got ${PAID_ACTIVE_SUBSCRIPTION_STATUSES.length} items: [${PAID_ACTIVE_SUBSCRIPTION_STATUSES.join(', ')}]`,
-      expected: JSON.stringify(['active', 'trialing']),
+      expected: JSON.stringify(['active']),
       actual: JSON.stringify(PAID_ACTIVE_SUBSCRIPTION_STATUSES),
     });
   }

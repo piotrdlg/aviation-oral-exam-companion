@@ -27,10 +27,10 @@ const isReview = process.argv.includes('--review');
 async function main() {
   console.log(`[instructor-weekly] Starting${isDryRun ? ' (DRY RUN)' : ''}...`);
 
-  // 1. Get all approved instructors with connected students
+  // 1. Get all approved instructors (including those with 0 students for referral nudge)
   const { data: instructors, error } = await supabase
     .from('instructor_profiles')
-    .select('user_id, first_name, last_name, status')
+    .select('user_id, first_name, last_name, status, referral_code')
     .eq('status', 'approved');
 
   if (error) {
@@ -85,11 +85,12 @@ async function main() {
       userId,
       email: authUser.user.email,
       displayName,
+      referralCode: (instr.referral_code as string) || undefined,
     };
 
     const summaryData = await buildInstructorWeeklySummary(supabase, instructor);
     if (!summaryData) {
-      console.log(`[instructor-weekly] ${userId.slice(0, 8)} has no connected students, skipping.`);
+      console.log(`[instructor-weekly] ${userId.slice(0, 8)} failed to build summary, skipping.`);
       skipped++;
       continue;
     }
@@ -104,7 +105,8 @@ async function main() {
 
     // Dry run: log but don't send
     if (isDryRun) {
-      console.log(`[instructor-weekly] Would send to ${authUser.user.email} (${summaryData.totalStudents} students, ${summaryData.needsAttentionCount} attention)`);
+      const variant = summaryData.totalStudents === 0 ? 'referral-nudge' : `${summaryData.totalStudents} students, ${summaryData.needsAttentionCount} attention`;
+      console.log(`[instructor-weekly] Would send to ${authUser.user.email} (${variant})`);
       sent++;
       continue;
     }

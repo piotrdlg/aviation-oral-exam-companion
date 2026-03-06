@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import posthog from 'posthog-js';
 
 interface ConnectionItem {
   connectionId: string;
@@ -63,6 +64,7 @@ export default function InstructorCommandCenter() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [inviteCreating, setInviteCreating] = useState(false);
   const [inviteCopied, setInviteCopied] = useState<string | null>(null);
+  const [qrDownloading, setQrDownloading] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -201,7 +203,33 @@ export default function InstructorCommandCenter() {
     navigator.clipboard.writeText(text).then(() => {
       setCopiedField(field);
       setTimeout(() => setCopiedField(null), 2000);
+      posthog.capture('instructor_referral_link_copied', { field });
     });
+  }
+
+  async function downloadQR() {
+    if (!identity.referralCode || qrDownloading) return;
+    setQrDownloading(true);
+    try {
+      const res = await fetch(`/api/public/qr/referral/${identity.referralCode}`);
+      if (!res.ok) throw new Error('QR generation failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `heydpe-referral-${identity.referralCode}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      posthog.capture('instructor_referral_qr_downloaded', {
+        referralCode: identity.referralCode,
+      });
+    } catch (err) {
+      console.error('[instructor] QR download failed:', err);
+    } finally {
+      setQrDownloading(false);
+    }
   }
 
   async function revokeInvite(inviteId: string) {
@@ -338,6 +366,29 @@ export default function InstructorCommandCenter() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* QR Code Download */}
+          <div className="flex items-center gap-3 pt-1">
+            <button
+              onClick={downloadQR}
+              disabled={qrDownloading}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-c-amber/30 bg-c-amber-lo text-c-amber hover:bg-c-amber/20 disabled:opacity-50 font-mono text-[10px] uppercase tracking-wider transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+                <rect x="14" y="14" width="3" height="3" />
+                <rect x="18" y="14" width="3" height="3" />
+                <rect x="14" y="18" width="3" height="3" />
+                <rect x="18" y="18" width="3" height="3" />
+              </svg>
+              {qrDownloading ? 'GENERATING...' : 'DOWNLOAD QR CODE'}
+            </button>
+            <span className="font-mono text-[9px] text-c-dim">
+              Print or share your referral QR code -- students scan to connect instantly.
+            </span>
           </div>
         </div>
       )}

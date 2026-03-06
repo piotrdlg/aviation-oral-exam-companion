@@ -9,6 +9,7 @@ import { LearningDigestEmail } from '@/emails/learning-digest';
 import { MotivationNudgeEmail } from '@/emails/motivation-nudge';
 import { InstructorWeeklySummaryEmail } from '@/emails/instructor-weekly-summary';
 import type { InstructorWeeklySummaryProps } from '@/emails/instructor-weekly-summary';
+import { InstructorInviteEmail } from '@/emails/instructor-invite';
 import type { DigestData } from '@/lib/digest-builder';
 import type { NudgeVariant } from '@/lib/nudge-engine';
 
@@ -335,6 +336,37 @@ export async function sendInstructorWeeklySummary(
     return data?.id ?? null;
   } catch (error) {
     console.error('[email] Failed to send instructor weekly summary:', error);
+    return null;
+  }
+}
+
+/**
+ * Send an instructor invite email to a prospective student.
+ * Returns the Resend email ID on success, or null on error.
+ * Never throws — logs errors and returns null.
+ */
+export async function sendInstructorInviteEmail(
+  to: string,
+  data: {
+    instructorName: string;
+    certType: string | null;
+    inviteUrl: string;
+  },
+): Promise<string | null> {
+  try {
+    const { data: result, error } = await getResend().emails.send({
+      from: SENDERS.hello,
+      to,
+      subject: `${data.instructorName} invited you to HeyDPE`,
+      react: InstructorInviteEmail(data),
+    });
+    if (error) {
+      console.error('[email] Resend error sending instructor invite:', error);
+      return null;
+    }
+    return result?.id ?? null;
+  } catch (error) {
+    console.error('[email] Failed to send instructor invite:', error);
     return null;
   }
 }

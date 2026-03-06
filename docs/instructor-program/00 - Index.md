@@ -16,6 +16,8 @@ The Instructor Partnership adds a product stream where CFIs (Certified Flight In
 | 07 | [Phase 5 Insights and Milestones](./07%20-%20Phase%205%20Insights%20and%20Milestones.md) | Complete |
 | 08 | [Weekly Email Operations](./08%20-%20Weekly%20Email%20Operations.md) | Complete |
 | 09 | [Phase 6 Referrals and Landing Pages](./09%20-%20Phase%206%20Referrals%20and%20Landing%20Pages.md) | Complete |
+| 10 | [Phase 7 Invite Tools and Abuse Hardening](./10%20-%20Phase%207%20Invite%20Tools%20and%20Abuse%20Hardening.md) | Complete |
+| 11 | [Phase 7 Weekly Referral Nudge](./11%20-%20Phase%207%20Weekly%20Referral%20Nudge.md) | Complete |
 
 ## Phase Roadmap
 
@@ -27,7 +29,8 @@ The Instructor Partnership adds a product stream where CFIs (Certified Flight In
 | **4 — Entitlements & Authorization** | Courtesy access, entitlement resolver, tier integration, admin overrides, monitoring | Complete |
 | **5 — Insights & Milestones** | Deterministic insights, student milestones, weekly instructor summary email | Complete |
 | **6 — Referrals** | Public identity, referral codes, landing pages, auto-connect, connection source attribution | Complete |
-| 7 — Fraud Prevention | Trial re-entry guard, trial history tracking, device fingerprinting | Planned |
+| **7 — Invite Tools & Abuse Hardening** | QR codes, email invites, rate limiting, self-referral protection, entitlement correction, weekly referral nudge | Complete |
+| 8 — Fraud Prevention | Trial re-entry guard, trial history tracking, device fingerprinting | Planned |
 
 ## Feature Flag
 - Key: `instructor_partnership_v1`
@@ -85,3 +88,11 @@ The Instructor Partnership adds a product stream where CFIs (Certified Flight In
 | `src/app/api/admin/quality/referrals/route.ts` | Referral metrics |
 | `scripts/eval/instructor-referral-audit.ts` | Offline referral audit (10 checks) |
 | `supabase/migrations/20260306000006_instructor_referrals.sql` | Phase 6 migration |
+| `src/lib/instructor-rate-limiter.ts` | Rate limiting for invites |
+| `src/lib/__tests__/instructor-rate-limiter.test.ts` | 19 rate limiter tests |
+| `src/lib/__tests__/instructor-summary-builder.test.ts` | 6 weekly email tests |
+| `src/app/api/instructor/invites/email/route.ts` | Email invite API |
+| `src/app/api/public/qr/referral/[code]/route.ts` | QR code endpoint |
+| `src/emails/instructor-invite.tsx` | Invite email template |
+| `supabase/migrations/20260306000007_instructor_invite_events.sql` | Phase 7 migration |
+| `scripts/eval/instructor-abuse-audit.ts` | Abuse audit (12 checks) |

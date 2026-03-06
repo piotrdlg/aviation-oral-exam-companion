@@ -283,9 +283,10 @@ describe('instructor-entitlements', () => {
       expect(result.paidStudentCount).toBe(1);
     });
 
-    it('approved + connected student with subscription_status=trialing → approved_with_courtesy, paid_student', async () => {
+    it('approved + connected student with subscription_status=trialing → NOT paid by default (no courtesy)', async () => {
       const sb = createSequenceMockSupabase({
         instructor_profiles: [{ data: { status: 'approved' }, error: null }],
+        system_config: [{ data: null, error: null }],
         instructor_access_overrides: [{ data: [], error: null }],
         student_instructor_connections: [
           { data: [{ student_user_id: STUDENT_USER_ID_1 }], error: null },
@@ -296,6 +297,7 @@ describe('instructor-entitlements', () => {
             error: null,
           },
         ],
+        user_entitlement_overrides: [{ data: [], error: null }],
       });
 
       const result = await resolveInstructorEntitlements(INSTRUCTOR_USER_ID, {
@@ -303,10 +305,9 @@ describe('instructor-entitlements', () => {
         now: NOW,
       });
 
-      expect(result.instructorStatus).toBe('approved_with_courtesy');
-      expect(result.hasCourtesyAccess).toBe(true);
-      expect(result.courtesyReason).toBe('paid_student');
-      expect(result.paidStudentCount).toBe(1);
+      expect(result.instructorStatus).toBe('approved_no_courtesy');
+      expect(result.hasCourtesyAccess).toBe(false);
+      expect(result.paidStudentCount).toBe(0);
     });
 
     it('approved + connected student with subscription_status=canceled → not paid (falls through)', async () => {
@@ -399,9 +400,10 @@ describe('instructor-entitlements', () => {
       expect(result.paidEquivalentStudentCount).toBe(0);
     });
 
-    it('approved + multiple students, mix of paid and unpaid → paidStudentCount correct', async () => {
+    it('approved + multiple students, mix of paid and unpaid → paidStudentCount correct (trialing not counted by default)', async () => {
       const sb = createSequenceMockSupabase({
         instructor_profiles: [{ data: { status: 'approved' }, error: null }],
+        system_config: [{ data: null, error: null }],
         instructor_access_overrides: [{ data: [], error: null }],
         student_instructor_connections: [
           {
@@ -433,8 +435,104 @@ describe('instructor-entitlements', () => {
       expect(result.instructorStatus).toBe('approved_with_courtesy');
       expect(result.hasCourtesyAccess).toBe(true);
       expect(result.courtesyReason).toBe('paid_student');
-      // student-001 (active) + student-003 (trialing) = 2 paid
-      expect(result.paidStudentCount).toBe(2);
+      // student-001 (active) = 1 paid; student-003 (trialing) NOT counted by default
+      expect(result.paidStudentCount).toBe(1);
+    });
+  });
+
+  // ---------------------------------------------------------------
+  // Group 2b: trialing override via system_config
+  // ---------------------------------------------------------------
+  describe('trialing override via system_config', () => {
+    it('approved + trialing student + courtesy_counts_trialing=true → counts as paid', async () => {
+      const sb = createSequenceMockSupabase({
+        instructor_profiles: [{ data: { status: 'approved' }, error: null }],
+        system_config: [
+          {
+            data: { value: { courtesy_counts_trialing: true } },
+            error: null,
+          },
+        ],
+        instructor_access_overrides: [{ data: [], error: null }],
+        student_instructor_connections: [
+          { data: [{ student_user_id: STUDENT_USER_ID_1 }], error: null },
+        ],
+        user_profiles: [
+          {
+            data: [{ user_id: STUDENT_USER_ID_1, subscription_status: 'trialing' }],
+            error: null,
+          },
+        ],
+      });
+
+      const result = await resolveInstructorEntitlements(INSTRUCTOR_USER_ID, {
+        supabaseClient: sb,
+        now: NOW,
+      });
+
+      expect(result.instructorStatus).toBe('approved_with_courtesy');
+      expect(result.hasCourtesyAccess).toBe(true);
+      expect(result.courtesyReason).toBe('paid_student');
+      expect(result.paidStudentCount).toBe(1);
+    });
+
+    it('approved + trialing student + no config row → trialing NOT counted', async () => {
+      const sb = createSequenceMockSupabase({
+        instructor_profiles: [{ data: { status: 'approved' }, error: null }],
+        system_config: [{ data: null, error: null }],
+        instructor_access_overrides: [{ data: [], error: null }],
+        student_instructor_connections: [
+          { data: [{ student_user_id: STUDENT_USER_ID_1 }], error: null },
+        ],
+        user_profiles: [
+          {
+            data: [{ user_id: STUDENT_USER_ID_1, subscription_status: 'trialing' }],
+            error: null,
+          },
+        ],
+        user_entitlement_overrides: [{ data: [], error: null }],
+      });
+
+      const result = await resolveInstructorEntitlements(INSTRUCTOR_USER_ID, {
+        supabaseClient: sb,
+        now: NOW,
+      });
+
+      expect(result.instructorStatus).toBe('approved_no_courtesy');
+      expect(result.hasCourtesyAccess).toBe(false);
+      expect(result.paidStudentCount).toBe(0);
+    });
+
+    it('approved + trialing student + courtesy_counts_trialing=false → trialing NOT counted', async () => {
+      const sb = createSequenceMockSupabase({
+        instructor_profiles: [{ data: { status: 'approved' }, error: null }],
+        system_config: [
+          {
+            data: { value: { courtesy_counts_trialing: false } },
+            error: null,
+          },
+        ],
+        instructor_access_overrides: [{ data: [], error: null }],
+        student_instructor_connections: [
+          { data: [{ student_user_id: STUDENT_USER_ID_1 }], error: null },
+        ],
+        user_profiles: [
+          {
+            data: [{ user_id: STUDENT_USER_ID_1, subscription_status: 'trialing' }],
+            error: null,
+          },
+        ],
+        user_entitlement_overrides: [{ data: [], error: null }],
+      });
+
+      const result = await resolveInstructorEntitlements(INSTRUCTOR_USER_ID, {
+        supabaseClient: sb,
+        now: NOW,
+      });
+
+      expect(result.instructorStatus).toBe('approved_no_courtesy');
+      expect(result.hasCourtesyAccess).toBe(false);
+      expect(result.paidStudentCount).toBe(0);
     });
   });
 
@@ -453,7 +551,7 @@ describe('instructor-entitlements', () => {
       expect(result).toBe(true);
     });
 
-    it('trialing → true', async () => {
+    it('trialing → false (default)', async () => {
       const sb = createSequenceMockSupabase({
         user_profiles: [
           { data: { subscription_status: 'trialing' }, error: null },
@@ -461,6 +559,17 @@ describe('instructor-entitlements', () => {
       });
 
       const result = await isStudentPaidActive(STUDENT_USER_ID_1, sb);
+      expect(result).toBe(false);
+    });
+
+    it('trialing → true when countsTrialing=true', async () => {
+      const sb = createSequenceMockSupabase({
+        user_profiles: [
+          { data: { subscription_status: 'trialing' }, error: null },
+        ],
+      });
+
+      const result = await isStudentPaidActive(STUDENT_USER_ID_1, sb, true);
       expect(result).toBe(true);
     });
 
@@ -623,9 +732,9 @@ describe('instructor-entitlements', () => {
       expect(COURTESY_TIER).toBe('checkride_prep');
     });
 
-    it('PAID_ACTIVE_SUBSCRIPTION_STATUSES contains exactly [active, trialing]', () => {
-      expect(PAID_ACTIVE_SUBSCRIPTION_STATUSES).toEqual(['active', 'trialing']);
-      expect(PAID_ACTIVE_SUBSCRIPTION_STATUSES).toHaveLength(2);
+    it('PAID_ACTIVE_SUBSCRIPTION_STATUSES contains only [active] by default', () => {
+      expect(PAID_ACTIVE_SUBSCRIPTION_STATUSES).toEqual(['active']);
+      expect(PAID_ACTIVE_SUBSCRIPTION_STATUSES).toHaveLength(1);
     });
   });
 

@@ -1,0 +1,24 @@
+=== Instructor Entitlement Resolver — Deterministic Offline Audit ===
+Date: 2026-03-06
+Phase: 4 (Entitlement Resolution)
+
+  [PASS] Check 1: not_instructor returns isInstructor=false, hasCourtesyAccess=false
+  [PASS] Check 2: pending_approval returns isInstructor=true, hasCourtesyAccess=false
+  [PASS] Check 3: suspended returns isInstructor=true, hasCourtesyAccess=false
+  [PASS] Check 4: approved_no_courtesy returns isInstructor=true, hasCourtesyAccess=false, effectiveTierOverride=null
+  [PASS] Check 5: approved_with_courtesy + paid_student(2) returns correct courtesy fields
+  [PASS] Check 6: approved_with_courtesy + student_override returns correct override fields
+  [PASS] Check 7: approved_with_courtesy + direct_override returns courtesyReason=direct_override
+  [PASS] Check 8: PAID_ACTIVE_SUBSCRIPTION_STATUSES contains only [active] (trialing excluded by default)
+  [PASS] Check 9: COURTESY_TIER equals checkride_prep
+  [PASS] Check 10: buildResult returns cacheTTLSeconds=60
+
+=== SUMMARY ===
+  Total checks: 10
+  Passed:       10
+  Failed:       0
+  Result:       ALL PASS
+
+Evidence saved to /Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/docs/instructor-program/evidence/2026-03-05-phase4/eval/
+  - instructor-entitlement-audit.json
+  - instructor-entitlement-audit.md

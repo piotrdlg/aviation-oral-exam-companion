@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instructor Weekly Summary - With Students</title>
+  <style>
+    body { background-color: #0a0a0a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+    .header { text-align: center; padding-bottom: 24px; }
+    .logo { color: #f59e0b; font-size: 20px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin: 0; }
+    .content { background-color: #1a1a1a; border-radius: 8px; padding: 32px 24px; }
+    .greeting { color: #e5e5e5; font-size: 18px; font-weight: 600; line-height: 28px; margin: 0 0 4px; }
+    .subtitle { color: #a3a3a3; font-size: 14px; line-height: 20px; margin: 0 0 24px; }
+    .stats-row { background-color: #141414; border-radius: 6px; padding: 16px; display: flex; justify-content: space-around; text-align: center; }
+    .stat-cell { width: 33.33%; }
+    .stat-number { color: #f59e0b; font-size: 24px; font-weight: 700; line-height: 32px; margin: 0; }
+    .stat-number.attention { color: #ef4444; }
+    .stat-label { color: #a3a3a3; font-size: 12px; line-height: 16px; margin: 0; text-transform: uppercase; letter-spacing: 0.05em; }
+    .divider { border: none; border-top: 1px solid #2a2a2a; margin: 20px 0; }
+    .section-title { color: #f59e0b; font-size: 13px; font-weight: 700; line-height: 20px; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .student-card { background-color: #141414; border-radius: 6px; padding: 12px 16px; margin-bottom: 8px; }
+    .student-name { color: #e5e5e5; font-size: 14px; font-weight: 600; line-height: 20px; margin: 0 0 4px; }
+    .student-meta { font-size: 13px; line-height: 20px; margin: 0 0 2px; }
+    .readiness-good { color: #22c55e; font-weight: 700; }
+    .readiness-warn { color: #f59e0b; font-weight: 700; }
+    .readiness-bad { color: #ef4444; font-weight: 700; }
+    .trend-improving { color: #22c55e; margin-left: 8px; }
+    .trend-declining { color: #ef4444; margin-left: 8px; }
+    .trend-stable { color: #737373; margin-left: 8px; }
+    .student-sessions { color: #a3a3a3; font-size: 12px; line-height: 16px; margin: 0 0 4px; }
+    .attention-reason { color: #ef4444; font-size: 12px; line-height: 18px; margin: 0 0 2px; }
+    .milestone { color: #22c55e; font-size: 12px; line-height: 18px; margin: 4px 0 0; }
+    .cta-button { background-color: #f59e0b; color: #0a0a0a; font-size: 14px; font-weight: 600; text-decoration: none; text-align: center; display: block; border-radius: 6px; padding: 12px 24px; margin: 24px 0; }
+    .paragraph { color: #e5e5e5; font-size: 14px; line-height: 24px; margin: 0 0 16px; }
+    .unsubscribe { color: #525252; font-size: 11px; line-height: 18px; margin: 0; text-align: center; }
+    .unsubscribe a { color: #525252; text-decoration: underline; }
+    .footer { text-align: center; padding: 0 20px; }
+    .footer-text { color: #737373; font-size: 12px; line-height: 20px; margin: 0 0 4px; }
+    .footer-links { color: #737373; font-size: 12px; }
+    .footer-links a { color: #737373; text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <p class="logo">HEYDPE</p>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <p class="greeting">Hello, Captain Rodriguez</p>
+      <p class="subtitle">Week of Feb 27-Mar 6, 2026</p>
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-cell">
+          <p class="stat-number">3</p>
+          <p class="stat-label">Total Students</p>
+        </div>
+        <div class="stat-cell">
+          <p class="stat-number">2</p>
+          <p class="stat-label">Active (7d)</p>
+        </div>
+        <div class="stat-cell">
+          <p class="stat-number attention">1</p>
+          <p class="stat-label">Needs Attention</p>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <p class="section-title">Student Summaries</p>
+
+      <!-- Student 1: Good standing -->
+      <div class="student-card">
+        <p class="student-name">Alice Thompson</p>
+        <p class="student-meta">
+          <span class="readiness-good">82% ready</span>
+          <span class="trend-improving">&uarr; Improving</span>
+        </p>
+        <p class="student-sessions">5 sessions this week</p>
+        <p class="milestone">&#10003; FAA Knowledge Test</p>
+      </div>
+
+      <!-- Student 2: Needs attention -->
+      <div class="student-card">
+        <p class="student-name">Bob Martinez</p>
+        <p class="student-meta">
+          <span class="readiness-warn">48% ready</span>
+          <span class="trend-declining">&darr; Declining</span>
+        </p>
+        <p class="student-sessions">1 session this week</p>
+        <p class="attention-reason">Readiness score dropped 12 pts in 7 days</p>
+        <p class="attention-reason">Weak in Area III: Flight Operations</p>
+      </div>
+
+      <!-- Student 3: No recent activity -->
+      <div class="student-card">
+        <p class="student-name">Carol Zhang</p>
+        <p class="student-meta">
+          <span class="readiness-bad">31% ready</span>
+          <span class="trend-stable">&rarr; Stable</span>
+        </p>
+        <p class="student-sessions">0 sessions this week</p>
+      </div>
+
+      <!-- CTA -->
+      <a href="https://heydpe.com/instructor" class="cta-button">OPEN COMMAND CENTER</a>
+
+      <!-- Sign-off -->
+      <p class="paragraph">
+        Clear skies,<br>
+        The HeyDPE Team
+      </p>
+
+      <!-- Unsubscribe -->
+      <hr class="divider">
+      <p class="unsubscribe">
+        You're receiving this because you have instructor summaries enabled.
+        <a href="#">Unsubscribe</a> or <a href="https://heydpe.com/settings">manage email preferences</a>.
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <hr style="border: none; border-top: 1px solid #2a2a2a; margin: 32px 0 16px;">
+    <div class="footer">
+      <p class="footer-text">Imagine Flying LLC &middot; Jacksonville, FL</p>
+      <p class="footer-links">
+        <a href="https://heydpe.com/privacy">Privacy Policy</a>
+        &middot;
+        <a href="https://heydpe.com/terms">Terms of Service</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>

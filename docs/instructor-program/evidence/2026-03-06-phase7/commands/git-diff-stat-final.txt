@@ -1,0 +1,14 @@
+ .../eval/instructor-entitlement-audit.json         |  13 +-
+ .../eval/instructor-entitlement-audit.md           |   4 +-
+ package-lock.json                                  | 279 ++++++++++++++++++-
+ package.json                                       |   5 +-
+ scripts/eval/instructor-entitlement-audit.ts       |  15 +-
+ scripts/send-instructor-weekly.ts                  |  10 +-
+ src/app/(dashboard)/instructor/page.tsx            |  51 ++++
+ src/app/api/admin/quality/referrals/route.ts       |  74 +++++
+ src/emails/instructor-weekly-summary.tsx           | 305 ++++++++++++++++-----
+ src/lib/__tests__/instructor-entitlements.test.ts  | 133 ++++++++-
+ src/lib/email.ts                                   |  32 +++
+ src/lib/instructor-entitlements.ts                 |  49 +++-
+ src/lib/instructor-summary-builder.ts              |  53 +++-
+ 13 files changed, 892 insertions(+), 131 deletions(-)

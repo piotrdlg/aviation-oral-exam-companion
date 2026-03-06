@@ -1,0 +1,18 @@
+=== BASELINE EVIDENCE ===
+Date: Fri Mar  6 15:13:21 UTC 2026
+Branch: instructor-phase7-abuse-hardening
+Parent: 464fd25 (Phase 6)
+
+Typecheck: 0 errors
+Tests: 45 files, 1026 tests passing
+Git log:
+464fd25 feat(instructor): referral codes, landing pages, auto-connect (Phase 6)
+55eeb7d feat(instructor): insights, milestones, and weekly summary email (Phase 5)
+35afd60 feat(instructor): courtesy entitlements and authorization integration
+0e60998 feat(instructor): instructor partnership phases 1-3
+e3e5230 feat: ship Phases 18-21 + fix PostHog event flushing on Vercel
+5cb6725 feat: ship Phases 15-17 — beta readiness + public launch hardening
+d728b02 feat: ship Phases 6-14 — grounding repair through PromptOps hardening
+4fef6b7 chore(release): merge inventory sprint + ship phase5 grading v2 + quick drill
+39fc159 Merge pull request #3 from piotrdlg/phase5-grading-v2-quick-drill
+2c6edc7 Merge origin/main into phase5 branch (resolve Index conflict)

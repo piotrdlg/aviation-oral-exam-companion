@@ -9,7 +9,7 @@
 
 | Constant | Value |
 |----------|-------|
-| PAID_ACTIVE_SUBSCRIPTION_STATUSES | `["active","trialing"]` |
+| PAID_ACTIVE_SUBSCRIPTION_STATUSES | `["active"]` |
 | COURTESY_TIER | `checkride_prep` |
 | ENTITLEMENT_CACHE_TTL_MS | `60000` (= 60s) |
 
@@ -24,7 +24,7 @@
 | 5 | approved_with_courtesy + paid_student(2) returns correct courtesy fields | PASS | Paid student courtesy access correctly granted with checkride_prep tier |
 | 6 | approved_with_courtesy + student_override returns correct override fields | PASS | Student override courtesy access correctly reflected |
 | 7 | approved_with_courtesy + direct_override returns courtesyReason=direct_override | PASS | Direct override courtesy reason correctly set |
-| 8 | PAID_ACTIVE_SUBSCRIPTION_STATUSES contains exactly [active, trialing] | PASS | Constant contains exactly the expected 2 statuses |
+| 8 | PAID_ACTIVE_SUBSCRIPTION_STATUSES contains only [active] (trialing excluded by default) | PASS | Constant contains exactly the expected 1 status (trialing requires system_config override) |
 | 9 | COURTESY_TIER equals checkride_prep | PASS | Courtesy tier constant is correct |
 | 10 | buildResult returns cacheTTLSeconds=60 | PASS | Cache TTL correctly set to 60 seconds (from 60,000ms constant) |
 

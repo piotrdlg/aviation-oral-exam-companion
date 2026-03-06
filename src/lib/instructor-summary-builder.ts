@@ -9,19 +9,60 @@ export interface InstructorForEmail {
   userId: string;
   email: string;
   displayName: string | null;
+  referralCode?: string;
+}
+
+/**
+ * Build referral link and QR URL from an instructor's referral code.
+ */
+function buildReferralUrls(referralCode: string | undefined): {
+  referralCode?: string;
+  referralLink?: string;
+  qrUrl?: string;
+} {
+  if (!referralCode) return {};
+  const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://aviation-oral-exam-companion.vercel.app';
+  return {
+    referralCode,
+    referralLink: `${base}/ref/${referralCode}`,
+    qrUrl: `${base}/api/public/qr/referral/${referralCode}`,
+  };
 }
 
 /**
  * Build the weekly summary data for a single instructor.
- * Returns null if instructor has no connected students.
+ * When instructor has 0 connected students, returns a referral-nudge variant.
+ * Returns null only if unsubscribe URL generation fails (should never happen).
  */
 export async function buildInstructorWeeklySummary(
   supabase: ReturnType<typeof createClient>,
   instructor: InstructorForEmail,
 ): Promise<InstructorWeeklySummaryProps | null> {
+  // Calculate week label (shared by both variants)
+  const now = new Date();
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - 7);
+  const weekLabel = `${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}-${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+
+  const unsubscribeUrl = generateUnsubscribeUrl(instructor.userId, 'instructor_weekly_summary');
+
   // Get student list
   const students = await getInstructorStudentList(supabase, instructor.userId);
-  if (students.length === 0) return null;
+
+  // 0-students variant: return referral nudge email props
+  if (students.length === 0) {
+    const referralUrls = buildReferralUrls(instructor.referralCode);
+    return {
+      instructorName: instructor.displayName || 'Instructor',
+      weekLabel,
+      totalStudents: 0,
+      activeStudents: 0,
+      needsAttentionCount: 0,
+      students: [],
+      unsubscribeUrl,
+      ...referralUrls,
+    };
+  }
 
   // Build per-student summaries with insights
   const studentSummaries: StudentEmailSummary[] = [];
@@ -59,16 +100,8 @@ export async function buildInstructorWeeklySummary(
     });
   }
 
-  // Calculate week label
-  const now = new Date();
-  const weekStart = new Date(now);
-  weekStart.setDate(now.getDate() - 7);
-  const weekLabel = `${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}-${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-
   const activeStudents = studentSummaries.filter(s => s.sessionsThisWeek > 0).length;
   const needsAttentionCount = studentSummaries.filter(s => s.needsAttention).length;
-
-  const unsubscribeUrl = generateUnsubscribeUrl(instructor.userId, 'instructor_weekly_summary');
 
   return {
     instructorName: instructor.displayName || 'Instructor',
