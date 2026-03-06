@@ -9,12 +9,24 @@ const DEFAULTS: DeepgramTTSConfig = {
 };
 
 /**
+ * Encodings where sample_rate is NOT configurable per Deepgram API docs.
+ * Sending sample_rate with these encodings causes HTTP 400 UNSUPPORTED_AUDIO_FORMAT.
+ * See: https://developers.deepgram.com/docs/tts-media-output-settings
+ */
+const FIXED_RATE_ENCODINGS = new Set(['mp3', 'opus', 'aac']);
+
+/**
  * Deepgram Aura-2 TTS provider.
  *
- * ENCODING IS ALWAYS MP3. The AudioWorklet PCM streaming pipeline is broken
- * across browsers (Firefox/Safari silence). MP3 via HTMLAudioElement is the
- * only reliable cross-browser path. system_config encoding overrides are
- * intentionally ignored — model overrides are still respected.
+ * Encoding is forced to MP3 for cross-browser reliability.
+ * The AudioWorklet PCM streaming pipeline produced silence in Firefox/Safari.
+ * MP3 via HTMLAudioElement is the only reliable cross-browser path.
+ *
+ * Request contract enforcement:
+ * - MP3/Opus/AAC: sample_rate is NOT sent (Deepgram rejects it)
+ * - Linear16/FLAC/etc: sample_rate IS sent
+ * - container=none only sent for non-MP3 PCM formats
+ * - system_config encoding overrides are ignored; model overrides respected
  */
 export class DeepgramTTSProvider implements TTSProvider {
   readonly name = 'deepgram';
@@ -32,15 +44,18 @@ export class DeepgramTTSProvider implements TTSProvider {
     // Force MP3 — PCM streaming via AudioWorklet is broken cross-browser.
     // Ignore cfg.encoding to prevent system_config from overriding back to linear16.
     const encoding = 'mp3';
-    const sampleRate = cfg?.sample_rate || options?.sampleRate || DEFAULTS.sample_rate;
 
     const url = new URL(DEEPGRAM_TTS_URL);
     url.searchParams.set('model', model);
     url.searchParams.set('encoding', encoding);
-    url.searchParams.set('sample_rate', String(sampleRate));
-    // container=none strips WAV/RIFF headers from PCM formats.
-    // MP3 is self-contained, so skip to avoid Deepgram edge cases.
-    if (encoding !== 'mp3') {
+
+    // Deepgram API contract: MP3/Opus/AAC have fixed sample rates.
+    // Sending sample_rate with these encodings causes 400 UNSUPPORTED_AUDIO_FORMAT.
+    const isFixedRate = FIXED_RATE_ENCODINGS.has(encoding);
+    if (!isFixedRate) {
+      const sampleRate = cfg?.sample_rate || options?.sampleRate || DEFAULTS.sample_rate;
+      url.searchParams.set('sample_rate', String(sampleRate));
+      // container=none strips WAV/RIFF headers from PCM formats.
       url.searchParams.set('container', 'none');
     }
 
@@ -68,11 +83,14 @@ export class DeepgramTTSProvider implements TTSProvider {
       throw new Error('Deepgram TTS response has no body');
     }
 
+    // MP3 fixed at 22050 Hz by Deepgram; linear16 uses configurable rate
+    const effectiveSampleRate = isFixedRate ? 22050 : (cfg?.sample_rate || options?.sampleRate || DEFAULTS.sample_rate);
+
     return {
       audio: response.body as ReadableStream<Uint8Array>,
       contentType: encoding === 'mp3' ? 'audio/mpeg' : 'audio/l16',
       encoding: encoding as 'linear16' | 'mp3',
-      sampleRate,
+      sampleRate: effectiveSampleRate,
       channels: 1,
       ttfbMs,
     };
