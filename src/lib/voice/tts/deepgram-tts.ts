@@ -5,7 +5,7 @@ const DEEPGRAM_TTS_URL = 'https://api.deepgram.com/v1/speak';
 const DEFAULTS: DeepgramTTSConfig = {
   model: 'aura-2-orion-en',
   sample_rate: 24000,
-  encoding: 'linear16',
+  encoding: 'mp3',
 };
 
 /**
@@ -32,7 +32,11 @@ export class DeepgramTTSProvider implements TTSProvider {
     url.searchParams.set('model', model);
     url.searchParams.set('encoding', encoding);
     url.searchParams.set('sample_rate', String(sampleRate));
-    url.searchParams.set('container', 'none');
+    // container=none strips WAV/RIFF headers from PCM formats.
+    // MP3 is self-contained, so skip to avoid Deepgram edge cases.
+    if (encoding !== 'mp3') {
+      url.searchParams.set('container', 'none');
+    }
 
     const start = Date.now();
 
