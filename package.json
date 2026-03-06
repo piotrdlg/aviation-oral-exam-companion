@@ -70,7 +70,8 @@
     "audit:event-inventory": "tsx scripts/audit/launch-funnel-audit.ts",
     "smoke:phase21": "tsx scripts/smoke/phase21-synthetic.ts",
     "audit:load-check": "tsx scripts/load/phase21-load-check.ts",
-    "audit:final-gate": "tsx scripts/audit/public-launch-final-gate.ts"
+    "audit:final-gate": "tsx scripts/audit/public-launch-final-gate.ts",
+    "instructor:import:faa": "tsx scripts/instructor/import-faa-airmen.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",

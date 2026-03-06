@@ -1,0 +1,62 @@
+# Instructor Partnership Program — Documentation Index
+
+## Overview
+The Instructor Partnership adds a product stream where CFIs (Certified Flight Instructors) can connect with students, monitor progress, and use HeyDPE as a teaching partner. The system is feature-flagged and built incrementally across multiple phases.
+
+## Documents
+
+| # | Title | Status |
+|---|-------|--------|
+| 01 | [PRD Mapping and Architecture](./01%20-%20PRD%20Mapping%20and%20Architecture.md) | Complete |
+| 02 | [Phase 1 Foundation and Activation](./02%20-%20Phase%201%20Foundation%20and%20Activation.md) | Complete |
+| 03 | [Phase 2 Verification and Invites](./03%20-%20Phase%202%20Verification%20and%20Invites.md) | Complete |
+| 04 | [Phase 3 Connections and Command Center MVP](./04%20-%20Phase%203%20Connections%20and%20Command%20Center%20MVP.md) | Complete |
+
+## Phase Roadmap
+
+| Phase | Scope | Status |
+|-------|-------|--------|
+| **1 — Foundation** | Schema, state machine, feature flag, Settings UI, admin workflow, tests | Complete |
+| **2 — Verification & Invites** | FAA verification, auto-approval fast-path, invite generation, student claiming, admin verification evidence | Complete |
+| **3 — Connections & Command Center** | Student↔instructor connections, instructor command center, student progress page, admin monitoring | Complete |
+| 4 — Entitlements | N paying students → free instructor access, Stripe integration | Planned |
+| 5 — Reports | Instructor-specific reports, study plans | Planned |
+
+## Feature Flag
+- Key: `instructor_partnership_v1`
+- Table: `system_config`
+- Default: `{"enabled": false}`
+- Behavior: When disabled, instructor UI is hidden from Settings and API returns 404
+
+## Key Files
+| File | Purpose |
+|------|---------|
+| `src/lib/instructor-access.ts` | Canonical state resolver (12 exports) |
+| `src/lib/__tests__/instructor-access.test.ts` | 50 unit tests |
+| `supabase/migrations/20260305000001_instructor_partnership.sql` | Schema (4 tables + RLS) |
+| `src/app/api/user/instructor/route.ts` | User-facing API (GET state / POST application) |
+| `src/app/api/admin/instructors/route.ts` | Admin list endpoint |
+| `src/app/api/admin/instructors/[id]/route.ts` | Admin actions (approve/reject/suspend/reinstate) |
+| `src/app/(dashboard)/settings/page.tsx` | Instructor Mode section in Settings |
+| `src/app/(admin)/admin/instructors/page.tsx` | Admin review page |
+| `src/lib/instructor-verification.ts` | FAA verification matcher |
+| `src/lib/instructor-invites.ts` | Invite generation + claiming |
+| `src/lib/__tests__/instructor-verification.test.ts` | 20 verification tests |
+| `src/lib/__tests__/instructor-invites.test.ts` | 16 invite flow tests |
+| `scripts/instructor/import-faa-airmen.ts` | FAA CSV import pipeline |
+| `supabase/migrations/20260305000002_instructor_verification.sql` | Verification + FAA tables |
+| `src/app/api/invite/[token]/route.ts` | Invite lookup + claim API |
+| `src/app/invite/[token]/page.tsx` | Student invite claim page |
+| `src/lib/instructor-connections.ts` | Connection CRUD + search |
+| `src/lib/instructor-student-summary.ts` | Student progress extraction |
+| `src/lib/__tests__/instructor-connections.test.ts` | 34 connection tests |
+| `src/lib/__tests__/instructor-student-summary.test.ts` | 19 summary tests |
+| `src/app/api/user/instructor/connections/route.ts` | Student connection API |
+| `src/app/api/user/instructor/search/route.ts` | Instructor search API |
+| `src/app/api/instructor/connections/route.ts` | Instructor connection management |
+| `src/app/api/instructor/students/route.ts` | Student list API |
+| `src/app/api/instructor/students/[student_user_id]/route.ts` | Student detail API |
+| `src/app/(dashboard)/instructor/page.tsx` | Instructor Command Center |
+| `src/app/(dashboard)/instructor/students/[student_user_id]/page.tsx` | Student detail page |
+| `src/app/api/admin/quality/instructor-program/route.ts` | Program metrics API |
+| `supabase/migrations/20260305000003_instructor_connections_mvp.sql` | Phase 3 migration |
