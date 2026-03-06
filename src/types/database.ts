@@ -624,6 +624,48 @@ export interface InstructorAccessOverride {
 }
 
 // ============================================================
+// User entitlement overrides
+// ============================================================
+
+export type EntitlementKey = 'paid_equivalent';
+
+export interface UserEntitlementOverride {
+  id: string;
+  user_id: string;
+  entitlement_key: EntitlementKey;
+  active: boolean;
+  expires_at: string | null;
+  reason: string;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ============================================================
+// Instructor entitlement resolution
+// ============================================================
+
+export type InstructorProgramStatus =
+  | 'not_instructor'
+  | 'pending_approval'
+  | 'approved_no_courtesy'
+  | 'approved_with_courtesy'
+  | 'suspended';
+
+export type CourtesyReason = 'paid_student' | 'student_override' | 'direct_override' | 'none';
+
+export interface InstructorEntitlementResult {
+  isInstructor: boolean;
+  instructorStatus: InstructorProgramStatus;
+  hasCourtesyAccess: boolean;
+  courtesyReason: CourtesyReason;
+  paidStudentCount: number;
+  paidEquivalentStudentCount: number;
+  effectiveTierOverride: 'checkride_prep' | null;
+  cacheTTLSeconds: number;
+}
+
+// ============================================================
 // Support tickets
 // ============================================================
 

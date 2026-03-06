@@ -43,6 +43,14 @@ export default function InstructorCommandCenter() {
   // Invite data (reuse from Phase 2)
   const [invites, setInvites] = useState<{ id: string; token: string; invite_url: string; expires_at: string; claimed_at: string | null; revoked_at: string | null }[]>([]);
 
+  // Entitlement data
+  const [entitlement, setEntitlement] = useState<{
+    hasCourtesyAccess: boolean;
+    courtesyReason: string;
+    paidStudentCount: number;
+    applicationStatus: string | null;
+  } | null>(null);
+
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [inviteCreating, setInviteCreating] = useState(false);
   const [inviteCopied, setInviteCopied] = useState<string | null>(null);
@@ -58,11 +66,12 @@ export default function InstructorCommandCenter() {
           return;
         }
 
-        // Load connections + students + invites in parallel
-        const [connRes, studentsRes, invitesRes] = await Promise.all([
+        // Load connections + students + invites + entitlements in parallel
+        const [connRes, studentsRes, invitesRes, instrRes] = await Promise.all([
           fetch('/api/instructor/connections'),
           fetch('/api/instructor/students'),
           fetch('/api/user/instructor/invites'),
+          fetch('/api/user/instructor'),
         ]);
 
         if (connRes.status === 403 || connRes.status === 404) {
@@ -85,6 +94,16 @@ export default function InstructorCommandCenter() {
         if (invitesRes.ok) {
           const inviteData = await invitesRes.json();
           setInvites(inviteData.invites || []);
+        }
+
+        if (instrRes.ok) {
+          const instrData = await instrRes.json();
+          setEntitlement({
+            hasCourtesyAccess: instrData.hasCourtesyAccess ?? false,
+            courtesyReason: instrData.courtesyReason ?? 'none',
+            paidStudentCount: instrData.paidStudentCount ?? 0,
+            applicationStatus: instrData.applicationStatus ?? null,
+          });
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load data');
@@ -214,6 +233,29 @@ export default function InstructorCommandCenter() {
       {error && (
         <div className="bg-c-red-dim/40 border border-c-red/20 rounded-lg px-4 py-3">
           <p className="text-c-red text-sm font-mono">{error}</p>
+        </div>
+      )}
+
+      {/* Courtesy Access Banner */}
+      {entitlement && entitlement.applicationStatus === 'suspended' && (
+        <div className="bg-c-red-dim/20 border border-c-red/20 border-l-4 border-l-c-red rounded-lg px-4 py-3">
+          <p className="font-mono text-sm text-c-red">
+            Your instructor access has been suspended. Contact support@heydpe.com for assistance.
+          </p>
+        </div>
+      )}
+      {entitlement && entitlement.applicationStatus === 'approved' && entitlement.hasCourtesyAccess && (
+        <div className="bg-c-green-lo/20 border border-c-green/20 border-l-4 border-l-c-green rounded-lg px-4 py-3">
+          <p className="font-mono text-sm text-c-green">
+            You currently have full instructor access through your connected students.
+          </p>
+        </div>
+      )}
+      {entitlement && entitlement.applicationStatus === 'approved' && !entitlement.hasCourtesyAccess && (
+        <div className="bg-c-amber-lo/20 border border-c-amber/20 border-l-4 border-l-c-amber rounded-lg px-4 py-3">
+          <p className="font-mono text-sm text-c-amber">
+            You currently have no paying students connected. Connect a paying student to unlock full instructor access.
+          </p>
         </div>
       )}
 

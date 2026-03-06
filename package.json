@@ -71,7 +71,8 @@
     "smoke:phase21": "tsx scripts/smoke/phase21-synthetic.ts",
     "audit:load-check": "tsx scripts/load/phase21-load-check.ts",
     "audit:final-gate": "tsx scripts/audit/public-launch-final-gate.ts",
-    "instructor:import:faa": "tsx scripts/instructor/import-faa-airmen.ts"
+    "instructor:import:faa": "tsx scripts/instructor/import-faa-airmen.ts",
+    "eval:instructor-entitlements": "tsx scripts/eval/instructor-entitlement-audit.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",

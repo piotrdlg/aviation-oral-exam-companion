@@ -8,6 +8,7 @@ import {
 } from '@/lib/instructor-access';
 import type { CertificateType, VerificationPayload } from '@/lib/instructor-access';
 import { verifyInstructor } from '@/lib/instructor-verification';
+import { resolveInstructorEntitlements } from '@/lib/instructor-entitlements';
 
 const serviceSupabase = createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,8 +25,17 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const state = await getInstructorProgramState(serviceSupabase, user.id);
-    return NextResponse.json(state);
+    const [state, entitlements] = await Promise.all([
+      getInstructorProgramState(serviceSupabase, user.id),
+      resolveInstructorEntitlements(user.id, { supabaseClient: serviceSupabase }),
+    ]);
+
+    return NextResponse.json({
+      ...state,
+      hasCourtesyAccess: entitlements.hasCourtesyAccess,
+      courtesyReason: entitlements.courtesyReason,
+      paidStudentCount: entitlements.paidStudentCount,
+    });
   } catch (err) {
     console.error('[instructor] GET error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

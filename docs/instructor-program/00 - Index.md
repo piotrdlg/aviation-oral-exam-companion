@@ -11,6 +11,8 @@ The Instructor Partnership adds a product stream where CFIs (Certified Flight In
 | 02 | [Phase 1 Foundation and Activation](./02%20-%20Phase%201%20Foundation%20and%20Activation.md) | Complete |
 | 03 | [Phase 2 Verification and Invites](./03%20-%20Phase%202%20Verification%20and%20Invites.md) | Complete |
 | 04 | [Phase 3 Connections and Command Center MVP](./04%20-%20Phase%203%20Connections%20and%20Command%20Center%20MVP.md) | Complete |
+| 05 | [Phase 4 Entitlements and Authorization](./05%20-%20Phase%204%20Entitlements%20and%20Authorization.md) | Complete |
+| 06 | [Entitlement Monitoring and Abuse Signals](./06%20-%20Entitlement%20Monitoring%20and%20Abuse%20Signals.md) | Complete |
 
 ## Phase Roadmap
 
@@ -19,8 +21,9 @@ The Instructor Partnership adds a product stream where CFIs (Certified Flight In
 | **1 — Foundation** | Schema, state machine, feature flag, Settings UI, admin workflow, tests | Complete |
 | **2 — Verification & Invites** | FAA verification, auto-approval fast-path, invite generation, student claiming, admin verification evidence | Complete |
 | **3 — Connections & Command Center** | Student↔instructor connections, instructor command center, student progress page, admin monitoring | Complete |
-| 4 — Entitlements | N paying students → free instructor access, Stripe integration | Planned |
+| **4 — Entitlements & Authorization** | Courtesy access, entitlement resolver, tier integration, admin overrides, monitoring | Complete |
 | 5 — Reports | Instructor-specific reports, study plans | Planned |
+| 7 — Fraud Prevention | Trial re-entry guard, trial history tracking, device fingerprinting | Planned |
 
 ## Feature Flag
 - Key: `instructor_partnership_v1`
@@ -60,3 +63,11 @@ The Instructor Partnership adds a product stream where CFIs (Certified Flight In
 | `src/app/(dashboard)/instructor/students/[student_user_id]/page.tsx` | Student detail page |
 | `src/app/api/admin/quality/instructor-program/route.ts` | Program metrics API |
 | `supabase/migrations/20260305000003_instructor_connections_mvp.sql` | Phase 3 migration |
+| `src/lib/instructor-entitlements.ts` | Entitlement resolver (single source of truth) |
+| `src/lib/__tests__/instructor-entitlements.test.ts` | 33 entitlement tests |
+| `src/lib/voice/tier-lookup.ts` | Tier lookup with courtesy integration |
+| `supabase/migrations/20260305000004_instructor_entitlements.sql` | Phase 4 migration |
+| `src/app/api/admin/instructor-entitlements/route.ts` | Admin entitlement metrics |
+| `src/app/api/admin/user-overrides/route.ts` | Admin override management |
+| `src/app/api/admin/quality/instructor-entitlements/route.ts` | Quality metrics |
+| `scripts/eval/instructor-entitlement-audit.ts` | Offline audit (10 checks) |

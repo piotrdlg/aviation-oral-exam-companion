@@ -127,6 +127,9 @@ export default function SettingsPage() {
     canActivate: boolean;
     canOpenInstructorMode: boolean;
     statusMessage: string;
+    hasCourtesyAccess?: boolean;
+    courtesyReason?: string;
+    paidStudentCount?: number;
   } | null>(null);
   const [instructorLoading, setInstructorLoading] = useState(true);
   const [instructorFormVisible, setInstructorFormVisible] = useState(false);
@@ -2105,9 +2108,22 @@ export default function SettingsPage() {
                 <span className="w-2.5 h-2.5 rounded-full bg-c-green inline-block glow-g" />
                 <span className="font-mono text-sm text-c-green font-semibold uppercase">ACTIVE</span>
               </div>
-              <p className="font-mono text-sm text-c-text mb-3">
-                Your instructor account is active.
+              <p className="font-mono text-xs text-gray-500 mb-3">
+                Instructor access is a courtesy benefit and may be revoked.
               </p>
+              {/* Courtesy access status */}
+              <div className="flex flex-col gap-1 mb-3">
+                {instructorState.hasCourtesyAccess ? (
+                  <span className="font-mono text-xs text-c-green">Courtesy access: Active</span>
+                ) : (
+                  <span className="font-mono text-xs text-c-amber">Courtesy access: Inactive</span>
+                )}
+                {typeof instructorState.paidStudentCount === 'number' && (
+                  <span className="font-mono text-xs text-c-dim">
+                    {instructorState.paidStudentCount} paying {instructorState.paidStudentCount === 1 ? 'student' : 'students'} connected
+                  </span>
+                )}
+              </div>
               {instructorState.profile?.certificate_type && instructorState.profile?.certificate_number && (
                 <div className="iframe rounded-lg p-3">
                   <div className="font-mono text-xs text-c-muted mb-1 uppercase">CERTIFICATE</div>
