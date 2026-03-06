@@ -28,13 +28,15 @@ export default function DashboardLayout({
 
   useEffect(() => {
     async function checkAdmin() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) { console.error('[admin-check] getUser failed:', userError.message); return; }
       if (!user) return;
-      const { data } = await supabase
+      const { data, error: queryError } = await supabase
         .from('admin_users')
         .select('user_id')
         .eq('user_id', user.id)
         .maybeSingle();
+      if (queryError) { console.error('[admin-check] admin_users query failed:', queryError.message); }
       setIsAdmin(!!data);
 
       // Persist UTM params from sessionStorage to user metadata (OAuth return flow)
