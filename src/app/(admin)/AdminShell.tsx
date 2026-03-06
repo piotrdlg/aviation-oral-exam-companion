@@ -5,6 +5,14 @@ import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
+const topNavItems = [
+  { href: '/home', label: 'Home' },
+  { href: '/practice', label: 'Practice' },
+  { href: '/progress', label: 'Progress' },
+  { href: '/settings', label: 'Settings' },
+  { href: '/help', label: 'Help' },
+];
+
 const navSections = [
   {
     label: 'OVERVIEW',
@@ -49,46 +57,39 @@ export default function AdminShell({
 
   return (
     <div className="min-h-screen bg-c-bg flex flex-col">
-      {/* Top bar — navigate back to customer section */}
-      <header className="h-11 flex items-center justify-between px-4 border-b border-c-border bg-c-panel flex-shrink-0">
-        <div className="flex items-center gap-4">
-          <Link href="/practice" className="font-mono font-bold text-c-amber glow-a text-sm tracking-widest uppercase">
-            HEYDPE
-          </Link>
-          <nav className="flex items-center gap-3">
-            {[
-              { href: '/practice', label: 'Practice' },
-              { href: '/progress', label: 'Progress' },
-              { href: '/settings', label: 'Settings' },
-            ].map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="font-mono text-[10px] text-c-muted hover:text-c-text transition-colors uppercase tracking-wide"
-              >
-                {link.label}
-              </Link>
-            ))}
-            <span className="text-c-dim">|</span>
-            <Link
-              href="/admin"
-              className="font-mono text-[10px] text-c-amber hover:text-c-amber/80 transition-colors uppercase tracking-wide font-semibold"
-            >
-              Admin
+      {/* Top nav — matches dashboard layout nav */}
+      <nav className="border-b border-c-border bg-c-bg/80 backdrop-blur-lg flex-shrink-0">
+        <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
+          <div className="flex items-center gap-6">
+            <Link href="/home" className="font-mono font-bold text-c-amber glow-a text-base tracking-widest">
+              HEYDPE
             </Link>
-          </nav>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-[10px] text-c-dim truncate max-w-[200px]">{email}</span>
+            <div className="flex gap-1">
+              {topNavItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="px-3 py-1.5 rounded-md font-mono text-sm tracking-wide uppercase transition-colors text-c-muted hover:text-c-amber"
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <Link
+                href="/admin"
+                className="px-3 py-1.5 rounded-md font-mono text-sm tracking-wide uppercase transition-colors text-c-amber"
+              >
+                Admin
+              </Link>
+            </div>
+          </div>
           <button
             onClick={handleSignOut}
-            className="text-c-muted hover:text-c-amber font-mono text-[10px] uppercase tracking-wide transition-colors"
-            title="Sign Out"
+            className="font-mono text-sm text-c-muted hover:text-c-amber tracking-wide uppercase transition-colors"
           >
-            SIGN OUT
+            Sign Out
           </button>
         </div>
-      </header>
+      </nav>
 
       <div className="flex flex-1 min-h-0">
         {/* Sidebar */}
