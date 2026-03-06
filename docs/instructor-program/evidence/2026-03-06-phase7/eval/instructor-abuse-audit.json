@@ -1,7 +1,7 @@
 {
   "audit": "instructor-abuse-hardening",
   "phase": 7,
-  "timestamp": "2026-03-06T15:36:34.347Z",
+  "timestamp": "2026-03-06T17:36:18.237Z",
   "environment": "offline-deterministic",
   "inlined_constants": {
     "PAID_ACTIVE_SUBSCRIPTION_STATUSES": [

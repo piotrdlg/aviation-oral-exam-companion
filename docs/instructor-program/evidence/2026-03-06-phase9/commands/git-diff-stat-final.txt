@@ -1,0 +1,6 @@
+ .gitignore                                                          | 3 +++
+ docs/instructor-program/00 - Index.md                               | 6 ++++++
+ .../2026-03-05-phase4/eval/instructor-entitlement-audit.json        | 2 +-
+ .../evidence/2026-03-06-phase7/eval/instructor-abuse-audit.json     | 2 +-
+ package.json                                                        | 4 +++-
+ 5 files changed, 14 insertions(+), 3 deletions(-)

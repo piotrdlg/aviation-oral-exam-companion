@@ -78,7 +78,9 @@
     "eval:instructor-referrals": "tsx scripts/eval/instructor-referral-audit.ts",
     "eval:instructor-abuse": "tsx scripts/eval/instructor-abuse-audit.ts",
     "eval:instructor-fraud": "tsx scripts/eval/instructor-fraud-audit.ts",
-    "eval:instructor-quotas": "tsx scripts/eval/instructor-quota-analysis.ts"
+    "eval:instructor-quotas": "tsx scripts/eval/instructor-quota-analysis.ts",
+    "eval:instructor-faa-freshness": "tsx scripts/eval/instructor-faa-freshness.ts",
+    "eval:instructor-launch": "tsx scripts/eval/instructor-public-launch-gate.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",

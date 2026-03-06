@@ -22,6 +22,9 @@ The Instructor Partnership adds a product stream where CFIs (Certified Flight In
 | 13 | [Phase 8 Admin Partnership Dashboard](./13%20-%20Phase%208%20Admin%20Partnership%20Dashboard.md) | Complete |
 | 14 | [Phase 8 Quotas and Anti-Fraud Signals](./14%20-%20Phase%208%20Quotas%20and%20Anti-Fraud%20Signals.md) | Complete |
 | 15 | [Phase 8 PostHog Dashboard Spec](./15%20-%20Phase%208%20PostHog%20Dashboard%20Spec.md) | Complete |
+| 16 | [Instructor Public Launch Audit](./16%20-%20Instructor%20Public%20Launch%20Audit.md) | Complete |
+| 17 | [FAA Verification Operations and Freshness](./17%20-%20FAA%20Verification%20Operations%20and%20Freshness.md) | Complete |
+| 18 | [Instructor Public Launch Gate](./18%20-%20Instructor%20Public%20Launch%20Gate.md) | Complete |
 
 ## Phase Roadmap
 
@@ -35,6 +38,7 @@ The Instructor Partnership adds a product stream where CFIs (Certified Flight In
 | **6 — Referrals** | Public identity, referral codes, landing pages, auto-connect, connection source attribution | Complete |
 | **7 — Invite Tools & Abuse Hardening** | QR codes, email invites, rate limiting, self-referral protection, entitlement correction, weekly referral nudge | Complete |
 | **8 — KPIs & Dashboards** | KPI contract, admin partnership dashboard, quota tuning, adaptive tiers, anti-fraud signals | Complete |
+| **9 — Public Launch Closure** | PRD audit, FAA freshness ops, privacy audit, launch gate (15 checks), 69 total eval checks | Complete — **GO** |
 
 ## Feature Flag
 - Key: `instructor_partnership_v1`
@@ -114,3 +118,5 @@ The Instructor Partnership adds a product stream where CFIs (Certified Flight In
 | `supabase/migrations/20260306000008_instructor_quota_overrides.sql` | Phase 8 migration |
 | `scripts/eval/instructor-fraud-audit.ts` | Fraud audit (12 checks) |
 | `scripts/eval/instructor-quota-analysis.ts` | Quota audit (12 checks) + report |
+| `scripts/eval/instructor-faa-freshness.ts` | FAA freshness audit (8 checks) |
+| `scripts/eval/instructor-public-launch-gate.ts` | Public launch gate (15 checks) |

@@ -1,7 +1,7 @@
 {
   "audit": "instructor-entitlement-resolver",
   "phase": 4,
-  "timestamp": "2026-03-06T15:31:45.106Z",
+  "timestamp": "2026-03-06T17:36:17.673Z",
   "environment": "offline-deterministic",
   "inlined_constants": {
     "PAID_ACTIVE_SUBSCRIPTION_STATUSES": [

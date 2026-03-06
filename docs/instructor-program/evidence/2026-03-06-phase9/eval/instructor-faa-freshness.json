@@ -1,0 +1,65 @@
+{
+  "audit": "instructor-faa-freshness",
+  "phase": 9,
+  "timestamp": "2026-03-06T17:36:15.551Z",
+  "environment": "offline-deterministic",
+  "constants": {
+    "FAA_FRESHNESS_THRESHOLD_DAYS": 45
+  },
+  "checks": [
+    {
+      "id": 1,
+      "name": "FAA import log table schema referenced (source_date, completed_at, status)",
+      "pass": true,
+      "detail": "FaaImportLogEntry interface includes source_date, completed_at, status"
+    },
+    {
+      "id": 2,
+      "name": "Freshness threshold constant exists (FAA_FRESHNESS_THRESHOLD_DAYS = 45)",
+      "pass": true,
+      "detail": "FAA_FRESHNESS_THRESHOLD_DAYS = 45"
+    },
+    {
+      "id": 3,
+      "name": "computeFaaFreshness(null) returns stale=true, daysOld=null, verdict=NO_DATA",
+      "pass": true,
+      "detail": "No-data case correctly returns stale=true, daysOld=null, lastImportDate=null"
+    },
+    {
+      "id": 4,
+      "name": "computeFaaFreshness() handles fresh import (source_date within 45 days)",
+      "pass": true,
+      "detail": "stale=false, daysOld=20, verdict=FRESH"
+    },
+    {
+      "id": 5,
+      "name": "computeFaaFreshness() handles stale import (source_date 60+ days ago)",
+      "pass": true,
+      "detail": "stale=true, daysOld=60, verdict=STALE"
+    },
+    {
+      "id": 6,
+      "name": "Verification still works without FAA data (confidence=none, needs manual review)",
+      "pass": true,
+      "detail": "No-data verdict correctly triggers manual review path (confidence=none in verification module)"
+    },
+    {
+      "id": 7,
+      "name": "Manual review fallback documented (stale recommendation includes re-import instructions)",
+      "pass": true,
+      "detail": "Stale verdict recommendation includes FAA URL and re-import instructions"
+    },
+    {
+      "id": 8,
+      "name": "Import script exists at scripts/instructor/import-faa-airmen.ts",
+      "pass": true,
+      "detail": "File found: /Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/scripts/instructor/import-faa-airmen.ts"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "overall_pass": true
+  }
+}
