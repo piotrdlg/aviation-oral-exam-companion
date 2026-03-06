@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { getUserTier } from '@/lib/voice/tier-lookup';
 import { getSystemConfig } from '@/lib/system-config';
 import { checkKillSwitch } from '@/lib/kill-switch';
 import { requireSafeDbTarget } from '@/lib/app-env';
+import { captureServerEvent, flushPostHog } from '@/lib/posthog-server';
 
 const serviceSupabase = createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,6 +23,8 @@ const TOKEN_TTL_SECONDS = 600; // 10 minutes — enough for a full exam session
  * Only available to Tier 2 (checkride_prep) and Tier 3 (dpe_live) users.
  */
 export async function GET() {
+  after(() => flushPostHog());
+
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -83,6 +87,9 @@ export async function GET() {
     if (!tokenResponse.ok) {
       const errorBody = await tokenResponse.text().catch(() => 'Unknown error');
       console.error('Deepgram auth/grant failed:', tokenResponse.status, errorBody);
+      captureServerEvent(user.id, 'stt_token_request_failed', {
+        tier, status: tokenResponse.status, stage: 'deepgram_auth_grant',
+      });
       return NextResponse.json(
         { error: 'Failed to obtain STT token' },
         { status: 502 }
@@ -132,6 +139,10 @@ export async function GET() {
       .then(({ error }) => {
         if (error) console.error('Token issuance log error:', error.message);
       });
+
+    captureServerEvent(user.id, 'stt_token_request_succeeded', {
+      tier, token_len: accessToken.length, ttl_seconds: TOKEN_TTL_SECONDS,
+    });
 
     return NextResponse.json({
       token: accessToken,

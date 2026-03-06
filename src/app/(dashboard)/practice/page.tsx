@@ -14,6 +14,7 @@ import { TextAssetCard } from '@/components/ui/TextAssetCard';
 import { setTheme } from '@/lib/theme';
 import { useInstructorConnection } from '@/hooks/useInstructorConnection';
 import { ReferralWelcomeBanner } from '@/components/ui/ReferralWelcomeBanner';
+import { captureVoiceEvent } from '@/lib/voice-telemetry';
 
 /**
  * Retry a fetch call once on transient infrastructure errors (405, 502, 503, 504).
@@ -488,11 +489,12 @@ export default function PracticePage() {
     }
   }, [voice.isSpeaking, flushReveal]);
 
-  // Voice failure auto-fallback: disable voice mode on TTS/STT errors
+  // Voice failure handling: show recovery UI instead of permanently disabling
+  // The STT hook already retries once automatically — if voice.error is set after that,
+  // we flush any pending text reveals but do NOT auto-disable voice. The error banner
+  // gives the user explicit "Retry voice" and "Text-only" choices.
   useEffect(() => {
     if (voice.error && voiceEnabled && sessionActive) {
-      setVoiceEnabled(false);
-      voiceEnabledRef.current = false;
       flushReveal();
     }
   }, [voice.error, voiceEnabled, sessionActive, flushReveal]);
@@ -1651,6 +1653,19 @@ export default function PracticePage() {
         </div>
       </div>
 
+      {/* Voice retrying indicator */}
+      {voice.isRetrying && voiceEnabled && (
+        <div className="bg-c-amber-lo/30 border border-c-amber/20 rounded-lg p-3 mb-3 text-base">
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-c-amber animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            <p className="text-c-amber text-sm font-mono">Retrying voice connection...</p>
+          </div>
+        </div>
+      )}
+
       {/* Error banner with recovery options */}
       {(error || voice.error) && (
         <div className="bg-c-red-dim/40 border border-c-red/20 rounded-lg p-3 mb-3 text-base">
@@ -1660,8 +1675,33 @@ export default function PracticePage() {
             </svg>
             <div className="flex-1">
               <p className="text-c-red">{error || voice.error}</p>
-              {voice.error && !error && (
-                <p className="text-sm text-c-muted mt-1">Voice mode disabled. Continuing in text-only mode.</p>
+              {/* Voice connection error: offer retry + text-only choice */}
+              {voice.error && !error && voiceEnabled && (
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={() => {
+                      captureVoiceEvent('voice_retry_clicked', { session_id: sessionId });
+                      voice.startListening();
+                    }}
+                    className="px-3 py-1.5 text-sm bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors font-mono uppercase"
+                  >
+                    RETRY VOICE
+                  </button>
+                  <button
+                    onClick={() => {
+                      captureVoiceEvent('voice_auto_disabled', { reason: 'user_chose_text_only', session_id: sessionId });
+                      setVoiceEnabled(false);
+                      voiceEnabledRef.current = false;
+                    }}
+                    className="px-3 py-1.5 text-sm bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors font-mono uppercase"
+                  >
+                    TEXT-ONLY MODE
+                  </button>
+                </div>
+              )}
+              {/* Voice already disabled — just show info */}
+              {voice.error && !error && !voiceEnabled && (
+                <p className="text-sm text-c-muted mt-1">Continuing in text-only mode.</p>
               )}
               {showErrorRecovery && lastFailedAnswer && (
                 <div className="flex gap-2 mt-2">
@@ -1691,7 +1731,7 @@ export default function PracticePage() {
                 </div>
               )}
             </div>
-            {!showErrorRecovery && (
+            {!showErrorRecovery && !(voice.error && !error && voiceEnabled) && (
               <button onClick={() => { setError(null); }} className="text-c-red hover:text-c-red/80 shrink-0">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />

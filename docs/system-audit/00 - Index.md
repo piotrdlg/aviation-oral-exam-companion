@@ -78,6 +78,8 @@ evidence_level: high
 | 62 | [[62 - Load and Resilience Validation Report]] | Final |
 | 63 | [[63 - Alerting and Synthetic Monitoring Spec]] | Final |
 | 64 | [[64 - Public Launch Final Gate Re-run]] | Draft |
+| 65 | [[65 - Voice Stack Regression Analysis]] | Final |
+| 66 | [[66 - Voice Stack Phase 2 Implementation Report]] | Final |
 
 ---
 
@@ -189,6 +191,8 @@ HeyDPE is a production-quality FAA oral exam simulator built on Next.js 16 + Sup
 | [[62 - Load and Resilience Validation Report]] | **Phase 21** | 14-check static analysis: timeouts, rate limiting, singletons, error handling, caching, deployment. 13 PASS, 1 WARN (TTS maxDuration) |
 | [[63 - Alerting and Synthetic Monitoring Spec]] | **Phase 21** | 12-check offline monitoring: health endpoint, PostHog, cron reliability, admin endpoints, email infrastructure, error boundaries. 12/12 PASS |
 | [[64 - Public Launch Final Gate Re-run]] | **Phase 21** | Planned 16-check comprehensive gate (not yet created). Documents gate evolution from Phase 14 (12 checks) to Phase 17 (9 checks) to Phase 21 |
+| [[65 - Voice Stack Regression Analysis]] | **Phase 22** | Voice regression root cause analysis: 6 candidates, 7 contradictions, ADR-001 decision, trust-boundary + data-flow diagrams |
+| [[66 - Voice Stack Phase 2 Implementation Report]] | **Phase 22** | MODERATE fix implementation: CSP wss://, STT retry, fallback UX, telemetry, dead code removal. 34 new tests, 1103 total, typecheck clean |
 
 ---
 

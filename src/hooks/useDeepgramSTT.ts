@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-
-// Aviation keywords are now included in the server-side WebSocket URL
-// built by /api/stt/token to keep URL construction in one place.
+import { captureVoiceEvent } from '@/lib/voice-telemetry';
 
 interface UseDeepgramSTTOptions {
   sessionId?: string;
@@ -14,19 +12,29 @@ interface UseDeepgramSTTReturn {
   interimTranscript: string;
   isListening: boolean;
   error: string | null;
+  /** Whether a retry is in progress (UI can show "Retrying..." state) */
+  isRetrying: boolean;
   startListening: () => Promise<void>;
   stopListening: () => void;
 }
+
+/** Max WebSocket connection attempts (initial + 1 retry). */
+const MAX_ATTEMPTS = 2;
+/** Delay before retry in milliseconds. */
+const RETRY_DELAY_MS = 2000;
 
 /**
  * React hook for Deepgram Nova-3 STT via direct WebSocket.
  * Fetches a temporary token from /api/stt/token, then connects directly to Deepgram.
  * Uses MediaRecorder (Opus/WebM) for Chrome/Firefox.
+ *
+ * Includes one automatic retry on WebSocket connection failure.
  */
 export function useDeepgramSTT(options: UseDeepgramSTTOptions = {}): UseDeepgramSTTReturn {
   const [transcript, setTranscript] = useState('');
   const [interimTranscript, setInterimTranscript] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -35,9 +43,9 @@ export function useDeepgramSTT(options: UseDeepgramSTTOptions = {}): UseDeepgram
   const startTimeRef = useRef<number>(0);
   const sessionIdRef = useRef(options.sessionId);
   // Track last finalized text to deduplicate Deepgram's duplicate is_final results.
-  // With interim_results + endpointing, Deepgram sends the same text twice:
-  // once as is_final:true and again as is_final:true + speech_final:true.
   const lastFinalTextRef = useRef('');
+  // Track whether the user deliberately stopped (prevents retry after intentional stop)
+  const userStoppedRef = useRef(false);
 
   // Keep sessionId ref up to date
   useEffect(() => {
@@ -61,6 +69,8 @@ export function useDeepgramSTT(options: UseDeepgramSTTOptions = {}): UseDeepgram
   }, []);
 
   const stopListening = useCallback(() => {
+    userStoppedRef.current = true;
+
     // Stop MediaRecorder
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
@@ -91,50 +101,45 @@ export function useDeepgramSTT(options: UseDeepgramSTTOptions = {}): UseDeepgram
     }
 
     setIsListening(false);
+    setIsRetrying(false);
     setInterimTranscript('');
   }, [reportUsage]);
 
-  const startListening = useCallback(async () => {
-    try {
-      setError(null);
-      setTranscript('');
-      setInterimTranscript('');
-      lastFinalTextRef.current = '';
-
-      // 1. Request microphone access
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          sampleRate: 48000,
-        },
-      });
-      streamRef.current = stream;
-
-      // 2. Fetch temporary token
-      const tokenRes = await fetch('/api/stt/token');
-      if (!tokenRes.ok) {
-        const tokenErr = await tokenRes.json();
-        throw new Error(tokenErr.error || 'Failed to get STT token');
+  /**
+   * Attempt a single WebSocket connection to Deepgram.
+   * Returns a promise that resolves on open or rejects on error/close.
+   */
+  const attemptWebSocketConnect = useCallback((
+    wsUrl: string,
+    token: string,
+    stream: MediaStream,
+    attempt: number,
+  ): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      if (userStoppedRef.current) {
+        reject(new Error('user_stopped'));
+        return;
       }
-      const { token, url: wsUrl } = await tokenRes.json();
 
-      // 3. Report usage start
-      await reportUsage('start');
-      startTimeRef.current = Date.now();
+      captureVoiceEvent('stt_websocket_connect_started', {
+        attempt,
+        session_id: sessionIdRef.current,
+      });
 
-      // 4. Open WebSocket to Deepgram using Sec-WebSocket-Protocol for auth
-      // auth/grant JWTs require 'bearer' protocol (not 'token' which is for raw API keys)
-      // See: https://github.com/deepgram/deepgram-js-sdk/issues/392
       const isJwt = token.startsWith('eyJ');
       const ws = new WebSocket(wsUrl, [isJwt ? 'bearer' : 'token', token]);
       wsRef.current = ws;
 
       ws.onopen = () => {
-        setIsListening(true);
+        captureVoiceEvent('stt_websocket_connected', {
+          attempt,
+          session_id: sessionIdRef.current,
+        });
 
-        // 6. Start MediaRecorder (Opus/WebM)
+        setIsListening(true);
+        setIsRetrying(false);
+
+        // Start MediaRecorder (Opus/WebM)
         const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
           ? 'audio/webm;codecs=opus'
           : 'audio/webm';
@@ -153,6 +158,7 @@ export function useDeepgramSTT(options: UseDeepgramSTTOptions = {}): UseDeepgram
 
         // Send audio chunks every 250ms for low latency
         mediaRecorder.start(250);
+        resolve();
       };
 
       ws.onmessage = (event) => {
@@ -183,21 +189,139 @@ export function useDeepgramSTT(options: UseDeepgramSTTOptions = {}): UseDeepgram
       };
 
       ws.onerror = () => {
-        setError('WebSocket connection to speech service failed');
-        stopListening();
+        captureVoiceEvent('stt_websocket_failed', {
+          attempt,
+          session_id: sessionIdRef.current,
+          ready_state: ws.readyState,
+        });
+
+        // Only reject if we haven't already resolved (i.e., error before open)
+        wsRef.current = null;
+        reject(new Error('websocket_connect_failed'));
       };
 
       ws.onclose = (event) => {
         // 1000 = normal close, 1005 = no status code, 1006 = abnormal (can happen on stop)
         if (event.code !== 1000 && event.code !== 1005 && event.code !== 1006) {
+          captureVoiceEvent('stt_websocket_closed', {
+            attempt,
+            close_code: event.code,
+            close_reason: event.reason || undefined,
+            session_id: sessionIdRef.current,
+          });
           setError(`Speech service disconnected (code: ${event.code})`);
         }
         setIsListening(false);
       };
+    });
+  }, []);
+
+  const startListening = useCallback(async () => {
+    try {
+      setError(null);
+      setTranscript('');
+      setInterimTranscript('');
+      setIsRetrying(false);
+      lastFinalTextRef.current = '';
+      userStoppedRef.current = false;
+
+      // 1. Request microphone access
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            sampleRate: 48000,
+          },
+        });
+      } catch (micErr) {
+        const msg = micErr instanceof Error ? micErr.message : 'Microphone access denied';
+        captureVoiceEvent('stt_mic_permission_failed', { error: msg });
+        throw new Error(`Microphone access failed: ${msg}`);
+      }
+      streamRef.current = stream;
+
+      // 2. Fetch temporary token
+      captureVoiceEvent('stt_token_request_started', {
+        session_id: sessionIdRef.current,
+      });
+
+      let token: string;
+      let wsUrl: string;
+      try {
+        const tokenRes = await fetch('/api/stt/token');
+        if (!tokenRes.ok) {
+          const tokenErr = await tokenRes.json().catch(() => ({ error: 'Unknown token error' }));
+          captureVoiceEvent('stt_token_request_failed', {
+            status: tokenRes.status,
+            error: tokenErr.error,
+          });
+          throw new Error(tokenErr.error || 'Failed to get STT token');
+        }
+        const tokenData = await tokenRes.json();
+        token = tokenData.token;
+        wsUrl = tokenData.url;
+
+        captureVoiceEvent('stt_token_request_succeeded', {
+          session_id: sessionIdRef.current,
+        });
+      } catch (fetchErr) {
+        // Re-throw if already our error, otherwise wrap
+        if (fetchErr instanceof Error && fetchErr.message.includes('STT token')) {
+          throw fetchErr;
+        }
+        captureVoiceEvent('stt_token_request_failed', {
+          error: fetchErr instanceof Error ? fetchErr.message : 'fetch_error',
+        });
+        throw new Error('Failed to get STT token');
+      }
+
+      // 3. Report usage start
+      await reportUsage('start');
+      startTimeRef.current = Date.now();
+
+      // 4. Attempt WebSocket connection with retry
+      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        if (userStoppedRef.current) return;
+
+        try {
+          await attemptWebSocketConnect(wsUrl, token, stream, attempt);
+          // Success — connected
+          return;
+        } catch (wsErr) {
+          if (userStoppedRef.current) return;
+          if (wsErr instanceof Error && wsErr.message === 'user_stopped') return;
+
+          if (attempt < MAX_ATTEMPTS) {
+            // Retry after delay
+            captureVoiceEvent('voice_retry_attempted', {
+              attempt,
+              session_id: sessionIdRef.current,
+            });
+            setIsRetrying(true);
+            await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
+            if (userStoppedRef.current) return;
+            continue;
+          }
+
+          // All attempts exhausted
+          captureVoiceEvent('voice_auto_disabled', {
+            attempts: MAX_ATTEMPTS,
+            session_id: sessionIdRef.current,
+            final_error: 'websocket_connect_failed',
+          });
+          setError('Voice connection failed. Unable to reach speech service.');
+          setIsRetrying(false);
+          setIsListening(false);
+        }
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to start speech recognition';
       setError(message);
       setIsListening(false);
+      setIsRetrying(false);
 
       // Clean up on error
       if (streamRef.current) {
@@ -205,11 +329,12 @@ export function useDeepgramSTT(options: UseDeepgramSTTOptions = {}): UseDeepgram
         streamRef.current = null;
       }
     }
-  }, [reportUsage, stopListening]);
+  }, [reportUsage, attemptWebSocketConnect]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      userStoppedRef.current = true;
       if (wsRef.current) {
         wsRef.current.close();
       }
@@ -226,6 +351,7 @@ export function useDeepgramSTT(options: UseDeepgramSTTOptions = {}): UseDeepgram
     transcript,
     interimTranscript,
     isListening,
+    isRetrying,
     error,
     startListening,
     stopListening,

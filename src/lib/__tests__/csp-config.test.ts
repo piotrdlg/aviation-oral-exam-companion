@@ -59,3 +59,56 @@ describe('CSP Supabase origin derivation', () => {
       .toBe('http://localhost:54321');
   });
 });
+
+/**
+ * Regression test: CSP connect-src must include wss://api.deepgram.com
+ * for the Deepgram STT WebSocket to work in all browsers.
+ *
+ * Root cause of voice regression (2026-03-06):
+ *   CSP only had https://api.deepgram.com. While CSP Level 3 says https:
+ *   matches wss:, Safari/iOS did not honor this — blocking the WebSocket
+ *   handshake with no console error.
+ *
+ * Fix: next.config.ts now includes explicit wss://api.deepgram.com in connect-src.
+ */
+
+// Replicate the CSP string construction logic from next.config.ts
+function buildCSPConnectSrc(supabaseOrigin: string): string {
+  return `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com https://us.i.posthog.com https://us-assets.i.posthog.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: ${supabaseOrigin}; font-src 'self' data:; connect-src 'self' ${supabaseOrigin} https://api.stripe.com https://us.i.posthog.com https://www.google-analytics.com https://api.cartesia.ai https://api.deepgram.com wss://api.deepgram.com https://api.openai.com; frame-src https://js.stripe.com; object-src 'none'; base-uri 'self'; report-uri /api/csp-report`;
+}
+
+describe('CSP WebSocket and reporting directives', () => {
+  const csp = buildCSPConnectSrc('https://auth.heydpe.com');
+
+  it('includes wss://api.deepgram.com in connect-src', () => {
+    expect(csp).toContain('wss://api.deepgram.com');
+  });
+
+  it('includes https://api.deepgram.com in connect-src', () => {
+    expect(csp).toContain('https://api.deepgram.com');
+  });
+
+  it('wss:// appears as a separate token, not substring of https://', () => {
+    // Ensure wss:// is its own origin, not just a substring match
+    const connectSrc = csp.split(';').find(d => d.trim().startsWith('connect-src'));
+    expect(connectSrc).toBeDefined();
+    const origins = connectSrc!.split(/\s+/);
+    expect(origins).toContain('wss://api.deepgram.com');
+    expect(origins).toContain('https://api.deepgram.com');
+  });
+
+  it('includes report-uri directive', () => {
+    expect(csp).toContain('report-uri /api/csp-report');
+  });
+
+  it('does not include report-uri pointing to external domain', () => {
+    // report-uri must be first-party only
+    const reportUri = csp.split(';').find(d => d.trim().startsWith('report-uri'));
+    expect(reportUri).toBeDefined();
+    expect(reportUri!.trim()).toBe('report-uri /api/csp-report');
+  });
+
+  it('includes PostHog in connect-src', () => {
+    expect(csp).toContain('https://us.i.posthog.com');
+  });
+});

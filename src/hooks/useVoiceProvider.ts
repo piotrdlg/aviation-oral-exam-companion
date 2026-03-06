@@ -28,6 +28,8 @@ interface UseVoiceProviderReturn {
   tier: VoiceTier;
   features: TierFeatures;
   isReady: boolean;
+  /** Whether STT is retrying a failed WebSocket connection */
+  isRetrying: boolean;
   error: string | null;
 }
 
@@ -230,6 +232,9 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
   // Ready state: for streaming tiers, AudioWorklet must be initialized
   const isReady = useStreamingTTS ? streamingPlayer.isReady || !useStreamingTTS : true;
 
+  // Retry state (only from Deepgram STT)
+  const isRetrying = useDeepgram ? deepgramSTT.isRetrying : false;
+
   return {
     startListening,
     stopListening,
@@ -242,6 +247,7 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
     tier,
     features,
     isReady,
+    isRetrying,
     error: combinedError,
   };
 }
