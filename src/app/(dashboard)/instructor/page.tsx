@@ -77,6 +77,9 @@ export default function InstructorCommandCenter() {
           return;
         }
 
+        // Track page view
+        posthog.capture('instructor_command_center_viewed');
+
         // Load connections + students + invites + entitlements in parallel
         const [connRes, studentsRes, invitesRes, instrRes] = await Promise.all([
           fetch('/api/instructor/connections'),

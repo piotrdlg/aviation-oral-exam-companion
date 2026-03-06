@@ -14,6 +14,7 @@ const navSections = [
       { href: '/admin/support', label: 'Support', icon: '\u2709' },
       { href: '/admin/users', label: 'Users', icon: '\u2603' },
       { href: '/admin/instructors', label: 'Instructors', icon: '\u2708' },
+      { href: '/admin/partnership', label: 'Partnership', icon: '\u2764' },
     ],
   },
   {

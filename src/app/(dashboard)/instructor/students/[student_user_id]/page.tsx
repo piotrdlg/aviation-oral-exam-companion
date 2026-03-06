@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import posthog from 'posthog-js';
 
 interface StudentDetail {
   studentUserId: string;
@@ -60,6 +61,8 @@ export default function StudentDetailPage() {
   useEffect(() => {
     async function load() {
       try {
+        posthog.capture('instructor_student_detail_viewed', { student_user_id });
+
         const [res, insightsRes] = await Promise.all([
           fetch(`/api/instructor/students/${student_user_id}`),
           fetch(`/api/user/instructor/students/insights?studentUserId=${student_user_id}`),

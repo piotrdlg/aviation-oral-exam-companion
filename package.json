@@ -76,7 +76,9 @@
     "eval:instructor-entitlements": "tsx scripts/eval/instructor-entitlement-audit.ts",
     "eval:instructor-insights": "tsx scripts/eval/instructor-insights-audit.ts",
     "eval:instructor-referrals": "tsx scripts/eval/instructor-referral-audit.ts",
-    "eval:instructor-abuse": "tsx scripts/eval/instructor-abuse-audit.ts"
+    "eval:instructor-abuse": "tsx scripts/eval/instructor-abuse-audit.ts",
+    "eval:instructor-fraud": "tsx scripts/eval/instructor-fraud-audit.ts",
+    "eval:instructor-quotas": "tsx scripts/eval/instructor-quota-analysis.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",

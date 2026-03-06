@@ -4,6 +4,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { isInstructorFeatureEnabled } from '@/lib/instructor-access';
 import { createInviteLink } from '@/lib/instructor-invites';
 import { checkInstructorRateLimit, logInviteEvent } from '@/lib/instructor-rate-limiter';
+import { resolveEffectiveQuota, type QuotaSystemConfig, type QuotaOverride } from '@/lib/instructor-quotas';
 import { sendInstructorInviteEmail } from '@/lib/email';
 import { captureServerEvent, flushPostHog } from '@/lib/posthog-server';
 
@@ -71,11 +72,63 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 5. Check rate limit for 'email_sent'
-    const rateCheck = await checkInstructorRateLimit(serviceSupabase, user.id, 'email_sent');
+    // 5. Resolve effective quota (includes per-instructor overrides + adaptive tiering)
+    let effectiveEmailLimit: number | undefined;
+    try {
+      // Read system config
+      const { data: sysConfig } = await serviceSupabase
+        .from('system_config')
+        .select('value')
+        .eq('key', 'instructor')
+        .maybeSingle();
+
+      const quotaConfig: QuotaSystemConfig | null = sysConfig?.value
+        ? (sysConfig.value as QuotaSystemConfig)
+        : null;
+
+      // Read per-instructor override
+      const { data: overrideRow } = await serviceSupabase
+        .from('instructor_quota_overrides')
+        .select('email_invite_limit, token_creation_limit, expires_at, note')
+        .eq('instructor_user_id', user.id)
+        .maybeSingle();
+
+      const override: QuotaOverride | null = overrideRow ? {
+        emailInviteLimit: overrideRow.email_invite_limit as number | null,
+        tokenCreationLimit: overrideRow.token_creation_limit as number | null,
+        expiresAt: overrideRow.expires_at as string | null,
+        note: overrideRow.note as string | null,
+      } : null;
+
+      // Count paid students for adaptive tiering
+      const { data: paidConns } = await serviceSupabase
+        .from('student_instructor_connections')
+        .select('student_user_id')
+        .eq('instructor_user_id', user.id)
+        .eq('state', 'connected');
+
+      let paidCount = 0;
+      if (paidConns && paidConns.length > 0) {
+        const studentIds = paidConns.map((c: { student_user_id: string }) => c.student_user_id);
+        const { data: profiles } = await serviceSupabase
+          .from('user_profiles')
+          .select('subscription_status')
+          .in('user_id', studentIds)
+          .eq('subscription_status', 'active');
+        paidCount = profiles?.length || 0;
+      }
+
+      const quota = resolveEffectiveQuota(paidCount, quotaConfig, override);
+      effectiveEmailLimit = quota.emailInviteLimit;
+    } catch {
+      // Fall through to default rate limiter behavior
+    }
+
+    // 6. Check rate limit for 'email_sent'
+    const rateCheck = await checkInstructorRateLimit(serviceSupabase, user.id, 'email_sent', effectiveEmailLimit);
 
     if (!rateCheck.allowed) {
-      // 6. Rate limited: log event, fire PostHog, return 429
+      // Rate limited: log event, fire PostHog, return 429
       await logInviteEvent(serviceSupabase, user.id, 'rate_limited', {
         attempted_email: email,
         event_type_checked: 'email_sent',

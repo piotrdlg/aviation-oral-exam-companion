@@ -18,6 +18,10 @@ The Instructor Partnership adds a product stream where CFIs (Certified Flight In
 | 09 | [Phase 6 Referrals and Landing Pages](./09%20-%20Phase%206%20Referrals%20and%20Landing%20Pages.md) | Complete |
 | 10 | [Phase 7 Invite Tools and Abuse Hardening](./10%20-%20Phase%207%20Invite%20Tools%20and%20Abuse%20Hardening.md) | Complete |
 | 11 | [Phase 7 Weekly Referral Nudge](./11%20-%20Phase%207%20Weekly%20Referral%20Nudge.md) | Complete |
+| 12 | [Phase 8 KPI Contract and Definitions](./12%20-%20Phase%208%20KPI%20Contract%20and%20Definitions.md) | Complete |
+| 13 | [Phase 8 Admin Partnership Dashboard](./13%20-%20Phase%208%20Admin%20Partnership%20Dashboard.md) | Complete |
+| 14 | [Phase 8 Quotas and Anti-Fraud Signals](./14%20-%20Phase%208%20Quotas%20and%20Anti-Fraud%20Signals.md) | Complete |
+| 15 | [Phase 8 PostHog Dashboard Spec](./15%20-%20Phase%208%20PostHog%20Dashboard%20Spec.md) | Complete |
 
 ## Phase Roadmap
 
@@ -30,7 +34,7 @@ The Instructor Partnership adds a product stream where CFIs (Certified Flight In
 | **5 — Insights & Milestones** | Deterministic insights, student milestones, weekly instructor summary email | Complete |
 | **6 — Referrals** | Public identity, referral codes, landing pages, auto-connect, connection source attribution | Complete |
 | **7 — Invite Tools & Abuse Hardening** | QR codes, email invites, rate limiting, self-referral protection, entitlement correction, weekly referral nudge | Complete |
-| 8 — Fraud Prevention | Trial re-entry guard, trial history tracking, device fingerprinting | Planned |
+| **8 — KPIs & Dashboards** | KPI contract, admin partnership dashboard, quota tuning, adaptive tiers, anti-fraud signals | Complete |
 
 ## Feature Flag
 - Key: `instructor_partnership_v1`
@@ -96,3 +100,17 @@ The Instructor Partnership adds a product stream where CFIs (Certified Flight In
 | `src/emails/instructor-invite.tsx` | Invite email template |
 | `supabase/migrations/20260306000007_instructor_invite_events.sql` | Phase 7 migration |
 | `scripts/eval/instructor-abuse-audit.ts` | Abuse audit (12 checks) |
+| `src/lib/instructor-kpis.ts` | KPI contract (pure functions, 6 exports) |
+| `src/lib/__tests__/instructor-kpis.test.ts` | 32 KPI tests |
+| `src/lib/instructor-quotas.ts` | Quota resolver (pure functions) |
+| `src/lib/__tests__/instructor-quotas.test.ts` | 18 quota tests |
+| `src/lib/instructor-fraud-signals.ts` | Fraud signal computation (pure functions) |
+| `src/lib/__tests__/instructor-fraud-signals.test.ts` | 24 fraud signal tests |
+| `src/app/api/instructor/kpis/route.ts` | Instructor KPI endpoint |
+| `src/app/api/admin/partnership/kpis/route.ts` | Admin KPI dashboard endpoint |
+| `src/app/api/admin/partnership/fraud/route.ts` | Admin fraud signals endpoint |
+| `src/app/api/admin/partnership/quotas/route.ts` | Admin quota overview endpoint |
+| `src/app/(admin)/admin/partnership/page.tsx` | Admin partnership dashboard page |
+| `supabase/migrations/20260306000008_instructor_quota_overrides.sql` | Phase 8 migration |
+| `scripts/eval/instructor-fraud-audit.ts` | Fraud audit (12 checks) |
+| `scripts/eval/instructor-quota-analysis.ts` | Quota audit (12 checks) + report |
