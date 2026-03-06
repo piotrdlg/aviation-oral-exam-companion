@@ -4,7 +4,7 @@ const DEEPGRAM_TTS_URL = 'https://api.deepgram.com/v1/speak';
 
 const DEFAULTS: DeepgramTTSConfig = {
   model: 'aura-2-orion-en',
-  sample_rate: 48000,
+  sample_rate: 24000,
   encoding: 'linear16',
 };
 

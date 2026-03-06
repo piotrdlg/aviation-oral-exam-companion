@@ -61,7 +61,9 @@ export function useStreamingPlayer(): UseStreamingPlayerReturn {
 
     initPromiseRef.current = (async () => {
       try {
-        const ctx = new AudioContext({ sampleRate: 48000 });
+        // Use the browser's default sample rate (matches output device natively).
+        // The AudioWorklet handles resampling from source rate to device rate.
+        const ctx = new AudioContext();
         audioContextRef.current = ctx;
 
         await ctx.audioWorklet.addModule('/audio-worklet/pcm-playback-processor.js?v=4');

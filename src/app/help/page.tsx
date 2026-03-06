@@ -59,7 +59,7 @@ const faqs: { q: string; a: string }[] = [
   },
   {
     q: 'Does voice mode work in all browsers?',
-    a: 'Voice input (speech-to-text) uses the Web Speech API, which is best supported in Google Chrome. Other browsers like Safari and Firefox may have limited or no speech recognition support. Text-to-speech (examiner voice) works in all modern browsers. If voice is not working, visit Settings and use the Voice Diagnostics tool to troubleshoot.',
+    a: 'Yes. HeyDPE uses Deepgram\'s cloud speech-to-text service, so voice input works in all modern browsers — Chrome, Safari, Edge, and Firefox — on desktop and mobile. Text-to-speech (examiner voice) also works across all supported browsers. You will need to grant microphone permission when prompted. If voice is not working, visit Settings and use the Voice Diagnostics tool to troubleshoot. See the Supported Browsers & Platforms section below for full details.',
   },
 ];
 
@@ -117,6 +117,172 @@ export default function HelpPage() {
                 </p>
               </div>
             ))}
+          </div>
+
+          {/* Supported Browsers & Platforms */}
+          <div className="mt-16 mb-16">
+            <h2 className="font-mono text-lg font-bold text-c-amber mb-2 tracking-wide">
+              SUPPORTED BROWSERS & PLATFORMS
+            </h2>
+            <p className="text-c-muted text-sm mb-6">
+              HeyDPE uses cloud-based speech services (Deepgram), so voice mode works across all modern
+              browsers. No browser-specific speech API required.
+            </p>
+
+            {/* Browser Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+              {/* Chrome */}
+              <div className="border border-c-border rounded-lg p-4 flex items-start gap-4">
+                <div className="shrink-0 w-10 h-10 flex items-center justify-center">
+                  <svg viewBox="0 0 48 48" className="w-10 h-10">
+                    <circle cx="24" cy="24" r="22" fill="#4285F4" />
+                    <path d="M24 13.5a10.5 10.5 0 0 1 9.1 5.25H14.9A10.5 10.5 0 0 1 24 13.5z" fill="#EA4335" />
+                    <path d="M14.9 18.75A10.5 10.5 0 0 0 19.5 33.2L14.9 18.75z" fill="#FBBC05" />
+                    <path d="M19.5 33.2A10.5 10.5 0 0 0 33.1 18.75H24v6h5.1a4.5 4.5 0 0 1-4.6 3.45L19.5 33.2z" fill="#34A853" />
+                    <circle cx="24" cy="24" r="5" fill="white" />
+                    <circle cx="24" cy="24" r="3.5" fill="#4285F4" />
+                  </svg>
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-mono text-sm font-semibold text-c-text tracking-wide">Google Chrome</h3>
+                  <p className="text-c-muted text-xs mt-1">Windows, macOS, Linux, Android, ChromeOS</p>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE IN</span>
+                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE OUT</span>
+                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">TEXT MODE</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Safari */}
+              <div className="border border-c-border rounded-lg p-4 flex items-start gap-4">
+                <div className="shrink-0 w-10 h-10 flex items-center justify-center">
+                  <svg viewBox="0 0 48 48" className="w-10 h-10">
+                    <circle cx="24" cy="24" r="22" fill="url(#safari-grad)" />
+                    <defs>
+                      <linearGradient id="safari-grad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#5AC8FA" />
+                        <stop offset="100%" stopColor="#007AFF" />
+                      </linearGradient>
+                    </defs>
+                    <circle cx="24" cy="24" r="18" fill="none" stroke="white" strokeWidth="1.5" />
+                    <polygon points="24,8 27,24 24,40 21,24" fill="white" opacity="0.9" />
+                    <polygon points="24,8 27,24 24,24" fill="#FF3B30" opacity="0.9" />
+                    <polygon points="24,40 21,24 24,24" fill="#FF3B30" opacity="0.9" />
+                  </svg>
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-mono text-sm font-semibold text-c-text tracking-wide">Safari</h3>
+                  <p className="text-c-muted text-xs mt-1">macOS 14+, iOS 16+, iPadOS 16+</p>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE IN</span>
+                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE OUT</span>
+                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">TEXT MODE</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Edge */}
+              <div className="border border-c-border rounded-lg p-4 flex items-start gap-4">
+                <div className="shrink-0 w-10 h-10 flex items-center justify-center">
+                  <svg viewBox="0 0 48 48" className="w-10 h-10">
+                    <circle cx="24" cy="24" r="22" fill="url(#edge-grad)" />
+                    <defs>
+                      <linearGradient id="edge-grad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#0078D4" />
+                        <stop offset="100%" stopColor="#50E6FF" />
+                      </linearGradient>
+                    </defs>
+                    <path d="M16 28c0-6.6 5.4-12 12-12a12 12 0 0 1 8 3.1C33 14.5 29 11 24 11c-7.2 0-13 5.8-13 13 0 5 2.8 9.3 7 11.5A11.9 11.9 0 0 1 16 28z" fill="white" opacity="0.9" />
+                    <circle cx="29" cy="31" r="6" fill="white" opacity="0.4" />
+                  </svg>
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-mono text-sm font-semibold text-c-text tracking-wide">Microsoft Edge</h3>
+                  <p className="text-c-muted text-xs mt-1">Windows 10+, macOS</p>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE IN</span>
+                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE OUT</span>
+                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">TEXT MODE</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Firefox */}
+              <div className="border border-c-border rounded-lg p-4 flex items-start gap-4">
+                <div className="shrink-0 w-10 h-10 flex items-center justify-center">
+                  <svg viewBox="0 0 48 48" className="w-10 h-10">
+                    <circle cx="24" cy="24" r="22" fill="url(#ff-grad)" />
+                    <defs>
+                      <linearGradient id="ff-grad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#FF9500" />
+                        <stop offset="50%" stopColor="#FF3B30" />
+                        <stop offset="100%" stopColor="#AF52DE" />
+                      </linearGradient>
+                    </defs>
+                    <circle cx="24" cy="24" r="12" fill="#1C1B22" />
+                    <path d="M24 14c5.5 0 10 4.5 10 10s-4.5 10-10 10" fill="none" stroke="#FF9500" strokeWidth="3" strokeLinecap="round" />
+                    <circle cx="24" cy="24" r="5" fill="url(#ff-grad)" opacity="0.7" />
+                  </svg>
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-mono text-sm font-semibold text-c-text tracking-wide">Firefox</h3>
+                  <p className="text-c-muted text-xs mt-1">Windows, macOS, Linux</p>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE IN</span>
+                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE OUT</span>
+                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">TEXT MODE</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Platform details */}
+            <div className="border border-c-border rounded-lg p-5">
+              <h3 className="font-mono text-sm font-semibold text-c-text mb-3 tracking-wide">
+                PLATFORM NOTES
+              </h3>
+              <div className="space-y-3 text-sm text-c-muted">
+                <div className="flex items-start gap-2">
+                  <span className="text-c-amber mt-0.5 shrink-0">{'>'}</span>
+                  <span>
+                    <strong className="text-c-text">Desktop</strong> (Windows, macOS, Linux) — Full voice
+                    and text support in all browsers listed above. Best experience on screens 1024px and wider.
+                  </span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-c-amber mt-0.5 shrink-0">{'>'}</span>
+                  <span>
+                    <strong className="text-c-text">iOS / iPadOS</strong> — Safari and Chrome supported. Grant
+                    microphone permission when prompted. On iPad, landscape orientation recommended for exam sessions.
+                  </span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-c-amber mt-0.5 shrink-0">{'>'}</span>
+                  <span>
+                    <strong className="text-c-text">Android</strong> — Chrome and Firefox supported. Grant
+                    microphone permission when prompted. Voice works on Android 10 and later.
+                  </span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-c-amber mt-0.5 shrink-0">{'>'}</span>
+                  <span>
+                    <strong className="text-c-text">Microphone access</strong> — Required for voice input
+                    (speech-to-text). Your browser will prompt for permission on first use. If denied, you can
+                    always use text-only mode. Voice data is processed by Deepgram&apos;s secure cloud service and
+                    is not stored.
+                  </span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-c-amber mt-0.5 shrink-0">{'>'}</span>
+                  <span>
+                    <strong className="text-c-text">Text-only mode</strong> — Always available as a fallback in
+                    any browser. If voice is unavailable or you prefer typing, the full exam experience works
+                    without a microphone.
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Something Wrong Section */}

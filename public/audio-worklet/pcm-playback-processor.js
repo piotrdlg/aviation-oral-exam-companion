@@ -32,8 +32,8 @@ class PCMPlaybackProcessor extends AudioWorkletProcessor {
     super();
 
     // Source and target rates — target is the AudioContext render rate
-    // Default source rate to 44100 (Cartesia Sonic default)
-    this._sourceRate = 44100;
+    // Default source rate to 24000 (Deepgram Aura-2 default)
+    this._sourceRate = 24000;
     this._targetRate = sampleRate; // global in AudioWorkletScope
     this._ratio = this._sourceRate / this._targetRate;
 
