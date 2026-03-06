@@ -12,6 +12,7 @@ export interface ConnectionRow {
   state: ConnectionState;
   initiated_by: 'student' | 'instructor' | 'system';
   invite_id: string | null;
+  connection_source: 'referral_link' | 'invite_link' | 'student_search' | 'admin' | null;
   requested_at: string | null;
   approved_at: string | null;
   approved_by: string | null;
@@ -143,6 +144,7 @@ export async function requestConnection(
       .update({
         state: 'pending',
         initiated_by: 'student',
+        connection_source: 'student_search',
         requested_at: new Date().toISOString(),
         approved_at: null,
         approved_by: null,
@@ -165,6 +167,7 @@ export async function requestConnection(
       instructor_user_id: instructorUserId,
       state: 'pending',
       initiated_by: 'student',
+      connection_source: 'student_search',
       requested_at: new Date().toISOString(),
     })
     .select('id')

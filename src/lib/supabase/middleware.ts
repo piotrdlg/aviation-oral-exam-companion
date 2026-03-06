@@ -72,6 +72,13 @@ export async function updateSession(request: NextRequest) {
 
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone();
+    // Honor redirect param (e.g., from /ref/[code] or /instructor/[slug] flows)
+    const redirectParam = request.nextUrl.searchParams.get('redirect');
+    if (redirectParam && redirectParam.startsWith('/')) {
+      url.pathname = redirectParam;
+      url.search = '';
+      return NextResponse.redirect(url);
+    }
     const { data: profile } = await supabase
       .from('user_profiles')
       .select('onboarding_completed')

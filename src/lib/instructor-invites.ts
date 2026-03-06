@@ -289,6 +289,7 @@ export async function claimInvite(
         state: 'connected',
         initiated_by: 'instructor',
         invite_id: invite.id as string,
+        connection_source: 'invite_link',
         connected_at: new Date().toISOString(),
       },
       { onConflict: 'instructor_user_id,student_user_id' },

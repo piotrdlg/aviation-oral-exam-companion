@@ -1,0 +1,5 @@
+55eeb7d feat(instructor): insights, milestones, and weekly summary email (Phase 5)
+35afd60 feat(instructor): courtesy entitlements and authorization integration
+0e60998 feat(instructor): instructor partnership phases 1-3
+e3e5230 feat: ship Phases 18-21 + fix PostHog event flushing on Vercel
+5cb6725 feat: ship Phases 15-17 — beta readiness + public launch hardening

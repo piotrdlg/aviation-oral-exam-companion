@@ -9,6 +9,7 @@ import {
 import type { CertificateType, VerificationPayload } from '@/lib/instructor-access';
 import { verifyInstructor } from '@/lib/instructor-verification';
 import { resolveInstructorEntitlements } from '@/lib/instructor-entitlements';
+import { ensureInstructorIdentity } from '@/lib/instructor-identity';
 
 const serviceSupabase = createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -30,11 +31,20 @@ export async function GET() {
       resolveInstructorEntitlements(user.id, { supabaseClient: serviceSupabase }),
     ]);
 
+    // Ensure slug + referral code exist for approved instructors (lazy backfill)
+    let identity: { slug: string; referralCode: string } | null = null;
+    if (state.profile?.status === 'approved' && (!state.profile.slug || !state.profile.referral_code)) {
+      identity = await ensureInstructorIdentity(serviceSupabase, user.id);
+    }
+
     return NextResponse.json({
       ...state,
       hasCourtesyAccess: entitlements.hasCourtesyAccess,
       courtesyReason: entitlements.courtesyReason,
       paidStudentCount: entitlements.paidStudentCount,
+      // Include identity (prefer freshly generated, fall back to profile data)
+      slug: identity?.slug ?? state.profile?.slug ?? null,
+      referralCode: identity?.referralCode ?? state.profile?.referral_code ?? null,
     });
   } catch (err) {
     console.error('[instructor] GET error:', err);

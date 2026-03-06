@@ -15,6 +15,7 @@ The Instructor Partnership adds a product stream where CFIs (Certified Flight In
 | 06 | [Entitlement Monitoring and Abuse Signals](./06%20-%20Entitlement%20Monitoring%20and%20Abuse%20Signals.md) | Complete |
 | 07 | [Phase 5 Insights and Milestones](./07%20-%20Phase%205%20Insights%20and%20Milestones.md) | Complete |
 | 08 | [Weekly Email Operations](./08%20-%20Weekly%20Email%20Operations.md) | Complete |
+| 09 | [Phase 6 Referrals and Landing Pages](./09%20-%20Phase%206%20Referrals%20and%20Landing%20Pages.md) | Complete |
 
 ## Phase Roadmap
 
@@ -24,7 +25,8 @@ The Instructor Partnership adds a product stream where CFIs (Certified Flight In
 | **2 — Verification & Invites** | FAA verification, auto-approval fast-path, invite generation, student claiming, admin verification evidence | Complete |
 | **3 — Connections & Command Center** | Student↔instructor connections, instructor command center, student progress page, admin monitoring | Complete |
 | **4 — Entitlements & Authorization** | Courtesy access, entitlement resolver, tier integration, admin overrides, monitoring | Complete |
-| 5 — Reports | Instructor-specific reports, study plans | Planned |
+| **5 — Insights & Milestones** | Deterministic insights, student milestones, weekly instructor summary email | Complete |
+| **6 — Referrals** | Public identity, referral codes, landing pages, auto-connect, connection source attribution | Complete |
 | 7 — Fraud Prevention | Trial re-entry guard, trial history tracking, device fingerprinting | Planned |
 
 ## Feature Flag
@@ -73,3 +75,13 @@ The Instructor Partnership adds a product stream where CFIs (Certified Flight In
 | `src/app/api/admin/user-overrides/route.ts` | Admin override management |
 | `src/app/api/admin/quality/instructor-entitlements/route.ts` | Quality metrics |
 | `scripts/eval/instructor-entitlement-audit.ts` | Offline audit (10 checks) |
+| `src/lib/instructor-identity.ts` | Public identity (slug + referral code) |
+| `src/lib/__tests__/instructor-identity.test.ts` | 25 identity tests |
+| `src/lib/__tests__/instructor-referrals.test.ts` | 40 referral tests |
+| `src/app/api/referral/claim/route.ts` | Referral claim API |
+| `src/app/api/referral/lookup/route.ts` | Referral lookup API |
+| `src/app/ref/[code]/page.tsx` | Referral claim page |
+| `src/app/instructor/[slug]/page.tsx` | Public instructor profile |
+| `src/app/api/admin/quality/referrals/route.ts` | Referral metrics |
+| `scripts/eval/instructor-referral-audit.ts` | Offline referral audit (10 checks) |
+| `supabase/migrations/20260306000006_instructor_referrals.sql` | Phase 6 migration |

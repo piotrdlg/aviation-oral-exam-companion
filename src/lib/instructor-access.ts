@@ -1,5 +1,6 @@
 import 'server-only';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { ensureInstructorIdentity } from './instructor-identity';
 
 // --- Types ---
 
@@ -20,6 +21,8 @@ export interface InstructorProfile {
   certificate_number: string | null;
   certificate_type: CertificateType | null;
   bio: string | null;
+  slug: string | null;
+  referral_code: string | null;
   submitted_at: string | null;
   approved_at: string | null;
   approved_by: string | null;
@@ -282,6 +285,11 @@ export async function submitInstructorApplication(
     if (error) return { success: false, error: error.message };
   }
 
+  // Generate slug + referral code for auto-approved instructors
+  if (autoApprove) {
+    void ensureInstructorIdentity(serviceSupabase, userId);
+  }
+
   return { success: true, autoApproved: autoApprove };
 }
 
@@ -309,6 +317,12 @@ export async function approveInstructor(
     return { success: false, error: `Cannot approve profile with status: ${profile.status}` };
   }
 
+  const { data: profileData } = await serviceSupabase
+    .from('instructor_profiles')
+    .select('user_id')
+    .eq('id', profileId)
+    .single();
+
   const { error } = await serviceSupabase
     .from('instructor_profiles')
     .update({
@@ -322,6 +336,12 @@ export async function approveInstructor(
     .eq('id', profileId);
 
   if (error) return { success: false, error: error.message };
+
+  // Generate slug + referral code for newly approved instructor
+  if (profileData?.user_id) {
+    void ensureInstructorIdentity(serviceSupabase, profileData.user_id as string);
+  }
+
   return { success: true };
 }
 
@@ -421,6 +441,12 @@ export async function reinstateInstructor(
     return { success: false, error: `Cannot reinstate profile with status: ${profile.status}` };
   }
 
+  const { data: profileData } = await serviceSupabase
+    .from('instructor_profiles')
+    .select('user_id')
+    .eq('id', profileId)
+    .single();
+
   const { error } = await serviceSupabase
     .from('instructor_profiles')
     .update({
@@ -434,5 +460,11 @@ export async function reinstateInstructor(
     .eq('id', profileId);
 
   if (error) return { success: false, error: error.message };
+
+  // Ensure slug + referral code exist after reinstatement
+  if (profileData?.user_id) {
+    void ensureInstructorIdentity(serviceSupabase, profileData.user_id as string);
+  }
+
   return { success: true };
 }

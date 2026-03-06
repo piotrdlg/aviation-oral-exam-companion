@@ -2,6 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock server-only before importing the module
 vi.mock('server-only', () => ({}));
+vi.mock('../instructor-identity', () => ({
+  ensureInstructorIdentity: vi.fn().mockResolvedValue({ slug: 'test', referralCode: 'TEST1234' }),
+}));
 
 // --- Supabase mock helpers ---
 
@@ -61,6 +64,8 @@ function makeProfile(overrides: Partial<InstructorProfile> = {}): InstructorProf
     certificate_number: '1234567',
     certificate_type: 'CFI',
     bio: null,
+    slug: null,
+    referral_code: null,
     submitted_at: null,
     approved_at: null,
     approved_by: null,

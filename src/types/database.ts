@@ -509,6 +509,7 @@ export type VerificationConfidence = 'high' | 'medium' | 'low' | 'none';
 export type InviteType = 'link' | 'email' | 'qr';
 export type ConnectionState = 'invited' | 'pending' | 'connected' | 'inactive' | 'rejected' | 'disconnected';
 export type ConnectionInitiator = 'student' | 'instructor' | 'system';
+export type ConnectionSource = 'referral_link' | 'invite_link' | 'student_search' | 'admin';
 export type AccessOverrideType = 'courtesy_access' | 'beta_tester' | 'partnership' | 'manual';
 
 export interface InstructorProfile {
@@ -530,6 +531,9 @@ export interface InstructorProfile {
   suspended_by: string | null;
   suspension_reason: string | null;
   admin_notes: string | null;
+  // Phase 6: Public identity
+  slug: string | null;
+  referral_code: string | null;
   // Phase 2: Verification fields
   verification_status: VerificationStatus;
   verification_source: VerificationSource | null;
@@ -603,6 +607,7 @@ export interface StudentInstructorConnection {
   disconnected_at: string | null;
   disconnected_by: string | null;
   disconnect_reason: string | null;
+  connection_source: ConnectionSource | null;
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;

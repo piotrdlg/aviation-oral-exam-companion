@@ -1,0 +1,20 @@
+55eeb7d feat(instructor): insights, milestones, and weekly summary email (Phase 5)
+35afd60 feat(instructor): courtesy entitlements and authorization integration
+0e60998 feat(instructor): instructor partnership phases 1-3
+e3e5230 feat: ship Phases 18-21 + fix PostHog event flushing on Vercel
+5cb6725 feat: ship Phases 15-17 — beta readiness + public launch hardening
+d728b02 feat: ship Phases 6-14 — grounding repair through PromptOps hardening
+4fef6b7 chore(release): merge inventory sprint + ship phase5 grading v2 + quick drill
+39fc159 Merge pull request #3 from piotrdlg/phase5-grading-v2-quick-drill
+2c6edc7 Merge origin/main into phase5 branch (resolve Index conflict)
+2c21cc8 fix(test): widen expires_at tolerance for DST boundary crossings
+3bb19f8 Merge pull request #4 from piotrdlg/inventory-verification-sprint-20260227
+476a426 chore(audit): inventory + evidence pack + docs normalization
+8e165c5 feat(exam): grading v2 + weak-area summary + quick drill
+8dab6d3 Merge prod-reality-audit-20260224: KG infrastructure + ExamPlan Phase 4
+b920534 Add design/implementation plans, staging tools, and dev utilities
+9e50c41 Update graph explorer with taxonomy node support and UI fixes
+5a47e80 Add knowledge graph infrastructure: migrations, scripts, taxonomy pipeline
+99a125c Add system audit docs 11-19, production audit, and graph reports
+c09c5a2 Add ExamPlanV1: predetermined exam shape with grounding enforcement
+6b82b95 Add multi-line label blocks to 2D and 3D graph views

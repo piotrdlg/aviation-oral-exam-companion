@@ -53,6 +53,13 @@ export default function InstructorCommandCenter() {
     applicationStatus: string | null;
   } | null>(null);
 
+  // Identity (slug + referral code)
+  const [identity, setIdentity] = useState<{
+    slug: string | null;
+    referralCode: string | null;
+  }>({ slug: null, referralCode: null });
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [inviteCreating, setInviteCreating] = useState(false);
   const [inviteCopied, setInviteCopied] = useState<string | null>(null);
@@ -105,6 +112,10 @@ export default function InstructorCommandCenter() {
             courtesyReason: instrData.courtesyReason ?? 'none',
             paidStudentCount: instrData.paidStudentCount ?? 0,
             applicationStatus: instrData.applicationStatus ?? null,
+          });
+          setIdentity({
+            slug: instrData.slug ?? null,
+            referralCode: instrData.referralCode ?? null,
           });
         }
       } catch (err) {
@@ -186,6 +197,13 @@ export default function InstructorCommandCenter() {
     });
   }
 
+  function copyToClipboard(text: string, field: string) {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    });
+  }
+
   async function revokeInvite(inviteId: string) {
     try {
       await fetch('/api/user/instructor/invites', {
@@ -263,6 +281,64 @@ export default function InstructorCommandCenter() {
           <p className="font-mono text-sm text-c-amber">
             You currently have no paying students connected. Connect a paying student to unlock full instructor access.
           </p>
+        </div>
+      )}
+
+      {/* Invite Tools Panel */}
+      {identity.referralCode && (
+        <div className="bezel rounded-lg border border-c-border p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-mono text-[10px] text-c-cyan glow-c tracking-[0.3em] uppercase mb-1">// SHARE WITH STUDENTS</p>
+              <p className="font-mono text-xs text-c-muted">Students click your link and connect instantly — no approval step needed.</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Referral Code */}
+            <div className="bg-c-panel rounded-lg border border-c-border px-3 py-2.5">
+              <div className="font-mono text-[9px] text-c-dim uppercase tracking-wider mb-1">Referral Code</div>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-sm text-c-amber font-bold tracking-widest">{identity.referralCode}</span>
+                <button
+                  onClick={() => copyToClipboard(identity.referralCode!, 'code')}
+                  className="ml-auto px-2 py-0.5 rounded border border-c-border bg-c-bezel text-c-muted hover:text-c-text font-mono text-[9px] uppercase transition-colors shrink-0"
+                >
+                  {copiedField === 'code' ? 'COPIED!' : 'COPY'}
+                </button>
+              </div>
+            </div>
+
+            {/* Referral Link */}
+            <div className="bg-c-panel rounded-lg border border-c-border px-3 py-2.5">
+              <div className="font-mono text-[9px] text-c-dim uppercase tracking-wider mb-1">Quick Link</div>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[11px] text-c-text truncate">/ref/{identity.referralCode}</span>
+                <button
+                  onClick={() => copyToClipboard(`${window.location.origin}/ref/${identity.referralCode}`, 'reflink')}
+                  className="ml-auto px-2 py-0.5 rounded border border-c-border bg-c-bezel text-c-muted hover:text-c-text font-mono text-[9px] uppercase transition-colors shrink-0"
+                >
+                  {copiedField === 'reflink' ? 'COPIED!' : 'COPY'}
+                </button>
+              </div>
+            </div>
+
+            {/* Profile Page Link */}
+            {identity.slug && (
+              <div className="bg-c-panel rounded-lg border border-c-border px-3 py-2.5">
+                <div className="font-mono text-[9px] text-c-dim uppercase tracking-wider mb-1">Profile Page</div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[11px] text-c-text truncate">/instructor/{identity.slug}</span>
+                  <button
+                    onClick={() => copyToClipboard(`${window.location.origin}/instructor/${identity.slug}`, 'profile')}
+                    className="ml-auto px-2 py-0.5 rounded border border-c-border bg-c-bezel text-c-muted hover:text-c-text font-mono text-[9px] uppercase transition-colors shrink-0"
+                  >
+                    {copiedField === 'profile' ? 'COPIED!' : 'COPY'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
