@@ -4,7 +4,6 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import type { VoiceTier, TierFeatures } from '@/lib/voice/types';
 import { TIER_FEATURES } from '@/lib/voice/types';
 import { useDeepgramSTT } from './useDeepgramSTT';
-import { useStreamingPlayer } from './useStreamingPlayer';
 
 interface UseVoiceProviderOptions {
   tier: VoiceTier;
@@ -34,99 +33,29 @@ interface UseVoiceProviderReturn {
 }
 
 /**
- * Unified voice provider hook that abstracts STT and TTS based on user tier.
+ * Unified voice provider hook.
  *
- * - Tier 1 (Ground School): Web Speech API STT + OpenAI TTS via /api/tts
- * - Tier 2 (Checkride Prep): Deepgram STT + Deepgram TTS via /api/tts
- * - Tier 3 (DPE Live): Deepgram STT + Cartesia TTS via /api/tts
+ * STT: Deepgram Nova-3 via WebSocket (all tiers).
+ * TTS: /api/tts returns MP3 → played via HTMLAudioElement (all tiers).
  *
- * speak() always calls /api/tts, which routes to the correct provider based on the user's tier.
+ * The AudioWorklet PCM streaming pipeline was removed because it produced
+ * silence in Firefox/Safari. MP3 + Audio element works cross-browser.
  */
 export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProviderReturn {
   const { tier, sessionId } = options;
   const features = TIER_FEATURES[tier];
 
-  // Deepgram STT (Tier 2/3)
+  // Deepgram STT (all tiers)
   const deepgramSTT = useDeepgramSTT({ sessionId });
 
-  // Streaming player for PCM audio (Tier 2/3)
-  const streamingPlayer = useStreamingPlayer();
-
-  // Web Speech API STT state (Tier 1)
-  const [webSpeechTranscript, setWebSpeechTranscript] = useState('');
-  const [webSpeechInterim, setWebSpeechInterim] = useState('');
-  const [webSpeechListening, setWebSpeechListening] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
-
-  // TTS state for Tier 1 (non-streaming MP3)
-  const [isSpeakingTier1, setIsSpeakingTier1] = useState(false);
+  // TTS state
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ttsAbortRef = useRef<AbortController | null>(null);
 
   const [error, setError] = useState<string | null>(null);
 
-  const useDeepgram = features.sttProvider === 'deepgram';
-  const useStreamingTTS = features.ttsProvider !== 'openai';
-
-  // === STT: Web Speech API (Tier 1) ===
-  const startWebSpeechListening = useCallback(async () => {
-    const SpeechRecognitionClass =
-      (window as unknown as { SpeechRecognition?: typeof SpeechRecognition }).SpeechRecognition ||
-      (window as unknown as { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
-
-    if (!SpeechRecognitionClass) {
-      setError('Speech recognition not supported in this browser. Use Chrome for voice mode.');
-      return;
-    }
-
-    const recognition = new SpeechRecognitionClass();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
-
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      let finalText = '';
-      let interimText = '';
-      for (let i = 0; i < event.results.length; i++) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          finalText += result[0].transcript;
-        } else {
-          interimText += result[0].transcript;
-        }
-      }
-      setWebSpeechTranscript(finalText);
-      setWebSpeechInterim(interimText);
-    };
-
-    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      if (event.error !== 'aborted' && event.error !== 'no-speech') {
-        setError(`Speech recognition error: ${event.error}`);
-      }
-      setWebSpeechListening(false);
-    };
-
-    recognition.onend = () => {
-      setWebSpeechListening(false);
-    };
-
-    recognitionRef.current = recognition;
-    recognition.start();
-    setWebSpeechListening(true);
-    setWebSpeechTranscript('');
-    setWebSpeechInterim('');
-  }, []);
-
-  const stopWebSpeechListening = useCallback(() => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      recognitionRef.current = null;
-    }
-    setWebSpeechListening(false);
-    setWebSpeechInterim('');
-  }, []);
-
-  // === TTS: speak() routes through /api/tts ===
+  // === TTS: /api/tts → MP3 → HTMLAudioElement ===
   const speak = useCallback(async (text: string) => {
     try {
       setError(null);
@@ -145,42 +74,33 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
         throw new Error(errData.error || `TTS failed (${response.status})`);
       }
 
-      const encoding = response.headers.get('X-Audio-Encoding') as 'mp3' | 'linear16' | 'pcm_f32le' || 'mp3';
-      const sampleRate = parseInt(response.headers.get('X-Audio-Sample-Rate') || '24000', 10);
+      setIsSpeaking(true);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
 
-      if (useStreamingTTS && encoding !== 'mp3') {
-        // Tier 2/3: streaming PCM playback via AudioWorklet
-        await streamingPlayer.playStream(response, encoding, sampleRate);
-      } else {
-        // Tier 1: MP3 playback via Audio element
-        setIsSpeakingTier1(true);
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const audio = new Audio(url);
-        audioRef.current = audio;
+      audio.onended = () => {
+        setIsSpeaking(false);
+        URL.revokeObjectURL(url);
+        audioRef.current = null;
+      };
+      audio.onerror = () => {
+        setIsSpeaking(false);
+        URL.revokeObjectURL(url);
+        audioRef.current = null;
+      };
 
-        audio.onended = () => {
-          setIsSpeakingTier1(false);
-          URL.revokeObjectURL(url);
-          audioRef.current = null;
-        };
-        audio.onerror = () => {
-          setIsSpeakingTier1(false);
-          URL.revokeObjectURL(url);
-          audioRef.current = null;
-        };
-
-        await audio.play();
-      }
+      await audio.play();
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
         return; // Intentional abort (barge-in)
       }
       const msg = err instanceof Error ? err.message : 'TTS playback failed';
       setError(msg);
-      setIsSpeakingTier1(false);
+      setIsSpeaking(false);
     }
-  }, [useStreamingTTS, streamingPlayer]);
+  }, []);
 
   const stopSpeaking = useCallback(() => {
     // Abort in-flight TTS fetch
@@ -189,24 +109,18 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
       ttsAbortRef.current = null;
     }
 
-    // Stop streaming player (Tier 2/3)
-    streamingPlayer.stopPlayback();
-
-    // Stop audio element (Tier 1)
+    // Stop audio element
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
       audioRef.current = null;
     }
-    setIsSpeakingTier1(false);
-  }, [streamingPlayer]);
+    setIsSpeaking(false);
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
       if (ttsAbortRef.current) {
         ttsAbortRef.current.abort();
       }
@@ -216,38 +130,22 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
     };
   }, []);
 
-  // Select the appropriate STT interface
-  const startListening = useDeepgram ? deepgramSTT.startListening : startWebSpeechListening;
-  const stopListening = useDeepgram ? deepgramSTT.stopListening : stopWebSpeechListening;
-  const transcript = useDeepgram ? deepgramSTT.transcript : webSpeechTranscript;
-  const interimTranscript = useDeepgram ? deepgramSTT.interimTranscript : webSpeechInterim;
-  const isListening = useDeepgram ? deepgramSTT.isListening : webSpeechListening;
-
-  // Combine speaking state
-  const isSpeaking = useStreamingTTS ? streamingPlayer.isSpeaking : isSpeakingTier1;
-
   // Combine errors
-  const combinedError = error || (useDeepgram ? deepgramSTT.error : null) || streamingPlayer.error;
-
-  // Ready state: for streaming tiers, AudioWorklet must be initialized
-  const isReady = useStreamingTTS ? streamingPlayer.isReady || !useStreamingTTS : true;
-
-  // Retry state (only from Deepgram STT)
-  const isRetrying = useDeepgram ? deepgramSTT.isRetrying : false;
+  const combinedError = error || deepgramSTT.error;
 
   return {
-    startListening,
-    stopListening,
-    transcript,
-    interimTranscript,
-    isListening,
+    startListening: deepgramSTT.startListening,
+    stopListening: deepgramSTT.stopListening,
+    transcript: deepgramSTT.transcript,
+    interimTranscript: deepgramSTT.interimTranscript,
+    isListening: deepgramSTT.isListening,
     speak,
     stopSpeaking,
     isSpeaking,
     tier,
     features,
-    isReady,
-    isRetrying,
+    isReady: true, // MP3 + Audio element needs no initialization
+    isRetrying: deepgramSTT.isRetrying,
     error: combinedError,
   };
 }

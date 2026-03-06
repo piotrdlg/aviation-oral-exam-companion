@@ -107,9 +107,12 @@ export async function POST(request: NextRequest) {
         activeVoice = voiceOverride;
       }
     }
+    // Strip encoding from system_config to prevent overriding the provider's
+    // hardcoded mp3 encoding. The PCM AudioWorklet pipeline is broken cross-browser.
+    const { encoding: _stripEncoding, ...safeTtsConfig } = ttsConfig ?? {};
     const effectiveConfig = activeVoice
-      ? { ...ttsConfig, model: activeVoice }
-      : ttsConfig;
+      ? { ...safeTtsConfig, model: activeVoice }
+      : Object.keys(safeTtsConfig).length > 0 ? safeTtsConfig : undefined;
     const result = await provider.synthesize(truncated, { config: effectiveConfig });
 
     // Log usage (non-blocking)

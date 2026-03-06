@@ -10,7 +10,11 @@ const DEFAULTS: DeepgramTTSConfig = {
 
 /**
  * Deepgram Aura-2 TTS provider.
- * Config priority: system_config > env var > hardcoded default.
+ *
+ * ENCODING IS ALWAYS MP3. The AudioWorklet PCM streaming pipeline is broken
+ * across browsers (Firefox/Safari silence). MP3 via HTMLAudioElement is the
+ * only reliable cross-browser path. system_config encoding overrides are
+ * intentionally ignored — model overrides are still respected.
  */
 export class DeepgramTTSProvider implements TTSProvider {
   readonly name = 'deepgram';
@@ -25,7 +29,9 @@ export class DeepgramTTSProvider implements TTSProvider {
     const cfg = options?.config as Partial<DeepgramTTSConfig> | undefined;
 
     const model = cfg?.model || process.env.DEEPGRAM_VOICE_MODEL || DEFAULTS.model;
-    const encoding = cfg?.encoding || DEFAULTS.encoding;
+    // Force MP3 — PCM streaming via AudioWorklet is broken cross-browser.
+    // Ignore cfg.encoding to prevent system_config from overriding back to linear16.
+    const encoding = 'mp3';
     const sampleRate = cfg?.sample_rate || options?.sampleRate || DEFAULTS.sample_rate;
 
     const url = new URL(DEEPGRAM_TTS_URL);

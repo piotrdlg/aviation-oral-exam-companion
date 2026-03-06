@@ -27,7 +27,7 @@ export default function VoiceLab() {
     try {
       // Create fresh AudioContext
       if (audioCtxRef.current) await audioCtxRef.current.close().catch(() => {});
-      const ctx = new AudioContext({ sampleRate: 48000 });
+      const ctx = new AudioContext();
       audioCtxRef.current = ctx;
       const actualRate = ctx.sampleRate;
 
@@ -127,11 +127,11 @@ export default function VoiceLab() {
       }
 
       const encoding = res.headers.get('X-Audio-Encoding') || 'mp3';
-      const sampleRate = parseInt(res.headers.get('X-Audio-Sample-Rate') || '48000', 10);
+      const sampleRate = parseInt(res.headers.get('X-Audio-Sample-Rate') || '24000', 10);
       const provider = res.headers.get('X-TTS-Provider') || 'unknown';
       const ttfb = Math.round(performance.now() - t0);
 
-      setTtsWorkletTest({ status: 'running', detail: `TTFB=${ttfb}ms (${provider}, ${encoding}, ${sampleRate}Hz). Streaming to AudioWorklet...` });
+      setTtsWorkletTest({ status: 'running', detail: `TTFB=${ttfb}ms (${provider}, ${encoding}, ${sampleRate}Hz). Playing...` });
 
       if (encoding === 'mp3') {
         // MP3 doesn't go through worklet — use decodeAudioData
@@ -152,7 +152,7 @@ export default function VoiceLab() {
 
       // PCM: stream through AudioWorklet
       if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
-        audioCtxRef.current = new AudioContext({ sampleRate: 48000 });
+        audioCtxRef.current = new AudioContext();
         await audioCtxRef.current.audioWorklet.addModule(WORKLET_URL);
         const node = new AudioWorkletNode(audioCtxRef.current, 'pcm-playback-processor');
         node.connect(audioCtxRef.current.destination);
@@ -263,7 +263,7 @@ export default function VoiceLab() {
       }
 
       const encoding = res.headers.get('X-Audio-Encoding') || 'mp3';
-      const sampleRate = parseInt(res.headers.get('X-Audio-Sample-Rate') || '48000', 10);
+      const sampleRate = parseInt(res.headers.get('X-Audio-Sample-Rate') || '24000', 10);
       const provider = res.headers.get('X-TTS-Provider') || 'unknown';
       const arrayBuffer = await res.arrayBuffer();
       const ttfb = Math.round(performance.now() - t0);
