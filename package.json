@@ -64,6 +64,7 @@
     "email:daily-digest": "tsx scripts/email/send-daily-digest.ts",
     "email:nudges": "tsx scripts/email/send-nudges.ts",
     "email:review-samples": "tsx scripts/email/send-email-samples.ts",
+    "send:instructor-weekly": "tsx scripts/send-instructor-weekly.ts",
     "audit:public-launch": "tsx scripts/audit/public-launch-gate.ts",
     "verify:production": "tsx scripts/audit/production-verification-phase18.ts",
     "audit:launch-funnel": "tsx scripts/audit/launch-funnel-audit.ts",
@@ -72,7 +73,8 @@
     "audit:load-check": "tsx scripts/load/phase21-load-check.ts",
     "audit:final-gate": "tsx scripts/audit/public-launch-final-gate.ts",
     "instructor:import:faa": "tsx scripts/instructor/import-faa-airmen.ts",
-    "eval:instructor-entitlements": "tsx scripts/eval/instructor-entitlement-audit.ts"
+    "eval:instructor-entitlements": "tsx scripts/eval/instructor-entitlement-audit.ts",
+    "eval:instructor-insights": "tsx scripts/eval/instructor-insights-audit.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",

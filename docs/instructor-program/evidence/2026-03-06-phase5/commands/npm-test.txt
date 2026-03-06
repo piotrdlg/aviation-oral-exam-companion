@@ -1,0 +1,8 @@
+ [32m✓[39m src/lib/__tests__/browser-detect.test.ts [2m([22m[2m31 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/eval-helpers.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m43 passed[39m[22m[90m (43)[39m
+[2m      Tests [22m [1m[32m961 passed[39m[22m[90m (961)[39m
+[2m   Start at [22m 21:11:51
+[2m   Duration [22m 1.23s[2m (transform 1.83s, setup 0ms, import 3.82s, tests 428ms, environment 3ms)[22m
+

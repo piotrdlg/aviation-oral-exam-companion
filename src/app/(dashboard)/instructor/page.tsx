@@ -22,6 +22,8 @@ interface StudentSummary {
   readinessScore: number | null;
   weakElements: { elementCode: string; area: string; severity: string }[];
   recommendedTopics: string[];
+  needsAttention?: boolean;
+  readinessTrend?: string;
 }
 
 type TabKey = 'students' | 'pending' | 'invites';
@@ -116,6 +118,11 @@ export default function InstructorCommandCenter() {
 
   // Active students = sessions in last 7 days > 0
   const activeStudents = studentSummaries.filter(s => s.sessionsLast7Days > 0).length;
+
+  // Needs attention = low readiness or inactive
+  const needsAttentionCount = studentSummaries.filter(s =>
+    (s.readinessScore !== null && s.readinessScore < 60) || s.sessionsLast7Days === 0
+  ).length;
 
   async function handleConnectionAction(connectionId: string, action: 'approve' | 'reject' | 'disconnect') {
     setActionLoading(connectionId);
@@ -260,12 +267,13 @@ export default function InstructorCommandCenter() {
       )}
 
       {/* KPI Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {[
           { label: 'Connected', value: counts.connected, color: 'text-c-green' },
           { label: 'Pending', value: counts.pending, color: 'text-c-amber' },
           { label: 'Invites', value: counts.unclaimedInvites, color: 'text-c-cyan' },
           { label: 'Active (7d)', value: activeStudents, color: 'text-c-text' },
+          { label: 'Attention', value: needsAttentionCount, color: needsAttentionCount > 0 ? 'text-c-red' : 'text-c-dim' },
         ].map(kpi => (
           <div key={kpi.label} className="bezel rounded-lg border border-c-border p-4">
             <div className={`font-mono text-2xl font-bold ${kpi.color}`}>{kpi.value}</div>
@@ -319,8 +327,14 @@ export default function InstructorCommandCenter() {
                         ) : (
                           <span className="text-c-dim">No score yet</span>
                         )}
+                        {(summary?.readinessScore !== null && summary?.readinessScore !== undefined && summary.readinessScore < 60) && (
+                          <span className="text-c-red font-semibold">NEEDS ATTENTION</span>
+                        )}
                         <span>Last: {formatDate(summary?.lastActivityAt || null)}</span>
                         <span>{summary?.sessionsLast7Days ?? 0} sessions (7d)</span>
+                        {summary?.sessionsLast7Days === 0 && (
+                          <span className="text-c-amber">INACTIVE</span>
+                        )}
                       </div>
                     </div>
                     <Link

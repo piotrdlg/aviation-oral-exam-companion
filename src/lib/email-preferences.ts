@@ -14,6 +14,7 @@ const CATEGORY_DEFAULTS: Record<EmailCategory, boolean> = {
   motivation_nudges: true,
   product_updates: true,
   marketing: false,
+  instructor_weekly_summary: true,
 };
 
 export const EMAIL_CATEGORY_LABELS: Record<EmailCategory, string> = {
@@ -24,6 +25,7 @@ export const EMAIL_CATEGORY_LABELS: Record<EmailCategory, string> = {
   motivation_nudges: 'Practice Reminders',
   product_updates: 'Product Updates',
   marketing: 'Marketing & Promotions',
+  instructor_weekly_summary: 'Instructor Weekly Summary',
 };
 
 export const EMAIL_CATEGORY_DESCRIPTIONS: Record<EmailCategory, string> = {
@@ -34,6 +36,7 @@ export const EMAIL_CATEGORY_DESCRIPTIONS: Record<EmailCategory, string> = {
   motivation_nudges: 'Friendly reminders when you haven\'t practiced recently',
   product_updates: 'New features, improvements, and tips',
   marketing: 'Special offers and promotions',
+  instructor_weekly_summary: 'Weekly summary of connected student progress and activity',
 };
 
 /**

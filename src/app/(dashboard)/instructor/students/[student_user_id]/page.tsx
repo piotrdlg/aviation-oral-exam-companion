@@ -23,6 +23,30 @@ interface StudentDetail {
   areaBreakdown: { area: string; score: number; status: string }[];
 }
 
+interface MilestoneSnapshot {
+  key: string;
+  status: string;
+  declaredAt: string | null;
+  declaredBy: string;
+}
+
+interface StudentInsights {
+  readinessScore: number | null;
+  readinessTrend: string;
+  coveragePercent: number | null;
+  totalSessions: number;
+  completedSessions: number;
+  lastActivityAt: string | null;
+  areaBreakdown: { area: string; score: number; status: string; totalElements: number; askedElements: number; weakElementCount: number }[];
+  weakAreas: string[];
+  strongAreas: string[];
+  gapElements: string[];
+  recommendedTopics: string[];
+  milestones: MilestoneSnapshot[];
+  needsAttention: boolean;
+  needsAttentionReasons: string[];
+}
+
 export default function StudentDetailPage() {
   const { student_user_id } = useParams<{ student_user_id: string }>();
   const router = useRouter();
@@ -30,11 +54,16 @@ export default function StudentDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [disconnecting, setDisconnecting] = useState(false);
+  const [insights, setInsights] = useState<StudentInsights | null>(null);
+  const [milestoneUpdating, setMilestoneUpdating] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`/api/instructor/students/${student_user_id}`);
+        const [res, insightsRes] = await Promise.all([
+          fetch(`/api/instructor/students/${student_user_id}`),
+          fetch(`/api/user/instructor/students/insights?studentUserId=${student_user_id}`),
+        ]);
         if (res.status === 403 || res.status === 404) {
           router.replace('/instructor');
           return;
@@ -42,6 +71,10 @@ export default function StudentDetailPage() {
         if (!res.ok) throw new Error('Failed to load');
         const data = await res.json();
         setStudent(data.student);
+        if (insightsRes.ok) {
+          const insData = await insightsRes.json();
+          setInsights(insData.insights || null);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load student data');
       } finally {
@@ -85,6 +118,45 @@ export default function StudentDetailPage() {
     if (score >= 70) return 'text-c-green';
     if (score >= 50) return 'text-c-amber';
     return 'text-c-red';
+  }
+
+  const MILESTONE_LABELS: Record<string, string> = {
+    knowledge_test_passed: 'FAA Knowledge Test',
+    mock_oral_completed: 'Mock Oral Exam',
+    checkride_scheduled: 'Checkride Scheduled',
+    oral_passed: 'Oral Exam Passed',
+  };
+
+  const STATUS_BADGES: Record<string, { label: string; color: string }> = {
+    not_set: { label: 'Not Set', color: 'text-c-dim' },
+    in_progress: { label: 'In Progress', color: 'text-c-amber' },
+    completed: { label: 'Completed', color: 'text-c-green' },
+  };
+
+  async function handleMilestoneUpdate(key: string, newStatus: string) {
+    setMilestoneUpdating(key);
+    try {
+      const res = await fetch('/api/user/instructor/students/milestones', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentUserId: student_user_id,
+          milestoneKey: key,
+          status: newStatus,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      // Refresh insights
+      const insightsRes = await fetch(`/api/user/instructor/students/insights?studentUserId=${student_user_id}`);
+      if (insightsRes.ok) {
+        const insData = await insightsRes.json();
+        setInsights(insData.insights || null);
+      }
+    } catch {
+      setError('Failed to update milestone.');
+    } finally {
+      setMilestoneUpdating(null);
+    }
   }
 
   if (loading) {
@@ -143,9 +215,62 @@ export default function StudentDetailPage() {
           <span className="font-mono text-[10px] text-c-dim">
             {student.readinessScore !== null ? 'Estimated based on recent practice sessions' : 'No completed sessions yet'}
           </span>
+          {insights?.readinessTrend && insights.readinessTrend !== 'insufficient_data' && (
+            <span className={`font-mono text-[10px] ${
+              insights.readinessTrend === 'improving' ? 'text-c-green' :
+              insights.readinessTrend === 'declining' ? 'text-c-red' : 'text-c-dim'
+            }`}>
+              {insights.readinessTrend === 'improving' ? 'Trending up' :
+               insights.readinessTrend === 'declining' ? 'Trending down' : 'Stable'}
+            </span>
+          )}
         </div>
+        {insights?.coveragePercent !== null && insights?.coveragePercent !== undefined && (
+          <div className="font-mono text-[10px] text-c-dim mt-1">
+            ACS Coverage: <span className="text-c-text">{insights.coveragePercent}%</span> of plan elements
+          </div>
+        )}
         <div className="font-mono text-[10px] text-c-dim mt-2">
           {student.sessionsLast7Days} session{student.sessionsLast7Days !== 1 ? 's' : ''} in last 7 days &middot; Last active: {formatDate(student.lastActivityAt)}
+        </div>
+      </div>
+
+      {/* Needs Attention */}
+      {insights?.needsAttention && (
+        <div className="bg-c-red-dim/20 border border-c-red/20 border-l-4 border-l-c-red rounded-lg px-4 py-3">
+          <p className="font-mono text-xs text-c-red uppercase tracking-wider mb-1">Needs Attention</p>
+          <ul className="space-y-0.5">
+            {insights.needsAttentionReasons.map((reason, i) => (
+              <li key={i} className="font-mono text-[10px] text-c-red/80">• {reason}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Milestones */}
+      <div className="bezel rounded-lg border border-c-border p-6">
+        <h2 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-3">MILESTONES</h2>
+        <p className="font-mono text-[9px] text-c-dim mb-3">Self-reported by student or instructor. Not verified by HeyDPE.</p>
+        <div className="space-y-2">
+          {(insights?.milestones || []).map(m => {
+            const badge = STATUS_BADGES[m.status] || STATUS_BADGES.not_set;
+            return (
+              <div key={m.key} className="flex items-center gap-3 py-1.5 border-b border-c-border last:border-0">
+                <span className="font-mono text-sm text-c-text flex-1">{MILESTONE_LABELS[m.key] || m.key}</span>
+                <span className={`font-mono text-[10px] ${badge.color}`}>{badge.label}</span>
+                <select
+                  value={m.status}
+                  onChange={(e) => handleMilestoneUpdate(m.key, e.target.value)}
+                  disabled={milestoneUpdating === m.key}
+                  className="font-mono text-[10px] bg-c-panel border border-c-border rounded px-2 py-1 text-c-text disabled:opacity-50"
+                >
+                  <option value="not_set">Not Set</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+            );
+          })}
         </div>
       </div>
 

@@ -13,6 +13,8 @@ The Instructor Partnership adds a product stream where CFIs (Certified Flight In
 | 04 | [Phase 3 Connections and Command Center MVP](./04%20-%20Phase%203%20Connections%20and%20Command%20Center%20MVP.md) | Complete |
 | 05 | [Phase 4 Entitlements and Authorization](./05%20-%20Phase%204%20Entitlements%20and%20Authorization.md) | Complete |
 | 06 | [Entitlement Monitoring and Abuse Signals](./06%20-%20Entitlement%20Monitoring%20and%20Abuse%20Signals.md) | Complete |
+| 07 | [Phase 5 Insights and Milestones](./07%20-%20Phase%205%20Insights%20and%20Milestones.md) | Complete |
+| 08 | [Weekly Email Operations](./08%20-%20Weekly%20Email%20Operations.md) | Complete |
 
 ## Phase Roadmap
 

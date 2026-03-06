@@ -666,6 +666,46 @@ export interface InstructorEntitlementResult {
 }
 
 // ============================================================
+// Student milestones
+// ============================================================
+
+export type MilestoneKey =
+  | 'knowledge_test_passed'
+  | 'mock_oral_completed'
+  | 'checkride_scheduled'
+  | 'oral_passed';
+
+export type MilestoneStatus = 'not_set' | 'in_progress' | 'completed';
+export type MilestoneDeclaredByRole = 'student' | 'instructor' | 'admin';
+
+export const MILESTONE_KEYS: MilestoneKey[] = [
+  'knowledge_test_passed',
+  'mock_oral_completed',
+  'checkride_scheduled',
+  'oral_passed',
+];
+
+export const MILESTONE_LABELS: Record<MilestoneKey, string> = {
+  knowledge_test_passed: 'FAA Knowledge Test',
+  mock_oral_completed: 'Mock Oral Exam',
+  checkride_scheduled: 'Checkride Scheduled',
+  oral_passed: 'Oral Exam Passed',
+};
+
+export interface StudentMilestone {
+  id: string;
+  student_user_id: string;
+  milestone_key: MilestoneKey;
+  status: MilestoneStatus;
+  declared_by_user_id: string;
+  declared_by_role: MilestoneDeclaredByRole;
+  declared_at: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ============================================================
 // Support tickets
 // ============================================================
 
@@ -680,7 +720,8 @@ export type EmailCategory =
   | 'learning_digest'
   | 'motivation_nudges'
   | 'product_updates'
-  | 'marketing';
+  | 'marketing'
+  | 'instructor_weekly_summary';
 
 export const REQUIRED_EMAIL_CATEGORIES: EmailCategory[] = [
   'account_security',
@@ -693,6 +734,7 @@ export const OPTIONAL_EMAIL_CATEGORIES: EmailCategory[] = [
   'motivation_nudges',
   'product_updates',
   'marketing',
+  'instructor_weekly_summary',
 ];
 
 export type EmailPreferenceSource = 'default' | 'user_settings' | 'unsubscribe_link' | 'admin';

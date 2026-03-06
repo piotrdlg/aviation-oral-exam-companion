@@ -161,6 +161,11 @@ export default function SettingsPage() {
   const [connectionActionLoading, setConnectionActionLoading] = useState(false);
   const [connectionMessage, setConnectionMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
+  // Milestones state
+  const [milestones, setMilestones] = useState<{ key: string; status: string; declaredAt: string | null; declaredBy: string }[]>([]);
+  const [milestoneLoading, setMilestoneLoading] = useState(true);
+  const [milestoneUpdating, setMilestoneUpdating] = useState<string | null>(null);
+
   // Voice diagnostics state
   const [diagOpen, setDiagOpen] = useState(false);
   const [diagRunning, setDiagRunning] = useState(false);
@@ -295,6 +300,59 @@ export default function SettingsPage() {
         setInstructorLoading(false);
       });
   }, []);
+
+  // Fetch milestones
+  useEffect(() => {
+    async function loadMilestones() {
+      try {
+        const res = await fetch('/api/user/milestones');
+        if (res.ok) {
+          const data = await res.json();
+          setMilestones(data.milestones || []);
+        }
+      } catch {
+        // silently fail
+      } finally {
+        setMilestoneLoading(false);
+      }
+    }
+    loadMilestones();
+  }, []);
+
+  const MILESTONE_LABELS: Record<string, string> = {
+    knowledge_test_passed: 'FAA Knowledge Test',
+    mock_oral_completed: 'Mock Oral Exam',
+    checkride_scheduled: 'Checkride Scheduled',
+    oral_passed: 'Oral Exam Passed',
+  };
+
+  const STATUS_OPTIONS: { value: string; label: string }[] = [
+    { value: 'not_set', label: 'Not Started' },
+    { value: 'in_progress', label: 'In Progress' },
+    { value: 'completed', label: 'Completed' },
+  ];
+
+  async function handleMilestoneUpdate(key: string, newStatus: string) {
+    setMilestoneUpdating(key);
+    try {
+      const res = await fetch('/api/user/milestones', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ milestoneKey: key, status: newStatus }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      // Refresh milestones
+      const refreshRes = await fetch('/api/user/milestones');
+      if (refreshRes.ok) {
+        const data = await refreshRes.json();
+        setMilestones(data.milestones || []);
+      }
+    } catch {
+      // Show error inline
+    } finally {
+      setMilestoneUpdating(null);
+    }
+  }
 
   async function submitInstructorApplication() {
     setInstructorSubmitting(true);
@@ -1983,6 +2041,35 @@ export default function SettingsPage() {
           )}
         </div>
       )}
+
+      {/* 7.75. Checkride Milestones */}
+      <div className="bezel rounded-lg border border-c-border p-6">
+        <h2 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-1">CHECKRIDE MILESTONES</h2>
+        <p className="font-mono text-[9px] text-c-dim mb-4">
+          Track your progress toward your checkride. These are self-reported and shared with your connected instructor.
+        </p>
+        {milestoneLoading ? (
+          <div className="h-24 bg-c-bezel rounded animate-pulse" />
+        ) : (
+          <div className="space-y-3">
+            {milestones.map(m => (
+              <div key={m.key} className="flex items-center gap-3 py-2 border-b border-c-border last:border-0">
+                <span className="font-mono text-sm text-c-text flex-1">{MILESTONE_LABELS[m.key] || m.key}</span>
+                <select
+                  value={m.status}
+                  onChange={(e) => handleMilestoneUpdate(m.key, e.target.value)}
+                  disabled={milestoneUpdating === m.key}
+                  className="font-mono text-[10px] bg-c-panel border border-c-border rounded px-2 py-1 text-c-text disabled:opacity-50"
+                >
+                  {STATUS_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* 8. Instructor Mode (behind feature flag) */}
       {instructorFeatureEnabled && (
