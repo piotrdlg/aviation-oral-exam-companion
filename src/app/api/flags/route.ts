@@ -13,9 +13,11 @@ export async function GET() {
     const config = await getSystemConfig(serviceSupabase);
 
     const ttsSentenceStream = config['tts_sentence_stream'] as { enabled?: boolean } | undefined;
+    const instructorPartnership = config['instructor_partnership_v1'] as { enabled?: boolean } | undefined;
 
     return NextResponse.json({
       tts_sentence_stream: ttsSentenceStream?.enabled ?? false,
+      instructor_partnership_v1: instructorPartnership?.enabled ?? false,
     }, {
       headers: { 'Cache-Control': 'public, max-age=60, stale-while-revalidate=300' },
     });
@@ -23,6 +25,7 @@ export async function GET() {
     // Fail open: return defaults
     return NextResponse.json({
       tts_sentence_stream: false,
+      instructor_partnership_v1: false,
     });
   }
 }

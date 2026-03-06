@@ -1,0 +1,12 @@
+ package.json                                |  3 +-
+ src/app/(auth)/login/page.tsx               | 10 +++-
+ src/app/(dashboard)/instructor/page.tsx     | 76 +++++++++++++++++++++++++++++
+ src/app/(dashboard)/practice/page.tsx       |  7 +++
+ src/app/api/user/instructor/route.ts        | 10 ++++
+ src/lib/__tests__/instructor-access.test.ts |  5 ++
+ src/lib/instructor-access.ts                | 32 ++++++++++++
+ src/lib/instructor-connections.ts           |  3 ++
+ src/lib/instructor-invites.ts               |  1 +
+ src/lib/supabase/middleware.ts              |  7 +++
+ src/types/database.ts                       |  5 ++
+ 11 files changed, 156 insertions(+), 3 deletions(-)

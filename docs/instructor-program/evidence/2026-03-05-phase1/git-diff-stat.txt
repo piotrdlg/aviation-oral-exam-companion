@@ -1,0 +1,5 @@
+ src/app/(admin)/AdminShell.tsx        |   1 +
+ src/app/(dashboard)/settings/page.tsx | 261 +++++++++++++++++++++++++++++++++-
+ src/app/api/flags/route.ts            |   3 +
+ src/types/database.ts                 |  84 +++++++++++
+ 4 files changed, 348 insertions(+), 1 deletion(-)

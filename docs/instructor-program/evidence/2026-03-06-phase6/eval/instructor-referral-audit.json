@@ -1,0 +1,105 @@
+{
+  "audit": "instructor-referral-identity",
+  "phase": 6,
+  "timestamp": "2026-03-06T12:16:32.347Z",
+  "environment": "offline-deterministic",
+  "inlined_constants": {
+    "REFERRAL_ALPHABET": "ABCDEFGHJKLMNPQRSTUVWXYZ23456789",
+    "REFERRAL_CODE_LENGTH": 8,
+    "MAX_SLUG_ATTEMPTS": 5,
+    "CONNECTION_SOURCE_VALUES": [
+      "referral_link",
+      "invite_link",
+      "student_search",
+      "admin"
+    ]
+  },
+  "checks": [
+    {
+      "id": 1,
+      "name": "normalizeSlug produces lowercase hyphenated output",
+      "pass": true,
+      "detail": "normalizeSlug('John', 'Smith') correctly returns 'john-smith'",
+      "expected": "john-smith",
+      "actual": "john-smith"
+    },
+    {
+      "id": 2,
+      "name": "normalizeSlug handles diacritics",
+      "pass": true,
+      "detail": "normalizeSlug('José', 'García') correctly strips diacritics to 'jose-garcia'",
+      "expected": "jose-garcia",
+      "actual": "jose-garcia"
+    },
+    {
+      "id": 3,
+      "name": "normalizeSlug handles empty input",
+      "pass": true,
+      "detail": "normalizeSlug('', '') correctly falls back to 'instructor'",
+      "expected": "instructor",
+      "actual": "instructor"
+    },
+    {
+      "id": 4,
+      "name": "REFERRAL_ALPHABET excludes ambiguous chars (0, O, I, 1)",
+      "pass": true,
+      "detail": "Alphabet correctly excludes all 4 ambiguous characters",
+      "expected": "none of [0, O, I, 1]",
+      "actual": "none found"
+    },
+    {
+      "id": 5,
+      "name": "REFERRAL_CODE_LENGTH is 8",
+      "pass": true,
+      "detail": "Referral code length constant is correctly set to 8",
+      "expected": "8",
+      "actual": "8"
+    },
+    {
+      "id": 6,
+      "name": "generateReferralCode produces code matching alphabet",
+      "pass": true,
+      "detail": "All 20 generated codes match ^[ALPHABET]{8}$ pattern",
+      "expected": "All 20 codes match ^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{8}$",
+      "actual": "20/20 matched (sample: QZMLKYZE, FZD6TAZW, NM7RDJPA)"
+    },
+    {
+      "id": 7,
+      "name": "generateReferralCode produces unique codes",
+      "pass": true,
+      "detail": "All 50 generated codes are unique",
+      "expected": "50 unique codes",
+      "actual": "50 unique codes out of 50"
+    },
+    {
+      "id": 8,
+      "name": "ConnectionSource covers 4 known values",
+      "pass": true,
+      "detail": "ConnectionSource includes all 4 expected values: referral_link, invite_link, student_search, admin",
+      "expected": "[\"admin\",\"invite_link\",\"referral_link\",\"student_search\"]",
+      "actual": "[\"admin\",\"invite_link\",\"referral_link\",\"student_search\"]"
+    },
+    {
+      "id": 9,
+      "name": "MAX_SLUG_ATTEMPTS is 5",
+      "pass": true,
+      "detail": "Max slug attempts constant is correctly set to 5",
+      "expected": "5",
+      "actual": "5"
+    },
+    {
+      "id": 10,
+      "name": "normalizeSlug is deterministic",
+      "pass": true,
+      "detail": "Same input produces same output across 100 calls for 5 different input pairs",
+      "expected": "deterministic (100 calls x 5 inputs = identical output)",
+      "actual": "all 500 calls produced consistent results"
+    }
+  ],
+  "summary": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "overall_pass": true
+  }
+}

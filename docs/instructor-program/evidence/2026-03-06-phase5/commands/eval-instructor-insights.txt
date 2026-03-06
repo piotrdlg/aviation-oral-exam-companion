@@ -1,0 +1,16 @@
+
+📊 Instructor Insights + Milestones Audit
+
+  ✅ 1. computeReadiness maps 0-1 score to 0-100
+  ✅ 2. computeReadinessTrend: improving, declining, stable, insufficient_data
+  ✅ 3. computeCoverage: (asked + credited) / total_in_plan * 100
+  ✅ 4. extractWeakAreas: correct threshold at 0.60
+  ✅ 5. extractStrongAreas: correct threshold at 0.85
+  ✅ 6. recommendTopics: unsatisfactory > partial > not_asked, max 5
+  ✅ 7. extractGapElements: only severity=not_asked
+  ✅ 8. checkNeedsAttention: readiness<60, declining, inactive all flagged
+  ✅ 9. MILESTONE_KEYS: 4 keys with labels
+  ✅ 10. instructor_weekly_summary in OPTIONAL_EMAIL_CATEGORIES
+
+10 checks: 10 passed, 0 failed
+

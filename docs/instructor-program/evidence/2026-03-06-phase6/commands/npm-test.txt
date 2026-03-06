@@ -1,0 +1,8 @@
+ [32m✓[39m src/lib/__tests__/eval-helpers.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/provider-factory.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 1[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m43 passed[39m[22m[90m (43)[39m
+[2m      Tests [22m [1m[32m961 passed[39m[22m[90m (961)[39m
+[2m   Start at [22m 21:30:54
+[2m   Duration [22m 1.32s[2m (transform 1.91s, setup 0ms, import 4.21s, tests 449ms, environment 3ms)[22m
+

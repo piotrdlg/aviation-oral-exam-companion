@@ -1,0 +1,69 @@
+{
+  "checks": [
+    {
+      "name": "Check 1: Default email limit",
+      "pass": true,
+      "detail": "emailInviteLimit=20"
+    },
+    {
+      "name": "Check 2: Default token limit",
+      "pass": true,
+      "detail": "tokenCreationLimit=50"
+    },
+    {
+      "name": "Check 3: Default source is \"default\"",
+      "pass": true,
+      "detail": "source=default"
+    },
+    {
+      "name": "Check 4: System config overrides defaults",
+      "pass": true,
+      "detail": "email=30, token=60"
+    },
+    {
+      "name": "Check 5: Adaptive tier2 for 3 paid students",
+      "pass": true,
+      "detail": "source=adaptive_tier2, email=40"
+    },
+    {
+      "name": "Check 6: Adaptive tier3 for 10 paid students",
+      "pass": true,
+      "detail": "source=adaptive_tier3, email=80"
+    },
+    {
+      "name": "Check 7: Override takes precedence over adaptive",
+      "pass": true,
+      "detail": "source=override, email=100"
+    },
+    {
+      "name": "Check 8: Expired override ignored",
+      "pass": true,
+      "detail": "source=adaptive_tier2"
+    },
+    {
+      "name": "Check 9: null override is expired",
+      "pass": true,
+      "detail": "null → true"
+    },
+    {
+      "name": "Check 10: No expiry = not expired",
+      "pass": true,
+      "detail": "null expiresAt → false"
+    },
+    {
+      "name": "Check 11: Partial override: email=50, token=default",
+      "pass": true,
+      "detail": "email=50, token=50"
+    },
+    {
+      "name": "Check 12: Deterministic output",
+      "pass": true,
+      "detail": "same input → same output"
+    }
+  ],
+  "summary": {
+    "total": 12,
+    "passed": 12,
+    "failed": 0
+  }
+}

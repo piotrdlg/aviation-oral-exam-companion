@@ -1,0 +1,69 @@
+{
+  "checks": [
+    {
+      "name": "Check 1: Clean instructor returns risk=low",
+      "pass": true,
+      "detail": "riskLevel=low"
+    },
+    {
+      "name": "Check 2: High invite low connect triggers signal",
+      "pass": true,
+      "detail": "signals=high_invite_low_connect"
+    },
+    {
+      "name": "Check 3: Rate limit abuse triggers signal",
+      "pass": true,
+      "detail": "rateLimitHits7d=5"
+    },
+    {
+      "name": "Check 4: High churn triggers signal",
+      "pass": true,
+      "detail": "7/12 disconnected"
+    },
+    {
+      "name": "Check 5: Zero engagement triggers signal",
+      "pass": true,
+      "detail": "6 connected, 0 active"
+    },
+    {
+      "name": "Check 6: Multiple signals produce medium+ risk",
+      "pass": true,
+      "detail": "riskLevel=medium, score=45"
+    },
+    {
+      "name": "Check 7: Risk score capped at 100",
+      "pass": true,
+      "detail": "riskScore=80"
+    },
+    {
+      "name": "Check 8: Always returns exactly 6 signals",
+      "pass": true,
+      "detail": "signals.length=6"
+    },
+    {
+      "name": "Check 9: Reasons match triggered signals",
+      "pass": true,
+      "detail": "reasons=0, triggered=0"
+    },
+    {
+      "name": "Check 10: Admin fraud route exists",
+      "pass": true,
+      "detail": "/Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/src/app/api/admin/partnership/fraud/route.ts"
+    },
+    {
+      "name": "Check 11: Fraud route uses requireAdmin",
+      "pass": true,
+      "detail": "requireAdmin import"
+    },
+    {
+      "name": "Check 12: No PII leak in fraud route (no certificate_number, no student_email)",
+      "pass": true,
+      "detail": "PII check passed"
+    }
+  ],
+  "summary": {
+    "total": 12,
+    "passed": 12,
+    "failed": 0
+  }
+}

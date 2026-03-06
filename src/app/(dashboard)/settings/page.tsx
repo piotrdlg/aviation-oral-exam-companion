@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { VoiceTier, TierFeatures } from '@/lib/voice/types';
-import type { Rating, AircraftClass, ExaminerProfileKey } from '@/types/database';
+import type { Rating, AircraftClass, ExaminerProfileKey, CertificateType } from '@/types/database';
 import { THEMES, setTheme } from '@/lib/theme';
 import { DEFAULT_AVATARS } from '@/lib/avatar-options';
 import { EXAMINER_PROFILES, ALL_PROFILE_KEYS, type ExaminerProfileV1 } from '@/lib/examiner-profile';
@@ -109,6 +109,63 @@ export default function SettingsPage() {
   const [emailPrefsSaving, setEmailPrefsSaving] = useState<string | null>(null);
   const [emailPrefsMessage, setEmailPrefsMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
+  // Instructor Mode state
+  const [instructorFeatureEnabled, setInstructorFeatureEnabled] = useState(false);
+  const [instructorState, setInstructorState] = useState<{
+    featureEnabled: boolean;
+    hasProfile: boolean;
+    profile: {
+      status: string;
+      first_name: string | null;
+      last_name: string | null;
+      certificate_number: string | null;
+      certificate_type: CertificateType | null;
+      rejection_reason: string | null;
+      suspension_reason: string | null;
+    } | null;
+    applicationStatus: string | null;
+    canActivate: boolean;
+    canOpenInstructorMode: boolean;
+    statusMessage: string;
+    hasCourtesyAccess?: boolean;
+    courtesyReason?: string;
+    paidStudentCount?: number;
+  } | null>(null);
+  const [instructorLoading, setInstructorLoading] = useState(true);
+  const [instructorFormVisible, setInstructorFormVisible] = useState(false);
+  const [instructorFirstName, setInstructorFirstName] = useState('');
+  const [instructorLastName, setInstructorLastName] = useState('');
+  const [instructorCertNumber, setInstructorCertNumber] = useState('');
+  const [instructorCertType, setInstructorCertType] = useState<CertificateType>('CFI');
+  const [instructorSubmitting, setInstructorSubmitting] = useState(false);
+  const [instructorMessage, setInstructorMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [invites, setInvites] = useState<{ id: string; token: string; invite_url: string; expires_at: string; claimed_at: string | null; claimed_by: string | null; revoked_at: string | null }[]>([]);
+  const [invitesLoading, setInvitesLoading] = useState(false);
+  const [inviteCreating, setInviteCreating] = useState(false);
+  const [inviteCopied, setInviteCopied] = useState<string | null>(null);
+
+  // Student-instructor connection state
+  const [studentConnection, setStudentConnection] = useState<{
+    id: string;
+    state: string;
+    instructorName: string | null;
+    instructorCertType: string | null;
+    connectedAt: string | null;
+    requestedAt: string | null;
+  } | null>(null);
+  const [studentConnLoading, setStudentConnLoading] = useState(true);
+  const [instructorSearchLastName, setInstructorSearchLastName] = useState('');
+  const [instructorSearchCertNum, setInstructorSearchCertNum] = useState('');
+  const [instructorSearchResults, setInstructorSearchResults] = useState<{ id: string; userId: string; displayName: string; certType: string | null }[]>([]);
+  const [instructorSearching, setInstructorSearching] = useState(false);
+  const [connectionActionLoading, setConnectionActionLoading] = useState(false);
+  const [connectionMessage, setConnectionMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+  // Milestones state
+  const [milestones, setMilestones] = useState<{ key: string; status: string; declaredAt: string | null; declaredBy: string }[]>([]);
+  const [milestoneLoading, setMilestoneLoading] = useState(true);
+  const [milestoneUpdating, setMilestoneUpdating] = useState<string | null>(null);
+
   // Voice diagnostics state
   const [diagOpen, setDiagOpen] = useState(false);
   const [diagRunning, setDiagRunning] = useState(false);
@@ -201,6 +258,256 @@ export default function SettingsPage() {
       .catch(() => {})
       .finally(() => setEmailPrefsLoading(false));
   }, []);
+
+  // Fetch feature flags and instructor state
+  useEffect(() => {
+    fetch('/api/flags')
+      .then((res) => res.json())
+      .then((data) => {
+        const enabled = data.instructor_partnership_v1 ?? false;
+        setInstructorFeatureEnabled(enabled);
+        if (enabled) {
+          // Fetch instructor state only when feature is enabled
+          fetch('/api/user/instructor')
+            .then((res) => res.ok ? res.json() : null)
+            .then((state) => {
+              if (state) setInstructorState(state);
+              if (state?.applicationStatus === 'approved') {
+                fetch('/api/user/instructor/invites')
+                  .then((res) => res.ok ? res.json() : null)
+                  .then((data) => {
+                    if (data?.invites) setInvites(data.invites);
+                  })
+                  .catch(() => {});
+              }
+            })
+            .catch(() => {})
+            .finally(() => setInstructorLoading(false));
+          // Also fetch student's connection (student may not be an instructor)
+          fetch('/api/user/instructor/connections')
+            .then((res) => res.ok ? res.json() : null)
+            .then((data) => {
+              if (data?.connection) setStudentConnection(data.connection);
+            })
+            .catch(() => {})
+            .finally(() => setStudentConnLoading(false));
+        } else {
+          setInstructorLoading(false);
+          setStudentConnLoading(false);
+        }
+      })
+      .catch(() => {
+        setInstructorLoading(false);
+      });
+  }, []);
+
+  // Fetch milestones
+  useEffect(() => {
+    async function loadMilestones() {
+      try {
+        const res = await fetch('/api/user/milestones');
+        if (res.ok) {
+          const data = await res.json();
+          setMilestones(data.milestones || []);
+        }
+      } catch {
+        // silently fail
+      } finally {
+        setMilestoneLoading(false);
+      }
+    }
+    loadMilestones();
+  }, []);
+
+  const MILESTONE_LABELS: Record<string, string> = {
+    knowledge_test_passed: 'FAA Knowledge Test',
+    mock_oral_completed: 'Mock Oral Exam',
+    checkride_scheduled: 'Checkride Scheduled',
+    oral_passed: 'Oral Exam Passed',
+  };
+
+  const STATUS_OPTIONS: { value: string; label: string }[] = [
+    { value: 'not_set', label: 'Not Started' },
+    { value: 'in_progress', label: 'In Progress' },
+    { value: 'completed', label: 'Completed' },
+  ];
+
+  async function handleMilestoneUpdate(key: string, newStatus: string) {
+    setMilestoneUpdating(key);
+    try {
+      const res = await fetch('/api/user/milestones', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ milestoneKey: key, status: newStatus }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      // Refresh milestones
+      const refreshRes = await fetch('/api/user/milestones');
+      if (refreshRes.ok) {
+        const data = await refreshRes.json();
+        setMilestones(data.milestones || []);
+      }
+    } catch {
+      // Show error inline
+    } finally {
+      setMilestoneUpdating(null);
+    }
+  }
+
+  async function submitInstructorApplication() {
+    setInstructorSubmitting(true);
+    setInstructorMessage(null);
+    try {
+      const res = await fetch('/api/user/instructor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: instructorFirstName.trim(),
+          lastName: instructorLastName.trim(),
+          certificateNumber: instructorCertNumber.trim(),
+          certificateType: instructorCertType,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to submit application');
+      setInstructorMessage({ text: 'Application submitted! We will review it shortly.', type: 'success' });
+      setInstructorFormVisible(false);
+      // Re-fetch instructor state
+      const stateRes = await fetch('/api/user/instructor');
+      if (stateRes.ok) {
+        const newState = await stateRes.json();
+        setInstructorState(newState);
+        if (newState?.applicationStatus === 'approved') {
+          fetch('/api/user/instructor/invites')
+            .then((res) => res.ok ? res.json() : null)
+            .then((data) => {
+              if (data?.invites) setInvites(data.invites);
+            })
+            .catch(() => {});
+        }
+      }
+    } catch (err) {
+      setInstructorMessage({ text: err instanceof Error ? err.message : 'Failed to submit application', type: 'error' });
+    } finally {
+      setInstructorSubmitting(false);
+    }
+  }
+
+  async function createInviteLink() {
+    setInviteCreating(true);
+    try {
+      const res = await fetch('/api/user/instructor/invites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create' }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create invite');
+      // Refresh invites list
+      const listRes = await fetch('/api/user/instructor/invites');
+      if (listRes.ok) {
+        const listData = await listRes.json();
+        if (listData?.invites) setInvites(listData.invites);
+      }
+    } catch (err) {
+      setInstructorMessage({ text: err instanceof Error ? err.message : 'Failed to create invite', type: 'error' });
+    } finally {
+      setInviteCreating(false);
+    }
+  }
+
+  async function revokeInviteLink(inviteId: string) {
+    try {
+      const res = await fetch('/api/user/instructor/invites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'revoke', inviteId }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to revoke invite');
+      }
+      setInvites((prev) => prev.filter((i) => i.id !== inviteId));
+    } catch (err) {
+      setInstructorMessage({ text: err instanceof Error ? err.message : 'Failed to revoke invite', type: 'error' });
+    }
+  }
+
+  function copyInviteUrl(url: string, inviteId: string) {
+    navigator.clipboard.writeText(url).then(() => {
+      setInviteCopied(inviteId);
+      setTimeout(() => setInviteCopied(null), 2000);
+    });
+  }
+
+  async function searchForInstructor() {
+    if (!instructorSearchLastName.trim()) return;
+    setInstructorSearching(true);
+    setConnectionMessage(null);
+    try {
+      const params = new URLSearchParams({ lastName: instructorSearchLastName.trim() });
+      if (instructorSearchCertNum.trim()) params.set('certNumber', instructorSearchCertNum.trim());
+      const res = await fetch(`/api/user/instructor/search?${params}`);
+      if (!res.ok) throw new Error('Search failed');
+      const data = await res.json();
+      setInstructorSearchResults(data.instructors || []);
+      if (data.instructors?.length === 0) {
+        setConnectionMessage({ text: 'No approved instructors found with that name.', type: 'error' });
+      }
+    } catch {
+      setConnectionMessage({ text: 'Failed to search. Please try again.', type: 'error' });
+    } finally {
+      setInstructorSearching(false);
+    }
+  }
+
+  async function requestInstructorConnection(instructorUserId: string) {
+    setConnectionActionLoading(true);
+    setConnectionMessage(null);
+    try {
+      const res = await fetch('/api/user/instructor/connections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'request_connection', instructor_user_id: instructorUserId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to request connection');
+      setConnectionMessage({ text: 'Connection request sent! Your instructor will need to approve it.', type: 'success' });
+      setInstructorSearchResults([]);
+      // Refresh connection state
+      const connRes = await fetch('/api/user/instructor/connections');
+      if (connRes.ok) {
+        const connData = await connRes.json();
+        if (connData?.connection) setStudentConnection(connData.connection);
+      }
+    } catch (err) {
+      setConnectionMessage({ text: err instanceof Error ? err.message : 'Failed to request connection', type: 'error' });
+    } finally {
+      setConnectionActionLoading(false);
+    }
+  }
+
+  async function cancelOrDisconnect(connectionId: string, action: 'cancel_request' | 'disconnect') {
+    setConnectionActionLoading(true);
+    setConnectionMessage(null);
+    try {
+      const res = await fetch('/api/user/instructor/connections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, connection_id: connectionId }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed');
+      }
+      setStudentConnection(null);
+      setConnectionMessage({ text: action === 'disconnect' ? 'Disconnected from instructor.' : 'Request cancelled.', type: 'success' });
+    } catch (err) {
+      setConnectionMessage({ text: err instanceof Error ? err.message : 'Failed', type: 'error' });
+    } finally {
+      setConnectionActionLoading(false);
+    }
+  }
 
   async function openCustomerPortal() {
     setPortalLoading(true);
@@ -1607,6 +1914,409 @@ export default function SettingsPage() {
           </div>
         )}
       </div>
+
+      {/* 7.5. Your Instructor (student connection — behind feature flag) */}
+      {instructorFeatureEnabled && (
+        <div className="bezel rounded-lg border border-c-border p-6">
+          <h2 className="font-mono font-semibold text-base text-c-amber mb-1 tracking-wider uppercase">YOUR INSTRUCTOR</h2>
+          <p className="font-mono text-xs text-c-muted mb-5">
+            Connect with your flight instructor to share your practice progress.
+          </p>
+
+          {studentConnLoading ? (
+            <div className="font-mono text-sm text-c-dim uppercase">LOADING...</div>
+          ) : studentConnection?.state === 'connected' ? (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-2.5 h-2.5 rounded-full bg-c-green inline-block glow-g" />
+                <span className="font-mono text-sm text-c-green font-semibold uppercase">CONNECTED</span>
+              </div>
+              <div className="iframe rounded-lg p-3 mb-3">
+                <div className="font-mono text-xs text-c-muted mb-1 uppercase">INSTRUCTOR</div>
+                <div className="font-mono text-sm text-c-text">
+                  {studentConnection.instructorName || 'Instructor'}
+                  {studentConnection.instructorCertType && (
+                    <span className="ml-2 font-mono text-[10px] px-2 py-0.5 rounded border border-c-amber/30 bg-c-amber-lo text-c-amber uppercase">
+                      {studentConnection.instructorCertType}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => cancelOrDisconnect(studentConnection.id, 'disconnect')}
+                disabled={connectionActionLoading}
+                className="px-3 py-1.5 rounded border border-c-red/20 bg-c-red-dim text-c-red hover:bg-c-red/20 font-mono text-[10px] uppercase transition-colors disabled:opacity-50"
+              >
+                {connectionActionLoading ? '...' : 'DISCONNECT'}
+              </button>
+              {connectionMessage && (
+                <p className={`font-mono text-xs mt-3 ${connectionMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+                  {connectionMessage.text}
+                </p>
+              )}
+            </div>
+          ) : studentConnection?.state === 'pending' ? (
+            <div>
+              <p className="font-mono text-sm text-c-muted mb-3">
+                Connection request sent to <span className="text-c-text">{studentConnection.instructorName || 'instructor'}</span>. Awaiting approval.
+              </p>
+              <button
+                onClick={() => cancelOrDisconnect(studentConnection.id, 'cancel_request')}
+                disabled={connectionActionLoading}
+                className="px-3 py-1.5 rounded border border-c-border bg-c-bezel text-c-muted hover:text-c-text font-mono text-[10px] uppercase transition-colors disabled:opacity-50"
+              >
+                {connectionActionLoading ? '...' : 'CANCEL REQUEST'}
+              </button>
+              {connectionMessage && (
+                <p className={`font-mono text-xs mt-3 ${connectionMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+                  {connectionMessage.text}
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase tracking-wider">INSTRUCTOR LAST NAME</label>
+                  <input
+                    type="text"
+                    value={instructorSearchLastName}
+                    onChange={(e) => setInstructorSearchLastName(e.target.value)}
+                    placeholder="e.g. Smith"
+                    maxLength={100}
+                    className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase tracking-wider">CERTIFICATE NUMBER</label>
+                  <input
+                    type="text"
+                    value={instructorSearchCertNum}
+                    onChange={(e) => setInstructorSearchCertNum(e.target.value)}
+                    placeholder="Optional"
+                    maxLength={50}
+                    className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
+                  />
+                </div>
+              </div>
+              <button
+                onClick={searchForInstructor}
+                disabled={instructorSearching || !instructorSearchLastName.trim()}
+                className="px-4 py-2 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg font-mono text-sm font-semibold rounded-lg transition-colors uppercase tracking-wide"
+              >
+                {instructorSearching ? 'SEARCHING...' : 'FIND INSTRUCTOR'}
+              </button>
+
+              {connectionMessage && (
+                <p className={`font-mono text-xs ${connectionMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+                  {connectionMessage.text}
+                </p>
+              )}
+
+              {instructorSearchResults.length > 0 && (
+                <div className="space-y-2">
+                  <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider">RESULTS</p>
+                  {instructorSearchResults.map((inst) => (
+                    <div key={inst.id} className="flex items-center justify-between bg-c-panel rounded-lg border border-c-border px-3 py-2">
+                      <div>
+                        <span className="font-mono text-sm text-c-text">{inst.displayName}</span>
+                        {inst.certType && (
+                          <span className="ml-2 font-mono text-[10px] px-2 py-0.5 rounded border border-c-amber/30 bg-c-amber-lo text-c-amber uppercase">
+                            {inst.certType}
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => requestInstructorConnection(inst.userId)}
+                        disabled={connectionActionLoading}
+                        className="px-3 py-1.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg font-mono text-[10px] font-semibold rounded-lg transition-colors uppercase"
+                      >
+                        {connectionActionLoading ? '...' : 'CONNECT'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 7.75. Checkride Milestones */}
+      <div className="bezel rounded-lg border border-c-border p-6">
+        <h2 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-1">CHECKRIDE MILESTONES</h2>
+        <p className="font-mono text-[9px] text-c-dim mb-4">
+          Track your progress toward your checkride. These are self-reported and shared with your connected instructor.
+        </p>
+        {milestoneLoading ? (
+          <div className="h-24 bg-c-bezel rounded animate-pulse" />
+        ) : (
+          <div className="space-y-3">
+            {milestones.map(m => (
+              <div key={m.key} className="flex items-center gap-3 py-2 border-b border-c-border last:border-0">
+                <span className="font-mono text-sm text-c-text flex-1">{MILESTONE_LABELS[m.key] || m.key}</span>
+                <select
+                  value={m.status}
+                  onChange={(e) => handleMilestoneUpdate(m.key, e.target.value)}
+                  disabled={milestoneUpdating === m.key}
+                  className="font-mono text-[10px] bg-c-panel border border-c-border rounded px-2 py-1 text-c-text disabled:opacity-50"
+                >
+                  {STATUS_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 8. Instructor Mode (behind feature flag) */}
+      {instructorFeatureEnabled && (
+        <div className="bezel rounded-lg border border-c-border p-6">
+          <h2 className="font-mono font-semibold text-base text-c-amber mb-1 tracking-wider uppercase">INSTRUCTOR MODE</h2>
+          <p className="font-mono text-xs text-c-muted mb-5">
+            Are you a CFI? Activate Instructor Mode to connect with your students on HeyDPE and monitor their checkride preparation progress.
+          </p>
+
+          {instructorLoading ? (
+            <div className="font-mono text-sm text-c-dim uppercase">LOADING...</div>
+          ) : !instructorState?.hasProfile && !instructorFormVisible ? (
+            /* No profile yet — show activation prompt */
+            <div>
+              <button
+                onClick={() => setInstructorFormVisible(true)}
+                className="px-4 py-2 bg-c-amber hover:bg-c-amber/90 text-c-bg font-mono text-sm font-semibold rounded-lg transition-colors uppercase tracking-wide"
+              >
+                APPLY FOR INSTRUCTOR MODE
+              </button>
+              {instructorMessage && (
+                <p className={`font-mono text-xs mt-3 ${instructorMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+                  {instructorMessage.type === 'success' ? '\u2713 ' : ''}{instructorMessage.text}
+                </p>
+              )}
+            </div>
+          ) : instructorFormVisible || (instructorState?.applicationStatus === 'rejected' && instructorFormVisible) ? (
+            /* Application form */
+            <div className="space-y-4">
+              <div>
+                <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase tracking-wider">FIRST NAME</label>
+                <input
+                  type="text"
+                  value={instructorFirstName}
+                  onChange={(e) => setInstructorFirstName(e.target.value)}
+                  placeholder="Your first name"
+                  maxLength={100}
+                  required
+                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase tracking-wider">LAST NAME</label>
+                <input
+                  type="text"
+                  value={instructorLastName}
+                  onChange={(e) => setInstructorLastName(e.target.value)}
+                  placeholder="Your last name"
+                  maxLength={100}
+                  required
+                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase tracking-wider">CERTIFICATE NUMBER</label>
+                <input
+                  type="text"
+                  value={instructorCertNumber}
+                  onChange={(e) => setInstructorCertNumber(e.target.value)}
+                  placeholder="FAA certificate number"
+                  maxLength={50}
+                  required
+                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase tracking-wider">CERTIFICATE TYPE</label>
+                <select
+                  value={instructorCertType}
+                  onChange={(e) => setInstructorCertType(e.target.value as CertificateType)}
+                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber transition-colors"
+                >
+                  <option value="CFI">CFI — Certified Flight Instructor</option>
+                  <option value="CFII">CFII — Certified Flight Instructor Instrument</option>
+                  <option value="MEI">MEI — Multi-Engine Instructor</option>
+                  <option value="AGI">AGI — Advanced Ground Instructor</option>
+                  <option value="IGI">IGI — Instrument Ground Instructor</option>
+                </select>
+              </div>
+
+              {instructorMessage && (
+                <p className={`font-mono text-xs ${instructorMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+                  {instructorMessage.type === 'success' ? '\u2713 ' : ''}{instructorMessage.text}
+                </p>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setInstructorFormVisible(false);
+                    setInstructorMessage(null);
+                  }}
+                  disabled={instructorSubmitting}
+                  className="px-4 py-2 text-c-muted hover:text-c-text font-mono text-sm transition-colors uppercase tracking-wide"
+                >
+                  CANCEL
+                </button>
+                <button
+                  onClick={submitInstructorApplication}
+                  disabled={instructorSubmitting || !instructorFirstName.trim() || !instructorLastName.trim() || !instructorCertNumber.trim()}
+                  className="px-5 py-2 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg font-mono text-sm font-semibold rounded-lg transition-colors uppercase tracking-wide"
+                >
+                  {instructorSubmitting ? 'SUBMITTING...' : 'APPLY FOR INSTRUCTOR MODE'}
+                </button>
+              </div>
+            </div>
+          ) : instructorState?.applicationStatus === 'pending' ? (
+            /* Pending review */
+            <div>
+              <p className="font-mono text-sm text-c-muted">
+                Your instructor application is under review. We&apos;ll notify you when it&apos;s approved.
+              </p>
+              {instructorMessage && (
+                <p className={`font-mono text-xs mt-3 ${instructorMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+                  {instructorMessage.type === 'success' ? '\u2713 ' : ''}{instructorMessage.text}
+                </p>
+              )}
+            </div>
+          ) : instructorState?.applicationStatus === 'approved' ? (
+            /* Approved — active instructor */
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-2.5 h-2.5 rounded-full bg-c-green inline-block glow-g" />
+                <span className="font-mono text-sm text-c-green font-semibold uppercase">ACTIVE</span>
+              </div>
+              <p className="font-mono text-xs text-gray-500 mb-3">
+                Instructor access is a courtesy benefit and may be revoked.
+              </p>
+              {/* Courtesy access status */}
+              <div className="flex flex-col gap-1 mb-3">
+                {instructorState.hasCourtesyAccess ? (
+                  <span className="font-mono text-xs text-c-green">Courtesy access: Active</span>
+                ) : (
+                  <span className="font-mono text-xs text-c-amber">Courtesy access: Inactive</span>
+                )}
+                {typeof instructorState.paidStudentCount === 'number' && (
+                  <span className="font-mono text-xs text-c-dim">
+                    {instructorState.paidStudentCount} paying {instructorState.paidStudentCount === 1 ? 'student' : 'students'} connected
+                  </span>
+                )}
+              </div>
+              {instructorState.profile?.certificate_type && instructorState.profile?.certificate_number && (
+                <div className="iframe rounded-lg p-3">
+                  <div className="font-mono text-xs text-c-muted mb-1 uppercase">CERTIFICATE</div>
+                  <div className="font-mono text-sm text-c-text">
+                    {instructorState.profile.certificate_type} &mdash; ****{instructorState.profile.certificate_number.slice(-4)}
+                  </div>
+                </div>
+              )}
+              {/* Invite Students */}
+              <div className="mt-5 pt-5 border-t border-c-border">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-0.5">INVITE STUDENTS</h3>
+                    <p className="font-mono text-[10px] text-c-dim">Share a link with your students so they can connect with you on HeyDPE.</p>
+                  </div>
+                  <button
+                    onClick={createInviteLink}
+                    disabled={inviteCreating}
+                    className="px-3 py-1.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg font-mono text-[10px] font-semibold rounded-lg transition-colors uppercase tracking-wide whitespace-nowrap"
+                  >
+                    {inviteCreating ? 'CREATING...' : '+ NEW LINK'}
+                  </button>
+                </div>
+
+                {invites.length > 0 ? (
+                  <div className="space-y-2">
+                    {invites.filter(i => !i.revoked_at).map((invite) => {
+                      const expired = new Date(invite.expires_at) < new Date();
+                      const claimed = !!invite.claimed_at;
+                      return (
+                        <div key={invite.id} className="flex items-center gap-2 bg-c-panel rounded-lg border border-c-border px-3 py-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-mono text-[10px] text-c-text truncate">{invite.invite_url}</div>
+                            <div className="font-mono text-[9px] text-c-dim mt-0.5">
+                              {claimed ? (
+                                <span className="text-c-green">Claimed</span>
+                              ) : expired ? (
+                                <span className="text-c-red">Expired</span>
+                              ) : (
+                                <span>Expires {new Date(invite.expires_at).toLocaleDateString()}</span>
+                              )}
+                            </div>
+                          </div>
+                          {!claimed && !expired && (
+                            <button
+                              onClick={() => copyInviteUrl(invite.invite_url, invite.id)}
+                              className="px-2 py-1 rounded border border-c-border bg-c-bezel text-c-muted hover:text-c-text font-mono text-[9px] uppercase transition-colors whitespace-nowrap"
+                            >
+                              {inviteCopied === invite.id ? 'COPIED!' : 'COPY'}
+                            </button>
+                          )}
+                          {!claimed && (
+                            <button
+                              onClick={() => revokeInviteLink(invite.id)}
+                              className="px-2 py-1 rounded border border-c-red/20 bg-c-red-dim text-c-red hover:bg-c-red/20 font-mono text-[9px] uppercase transition-colors whitespace-nowrap"
+                            >
+                              REVOKE
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="font-mono text-[10px] text-c-dim">No active invite links. Create one to share with your students.</p>
+                )}
+              </div>
+            </div>
+          ) : instructorState?.applicationStatus === 'rejected' ? (
+            /* Rejected — show reason + reapply */
+            <div>
+              <p className="font-mono text-sm text-c-muted mb-3">
+                {instructorState.profile?.rejection_reason
+                  ? `Your application was not approved: ${instructorState.profile.rejection_reason}`
+                  : 'Your application was not approved. You may reapply with updated information.'}
+              </p>
+              <button
+                onClick={() => setInstructorFormVisible(true)}
+                className="px-4 py-2 bg-c-amber hover:bg-c-amber/90 text-c-bg font-mono text-sm font-semibold rounded-lg transition-colors uppercase tracking-wide"
+              >
+                REAPPLY
+              </button>
+              {instructorMessage && (
+                <p className={`font-mono text-xs mt-3 ${instructorMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+                  {instructorMessage.type === 'success' ? '\u2713 ' : ''}{instructorMessage.text}
+                </p>
+              )}
+            </div>
+          ) : instructorState?.applicationStatus === 'suspended' ? (
+            /* Suspended — show reason + contact support */
+            <div>
+              <p className="font-mono text-sm text-c-muted mb-3">
+                {instructorState.profile?.suspension_reason
+                  ? `Your instructor account has been suspended: ${instructorState.profile.suspension_reason}`
+                  : 'Your instructor account has been suspended.'}
+              </p>
+              <a
+                href="mailto:support@heydpe.com"
+                className="font-mono text-sm text-c-amber hover:underline uppercase"
+              >
+                CONTACT SUPPORT
+              </a>
+            </div>
+          ) : null}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,0 +1,7 @@
+ docs/instructor-program/00 - Index.md              | 20 +++++++-
+ package.json                                       |  4 +-
+ src/app/(admin)/AdminShell.tsx                     |  1 +
+ src/app/(dashboard)/instructor/page.tsx            |  3 ++
+ .../instructor/students/[student_user_id]/page.tsx |  3 ++
+ src/app/api/instructor/invites/email/route.ts      | 59 ++++++++++++++++++++--
+ 6 files changed, 85 insertions(+), 5 deletions(-)

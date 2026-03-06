@@ -1,0 +1,161 @@
+{
+  "gate": "instructor-public-launch",
+  "timestamp": "2026-03-06T17:36:17.156Z",
+  "environment": "offline-deterministic",
+  "checks": [
+    {
+      "id": 1,
+      "name": "Feature flag key is 'instructor_partnership_v1'",
+      "category": "Activation & State Machine",
+      "critical": true,
+      "pass": true,
+      "detail": "Feature flag key constant found in instructor-access.ts",
+      "expected": "instructor_partnership_v1",
+      "actual": "instructor_partnership_v1"
+    },
+    {
+      "id": 2,
+      "name": "State machine has all 5 states (draft, pending, approved, rejected, suspended)",
+      "category": "Activation & State Machine",
+      "critical": true,
+      "pass": true,
+      "detail": "All 5 states found in InstructorStatus type",
+      "expected": "[\"draft\",\"pending\",\"approved\",\"rejected\",\"suspended\"]",
+      "actual": "[\"draft\",\"pending\",\"approved\",\"rejected\",\"suspended\"]"
+    },
+    {
+      "id": 3,
+      "name": "Valid transitions cover approve/reject/suspend/reinstate",
+      "category": "Activation & State Machine",
+      "critical": true,
+      "pass": true,
+      "detail": "All 4 transition functions found",
+      "expected": "approve, reject, suspend, reinstate",
+      "actual": "approve, reject, suspend, reinstate"
+    },
+    {
+      "id": 4,
+      "name": "Self-connection is prevented",
+      "category": "Connections",
+      "critical": true,
+      "pass": true,
+      "detail": "Self-connection guard found in requestConnection()",
+      "expected": "studentUserId === instructorUserId + error message",
+      "actual": "guard present"
+    },
+    {
+      "id": 5,
+      "name": "Connection states include all 6 required values",
+      "category": "Connections",
+      "critical": true,
+      "pass": true,
+      "detail": "All 6 connection states found in ConnectionState type",
+      "expected": "[\"invited\",\"pending\",\"connected\",\"inactive\",\"rejected\",\"disconnected\"]",
+      "actual": "[\"invited\",\"pending\",\"connected\",\"inactive\",\"rejected\",\"disconnected\"]"
+    },
+    {
+      "id": 6,
+      "name": "Search returns privacy-safe fields only (excludes certificate_number)",
+      "category": "Connections",
+      "critical": true,
+      "pass": true,
+      "detail": "searchInstructors select: id, user_id, first_name, last_name, certificate_type (no certificate_number)",
+      "expected": "select without certificate_number",
+      "actual": "id, user_id, first_name, last_name, certificate_type"
+    },
+    {
+      "id": 7,
+      "name": "Invite token length is 48 chars (24 bytes hex)",
+      "category": "Invites & Referrals",
+      "critical": false,
+      "pass": true,
+      "detail": "TOKEN_BYTES=24 → 48 hex chars",
+      "expected": "48 hex chars (TOKEN_BYTES=24)",
+      "actual": "48 hex chars (TOKEN_BYTES=24)"
+    },
+    {
+      "id": 8,
+      "name": "Referral code uses unambiguous alphabet (excludes 0/O/I/1)",
+      "category": "Invites & Referrals",
+      "critical": false,
+      "pass": true,
+      "detail": "REFERRAL_ALPHABET has 32 chars, correctly excludes 0, O, I, 1",
+      "expected": "Alphabet excludes 0, O, I, 1",
+      "actual": "32 unambiguous chars"
+    },
+    {
+      "id": 9,
+      "name": "Self-referral check exists (invite and/or referral claim)",
+      "category": "Invites & Referrals",
+      "critical": true,
+      "pass": true,
+      "detail": "Found: invite claim guard, referral claim guard",
+      "expected": "Self-referral prevention in claim logic",
+      "actual": "invite claim guard, referral claim guard"
+    },
+    {
+      "id": 10,
+      "name": "PAID_ACTIVE_STATUSES is ['active'] (trialing excluded by default)",
+      "category": "Entitlements",
+      "critical": true,
+      "pass": true,
+      "detail": "PAID_ACTIVE_STATUSES contains exactly ['active']",
+      "expected": "['active']",
+      "actual": "['active']"
+    },
+    {
+      "id": 11,
+      "name": "Courtesy tier is 'checkride_prep'",
+      "category": "Entitlements",
+      "critical": true,
+      "pass": true,
+      "detail": "COURTESY_TIER = 'checkride_prep'",
+      "expected": "checkride_prep",
+      "actual": "checkride_prep"
+    },
+    {
+      "id": 12,
+      "name": "Rate limit defaults are 20 email / 50 token",
+      "category": "Abuse & Monitoring",
+      "critical": false,
+      "pass": true,
+      "detail": "rate-limiter: email=20, token=50; quotas: email=20, token=50",
+      "expected": "email=20, token=50",
+      "actual": "email=20, token=50"
+    },
+    {
+      "id": 13,
+      "name": "Fraud signal count is 6",
+      "category": "Abuse & Monitoring",
+      "critical": false,
+      "pass": true,
+      "detail": "6 signals: high_invite_low_connect, rate_limit_abuse, burst_invite_activity, high_churn, zero_engagement, suspicious_paid_ratio",
+      "expected": "6",
+      "actual": "6"
+    },
+    {
+      "id": 14,
+      "name": "FAA import script exists at scripts/instructor/import-faa-airmen.ts",
+      "category": "Operational",
+      "critical": true,
+      "pass": true,
+      "detail": "Script exists with faa_airmen, faa_airmen_certs, faa_import_log references",
+      "expected": "File exists with faa_airmen/faa_airmen_certs/faa_import_log",
+      "actual": "present and valid"
+    },
+    {
+      "id": 15,
+      "name": "FAA freshness threshold is 45 days",
+      "category": "Operational",
+      "critical": false,
+      "pass": true,
+      "detail": "45-day threshold found in scripts/eval/instructor-faa-freshness.ts",
+      "expected": "45-day freshness threshold in code or eval script",
+      "actual": "Found in scripts/eval/instructor-faa-freshness.ts"
+    }
+  ],
+  "passed": 15,
+  "failed": 0,
+  "total": 15,
+  "verdict": "GO"
+}

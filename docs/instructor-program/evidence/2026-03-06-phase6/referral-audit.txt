@@ -1,0 +1,24 @@
+=== Instructor Referral / Identity — Deterministic Offline Audit ===
+Date: 2026-03-06
+Phase: 6 (Referral & Identity)
+
+  [PASS] Check 1: normalizeSlug produces lowercase hyphenated output
+  [PASS] Check 2: normalizeSlug handles diacritics
+  [PASS] Check 3: normalizeSlug handles empty input
+  [PASS] Check 4: REFERRAL_ALPHABET excludes ambiguous chars (0, O, I, 1)
+  [PASS] Check 5: REFERRAL_CODE_LENGTH is 8
+  [PASS] Check 6: generateReferralCode produces code matching alphabet
+  [PASS] Check 7: generateReferralCode produces unique codes
+  [PASS] Check 8: ConnectionSource covers 4 known values
+  [PASS] Check 9: MAX_SLUG_ATTEMPTS is 5
+  [PASS] Check 10: normalizeSlug is deterministic
+
+=== SUMMARY ===
+  Total checks: 10
+  Passed:       10
+  Failed:       0
+  Result:       ALL PASS
+
+Evidence saved to /Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/docs/instructor-program/evidence/2026-03-06-phase6/eval/
+  - instructor-referral-audit.json
+  - instructor-referral-audit.md

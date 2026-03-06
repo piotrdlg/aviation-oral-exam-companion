@@ -1,0 +1,26 @@
+=== Instructor Abuse Hardening — Deterministic Offline Audit ===
+Date: 2026-03-06
+Phase: 7 (Abuse Hardening)
+
+  [PASS] Check 1: Courtesy does NOT count trialing by default
+  [PASS] Check 2: QR endpoint route file exists and returns image/png
+  [PASS] Check 3: QR route uses qrcode library with toBuffer for PNG generation
+  [PASS] Check 4: Email invite route rejects non-approved instructors
+  [PASS] Check 5: Rate limit defaults: email=20, token=50
+  [PASS] Check 6: Rate limit window is 24 hours
+  [PASS] Check 7: Self-referral blocked in claim route
+  [PASS] Check 8: ConnectionSource values are exactly 4: referral_link, invite_link, student_search, admin
+  [PASS] Check 9: Email invite sends produce log event (logInviteEvent)
+  [PASS] Check 10: Admin metrics endpoint returns expected schema keys
+  [PASS] Check 11: Feature flag gating: referral claim checks isInstructorFeatureEnabled
+  [PASS] Check 12: No certificate_number in public referral responses
+
+=== SUMMARY ===
+  Total checks: 12
+  Passed:       12
+  Failed:       0
+  Result:       ALL PASS
+
+Evidence saved to /Users/piotrdlugiewicz/claude-projects/aviation-oral-exam-companion/docs/instructor-program/evidence/2026-03-06-phase7/eval/
+  - instructor-abuse-audit.json
+  - instructor-abuse-audit.md

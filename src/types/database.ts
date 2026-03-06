@@ -498,6 +498,219 @@ export interface SystemConfigStructured {
 }
 
 // ============================================================
+// Instructor Partnership
+// ============================================================
+
+export type InstructorProfileStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'suspended';
+export type CertificateType = 'CFI' | 'CFII' | 'MEI' | 'AGI' | 'IGI';
+export type VerificationStatus = 'unverified' | 'verified_auto' | 'needs_manual_review' | 'verified_admin';
+export type VerificationSource = 'faa_database' | 'admin_manual' | 'faa_inquiry';
+export type VerificationConfidence = 'high' | 'medium' | 'low' | 'none';
+export type InviteType = 'link' | 'email' | 'qr';
+export type ConnectionState = 'invited' | 'pending' | 'connected' | 'inactive' | 'rejected' | 'disconnected';
+export type ConnectionInitiator = 'student' | 'instructor' | 'system';
+export type ConnectionSource = 'referral_link' | 'invite_link' | 'student_search' | 'admin';
+export type AccessOverrideType = 'courtesy_access' | 'beta_tester' | 'partnership' | 'manual';
+
+export interface InstructorProfile {
+  id: string;
+  user_id: string;
+  status: InstructorProfileStatus;
+  first_name: string | null;
+  last_name: string | null;
+  certificate_number: string | null;
+  certificate_type: CertificateType | null;
+  bio: string | null;
+  submitted_at: string | null;
+  approved_at: string | null;
+  approved_by: string | null;
+  rejected_at: string | null;
+  rejected_by: string | null;
+  rejection_reason: string | null;
+  suspended_at: string | null;
+  suspended_by: string | null;
+  suspension_reason: string | null;
+  admin_notes: string | null;
+  // Phase 6: Public identity
+  slug: string | null;
+  referral_code: string | null;
+  // Phase 2: Verification fields
+  verification_status: VerificationStatus;
+  verification_source: VerificationSource | null;
+  verification_confidence: VerificationConfidence | null;
+  verification_data: Record<string, unknown>;
+  verification_attempted_at: string | null;
+  auto_approved: boolean;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+// FAA Airmen records (imported from FAA Releasable Database)
+export interface FaaAirman {
+  id: string;
+  faa_unique_id: string;
+  first_name: string;
+  last_name: string;
+  first_name_normalized: string;
+  last_name_normalized: string;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  region: string | null;
+  med_class: string | null;
+  med_date: string | null;
+  med_exp_date: string | null;
+  source_file: string;
+  source_date: string;
+  imported_at: string;
+}
+
+export interface FaaAirmanCert {
+  id: string;
+  faa_unique_id: string;
+  cert_type: string;
+  cert_level: string | null;
+  cert_expire_date: string | null;
+  rating_text: string | null;
+  source_file: string;
+  source_date: string;
+  imported_at: string;
+}
+
+export interface InstructorInvite {
+  id: string;
+  instructor_user_id: string;
+  invite_type: InviteType;
+  token: string;
+  target_email: string | null;
+  target_name: string | null;
+  claimed_by_user_id: string | null;
+  accepted_at: string | null;
+  revoked_at: string | null;
+  expires_at: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StudentInstructorConnection {
+  id: string;
+  instructor_user_id: string;
+  student_user_id: string;
+  state: ConnectionState;
+  initiated_by: ConnectionInitiator;
+  invite_id: string | null;
+  requested_at: string | null;
+  approved_at: string | null;
+  connected_at: string | null;
+  disconnected_at: string | null;
+  disconnected_by: string | null;
+  disconnect_reason: string | null;
+  connection_source: ConnectionSource | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InstructorAccessOverride {
+  id: string;
+  instructor_user_id: string;
+  override_type: AccessOverrideType;
+  active: boolean;
+  expires_at: string | null;
+  reason: string | null;
+  created_by: string | null;
+  revoked_at: string | null;
+  revoked_by: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+// ============================================================
+// User entitlement overrides
+// ============================================================
+
+export type EntitlementKey = 'paid_equivalent';
+
+export interface UserEntitlementOverride {
+  id: string;
+  user_id: string;
+  entitlement_key: EntitlementKey;
+  active: boolean;
+  expires_at: string | null;
+  reason: string;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ============================================================
+// Instructor entitlement resolution
+// ============================================================
+
+export type InstructorProgramStatus =
+  | 'not_instructor'
+  | 'pending_approval'
+  | 'approved_no_courtesy'
+  | 'approved_with_courtesy'
+  | 'suspended';
+
+export type CourtesyReason = 'paid_student' | 'student_override' | 'direct_override' | 'none';
+
+export interface InstructorEntitlementResult {
+  isInstructor: boolean;
+  instructorStatus: InstructorProgramStatus;
+  hasCourtesyAccess: boolean;
+  courtesyReason: CourtesyReason;
+  paidStudentCount: number;
+  paidEquivalentStudentCount: number;
+  effectiveTierOverride: 'checkride_prep' | null;
+  cacheTTLSeconds: number;
+}
+
+// ============================================================
+// Student milestones
+// ============================================================
+
+export type MilestoneKey =
+  | 'knowledge_test_passed'
+  | 'mock_oral_completed'
+  | 'checkride_scheduled'
+  | 'oral_passed';
+
+export type MilestoneStatus = 'not_set' | 'in_progress' | 'completed';
+export type MilestoneDeclaredByRole = 'student' | 'instructor' | 'admin';
+
+export const MILESTONE_KEYS: MilestoneKey[] = [
+  'knowledge_test_passed',
+  'mock_oral_completed',
+  'checkride_scheduled',
+  'oral_passed',
+];
+
+export const MILESTONE_LABELS: Record<MilestoneKey, string> = {
+  knowledge_test_passed: 'FAA Knowledge Test',
+  mock_oral_completed: 'Mock Oral Exam',
+  checkride_scheduled: 'Checkride Scheduled',
+  oral_passed: 'Oral Exam Passed',
+};
+
+export interface StudentMilestone {
+  id: string;
+  student_user_id: string;
+  milestone_key: MilestoneKey;
+  status: MilestoneStatus;
+  declared_by_user_id: string;
+  declared_by_role: MilestoneDeclaredByRole;
+  declared_at: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ============================================================
 // Support tickets
 // ============================================================
 
@@ -512,7 +725,8 @@ export type EmailCategory =
   | 'learning_digest'
   | 'motivation_nudges'
   | 'product_updates'
-  | 'marketing';
+  | 'marketing'
+  | 'instructor_weekly_summary';
 
 export const REQUIRED_EMAIL_CATEGORIES: EmailCategory[] = [
   'account_security',
@@ -525,6 +739,7 @@ export const OPTIONAL_EMAIL_CATEGORIES: EmailCategory[] = [
   'motivation_nudges',
   'product_updates',
   'marketing',
+  'instructor_weekly_summary',
 ];
 
 export type EmailPreferenceSource = 'default' | 'user_settings' | 'unsubscribe_link' | 'admin';

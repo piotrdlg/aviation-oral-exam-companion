@@ -49,6 +49,9 @@ sources/
 # scripts artifacts
 scripts/__pycache__/
 
+# test/evidence screenshots (large PNGs, not source code)
+docs/screenshots/
+
 # supabase temp
 supabase/.temp/
 .env*.local

@@ -108,10 +108,15 @@ function LoginForm() {
     // when the user returns via the auth callback)
     const utm = getStoredUTMParams();
 
+    const redirectParam = searchParams.get('redirect');
+    const callbackUrl = redirectParam
+      ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectParam)}`
+      : `${window.location.origin}/auth/callback`;
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: callbackUrl,
       },
     });
 
@@ -219,7 +224,8 @@ function LoginForm() {
       setLoadingVerify(false);
     } else {
       persistUTMToUser('email_otp');
-      router.push('/home');
+      const redirectTo = searchParams.get('redirect') || '/home';
+      router.push(redirectTo);
       router.refresh();
     }
   }

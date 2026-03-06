@@ -12,6 +12,8 @@ import { useSentenceTTS } from '@/hooks/useSentenceTTS';
 import { ExamImages } from '@/components/ui/ExamImages';
 import { TextAssetCard } from '@/components/ui/TextAssetCard';
 import { setTheme } from '@/lib/theme';
+import { useInstructorConnection } from '@/hooks/useInstructorConnection';
+import { ReferralWelcomeBanner } from '@/components/ui/ReferralWelcomeBanner';
 
 /**
  * Retry a fetch call once on transient infrastructure errors (405, 502, 503, 504).
@@ -110,6 +112,8 @@ export default function PracticePage() {
   const [quotaWarning, setQuotaWarning] = useState<string | null>(null);
   // Post-checkout success banner (Task 36)
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+  // Referral welcome banner (Phase 6 Step E)
+  const instructorConnection = useInstructorConnection();
   // Report inaccurate answer modal state (Task 26)
   const [reportModal, setReportModal] = useState<{ exchangeIndex: number; examinerText: string } | null>(null);
   const [reportErrorType, setReportErrorType] = useState<'factual' | 'scoring' | 'safety'>('factual');
@@ -1370,6 +1374,9 @@ export default function PracticePage() {
             </div>
           </div>
         )}
+
+        {/* Referral welcome banner (Phase 6 Step E) */}
+        {instructorConnection && <ReferralWelcomeBanner connection={instructorConnection} />}
 
         {/* ──────── ONBOARDING WIZARD (full-screen, blocks everything) ──────── */}
         {showWizard ? (

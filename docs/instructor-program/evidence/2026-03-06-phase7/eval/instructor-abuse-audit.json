@@ -1,0 +1,137 @@
+{
+  "audit": "instructor-abuse-hardening",
+  "phase": 7,
+  "timestamp": "2026-03-06T17:36:18.237Z",
+  "environment": "offline-deterministic",
+  "inlined_constants": {
+    "PAID_ACTIVE_SUBSCRIPTION_STATUSES": [
+      "active"
+    ],
+    "COURTESY_TIER": "checkride_prep",
+    "DEFAULTS": {
+      "EMAIL_INVITE_LIMIT": 20,
+      "TOKEN_CREATION_LIMIT": 50,
+      "RATE_LIMIT_WINDOW_HOURS": 24
+    },
+    "REFERRAL_ALPHABET": "ABCDEFGHJKLMNPQRSTUVWXYZ23456789",
+    "REFERRAL_CODE_LENGTH": 8,
+    "CONNECTION_SOURCE_VALUES": [
+      "referral_link",
+      "invite_link",
+      "student_search",
+      "admin"
+    ]
+  },
+  "source_files_checked": [
+    "src/app/api/public/qr/referral/[code]/route.ts",
+    "src/app/api/instructor/invites/email/route.ts",
+    "src/app/api/referral/claim/route.ts",
+    "src/app/api/referral/lookup/route.ts",
+    "src/app/api/admin/quality/referrals/route.ts",
+    "src/lib/instructor-identity.ts"
+  ],
+  "checks": [
+    {
+      "id": 1,
+      "name": "Courtesy does NOT count trialing by default",
+      "pass": true,
+      "detail": "PAID_ACTIVE_SUBSCRIPTION_STATUSES is exactly ['active'] — trialing excluded",
+      "expected": "[\"active\"]",
+      "actual": "[\"active\"]"
+    },
+    {
+      "id": 2,
+      "name": "QR endpoint route file exists and returns image/png",
+      "pass": true,
+      "detail": "Route file at src/app/api/public/qr/referral/[code]/route.ts exists and contains image/png content type",
+      "expected": "Route exists at /api/public/qr/referral/[code] and returns image/png",
+      "actual": "Route exists and returns image/png"
+    },
+    {
+      "id": 3,
+      "name": "QR route uses qrcode library with toBuffer for PNG generation",
+      "pass": true,
+      "detail": "Route imports QRCode and calls toBuffer() for PNG generation",
+      "expected": "QRCode.toBuffer() called for PNG generation",
+      "actual": "QRCode library and toBuffer() both present"
+    },
+    {
+      "id": 4,
+      "name": "Email invite route rejects non-approved instructors",
+      "pass": true,
+      "detail": "Route checks profile.status !== 'approved' and returns 403",
+      "expected": "status !== 'approved' check with 403 response",
+      "actual": "Approved status check and 403 response both present"
+    },
+    {
+      "id": 5,
+      "name": "Rate limit defaults: email=20, token=50",
+      "pass": true,
+      "detail": "EMAIL_INVITE_LIMIT=20, TOKEN_CREATION_LIMIT=50",
+      "expected": "{\"EMAIL_INVITE_LIMIT\":20,\"TOKEN_CREATION_LIMIT\":50}",
+      "actual": "{\"EMAIL_INVITE_LIMIT\":20,\"TOKEN_CREATION_LIMIT\":50}"
+    },
+    {
+      "id": 6,
+      "name": "Rate limit window is 24 hours",
+      "pass": true,
+      "detail": "RATE_LIMIT_WINDOW_HOURS=24",
+      "expected": "24",
+      "actual": "24"
+    },
+    {
+      "id": 7,
+      "name": "Self-referral blocked in claim route",
+      "pass": true,
+      "detail": "Claim route checks instructorUserId === user.id and returns user-friendly error",
+      "expected": "instructorUserId === user.id guard with rejection message",
+      "actual": "Self-referral guard and error message both present"
+    },
+    {
+      "id": 8,
+      "name": "ConnectionSource values are exactly 4: referral_link, invite_link, student_search, admin",
+      "pass": true,
+      "detail": "All 4 expected ConnectionSource values present",
+      "expected": "[\"admin\",\"invite_link\",\"referral_link\",\"student_search\"]",
+      "actual": "[\"admin\",\"invite_link\",\"referral_link\",\"student_search\"]"
+    },
+    {
+      "id": 9,
+      "name": "Email invite sends produce log event (logInviteEvent)",
+      "pass": true,
+      "detail": "Email invite route imports and calls logInviteEvent",
+      "expected": "logInviteEvent imported and called in email invite route",
+      "actual": "logInviteEvent imported and called"
+    },
+    {
+      "id": 10,
+      "name": "Admin metrics endpoint returns expected schema keys",
+      "pass": true,
+      "detail": "Route at src/app/api/admin/quality/referrals/route.ts exists and contains all 6 expected response keys",
+      "expected": "Route exists with keys: connectionsBySource, identityCoverage, topReferrers, recentClaims, inviteEvents, courtesyBreakdown",
+      "actual": "Found 6/6 keys: [connectionsBySource, identityCoverage, topReferrers, recentClaims, inviteEvents, courtesyBreakdown]"
+    },
+    {
+      "id": 11,
+      "name": "Feature flag gating: referral claim checks isInstructorFeatureEnabled",
+      "pass": true,
+      "detail": "Claim route imports and checks isInstructorFeatureEnabled before processing",
+      "expected": "isInstructorFeatureEnabled imported and called in claim route",
+      "actual": "Feature flag check imported and called"
+    },
+    {
+      "id": 12,
+      "name": "No certificate_number in public referral responses",
+      "pass": true,
+      "detail": "Neither lookupByReferralCode nor lookupBySlug select certificate_number; ReferralLookup interface is clean",
+      "expected": "certificate_number absent from all public-facing selects and interfaces",
+      "actual": "All public paths verified clean"
+    }
+  ],
+  "summary": {
+    "total": 12,
+    "passed": 12,
+    "failed": 0,
+    "overall_pass": true
+  }
+}

@@ -1,0 +1,13 @@
+=== BASELINE EVIDENCE ===
+Date: Thu Mar  6 11:54:00 UTC 2026
+Branch: instructor-phase8-kpis-dashboards-quotas
+Parent: 6e005a1 (Phase 7)
+
+Typecheck: 0 errors
+Tests: 47 files, 1055 tests passing
+Git log:
+6e005a1 feat(instructor): phase7 invite tools, abuse hardening, weekly referral nudge
+464fd25 feat(instructor): referral codes, landing pages, auto-connect (Phase 6)
+55eeb7d feat(instructor): insights, milestones, and weekly summary email (Phase 5)
+35afd60 feat(instructor): courtesy entitlements and authorization integration
+0e60998 feat(instructor): instructor partnership phases 1-3
