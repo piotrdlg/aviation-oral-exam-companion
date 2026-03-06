@@ -3,7 +3,7 @@ import {
   generateClaimSlug,
   parseClaimsResponse,
   normalizeCfrReference,
-} from '../extract-regulatory-claims';
+} from '../pipeline/extract-regulatory-claims';
 
 // ---------------------------------------------------------------------------
 // normalizeCfrReference

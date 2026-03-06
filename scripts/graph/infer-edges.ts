@@ -22,9 +22,9 @@ import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import Anthropic from '@anthropic-ai/sdk';
-import { getAppEnv, assertNotProduction } from '../src/lib/app-env';
-import { EDGE_INFERENCE_SYSTEM_PROMPT, EdgeInference } from './extraction-prompts';
-import { batchArray } from './embed-concepts';
+import { getAppEnv, assertNotProduction } from '@/lib/app-env';
+import { EDGE_INFERENCE_SYSTEM_PROMPT, EdgeInference } from '../pipeline/extraction-prompts';
+import { batchArray } from '../pipeline/embed-concepts';
 
 // ---------------------------------------------------------------------------
 // Pure helpers (exported for testing)

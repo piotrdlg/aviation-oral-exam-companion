@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { extractCfrReferences, parseEdgeResponse, buildEdgeBatchPrompt } from '../infer-edges';
+import { extractCfrReferences, parseEdgeResponse, buildEdgeBatchPrompt } from '../graph/infer-edges';
 
 // ---------------------------------------------------------------------------
 // extractCfrReferences

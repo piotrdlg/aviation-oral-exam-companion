@@ -21,7 +21,7 @@ import * as dotenv from 'dotenv';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import Anthropic from '@anthropic-ai/sdk';
-import { getAppEnv, assertNotProduction } from '../src/lib/app-env';
+import { getAppEnv, assertNotProduction } from '@/lib/app-env';
 import {
   REGULATORY_CLAIM_SYSTEM_PROMPT,
   buildExtractionUserPrompt,

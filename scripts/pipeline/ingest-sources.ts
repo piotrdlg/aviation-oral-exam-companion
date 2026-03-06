@@ -18,7 +18,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as crypto from 'crypto';
 import OpenAI from 'openai';
-import { getAppEnv, assertNotProduction } from '../src/lib/app-env';
+import { getAppEnv, assertNotProduction } from '@/lib/app-env';
 import { flattenPageParagraphs, chunkText } from './chunk-utils';
 
 // pdf-parse v1.x is a simple function: pdfParse(buffer, options?) -> { text, numpages, ... }

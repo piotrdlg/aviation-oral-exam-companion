@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { flattenPageParagraphs, chunkText, extractHeading } from '../chunk-utils';
+import { flattenPageParagraphs, chunkText, extractHeading } from '../pipeline/chunk-utils';
 
 describe('flattenPageParagraphs', () => {
   it('splits pages into paragraphs with page numbers', () => {

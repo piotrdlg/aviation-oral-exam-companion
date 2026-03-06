@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildEmbeddingText, batchArray } from '../embed-concepts';
+import { buildEmbeddingText, batchArray } from '../pipeline/embed-concepts';
 
 describe('buildEmbeddingText', () => {
   it('constructs text from concept fields correctly', () => {

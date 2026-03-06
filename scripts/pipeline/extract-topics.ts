@@ -23,7 +23,7 @@ import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import Anthropic from '@anthropic-ai/sdk';
-import { getAppEnv, assertNotProduction } from '../src/lib/app-env';
+import { getAppEnv, assertNotProduction } from '@/lib/app-env';
 import {
   TOPIC_EXTRACTION_SYSTEM_PROMPT,
   buildExtractionUserPrompt,

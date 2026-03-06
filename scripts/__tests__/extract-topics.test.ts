@@ -5,7 +5,7 @@ import {
   computeLevenshtein,
   toKebabCase,
   findFuzzyMatch,
-} from '../extract-topics';
+} from '../pipeline/extract-topics';
 
 // ---------------------------------------------------------------------------
 // toKebabCase

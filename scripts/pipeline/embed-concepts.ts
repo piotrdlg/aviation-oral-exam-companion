@@ -16,7 +16,7 @@ import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import OpenAI from 'openai';
-import { getAppEnv, assertNotProduction } from '../src/lib/app-env';
+import { getAppEnv, assertNotProduction } from '@/lib/app-env';
 
 // ---------------------------------------------------------------------------
 // Pure helpers (exported for testing)

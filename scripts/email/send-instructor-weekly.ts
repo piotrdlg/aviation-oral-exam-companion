@@ -9,12 +9,12 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { buildInstructorWeeklySummary } from '../src/lib/instructor-summary-builder';
-import type { InstructorForEmail } from '../src/lib/instructor-summary-builder';
-import { sendInstructorWeeklySummary } from '../src/lib/email';
-import { isEmailCategoryEnabled } from '../src/lib/email-preferences';
-import { logEmailSent } from '../src/lib/email-logging';
-import { getLastEmailSentAt } from '../src/lib/email-logging';
+import { buildInstructorWeeklySummary } from '@/lib/instructor-summary-builder';
+import type { InstructorForEmail } from '@/lib/instructor-summary-builder';
+import { sendInstructorWeeklySummary } from '@/lib/email';
+import { isEmailCategoryEnabled } from '@/lib/email-preferences';
+import { logEmailSent } from '@/lib/email-logging';
+import { getLastEmailSentAt } from '@/lib/email-logging';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
