@@ -198,7 +198,7 @@ export default function PracticePage() {
   // Delegates audio playback to voice.speak() (handles Deepgram PCM via AudioWorklet).
   // Text is revealed per-sentence, synchronized with audio start.
   const sentenceTTS = useSentenceTTS({
-    speak: (text) => voice.speak(text),
+    speak: (text, onReady) => voice.speak(text, onReady),
     onSentenceStart: (sentence) => {
       const isFirst = !sentenceRevealedRef.current;
       sentenceRevealedRef.current += (isFirst ? '' : '\n\n') + sentence;
@@ -976,7 +976,14 @@ export default function PracticePage() {
         }
 
         if (voiceEnabledRef.current && examinerMsg) {
-          if (paragraphsReceived > 0) {
+          if (chunksReceived > 0) {
+            // Structured 3-chunk path: chunks already enqueued in sentenceTTS.
+            // Flush any remaining buffer and let the drain loop finish playback.
+            // Do NOT call speakText() — that would cause double-speak.
+            // Set pendingFullTextRef so flushReveal() can show full text on error/barge-in.
+            pendingFullTextRef.current = examinerMsg;
+            sentenceTTS.flush();
+          } else if (paragraphsReceived > 0) {
             // Paragraphs already displayed + TTS queued — use paragraphText (which preserves
             // the force-split paragraph structure) instead of raw examinerMsg
             setMessages((prev) => {
@@ -988,7 +995,7 @@ export default function PracticePage() {
               return updated;
             });
           } else {
-            // No paragraphs received (single-paragraph response) — fallback to full-text TTS
+            // No paragraphs or chunks received (single-paragraph response) — fallback to full-text TTS
             setMessages((prev) => [...prev, { role: 'examiner', text: '' }]);
             setLoading(false);
             pendingFullTextRef.current = examinerMsg;

@@ -4,8 +4,9 @@ import { useCallback, useRef, useState } from 'react';
 import { detectSentenceBoundary } from '@/lib/voice/sentence-boundary';
 
 interface UseSentenceTTSOptions {
-  /** Speak a sentence. Must return a promise that resolves when audio playback finishes. */
-  speak: (text: string) => Promise<void>;
+  /** Speak a sentence. Must return a promise that resolves when audio playback finishes.
+   *  onReady fires after TTS fetch completes, right before audio.play() — use for text reveal. */
+  speak: (text: string, onReady?: () => void) => Promise<void>;
   /** Called right before each sentence starts playing — use to reveal that sentence's text. */
   onSentenceStart?: (sentence: string) => void;
   /** Called when flush() has been called and all queued sentences have finished playing. */
@@ -81,11 +82,12 @@ export function useSentenceTTS(options: UseSentenceTTSOptions): UseSentenceTTSRe
       setQueueLength(queueRef.current.length);
       hasSentencesRef.current = true;
 
-      // Fire callback BEFORE speaking — this reveals the sentence text
-      onSentenceStartRef.current?.(sentence);
-
+      // Reveal text via onReady callback — fires after TTS fetch completes,
+      // right before audio.play(). This keeps text and audio in sync.
       try {
-        await speakRef.current(sentence);
+        await speakRef.current(sentence, () => {
+          onSentenceStartRef.current?.(sentence);
+        });
       } catch (err) {
         if (!cancelledRef.current) {
           onErrorRef.current?.(err instanceof Error ? err : new Error(String(err)));

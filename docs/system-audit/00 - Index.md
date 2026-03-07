@@ -83,6 +83,7 @@ evidence_level: high
 | 67 | [[67 - Voice Stack Phase 3 Production Validation]] | Final |
 | 68 | [[68 - Voice Stack Incident Response Report]] | Final |
 | 69 | [[69 - Voice Stack Phase B — Browser Playback Fix]] | Final |
+| 70 | [[70 - Voice Stack Phase C — CSP Media-Src Fix]] | Final |
 
 ---
 
@@ -196,6 +197,11 @@ HeyDPE is a production-quality FAA oral exam simulator built on Next.js 16 + Sup
 | [[64 - Public Launch Final Gate Re-run]] | **Phase 21** | Planned 16-check comprehensive gate (not yet created). Documents gate evolution from Phase 14 (12 checks) to Phase 17 (9 checks) to Phase 21 |
 | [[65 - Voice Stack Regression Analysis]] | **Phase 22** | Voice regression root cause analysis: 6 candidates, 7 contradictions, ADR-001 decision, trust-boundary + data-flow diagrams |
 | [[66 - Voice Stack Phase 2 Implementation Report]] | **Phase 22** | MODERATE fix implementation: CSP wss://, STT retry, fallback UX, telemetry, dead code removal. 34 new tests, 1103 total, typecheck clean |
+| [[67 - Voice Stack Phase 3 Production Validation]] | **Phase 22** | Voice stack production validation and deployment verification |
+| [[68 - Voice Stack Incident Response Report]] | **Incident** | TTS incident response Phase A: Deepgram 400 API contract fix (FIXED_RATE_ENCODINGS) |
+| [[69 - Voice Stack Phase B — Browser Playback Fix]] | **Incident** | TTS incident response Phase B: Safari autoplay unlock, Firefox MIME fix, error instrumentation |
+| [[70 - Voice Stack Phase C — CSP Media-Src Fix]] | **Incident** | CSP missing media-src blocked blob:/data: URLs for TTS audio in all browsers |
+| 71 | [[71 - Response Delivery Coordination]] | **Incident** | 3-chunk structured response activation: 4 bug fixes, feature flag seed, text-audio sync |
 
 ---
 
