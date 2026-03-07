@@ -797,19 +797,22 @@ export default function PracticePage() {
                   (async () => {
                     while (ttsQueueRef.current.length > 0) {
                       const text = ttsQueueRef.current.shift()!;
-                      // Reveal this paragraph's text right before speaking it
-                      ttsRevealedTextRef.current += (ttsRevealedTextRef.current ? '\n\n' : '') + text;
-                      const currentText = ttsRevealedTextRef.current;
-                      setMessages((prev) => {
-                        const updated = [...prev];
-                        const lastIdx = updated.length - 1;
-                        if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
-                          updated[lastIdx] = { ...updated[lastIdx], text: currentText };
-                        }
-                        return updated;
-                      });
                       try {
-                        await voice.speak(text);
+                        // Reveal text via onReady callback — fires after TTS API
+                        // fetch completes, right when audio is about to play.
+                        // This keeps text and audio in sync (no text-ahead-of-voice gap).
+                        await voice.speak(text, () => {
+                          ttsRevealedTextRef.current += (ttsRevealedTextRef.current ? '\n\n' : '') + text;
+                          const currentText = ttsRevealedTextRef.current;
+                          setMessages((prev) => {
+                            const updated = [...prev];
+                            const lastIdx = updated.length - 1;
+                            if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
+                              updated[lastIdx] = { ...updated[lastIdx], text: currentText };
+                            }
+                            return updated;
+                          });
+                        });
                       } catch (err) {
                         console.error('Paragraph TTS error:', err);
                         // On error/barge-in: flush all remaining text so nothing is hidden

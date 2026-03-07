@@ -19,7 +19,7 @@ interface UseVoiceProviderReturn {
   isListening: boolean;
 
   // TTS
-  speak: (text: string) => Promise<void>;
+  speak: (text: string, onReady?: () => void) => Promise<void>;
   stopSpeaking: () => void;
   isSpeaking: boolean;
 
@@ -62,7 +62,7 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
   // === TTS: /api/tts → MP3 → HTMLAudioElement ===
   // IMPORTANT: speak() resolves when audio playback ENDS, not when it starts.
   // This ensures sequential playback in the paragraph drain loop.
-  const speak = useCallback(async (text: string) => {
+  const speak = useCallback(async (text: string, onReady?: () => void) => {
     try {
       setError(null);
       const abortController = new AbortController();
@@ -132,6 +132,10 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
           audioRef.current = null;
           reject(new DOMException('Aborted', 'AbortError'));
         });
+
+        // Signal that audio is ready — caller can reveal text here,
+        // synchronized with the moment audio is about to play.
+        onReady?.();
 
         audio.play().catch((playErr) => {
           setIsSpeaking(false);
