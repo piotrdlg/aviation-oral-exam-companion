@@ -193,6 +193,9 @@ export default function PracticePage() {
   const sentenceStreamRef = useRef(false);
   // Accumulates sentence text revealed so far (for per-sentence sync)
   const sentenceRevealedRef = useRef('');
+  // True while the chunk delivery path is actively playing — guards the isSpeaking
+  // effect from prematurely revealing all text (which would defeat progressive reveal).
+  const chunkModeActiveRef = useRef(false);
 
   // Sentence-level TTS streaming hook (feature-flagged, default OFF)
   // Delegates audio playback to voice.speak() (handles Deepgram PCM via AudioWorklet).
@@ -221,12 +224,14 @@ export default function PracticePage() {
       }
     },
     onAllDone: () => {
-      // All sentences spoken — ensure full text is shown
+      // All sentences spoken — re-enable the isSpeaking effect, then flush full text
+      chunkModeActiveRef.current = false;
       flushReveal();
       sentenceRevealedRef.current = '';
     },
     onError: () => {
-      // TTS error — ensure text is visible
+      // TTS error — re-enable the isSpeaking effect, then ensure text is visible
+      chunkModeActiveRef.current = false;
       flushReveal();
       sentenceRevealedRef.current = '';
     },
@@ -484,10 +489,11 @@ export default function PracticePage() {
 
   // When TTS audio starts playing, reveal the pending text
   // When audio stops (barge-in) and text is still pending, flush it
+  // IMPORTANT: Skip during chunk mode — chunk path reveals text progressively
+  // via onSentenceStart. Flushing here would reveal ALL text at once.
   useEffect(() => {
-    if (voice.isSpeaking && pendingFullTextRef.current) {
-      flushReveal();
-    } else if (!voice.isSpeaking && pendingFullTextRef.current) {
+    if (chunkModeActiveRef.current) return;
+    if (pendingFullTextRef.current) {
       flushReveal();
     }
   }, [voice.isSpeaking, flushReveal]);
@@ -663,6 +669,7 @@ export default function PracticePage() {
     // Stop mic and any in-progress TTS when sending (barge-in)
     sentenceTTS.cancel();
     sentenceRevealedRef.current = '';
+    chunkModeActiveRef.current = false;
     voice.stopSpeaking();
     ttsQueueRef.current = [];
     ttsQueueActiveRef.current = false;
@@ -755,6 +762,7 @@ export default function PracticePage() {
               if (parsed.chunk && parsed.text) {
                 // Server-side chunk event (structured 3-chunk response mode)
                 // Enqueue the complete chunk for TTS — text displayed via onSentenceStart
+                chunkModeActiveRef.current = true;
                 sentenceTTS.enqueue(parsed.text);
                 chunksReceived++;
                 // Also accumulate into examinerMsg for fallback if stream drops before examinerMessage event

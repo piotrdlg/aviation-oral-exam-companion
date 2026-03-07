@@ -65,6 +65,19 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
   const speak = useCallback(async (text: string, onReady?: () => void) => {
     try {
       setError(null);
+
+      // Defensive: stop any previously playing audio to prevent overlap.
+      // For sequential calls (drain loop), previous audio has already ended — no-ops.
+      // For concurrent calls from different code paths, this prevents two Audio
+      // elements playing simultaneously.
+      if (ttsAbortRef.current) {
+        ttsAbortRef.current.abort();
+      }
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+
       const abortController = new AbortController();
       ttsAbortRef.current = abortController;
 

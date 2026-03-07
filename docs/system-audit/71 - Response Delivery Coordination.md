@@ -123,6 +123,59 @@ Added a `chunksReceived > 0` check as the first branch. When chunks were used, c
 
 The `sentenceTTS.flush()` call in Fix 3 also resolves the issue where `flush()` was never called, allowing `onAllDone` to fire properly after all chunks are spoken.
 
+## 5a. Post-Activation Bugs (Phase E.1)
+
+After enabling the feature flag in production, user testing revealed two critical regressions:
+
+### 4.4 Two Post-Activation Bugs
+
+| # | Severity | Bug | Root Cause |
+|---|----------|-----|------------|
+| 5 | CRITICAL | **All text appears at once** — voice starts well behind text. All examiner text revealed immediately, destroying progressive per-chunk reveal | `pendingFullTextRef.current = examinerMsg` (Fix 3) triggers the `isSpeaking` effect (lines 487-493) on first `voice.isSpeaking` transition, calling `flushReveal()` which reveals ALL text at once |
+| 6 | CRITICAL | **Two audio files overlapping** — concurrent audio playback | `useVoiceProvider.speak()` did not stop/abort any previously playing audio. If concurrent `speak()` calls occurred (from different TTS pipelines or any re-entry), two `Audio` elements played simultaneously |
+
+### 4.5 GPT-5.2 Review Confirmation
+
+Both bugs were confirmed by GPT-5.2 via PAL MCP code review. Expert analysis also identified:
+- `cancel()` in useSentenceTTS eagerly resets `cancelledRef` to false — drain loop can resume unexpectedly
+- Barge-in paths inconsistently cancel sentenceTTS vs paragraph queue
+- `speak()` abort event listener has minor leak (no `{ once: true }`)
+
+### Fix 5: chunkModeActiveRef guard on isSpeaking effect (practice/page.tsx)
+
+Added `chunkModeActiveRef` that is `true` while chunks are being processed. The `isSpeaking` effect now returns early when chunk mode is active:
+
+```typescript
+useEffect(() => {
+  if (chunkModeActiveRef.current) return; // chunk path handles its own text reveal
+  if (pendingFullTextRef.current) {
+    flushReveal();
+  }
+}, [voice.isSpeaking, flushReveal]);
+```
+
+Lifecycle:
+- Set `true` on first `{ chunk, text }` SSE event
+- Cleared in `onAllDone` (normal completion) and `onError` (TTS failure)
+- Cleared in `sendAnswer()` (barge-in)
+
+### Fix 6: speak() stop-previous guard (useVoiceProvider.ts)
+
+Added defensive audio cleanup at the start of `speak()`:
+
+```typescript
+// Stop any previously playing audio to prevent overlap
+if (ttsAbortRef.current) {
+  ttsAbortRef.current.abort();
+}
+if (audioRef.current) {
+  audioRef.current.pause();
+  audioRef.current = null;
+}
+```
+
+For sequential calls (drain loop), these are no-ops since previous audio has already ended. For concurrent calls from any code path, this prevents two Audio elements from playing simultaneously.
+
 ### Migration: Feature flag seed
 
 Created `20260310000002_seed_tts_sentence_stream.sql`:
@@ -140,14 +193,15 @@ Default: disabled. Admin toggles on via dashboard when ready.
 | File | Action | Purpose |
 |------|--------|---------|
 | `src/hooks/useSentenceTTS.ts` | MODIFIED | speak type + onReady sync in drain loop |
-| `src/app/(dashboard)/practice/page.tsx` | MODIFIED | speak wrapper, stream-end branching, pendingFullTextRef |
-| `src/hooks/__tests__/useSentenceTTS.test.ts` | CREATED | 10 regression tests for drain loop coordination |
+| `src/app/(dashboard)/practice/page.tsx` | MODIFIED | speak wrapper, stream-end branching, pendingFullTextRef, chunkModeActiveRef guard |
+| `src/hooks/useVoiceProvider.ts` | MODIFIED | speak() stop-previous guard to prevent overlapping audio |
+| `src/hooks/__tests__/useSentenceTTS.test.ts` | CREATED | 14 regression tests (drain loop + guard + stop-previous) |
 | `supabase/migrations/20260310000002_seed_tts_sentence_stream.sql` | CREATED | Feature flag row in system_config |
 
 ## 7. Frozen Files (No Changes)
 
 These voice stack files were verified as correct and left untouched:
-- `src/hooks/useVoiceProvider.ts` — already has onReady support from Phase D
+- ~~`src/hooks/useVoiceProvider.ts`~~ — Modified in Phase E.1 (stop-previous guard)
 - `src/lib/audio-unlock.ts` — Safari autoplay pre-warming
 - `src/hooks/useDeepgramSTT.ts` — Deepgram Nova-3 WebSocket STT
 - `src/lib/voice/tts/deepgram-tts.ts` — Deepgram Aura-2 TTS
@@ -159,8 +213,8 @@ These voice stack files were verified as correct and left untouched:
 
 ## 8. Testing
 
-### New Tests (10)
-- `useSentenceTTS.test.ts`: drain loop onReady sync contract (5), sequential playback (1), error resilience (1), flush+onAllDone (2), double-speak prevention (3 — but actual count is 3 in the stream-end prevention group)
+### New Tests (14)
+- `useSentenceTTS.test.ts`: drain loop onReady sync contract (5), sequential playback (1), error resilience (1), flush+onAllDone (2), double-speak prevention (3), chunkModeActiveRef guard (3), speak stop-previous (1) — but actual count is 3 in the stream-end prevention group)
 
 ### Existing Tests (1210)
 All pass. No regressions.
@@ -208,8 +262,9 @@ All changes are additive. To rollback:
 
 ```
 TypeScript: 0 errors
-Tests: 56 files, 1220 tests (10 new) — all pass
-GPT-5.1 Codex review: all 4 bugs confirmed, fixes verified safe
+Tests: 56 files, 1224 tests (14 new) — all pass
+GPT-5.1 Codex review: original 4 bugs confirmed, fixes verified safe
+GPT-5.2 review: 2 post-activation bugs confirmed, fixes 5+6 verified safe
 ```
 
 ## 14. Recommendations

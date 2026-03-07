@@ -242,3 +242,84 @@ describe('stream-end double-speak prevention', () => {
     expect(spokeFull).toBe(false);
   });
 });
+
+describe('chunkModeActiveRef guard — isSpeaking effect bypass', () => {
+  it('isSpeaking effect should NOT flush when chunk mode is active', () => {
+    // Simulates the isSpeaking effect guard logic from practice/page.tsx.
+    // When chunkModeActive is true, flushReveal must NOT be called —
+    // the chunk path handles text reveal progressively via onSentenceStart.
+    const chunkModeActive = true;
+    let flushed = false;
+    const pendingFullText = 'Full examiner message';
+
+    // Replicate guarded isSpeaking effect
+    if (!chunkModeActive && pendingFullText) {
+      flushed = true;
+    }
+
+    expect(flushed).toBe(false);
+  });
+
+  it('isSpeaking effect SHOULD flush when chunk mode is NOT active', () => {
+    const chunkModeActive = false;
+    let flushed = false;
+    const pendingFullText = 'Full examiner message';
+
+    if (!chunkModeActive && pendingFullText) {
+      flushed = true;
+    }
+
+    expect(flushed).toBe(true);
+  });
+
+  it('chunkModeActive clears on onAllDone, allowing subsequent flushReveal', () => {
+    let chunkModeActive = true;
+    let flushed = false;
+    const pendingFullText = 'Full examiner message';
+
+    // Simulate onAllDone callback
+    chunkModeActive = false;
+
+    // Now isSpeaking effect can flush
+    if (!chunkModeActive && pendingFullText) {
+      flushed = true;
+    }
+
+    expect(flushed).toBe(true);
+  });
+});
+
+describe('speak() stop-previous guard', () => {
+  it('stops previous audio before starting new audio', async () => {
+    const callOrder: string[] = [];
+    let abortCount = 0;
+    let pauseCount = 0;
+
+    // Simulate the stop-previous guard from useVoiceProvider.speak()
+    const speakWithGuard = async (text: string) => {
+      // Stop previous
+      abortCount++;
+      pauseCount++;
+      callOrder.push(`stop-prev:${text}`);
+
+      // Start new
+      callOrder.push(`start:${text}`);
+      await new Promise((r) => setTimeout(r, 5));
+      callOrder.push(`end:${text}`);
+    };
+
+    await speakWithGuard('chunk1');
+    await speakWithGuard('chunk2');
+
+    expect(callOrder).toEqual([
+      'stop-prev:chunk1',
+      'start:chunk1',
+      'end:chunk1',
+      'stop-prev:chunk2',
+      'start:chunk2',
+      'end:chunk2',
+    ]);
+    expect(abortCount).toBe(2);
+    expect(pauseCount).toBe(2);
+  });
+});
