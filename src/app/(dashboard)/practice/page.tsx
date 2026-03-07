@@ -183,6 +183,8 @@ export default function PracticePage() {
   // TTS paragraph queue for per-paragraph playback during streaming
   const ttsQueueRef = useRef<string[]>([]);
   const ttsQueueActiveRef = useRef(false);
+  // Tracks text revealed so far in the paragraph drain loop (progressive reveal)
+  const ttsRevealedTextRef = useRef('');
 
   // Unified voice provider hook (handles STT + TTS for all tiers)
   const voice = useVoiceProvider({ tier, sessionId: sessionId || undefined });
@@ -658,9 +660,13 @@ export default function PracticePage() {
     // BEFORE any async work. Required for Safari/iOS autoplay policy.
     if (voiceEnabledRef.current) warmUpAudio();
 
-    // Stop mic and any in-progress sentence TTS when sending
+    // Stop mic and any in-progress TTS when sending (barge-in)
     sentenceTTS.cancel();
     sentenceRevealedRef.current = '';
+    voice.stopSpeaking();
+    ttsQueueRef.current = [];
+    ttsQueueActiveRef.current = false;
+    ttsRevealedTextRef.current = '';
     if (voice.isListening) {
       voice.stopListening();
     }
@@ -717,6 +723,7 @@ export default function PracticePage() {
         let paragraphsReceived = 0;
         let paragraphText = '';
         ttsQueueRef.current = []; // Reset queue for new response
+        ttsRevealedTextRef.current = ''; // Reset progressive text reveal
 
         if (!voiceEnabledRef.current) {
           // Voice OFF: show placeholder and stream tokens visually
@@ -768,27 +775,20 @@ export default function PracticePage() {
                 }
                 // Voice ON: accumulate silently; paragraphs handle display + TTS
               } else if (parsed.paragraph && voiceEnabledRef.current) {
-                // Paragraph-level TTS: display + queue TTS immediately per paragraph
+                // Paragraph-level TTS: progressive text reveal synced with audio.
+                // Text for each paragraph is shown right before its audio plays,
+                // matching the designed 3-step flow: feedback → comment → question.
                 paragraphsReceived++;
                 paragraphText += (paragraphText ? '\n\n' : '') + parsed.paragraph;
 
                 if (paragraphsReceived === 1) {
-                  // First paragraph: show message, hide loading, stop listening
+                  // First paragraph: add examiner bubble, hide loading, stop listening
                   if (voice.isListening) voice.stopListening();
-                  setMessages((prev) => [...prev, { role: 'examiner', text: paragraphText }]);
+                  setMessages((prev) => [...prev, { role: 'examiner', text: parsed.paragraph }]);
                   setLoading(false);
-                } else {
-                  // Subsequent paragraphs: update message text
-                  const currentText = paragraphText;
-                  setMessages((prev) => {
-                    const updated = [...prev];
-                    const lastIdx = updated.length - 1;
-                    if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
-                      updated[lastIdx] = { ...updated[lastIdx], text: currentText };
-                    }
-                    return updated;
-                  });
                 }
+                // Subsequent paragraphs: text is NOT shown here.
+                // The drain loop reveals text right before speaking each paragraph.
 
                 // Queue paragraph for sequential TTS playback
                 ttsQueueRef.current.push(parsed.paragraph);
@@ -797,11 +797,34 @@ export default function PracticePage() {
                   (async () => {
                     while (ttsQueueRef.current.length > 0) {
                       const text = ttsQueueRef.current.shift()!;
+                      // Reveal this paragraph's text right before speaking it
+                      ttsRevealedTextRef.current += (ttsRevealedTextRef.current ? '\n\n' : '') + text;
+                      const currentText = ttsRevealedTextRef.current;
+                      setMessages((prev) => {
+                        const updated = [...prev];
+                        const lastIdx = updated.length - 1;
+                        if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
+                          updated[lastIdx] = { ...updated[lastIdx], text: currentText };
+                        }
+                        return updated;
+                      });
                       try {
                         await voice.speak(text);
                       } catch (err) {
                         console.error('Paragraph TTS error:', err);
-                        break; // Stop queue on error (likely barge-in abort)
+                        // On error/barge-in: flush all remaining text so nothing is hidden
+                        if (paragraphText) {
+                          setMessages((prev) => {
+                            const updated = [...prev];
+                            const lastIdx = updated.length - 1;
+                            if (lastIdx >= 0 && updated[lastIdx].role === 'examiner') {
+                              updated[lastIdx] = { ...updated[lastIdx], text: paragraphText };
+                            }
+                            return updated;
+                          });
+                        }
+                        ttsQueueRef.current = [];
+                        break;
                       }
                     }
                     ttsQueueActiveRef.current = false;

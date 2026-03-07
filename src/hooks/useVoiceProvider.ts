@@ -60,6 +60,8 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
   const [error, setError] = useState<string | null>(null);
 
   // === TTS: /api/tts → MP3 → HTMLAudioElement ===
+  // IMPORTANT: speak() resolves when audio playback ENDS, not when it starts.
+  // This ensures sequential playback in the paragraph drain loop.
   const speak = useCallback(async (text: string) => {
     try {
       setError(null);
@@ -83,7 +85,6 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
       // Read the full response as ArrayBuffer, then create a Blob with
       // explicit MIME type. This is more reliable than response.blob()
       // which may not preserve Content-Type through Next.js streaming.
-      // This matches the pattern used in Settings diagnostics (page.tsx:949).
       const arrayBuffer = await response.arrayBuffer();
 
       if (arrayBuffer.byteLength === 0) {
@@ -95,30 +96,50 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
       const audio = new Audio(url);
       audioRef.current = audio;
 
-      audio.onended = () => {
-        setIsSpeaking(false);
-        URL.revokeObjectURL(url);
-        audioRef.current = null;
-      };
-      audio.onerror = () => {
-        // Capture detailed error info for diagnostics
-        const mediaErr = audio.error;
-        const detail = mediaErr
-          ? `code=${mediaErr.code} ${mediaErr.message || ''}`
-          : 'unknown';
-        console.error(
-          `[TTS] Audio playback error: ${detail}`,
-          `blob.size=${blob.size}`,
-          `blob.type=${blob.type}`,
-          `canPlayMP3=${audio.canPlayType('audio/mpeg')}`,
-        );
-        setError(`Audio playback failed (${detail})`);
-        setIsSpeaking(false);
-        URL.revokeObjectURL(url);
-        audioRef.current = null;
-      };
+      // Wait for audio playback to COMPLETE (not just start).
+      // This is critical: the paragraph drain loop awaits speak(),
+      // so it must not advance to the next paragraph until this one finishes.
+      await new Promise<void>((resolve, reject) => {
+        audio.onended = () => {
+          setIsSpeaking(false);
+          URL.revokeObjectURL(url);
+          audioRef.current = null;
+          resolve();
+        };
+        audio.onerror = () => {
+          const mediaErr = audio.error;
+          const detail = mediaErr
+            ? `code=${mediaErr.code} ${mediaErr.message || ''}`
+            : 'unknown';
+          console.error(
+            `[TTS] Audio playback error: ${detail}`,
+            `blob.size=${blob.size}`,
+            `blob.type=${blob.type}`,
+            `canPlayMP3=${audio.canPlayType('audio/mpeg')}`,
+          );
+          setError(`Audio playback failed (${detail})`);
+          setIsSpeaking(false);
+          URL.revokeObjectURL(url);
+          audioRef.current = null;
+          reject(new Error(`Audio playback failed (${detail})`));
+        };
 
-      await audio.play();
+        // Handle barge-in: stopSpeaking() aborts this controller
+        abortController.signal.addEventListener('abort', () => {
+          audio.pause();
+          setIsSpeaking(false);
+          URL.revokeObjectURL(url);
+          audioRef.current = null;
+          reject(new DOMException('Aborted', 'AbortError'));
+        });
+
+        audio.play().catch((playErr) => {
+          setIsSpeaking(false);
+          URL.revokeObjectURL(url);
+          audioRef.current = null;
+          reject(playErr);
+        });
+      });
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
         return; // Intentional abort (barge-in)
@@ -127,9 +148,6 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
       console.error('[TTS] speak() error:', msg);
       setError(msg);
       setIsSpeaking(false);
-      // Clean up blob URL and audio ref to prevent resource leaks.
-      // When play() rejects (e.g., autoplay policy), onerror/onended
-      // never fire, so we must revoke the URL here.
       if (audioRef.current) {
         const src = audioRef.current.src;
         if (src && src.startsWith('blob:')) {
