@@ -698,6 +698,10 @@ export default function PracticePage() {
     setMessages((prev) => [...prev, { role: 'student', text: studentAnswer }]);
     setLoading(true);
 
+    // === VOICE TIMING: capture BEFORE fetch so we measure true answer-to-response ===
+    const vt0 = performance.now();
+    const vtRequestStart = Date.now();
+
     try {
       const res = await fetchWithRetry('/api/exam', {
         method: 'POST',
@@ -748,8 +752,7 @@ export default function PracticePage() {
         ttsRevealedTextRef.current = ''; // Reset progressive text reveal
 
         // === VOICE TIMING: exchange-level timeline ===
-        const vt0 = performance.now();  // Answer submitted
-        const vtRequestStart = Date.now(); // Wall-clock for server timestamp comparison
+        // vt0 and vtRequestStart are set BEFORE fetch() above
         interface VoiceChunkTiming {
           field: string;
           serverTs?: number;
@@ -759,6 +762,8 @@ export default function PracticePage() {
         }
         const vtChunks: VoiceChunkTiming[] = [];
         let vtFirstSse: number | undefined;
+        let vtLastChunk: number | undefined;
+        let vtAssessmentReceived: number | undefined;
         let vtStreamEnd: number | undefined;
 
         if (!voiceEnabledRef.current) {
@@ -799,6 +804,7 @@ export default function PracticePage() {
                   safetyNet: parsed.safetyNet || false,
                   textLen: parsed.text.length,
                 });
+                vtLastChunk = vtNow;
                 console.log(`[VOICE-TIMING] Chunk SSE: "${parsed.chunk}" +${Math.round(vtNow - vt0)}ms (server→client: ${parsed.serverTs ? Math.round(parsed.serverTs - vtRequestStart) + 'ms server-side' : 'n/a'}) ${parsed.safetyNet ? '[SAFETY NET]' : ''} (${parsed.text.length} chars)`);
 
                 // Server-side chunk event (structured 3-chunk response mode)
@@ -938,6 +944,8 @@ export default function PracticePage() {
                 }
               } else if (parsed.assessment) {
                 // Assessment arrived (from parallel assessment call)
+                vtAssessmentReceived = performance.now();
+                console.log(`[VOICE-TIMING] Assessment SSE: +${Math.round(vtAssessmentReceived - vt0)}ms (${vtLastChunk ? Math.round(vtAssessmentReceived - vtLastChunk) + 'ms after last chunk' : 'n/a'})`);
                 receivedAssessment = parsed.assessment;
                 receivedSources = parsed.assessment.rag_chunks?.map((c: { doc_abbreviation: string; heading: string | null; content: string; page_start: number | null }) => ({
                   doc_abbreviation: c.doc_abbreviation,
@@ -979,11 +987,17 @@ export default function PracticePage() {
         // === VOICE TIMING: stream-end summary ===
         vtStreamEnd = performance.now();
         if (vtChunks.length > 0) {
-          const totalMs = Math.round(vtStreamEnd - vt0);
+          const totalStreamMs = Math.round(vtStreamEnd - vt0);
           const firstChunkMs = vtChunks[0].clientReceivedMs;
+          const lastChunkMs = vtLastChunk ? Math.round(vtLastChunk - vt0) : firstChunkMs;
+          const assessmentMs = vtAssessmentReceived ? Math.round(vtAssessmentReceived - vt0) : undefined;
           console.log(`\n[VOICE-TIMING] ═══ Exchange Timeline ═══`);
-          console.log(`[VOICE-TIMING] Answer submitted → stream end: ${totalMs}ms`);
           console.log(`[VOICE-TIMING] Answer submitted → first chunk SSE: ${firstChunkMs}ms`);
+          console.log(`[VOICE-TIMING] Answer submitted → last chunk SSE:  ${lastChunkMs}ms`);
+          console.log(`[VOICE-TIMING] Answer submitted → assessment SSE:  ${assessmentMs !== undefined ? assessmentMs + 'ms' : 'not received'}`);
+          console.log(`[VOICE-TIMING] Answer submitted → stream end:      ${totalStreamMs}ms`);
+          console.log(`[VOICE-TIMING] Last chunk → assessment:            ${assessmentMs !== undefined && vtLastChunk ? Math.round(vtAssessmentReceived! - vtLastChunk) + 'ms (STREAM BLOCKED)' : 'n/a'}`);
+          console.log(`[VOICE-TIMING] Assessment → stream end:            ${assessmentMs !== undefined ? totalStreamMs - assessmentMs + 'ms' : 'n/a'}`);
           console.log(`[VOICE-TIMING] Chunks received: ${vtChunks.length}`);
           console.table(vtChunks.map((c, i) => ({
             '#': i + 1,
@@ -996,7 +1010,7 @@ export default function PracticePage() {
           })));
           // Store for onAllDone summary
           (window as unknown as Record<string, unknown>).__vtLastExchange = {
-            vt0, vtRequestStart, vtChunks, vtStreamEnd,
+            vt0, vtRequestStart, vtChunks, vtStreamEnd, vtLastChunk, vtAssessmentReceived,
           };
           console.log(`[VOICE-TIMING] ═══ (TTS playback timing will follow in onAllDone) ═══\n`);
         }
