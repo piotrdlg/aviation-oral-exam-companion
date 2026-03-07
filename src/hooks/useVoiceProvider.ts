@@ -40,6 +40,10 @@ interface UseVoiceProviderReturn {
  *
  * The AudioWorklet PCM streaming pipeline was removed because it produced
  * silence in Firefox/Safari. MP3 + Audio element works cross-browser.
+ *
+ * Audio unlock: callers must call warmUpAudio() from src/lib/audio-unlock.ts
+ * SYNCHRONOUSLY inside their user gesture handlers (onClick) BEFORE any
+ * async work. This is required for Safari/iOS autoplay policy compliance.
  */
 export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProviderReturn {
   const { tier, sessionId } = options;
@@ -75,7 +79,18 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
       }
 
       setIsSpeaking(true);
-      const blob = await response.blob();
+
+      // Read the full response as ArrayBuffer, then create a Blob with
+      // explicit MIME type. This is more reliable than response.blob()
+      // which may not preserve Content-Type through Next.js streaming.
+      // This matches the pattern used in Settings diagnostics (page.tsx:949).
+      const arrayBuffer = await response.arrayBuffer();
+
+      if (arrayBuffer.byteLength === 0) {
+        throw new Error('TTS returned empty audio (0 bytes)');
+      }
+
+      const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
       audioRef.current = audio;
@@ -86,6 +101,18 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
         audioRef.current = null;
       };
       audio.onerror = () => {
+        // Capture detailed error info for diagnostics
+        const mediaErr = audio.error;
+        const detail = mediaErr
+          ? `code=${mediaErr.code} ${mediaErr.message || ''}`
+          : 'unknown';
+        console.error(
+          `[TTS] Audio playback error: ${detail}`,
+          `blob.size=${blob.size}`,
+          `blob.type=${blob.type}`,
+          `canPlayMP3=${audio.canPlayType('audio/mpeg')}`,
+        );
+        setError(`Audio playback failed (${detail})`);
         setIsSpeaking(false);
         URL.revokeObjectURL(url);
         audioRef.current = null;
@@ -97,8 +124,19 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
         return; // Intentional abort (barge-in)
       }
       const msg = err instanceof Error ? err.message : 'TTS playback failed';
+      console.error('[TTS] speak() error:', msg);
       setError(msg);
       setIsSpeaking(false);
+      // Clean up blob URL and audio ref to prevent resource leaks.
+      // When play() rejects (e.g., autoplay policy), onerror/onended
+      // never fire, so we must revoke the URL here.
+      if (audioRef.current) {
+        const src = audioRef.current.src;
+        if (src && src.startsWith('blob:')) {
+          URL.revokeObjectURL(src);
+        }
+        audioRef.current = null;
+      }
     }
   }, []);
 

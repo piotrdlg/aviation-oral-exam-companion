@@ -15,6 +15,7 @@ import { setTheme } from '@/lib/theme';
 import { useInstructorConnection } from '@/hooks/useInstructorConnection';
 import { ReferralWelcomeBanner } from '@/components/ui/ReferralWelcomeBanner';
 import { captureVoiceEvent } from '@/lib/voice-telemetry';
+import { warmUpAudio } from '@/lib/audio-unlock';
 
 /**
  * Retry a fetch call once on transient infrastructure errors (405, 502, 503, 504).
@@ -523,6 +524,10 @@ export default function PracticePage() {
   }, [voice, flushReveal]);
 
   async function startSession(configData: SessionConfigData) {
+    // Unlock browser audio playback SYNCHRONOUSLY during this user gesture,
+    // BEFORE any async work. Required for Safari/iOS autoplay policy.
+    if (configData.voiceEnabled) warmUpAudio();
+
     // If there's a resumable session, mark it completed before starting fresh
     if (resumableSession) {
       fetch('/api/session', {
@@ -648,6 +653,10 @@ export default function PracticePage() {
   async function sendAnswer(overrideText?: string) {
     const studentAnswer = overrideText || input.trim();
     if (!studentAnswer || !taskData || loading) return;
+
+    // Unlock browser audio SYNCHRONOUSLY during this user gesture,
+    // BEFORE any async work. Required for Safari/iOS autoplay policy.
+    if (voiceEnabledRef.current) warmUpAudio();
 
     // Stop mic and any in-progress sentence TTS when sending
     sentenceTTS.cancel();
@@ -1224,6 +1233,10 @@ export default function PracticePage() {
       sessionConfig?: SessionConfigType;
     };
     if (!metadata.plannerState || !metadata.sessionConfig) return;
+
+    // Unlock browser audio SYNCHRONOUSLY during this user gesture,
+    // BEFORE any async work. Required for Safari/iOS autoplay policy.
+    if (preferredVoiceEnabled) warmUpAudio();
 
     // Use the persistent voice preference from Settings
     setVoiceEnabled(preferredVoiceEnabled);

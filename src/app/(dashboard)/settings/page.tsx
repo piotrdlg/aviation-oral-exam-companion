@@ -7,6 +7,7 @@ import type { Rating, AircraftClass, ExaminerProfileKey, CertificateType } from 
 import { THEMES, setTheme } from '@/lib/theme';
 import { DEFAULT_AVATARS } from '@/lib/avatar-options';
 import { EXAMINER_PROFILES, ALL_PROFILE_KEYS, type ExaminerProfileV1 } from '@/lib/examiner-profile';
+import { warmUpAudio } from '@/lib/audio-unlock';
 
 type TestStatus = 'idle' | 'running' | 'pass' | 'fail';
 
@@ -675,6 +676,9 @@ export default function SettingsPage() {
   }
 
   async function previewVoice(model: string) {
+    // Unlock browser audio during user gesture (before async fetch)
+    warmUpAudio();
+
     // Stop any currently playing preview
     if (previewAudioRef.current) {
       previewAudioRef.current.pause();
@@ -782,6 +786,9 @@ export default function SettingsPage() {
   }
 
   async function runDiagnostics() {
+    // Unlock browser audio during user gesture (before async mic/STT/TTS tests)
+    warmUpAudio();
+
     setDiagRunning(true);
     setRecognizedText('');
     setMicLevel(0);
