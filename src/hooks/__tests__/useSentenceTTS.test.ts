@@ -289,6 +289,150 @@ describe('chunkModeActiveRef guard — isSpeaking effect bypass', () => {
   });
 });
 
+describe('TTS prefetch — inter-chunk latency elimination', () => {
+  it('prefetch is called at enqueue time when drain loop is active', () => {
+    // Simulates the enqueue-time prefetch from useSentenceTTS.
+    // When draining is true, newly enqueued sentences should be prefetched immediately.
+    const prefetched: string[] = [];
+    const prefetch = (text: string) => prefetched.push(text);
+    const draining = true;
+
+    // Replicate enqueueSentence logic
+    const sentence = 'Next chunk text.';
+    if (draining && prefetch) {
+      prefetch(sentence);
+    }
+
+    expect(prefetched).toEqual(['Next chunk text.']);
+  });
+
+  it('prefetch is NOT called at enqueue time when drain is idle', () => {
+    const prefetched: string[] = [];
+    const prefetch = (text: string) => prefetched.push(text);
+    const draining = false;
+
+    const sentence = 'First chunk.';
+    if (draining && prefetch) {
+      prefetch(sentence);
+    }
+
+    expect(prefetched).toEqual([]);
+  });
+
+  it('drain loop prefetches next item in queue (lookahead)', async () => {
+    const prefetched: string[] = [];
+    const prefetch = (text: string) => prefetched.push(text);
+
+    const queue = ['Chunk 1.', 'Chunk 2.', 'Chunk 3.'];
+    const speak = vi.fn(async (_text: string, onReady?: () => void) => {
+      onReady?.();
+      await new Promise((r) => setTimeout(r, 5));
+    });
+
+    // Simulate drain loop with prefetch lookahead
+    while (queue.length > 0) {
+      const sentence = queue.shift()!;
+      // Lookahead prefetch (mirrors useSentenceTTS drain loop)
+      if (queue.length > 0 && prefetch) {
+        prefetch(queue[0]);
+      }
+      await speak(sentence, () => {});
+    }
+
+    // Chunk 2 prefetched during Chunk 1, Chunk 3 prefetched during Chunk 2
+    expect(prefetched).toEqual(['Chunk 2.', 'Chunk 3.']);
+  });
+
+  it('speak uses cached prefetch (instant, no gap)', async () => {
+    // Simulates useVoiceProvider.speak() with prefetch cache.
+    // When a prefetch cache hit occurs, no fetch is needed — the blob is ready.
+    const cache = new Map<string, Promise<string>>();
+    const callOrder: string[] = [];
+
+    // Prefetch stores a ready promise
+    cache.set('chunk2', Promise.resolve('cached-blob'));
+
+    const speak = async (text: string) => {
+      const cached = cache.get(text);
+      if (cached) {
+        cache.delete(text);
+        const blob = await cached;
+        callOrder.push(`cache-hit:${text}:${blob}`);
+      } else {
+        callOrder.push(`fetch:${text}`);
+        await new Promise((r) => setTimeout(r, 10)); // Simulate fetch
+      }
+      callOrder.push(`play:${text}`);
+      await new Promise((r) => setTimeout(r, 5)); // Simulate playback
+    };
+
+    // chunk1 has no cache (first chunk is always fetched fresh)
+    await speak('chunk1');
+    // chunk2 should use cached blob (no fetch delay)
+    await speak('chunk2');
+
+    expect(callOrder).toEqual([
+      'fetch:chunk1',
+      'play:chunk1',
+      'cache-hit:chunk2:cached-blob',
+      'play:chunk2',
+    ]);
+  });
+
+  it('prefetch failure falls back to normal fetch in speak', async () => {
+    const cache = new Map<string, Promise<string>>();
+    const callOrder: string[] = [];
+
+    // Prefetch that will fail
+    cache.set('chunk2', Promise.reject(new Error('prefetch failed')));
+
+    const speak = async (text: string) => {
+      const cached = cache.get(text);
+      if (cached) {
+        cache.delete(text);
+        try {
+          const blob = await cached;
+          callOrder.push(`cache-hit:${text}:${blob}`);
+        } catch {
+          // Prefetch failed — fall through to normal fetch
+          callOrder.push(`cache-miss:${text}`);
+          await new Promise((r) => setTimeout(r, 5));
+          callOrder.push(`fetch:${text}`);
+        }
+      } else {
+        await new Promise((r) => setTimeout(r, 5));
+        callOrder.push(`fetch:${text}`);
+      }
+      callOrder.push(`play:${text}`);
+    };
+
+    await speak('chunk2');
+
+    expect(callOrder).toEqual([
+      'cache-miss:chunk2',
+      'fetch:chunk2',
+      'play:chunk2',
+    ]);
+  });
+
+  it('stopSpeaking clears prefetch cache (barge-in cleanup)', () => {
+    const aborted: string[] = [];
+    const cache = new Map<string, { abort: () => void }>();
+
+    cache.set('chunk2', { abort: () => aborted.push('chunk2') });
+    cache.set('chunk3', { abort: () => aborted.push('chunk3') });
+
+    // Simulate stopSpeaking → clearPrefetch
+    for (const entry of cache.values()) {
+      entry.abort();
+    }
+    cache.clear();
+
+    expect(aborted).toEqual(['chunk2', 'chunk3']);
+    expect(cache.size).toBe(0);
+  });
+});
+
 describe('speak() stop-previous guard', () => {
   it('stops previous audio before starting new audio', async () => {
     const callOrder: string[] = [];

@@ -7,6 +7,9 @@ interface UseSentenceTTSOptions {
   /** Speak a sentence. Must return a promise that resolves when audio playback finishes.
    *  onReady fires after TTS fetch completes, right before audio.play() — use for text reveal. */
   speak: (text: string, onReady?: () => void) => Promise<void>;
+  /** Pre-fetch TTS audio for upcoming text. Called on enqueue (when drain is active) and
+   *  in the drain loop for the next item. speak() uses cached audio to eliminate latency. */
+  prefetch?: (text: string) => void;
   /** Called right before each sentence starts playing — use to reveal that sentence's text. */
   onSentenceStart?: (sentence: string) => void;
   /** Called when flush() has been called and all queued sentences have finished playing. */
@@ -43,6 +46,8 @@ export function useSentenceTTS(options: UseSentenceTTSOptions): UseSentenceTTSRe
   // Store callbacks in refs to avoid stale closures in the async drain loop
   const speakRef = useRef(options.speak);
   speakRef.current = options.speak;
+  const prefetchRef = useRef(options.prefetch);
+  prefetchRef.current = options.prefetch;
   const onSentenceStartRef = useRef(options.onSentenceStart);
   onSentenceStartRef.current = options.onSentenceStart;
   const onAllDoneRef = useRef(options.onAllDone);
@@ -82,6 +87,13 @@ export function useSentenceTTS(options: UseSentenceTTSOptions): UseSentenceTTSRe
       setQueueLength(queueRef.current.length);
       hasSentencesRef.current = true;
 
+      // Lookahead prefetch: start fetching next sentence's audio while current plays.
+      // Combined with enqueue-time prefetch (below), this ensures audio is pre-fetched
+      // whether items arrive one-at-a-time or are already queued.
+      if (queueRef.current.length > 0 && prefetchRef.current) {
+        prefetchRef.current(queueRef.current[0]);
+      }
+
       // Reveal text via onReady callback — fires after TTS fetch completes,
       // right before audio.play(). This keeps text and audio in sync.
       try {
@@ -118,6 +130,14 @@ export function useSentenceTTS(options: UseSentenceTTSOptions): UseSentenceTTSRe
     if (cancelledRef.current) return;
     queueRef.current.push(sentence);
     setQueueLength(queueRef.current.length);
+
+    // Prefetch this sentence's audio immediately when drain loop is already playing.
+    // By the time the drain loop finishes the current sentence and shifts to this one,
+    // the TTS audio will already be downloaded — eliminating the inter-chunk gap.
+    if (drainingRef.current && prefetchRef.current) {
+      prefetchRef.current(sentence);
+    }
+
     startDraining(); // No-op if already draining
   }, [startDraining]);
 

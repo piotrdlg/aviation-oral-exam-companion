@@ -293,6 +293,50 @@ Reduced `max_tokens` for structured mode. Even when the safety net fires (model 
 
 When the safety net fires (no JSON chunks extracted), the plain text is now split into up to 3 paragraph-like chunks (first sentence / middle / rest) instead of being emitted as a single blob. This ensures progressive delivery even when JSON output fails.
 
+## 5c. TTS Prefetch Pipeline (Phase E.3)
+
+After Phase E.2 confirmed the 3-chunk delivery was working correctly (text synced with voice, natural speech), user testing revealed a noticeable silence gap (~400-800ms) between each chunk. The gap was caused by the sequential fetch+play pattern in the drain loop.
+
+### 4.7 Root Cause: Sequential TTS Fetch + Play
+
+The `useSentenceTTS` drain loop awaited the entire `speak()` lifecycle (TTS API fetch + audio download + full playback) before advancing to the next chunk. Since `speak()` in `useVoiceProvider` bundles fetch and play as one atomic operation, the TTS fetch for chunk N+1 never started until chunk N's audio finished playing.
+
+Timeline before fix:
+```
+Chunk 1: [TTS fetch ~500ms] [Play ~4s]
+                                      ← ~500ms gap →
+Chunk 2:                              [TTS fetch ~500ms] [Play ~4s]
+```
+
+### Fix 11: TTS Prefetch Cache (useVoiceProvider.ts)
+
+Added a `prefetchCacheRef` Map that stores `{ promise: Promise<Blob>, controller: AbortController }` keyed by text. New `prefetch(text)` method starts a background TTS fetch without blocking. Modified `speak(text)` to check the cache first — if a prefetch is ready, it skips the API round-trip entirely.
+
+Cache lifecycle:
+- `prefetch(text)` — idempotent, starts fetch if not already cached
+- `speak(text)` — consumes cache entry, falls back to normal fetch if cache miss or prefetch failed
+- `stopSpeaking()` — aborts and clears all prefetches (barge-in cleanup)
+- Unmount — clears all prefetches
+
+### Fix 12: Enqueue-time Prefetch (useSentenceTTS.ts)
+
+When a sentence is enqueued while the drain loop is already playing (draining = true), the newly enqueued sentence's TTS is immediately prefetched. This handles the most common case: chunks arriving one-at-a-time during streaming.
+
+### Fix 13: Drain Loop Lookahead Prefetch (useSentenceTTS.ts)
+
+At the start of each drain loop iteration, if the queue has more items, the next item is prefetched. This handles the case where multiple chunks are already queued (e.g., safety net emitting 3 at once).
+
+### Fix 14: Paragraph Path Prefetch (practice/page.tsx)
+
+Applied the same prefetch pattern to the paragraph drain loop: enqueue-time prefetch when drain is active, and lookahead prefetch in the drain loop.
+
+Timeline after fix:
+```
+Chunk 1: [TTS fetch ~500ms] [Play ~4s] [Play chunk 2 instantly] [Play chunk 3 instantly]
+Chunk 2:                    [prefetch ~500ms, ready well before chunk 1 ends]
+Chunk 3:                               [prefetch during chunk 2, ready before it ends]
+```
+
 ## 12. Known Limitations
 
 - Feature flag cached for 60s by `/api/flags` — toggling takes up to 60s to propagate
@@ -304,10 +348,11 @@ When the safety net fires (no JSON chunks extracted), the plain text is now spli
 
 ```
 TypeScript: 0 errors
-Tests: 56 files, 1224 tests (14 new) — all pass
+Tests: 56 files, 1230 tests (20 in useSentenceTTS.test.ts) — all pass
 GPT-5.1 Codex review: original 4 bugs confirmed, fixes verified safe
 GPT-5.2 review: 2 post-activation bugs confirmed, fixes 5+6 verified safe
 Phase E.2: systematic code review confirmed pipeline intact, prompt architecture issue identified and fixed
+Phase E.3: TTS prefetch pipeline eliminates inter-chunk latency gap
 ```
 
 ## 14. Recommendations
@@ -326,3 +371,4 @@ Phase E.2: systematic code review confirmed pipeline intact, prompt architecture
 - Phase E: Response Delivery Coordination (fixes 1-4, commit 13db516)
 - Phase E.1: Post-Activation Bug Fixes (fixes 5-6, commit 13db516)
 - Phase E.2: Prompt Architecture Fix (fixes 7-10)
+- Phase E.3: TTS Prefetch Pipeline (fixes 11-14)

@@ -20,6 +20,10 @@ interface UseVoiceProviderReturn {
 
   // TTS
   speak: (text: string, onReady?: () => void) => Promise<void>;
+  /** Pre-fetch TTS audio for text that will be spoken soon. Idempotent per text.
+   *  When speak() is later called with the same text, it uses the cached audio
+   *  instead of making a new fetch — eliminating the inter-chunk latency gap. */
+  prefetch: (text: string) => void;
   stopSpeaking: () => void;
   isSpeaking: boolean;
 
@@ -57,7 +61,42 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ttsAbortRef = useRef<AbortController | null>(null);
 
+  // Prefetch cache: maps text → { promise resolving to Blob, AbortController }.
+  // Allows upcoming chunks to be fetched in parallel with current playback,
+  // eliminating the ~400-800ms TTS API round-trip gap between chunks.
+  const prefetchCacheRef = useRef<Map<string, { promise: Promise<Blob>; controller: AbortController }>>(new Map());
+
   const [error, setError] = useState<string | null>(null);
+
+  // === TTS prefetch: start fetching audio before it's needed ===
+  const prefetch = useCallback((text: string): void => {
+    if (prefetchCacheRef.current.has(text)) return; // Already prefetching
+    const controller = new AbortController();
+    const promise = fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+      signal: controller.signal,
+    })
+      .then(res => {
+        if (!res.ok) throw new Error(`TTS prefetch failed (${res.status})`);
+        return res.arrayBuffer();
+      })
+      .then(buf => new Blob([buf], { type: 'audio/mpeg' }))
+      .catch(err => {
+        // Remove failed entries so speak() falls back to normal fetch
+        prefetchCacheRef.current.delete(text);
+        throw err;
+      });
+    prefetchCacheRef.current.set(text, { promise, controller });
+  }, []);
+
+  const clearPrefetch = useCallback(() => {
+    for (const entry of prefetchCacheRef.current.values()) {
+      entry.controller.abort();
+    }
+    prefetchCacheRef.current.clear();
+  }, []);
 
   // === TTS: /api/tts → MP3 → HTMLAudioElement ===
   // IMPORTANT: speak() resolves when audio playback ENDS, not when it starts.
@@ -81,30 +120,47 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
       const abortController = new AbortController();
       ttsAbortRef.current = abortController;
 
-      const response = await fetch('/api/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
-        signal: abortController.signal,
-      });
+      // Check prefetch cache first — if audio was pre-fetched while the
+      // previous chunk was playing, we can skip the TTS API round-trip entirely.
+      let blob: Blob | null = null;
+      const cached = prefetchCacheRef.current.get(text);
+      if (cached) {
+        prefetchCacheRef.current.delete(text);
+        try {
+          blob = await cached.promise;
+          // Check if we were aborted while waiting for the cached promise
+          if (abortController.signal.aborted) {
+            throw new DOMException('Aborted', 'AbortError');
+          }
+        } catch (err) {
+          if (err instanceof DOMException && err.name === 'AbortError') throw err;
+          blob = null; // Prefetch failed — fall through to normal fetch
+        }
+      }
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({ error: 'TTS request failed' }));
-        throw new Error(errData.error || `TTS failed (${response.status})`);
+      if (!blob) {
+        const response = await fetch('/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text }),
+          signal: abortController.signal,
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({ error: 'TTS request failed' }));
+          throw new Error(errData.error || `TTS failed (${response.status})`);
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+
+        if (arrayBuffer.byteLength === 0) {
+          throw new Error('TTS returned empty audio (0 bytes)');
+        }
+
+        blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
       }
 
       setIsSpeaking(true);
-
-      // Read the full response as ArrayBuffer, then create a Blob with
-      // explicit MIME type. This is more reliable than response.blob()
-      // which may not preserve Content-Type through Next.js streaming.
-      const arrayBuffer = await response.arrayBuffer();
-
-      if (arrayBuffer.byteLength === 0) {
-        throw new Error('TTS returned empty audio (0 bytes)');
-      }
-
-      const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
       audioRef.current = audio;
@@ -189,7 +245,10 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
       audioRef.current = null;
     }
     setIsSpeaking(false);
-  }, []);
+
+    // Abort and clear any prefetched audio (barge-in cleanup)
+    clearPrefetch();
+  }, [clearPrefetch]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -200,8 +259,9 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
       if (audioRef.current) {
         audioRef.current.pause();
       }
+      clearPrefetch();
     };
-  }, []);
+  }, [clearPrefetch]);
 
   // Combine errors
   const combinedError = error || deepgramSTT.error;
@@ -213,6 +273,7 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
     interimTranscript: deepgramSTT.interimTranscript,
     isListening: deepgramSTT.isListening,
     speak,
+    prefetch,
     stopSpeaking,
     isSpeaking,
     tier,

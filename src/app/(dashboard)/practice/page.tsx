@@ -202,6 +202,7 @@ export default function PracticePage() {
   // Text is revealed per-sentence, synchronized with audio start.
   const sentenceTTS = useSentenceTTS({
     speak: (text, onReady) => voice.speak(text, onReady),
+    prefetch: (text) => voice.prefetch(text),
     onSentenceStart: (sentence) => {
       const isFirst = !sentenceRevealedRef.current;
       sentenceRevealedRef.current += (isFirst ? '' : '\n\n') + sentence;
@@ -800,11 +801,19 @@ export default function PracticePage() {
 
                 // Queue paragraph for sequential TTS playback
                 ttsQueueRef.current.push(parsed.paragraph);
+                // Prefetch audio immediately when drain loop is already playing previous paragraph
+                if (ttsQueueActiveRef.current) {
+                  voice.prefetch(parsed.paragraph);
+                }
                 if (!ttsQueueActiveRef.current) {
                   ttsQueueActiveRef.current = true;
                   (async () => {
                     while (ttsQueueRef.current.length > 0) {
                       const text = ttsQueueRef.current.shift()!;
+                      // Prefetch next paragraph's audio while current one plays
+                      if (ttsQueueRef.current.length > 0) {
+                        voice.prefetch(ttsQueueRef.current[0]);
+                      }
                       try {
                         // Reveal text via onReady callback — fires after TTS API
                         // fetch completes, right when audio is about to play.
