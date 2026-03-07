@@ -501,7 +501,7 @@ export async function generateExaminerTurnStreaming(
               for (const chunk of newChunks) {
                 chunkTexts[chunk.field] = chunk.text;
                 emittedChunks.add(chunk.field);
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: chunk.field, text: chunk.text })}\n\n`));
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: chunk.field, text: chunk.text, serverTs: Date.now() })}\n\n`));
               }
             } else {
               // Traditional mode: emit raw token events
@@ -556,7 +556,7 @@ export async function generateExaminerTurnStreaming(
           for (const field of STRUCTURED_CHUNK_FIELDS) {
             if (!emittedChunks.has(field) && chunkTexts[field]) {
               emittedChunks.add(field);
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: field, text: chunkTexts[field] })}\n\n`));
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: field, text: chunkTexts[field], serverTs: Date.now() })}\n\n`));
             }
           }
           // Safety net: if NO chunks were extracted at all (model ignored JSON instruction),
@@ -568,21 +568,21 @@ export async function generateExaminerTurnStreaming(
             if (firstSentenceMatch) {
               const p1 = firstSentenceMatch[1].trim();
               const rest = missingChunks.slice(firstSentenceMatch[1].length + firstSentenceMatch[2].length);
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: 'feedback_quick', text: p1 })}\n\n`));
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: 'feedback_quick', text: p1, serverTs: Date.now(), safetyNet: true })}\n\n`));
               // Split remaining at first \n\n or midpoint sentence boundary
               const nnIdx = rest.indexOf('\n\n');
               if (nnIdx !== -1) {
                 const p2 = rest.slice(0, nnIdx).trim();
                 const p3 = rest.slice(nnIdx + 2).trim();
-                if (p2) controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: 'feedback_detail', text: p2 })}\n\n`));
-                if (p3) controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: 'question', text: p3 })}\n\n`));
+                if (p2) controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: 'feedback_detail', text: p2, serverTs: Date.now(), safetyNet: true })}\n\n`));
+                if (p3) controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: 'question', text: p3, serverTs: Date.now(), safetyNet: true })}\n\n`));
               } else {
                 // No paragraph break — emit rest as feedback_detail
-                if (rest.trim()) controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: 'feedback_detail', text: rest.trim() })}\n\n`));
+                if (rest.trim()) controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: 'feedback_detail', text: rest.trim(), serverTs: Date.now(), safetyNet: true })}\n\n`));
               }
             } else {
               // Can't split — emit entire text as feedback_quick (original behavior)
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: 'feedback_quick', text: missingChunks })}\n\n`));
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: 'feedback_quick', text: missingChunks, serverTs: Date.now(), safetyNet: true })}\n\n`));
             }
           }
           plainText = missingChunks;

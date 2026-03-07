@@ -81,11 +81,18 @@ export function useSentenceTTS(options: UseSentenceTTSOptions): UseSentenceTTSRe
 
     drainingRef.current = true;
     setIsSpeaking(true);
+    let drainIndex = 0;
+    let drainLastEnd = performance.now();
 
     while (queueRef.current.length > 0 && !cancelledRef.current) {
       const sentence = queueRef.current.shift()!;
       setQueueLength(queueRef.current.length);
       hasSentencesRef.current = true;
+
+      const gapMs = Math.round(performance.now() - drainLastEnd);
+      const drainItemStart = performance.now();
+      const snippet = sentence.length > 40 ? sentence.slice(0, 40) + '...' : sentence;
+      console.log(`[VOICE-TIMING] Drain[${drainIndex}] start: gap=${gapMs}ms, queue=${queueRef.current.length} remaining, "${snippet}"`);
 
       // Lookahead prefetch: start fetching next sentence's audio while current plays.
       // Combined with enqueue-time prefetch (below), this ensures audio is pre-fetched
@@ -105,6 +112,10 @@ export function useSentenceTTS(options: UseSentenceTTSOptions): UseSentenceTTSRe
           onErrorRef.current?.(err instanceof Error ? err : new Error(String(err)));
         }
       }
+
+      drainLastEnd = performance.now();
+      console.log(`[VOICE-TIMING] Drain[${drainIndex}] done: ${Math.round(drainLastEnd - drainItemStart)}ms total`);
+      drainIndex++;
     }
 
     drainingRef.current = false;

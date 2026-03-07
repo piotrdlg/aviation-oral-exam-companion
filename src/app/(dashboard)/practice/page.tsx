@@ -229,6 +229,20 @@ export default function PracticePage() {
       chunkModeActiveRef.current = false;
       flushReveal();
       sentenceRevealedRef.current = '';
+
+      // === VOICE TIMING: playback complete ===
+      const vtData = (window as unknown as Record<string, unknown>).__vtLastExchange as {
+        vt0: number; vtRequestStart: number; vtChunks: { field: string; clientReceivedMs: number }[]; vtStreamEnd: number;
+      } | undefined;
+      if (vtData) {
+        const allDoneMs = Math.round(performance.now() - vtData.vt0);
+        const streamEndMs = Math.round(vtData.vtStreamEnd - vtData.vt0);
+        console.log(`\n[VOICE-TIMING] ═══ Playback Complete ═══`);
+        console.log(`[VOICE-TIMING] Answer → all audio done: ${allDoneMs}ms (${(allDoneMs / 1000).toFixed(1)}s)`);
+        console.log(`[VOICE-TIMING] Stream end → all audio done: ${allDoneMs - streamEndMs}ms (pure playback)`);
+        console.log(`[VOICE-TIMING] ═══════════════════════\n`);
+        delete (window as unknown as Record<string, unknown>).__vtLastExchange;
+      }
     },
     onError: () => {
       // TTS error — re-enable the isSpeaking effect, then ensure text is visible
@@ -733,6 +747,20 @@ export default function PracticePage() {
         ttsQueueRef.current = []; // Reset queue for new response
         ttsRevealedTextRef.current = ''; // Reset progressive text reveal
 
+        // === VOICE TIMING: exchange-level timeline ===
+        const vt0 = performance.now();  // Answer submitted
+        const vtRequestStart = Date.now(); // Wall-clock for server timestamp comparison
+        interface VoiceChunkTiming {
+          field: string;
+          serverTs?: number;
+          clientReceivedMs: number;
+          safetyNet?: boolean;
+          textLen: number;
+        }
+        const vtChunks: VoiceChunkTiming[] = [];
+        let vtFirstSse: number | undefined;
+        let vtStreamEnd: number | undefined;
+
         if (!voiceEnabledRef.current) {
           // Voice OFF: show placeholder and stream tokens visually
           setMessages((prev) => [...prev, { role: 'examiner', text: '' }]);
@@ -761,6 +789,18 @@ export default function PracticePage() {
               const parsed = JSON.parse(payload);
 
               if (parsed.chunk && parsed.text) {
+                // === VOICE TIMING: record chunk arrival ===
+                const vtNow = performance.now();
+                if (!vtFirstSse) vtFirstSse = vtNow;
+                vtChunks.push({
+                  field: parsed.chunk,
+                  serverTs: parsed.serverTs,
+                  clientReceivedMs: Math.round(vtNow - vt0),
+                  safetyNet: parsed.safetyNet || false,
+                  textLen: parsed.text.length,
+                });
+                console.log(`[VOICE-TIMING] Chunk SSE: "${parsed.chunk}" +${Math.round(vtNow - vt0)}ms (server→client: ${parsed.serverTs ? Math.round(parsed.serverTs - vtRequestStart) + 'ms server-side' : 'n/a'}) ${parsed.safetyNet ? '[SAFETY NET]' : ''} (${parsed.text.length} chars)`);
+
                 // Server-side chunk event (structured 3-chunk response mode)
                 // Enqueue the complete chunk for TTS — text displayed via onSentenceStart
                 chunkModeActiveRef.current = true;
@@ -934,6 +974,31 @@ export default function PracticePage() {
               // Ignore malformed SSE payloads
             }
           }
+        }
+
+        // === VOICE TIMING: stream-end summary ===
+        vtStreamEnd = performance.now();
+        if (vtChunks.length > 0) {
+          const totalMs = Math.round(vtStreamEnd - vt0);
+          const firstChunkMs = vtChunks[0].clientReceivedMs;
+          console.log(`\n[VOICE-TIMING] ═══ Exchange Timeline ═══`);
+          console.log(`[VOICE-TIMING] Answer submitted → stream end: ${totalMs}ms`);
+          console.log(`[VOICE-TIMING] Answer submitted → first chunk SSE: ${firstChunkMs}ms`);
+          console.log(`[VOICE-TIMING] Chunks received: ${vtChunks.length}`);
+          console.table(vtChunks.map((c, i) => ({
+            '#': i + 1,
+            field: c.field,
+            'client +ms': c.clientReceivedMs,
+            'server-side ms': c.serverTs ? Math.round(c.serverTs - vtRequestStart) : 'n/a',
+            'gap from prev': i > 0 ? c.clientReceivedMs - vtChunks[i - 1].clientReceivedMs : '-',
+            'chars': c.textLen,
+            'safety': c.safetyNet ? 'YES' : '',
+          })));
+          // Store for onAllDone summary
+          (window as unknown as Record<string, unknown>).__vtLastExchange = {
+            vt0, vtRequestStart, vtChunks, vtStreamEnd,
+          };
+          console.log(`[VOICE-TIMING] ═══ (TTS playback timing will follow in onAllDone) ═══\n`);
         }
 
         // Apply assessment to the student message

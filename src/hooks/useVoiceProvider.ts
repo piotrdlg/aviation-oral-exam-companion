@@ -122,12 +122,15 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
 
       // Check prefetch cache first — if audio was pre-fetched while the
       // previous chunk was playing, we can skip the TTS API round-trip entirely.
+      const ttsStart = performance.now();
       let blob: Blob | null = null;
+      let cacheHit = false;
       const cached = prefetchCacheRef.current.get(text);
       if (cached) {
         prefetchCacheRef.current.delete(text);
         try {
           blob = await cached.promise;
+          cacheHit = true;
           // Check if we were aborted while waiting for the cached promise
           if (abortController.signal.aborted) {
             throw new DOMException('Aborted', 'AbortError');
@@ -135,6 +138,7 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
         } catch (err) {
           if (err instanceof DOMException && err.name === 'AbortError') throw err;
           blob = null; // Prefetch failed — fall through to normal fetch
+          cacheHit = false;
         }
       }
 
@@ -160,16 +164,24 @@ export function useVoiceProvider(options: UseVoiceProviderOptions): UseVoiceProv
         blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
       }
 
+      const ttsFetchMs = Math.round(performance.now() - ttsStart);
+      const snippet = text.length > 50 ? text.slice(0, 50) + '...' : text;
+      console.log(`[VOICE-TIMING] TTS ready: ${ttsFetchMs}ms ${cacheHit ? '(PREFETCH HIT)' : '(fetch)'} "${snippet}"`);
+
       setIsSpeaking(true);
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
       audioRef.current = audio;
+      const playbackStart = performance.now();
 
       // Wait for audio playback to COMPLETE (not just start).
       // This is critical: the paragraph drain loop awaits speak(),
       // so it must not advance to the next paragraph until this one finishes.
       await new Promise<void>((resolve, reject) => {
         audio.onended = () => {
+          const playbackMs = Math.round(performance.now() - playbackStart);
+          const totalMs = Math.round(performance.now() - ttsStart);
+          console.log(`[VOICE-TIMING] Playback done: ${playbackMs}ms playback, ${totalMs}ms total (fetch+play) "${snippet}"`);
           setIsSpeaking(false);
           URL.revokeObjectURL(url);
           audioRef.current = null;
