@@ -1424,7 +1424,7 @@ export default function SettingsPage() {
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-start gap-3">
                         {voiceOption?.image && (
-                          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-c-border flex-shrink-0 bg-c-bezel">
+                          <div className={`w-12 h-12 rounded-full overflow-hidden border-2 flex-shrink-0 bg-c-bezel ${isActive ? 'border-c-amber' : 'border-c-border'}`}>
                             <img src={voiceOption.image} alt={profile.defaultDisplayName} className="w-full h-full object-cover" />
                           </div>
                         )}
@@ -1433,42 +1433,36 @@ export default function SettingsPage() {
                             {profile.defaultDisplayName}
                           </span>
                           <p className="font-mono text-xs text-c-dim mt-0.5">{profile.description}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className={`font-mono text-xs px-1.5 py-0.5 rounded border uppercase ${
-                              profile.voiceGender === 'female'
-                                ? 'bg-c-cyan-lo text-c-cyan border-c-cyan/20'
-                                : 'bg-c-green-lo text-c-green border-c-green/20'
-                            }`}>
-                              {profile.voiceGender === 'female' ? 'F' : 'M'}
-                            </span>
-                          </div>
                         </div>
                       </div>
                       {isActive && (
-                        <span className="font-mono text-xs bg-c-amber-lo text-c-amber px-2 py-0.5 rounded border border-c-amber/20 uppercase flex-shrink-0">
+                        <span className="font-mono text-xs bg-c-amber/15 text-c-amber px-2 py-0.5 rounded border border-c-amber/25 uppercase flex-shrink-0">
                           ACTIVE
                         </span>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-3">
-                      {voiceOption && (
-                        <button
-                          onClick={() => isPreviewing ? (() => { previewAudioRef.current?.pause(); previewAudioRef.current = null; setPreviewingVoice(null); })() : previewVoice(voiceOption.model)}
-                          disabled={previewingVoice !== null && !isPreviewing}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded font-mono text-xs font-medium transition-colors ${
-                            isPreviewing
-                              ? 'bg-c-amber text-c-bg'
-                              : 'bg-c-bezel border border-c-border text-c-muted hover:bg-c-border hover:text-c-text'
-                          } disabled:opacity-40 uppercase`}
-                        >
-                          {isPreviewing ? '\u25A0' : '\u25B6'} {isPreviewing ? 'STOP' : 'PREVIEW'}
-                        </button>
-                      )}
+                      <button
+                        onClick={() => {
+                          const modelId = voiceOption?.model || profile.voiceId;
+                          isPreviewing
+                            ? (() => { previewAudioRef.current?.pause(); previewAudioRef.current = null; setPreviewingVoice(null); })()
+                            : previewVoice(modelId);
+                        }}
+                        disabled={previewingVoice !== null && !isPreviewing}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded font-mono text-xs font-medium transition-colors ${
+                          isPreviewing
+                            ? 'bg-c-amber text-c-bg'
+                            : 'bg-c-bezel border border-c-border text-c-muted hover:bg-c-border hover:text-c-text'
+                        } disabled:opacity-40 uppercase`}
+                      >
+                        {isPreviewing ? '\u25A0' : '\u25B6'} {isPreviewing ? 'STOP' : 'PREVIEW'}
+                      </button>
                       {!isActive && (
                         <button
                           onClick={() => switchExaminerProfile(profileKey)}
                           disabled={voiceSaving}
-                          className="px-3 py-1.5 rounded font-mono text-xs font-medium bg-c-amber-lo text-c-amber hover:bg-c-amber hover:text-c-bg transition-colors border border-c-amber/30 disabled:opacity-40 uppercase"
+                          className="px-3 py-1.5 rounded font-mono text-xs font-medium bg-c-amber/15 text-c-amber hover:bg-c-amber hover:text-c-bg transition-colors border border-c-amber/30 disabled:opacity-40 uppercase"
                         >
                           SELECT
                         </button>
