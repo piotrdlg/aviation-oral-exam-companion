@@ -16,6 +16,7 @@ import { useInstructorConnection } from '@/hooks/useInstructorConnection';
 import { ReferralWelcomeBanner } from '@/components/ui/ReferralWelcomeBanner';
 import { captureVoiceEvent } from '@/lib/voice-telemetry';
 import { warmUpAudio } from '@/lib/audio-unlock';
+import { EXAMINER_PROFILES } from '@/lib/examiner-profile';
 
 /**
  * Retry a fetch call once on transient infrastructure errors (405, 502, 503, 504).
@@ -132,7 +133,7 @@ export default function PracticePage() {
   // Avatars + names in message bubbles (Task 18)
   const [userName, setUserName] = useState<string | null>(null);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
-  const [activePersona, setActivePersona] = useState<{ label: string; image: string } | null>(null);
+  const [activePersona, setActivePersona] = useState<{ label: string; image?: string } | null>(null);
   // Resumable session (active/paused with planner state in metadata)
   const [resumableSession, setResumableSession] = useState<{
     id: string;
@@ -291,12 +292,19 @@ export default function PracticePage() {
         // Populate avatar + persona for message bubbles (Task 18)
         if (data?.displayName) setUserName(data.displayName);
         if (data?.avatarUrl) setUserAvatar(data.avatarUrl);
-        // Resolve active persona from voice options
-        if (data?.voiceOptions) {
-          const selectedVoice = data.preferredVoice;
-          const persona = data.voiceOptions.find((v: { model: string }) => v.model === selectedVoice) || data.voiceOptions[0];
-          if (persona?.label && persona?.image) {
-            setActivePersona({ label: persona.label, image: persona.image });
+        // Resolve active persona from examiner profile + voice options
+        {
+          const profileKey = data?.examinerProfile || 'maria_methodical';
+          const profile = EXAMINER_PROFILES[profileKey as ExaminerProfileKey];
+          if (profile && data?.voiceOptions) {
+            // Match by persona_id (same as Settings page), NOT by TTS model string
+            const voiceOption = data.voiceOptions.find((v: { persona_id?: string }) => v.persona_id === profile.voiceId);
+            setActivePersona({
+              label: voiceOption?.label || profile.defaultDisplayName,
+              image: voiceOption?.image || undefined,
+            });
+          } else if (profile) {
+            setActivePersona({ label: profile.defaultDisplayName });
           }
         }
         // Check if usage is at 80% or above for proactive warning (Task 34)
