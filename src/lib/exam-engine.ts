@@ -452,7 +452,7 @@ export async function generateExaminerTurnStreaming(
 
   const stream = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: structuredResponse ? 500 : (messages.length > 0 ? 250 : 500),
+    max_tokens: structuredResponse ? 350 : (messages.length > 0 ? 250 : 500),
     system: finalSystem,
     stream: true,
     messages:

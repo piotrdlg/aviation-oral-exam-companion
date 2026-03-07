@@ -228,13 +228,15 @@ export const STRUCTURED_RESPONSE_INSTRUCTION = `
 
 RESPONSE FORMAT — CRITICAL: You MUST respond with a JSON object containing exactly these three fields. Output ONLY the JSON object, no markdown code blocks, no text before or after.
 
+TOTAL RESPONSE LENGTH LIMIT: All three fields combined must be under 120 words. A DPE probes — does NOT teach, list, or lecture.
+
 {
-  "feedback_quick": "One sentence of immediate, natural feedback. Examples: 'That\\'s exactly right.' or 'Not quite — let me clarify.' or 'You\\'re on the right track, but missing a key detail.' Keep it to ONE brief sentence that a real DPE would say.",
-  "feedback_detail": "One concise paragraph elaborating on the student\\'s answer. What they got right, what they missed or got wrong, and any relevant regulation references or clarifications. Be specific and educational.",
-  "question": "One paragraph that starts with a brief natural transition connecting to the previous topic (e.g., 'Let\\'s dig deeper into that...' or 'Good — now building on what you said about...') followed by your next examination question. Ask ONE clear question."
+  "feedback_quick": "One sentence (max 15 words). Immediate, natural DPE reaction. Examples: 'That\\'s exactly right.' or 'Not quite — let me clarify.' or 'You\\'re on the right track, but missing a key detail.'",
+  "feedback_detail": "2-3 sentences (max 60 words). What they got right, what they missed, and one key regulation or clarification. Do NOT list multiple points — pick the single most important gap. A DPE corrects briefly, not lectures.",
+  "question": "1-2 sentences (max 40 words). Brief transition then ONE clear question. Examples: 'Speaking of that — how would you verify...' or 'Good. Now what would you do if...'"
 }
 
-All three fields are REQUIRED. Each field value must be a plain text string (no nested JSON, no markdown). The text will be read aloud by TTS — write naturally as a DPE would speak.`;
+All three fields are REQUIRED. Each field value must be a plain text string (no nested JSON, no markdown). The text will be read aloud by TTS — write naturally as a DPE would speak. Keep it conversational and concise.`;
 
 /**
  * Paragraph structure instruction appended to the system prompt when responding
