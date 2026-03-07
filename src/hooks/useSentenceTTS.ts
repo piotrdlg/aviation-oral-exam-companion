@@ -12,6 +12,9 @@ interface UseSentenceTTSOptions {
   prefetch?: (text: string) => void;
   /** Called right before each sentence starts playing — use to reveal that sentence's text. */
   onSentenceStart?: (sentence: string) => void;
+  /** Called when the drain loop advances to the next chunk and is waiting for TTS.
+   *  Use to show a loading indicator. Cleared when onSentenceStart fires. */
+  onWaitingForNext?: () => void;
   /** Called when flush() has been called and all queued sentences have finished playing. */
   onAllDone?: () => void;
   /** Called on TTS error for a sentence (playback continues with next sentence). */
@@ -50,6 +53,8 @@ export function useSentenceTTS(options: UseSentenceTTSOptions): UseSentenceTTSRe
   prefetchRef.current = options.prefetch;
   const onSentenceStartRef = useRef(options.onSentenceStart);
   onSentenceStartRef.current = options.onSentenceStart;
+  const onWaitingForNextRef = useRef(options.onWaitingForNext);
+  onWaitingForNextRef.current = options.onWaitingForNext;
   const onAllDoneRef = useRef(options.onAllDone);
   onAllDoneRef.current = options.onAllDone;
   const onErrorRef = useRef(options.onError);
@@ -99,6 +104,11 @@ export function useSentenceTTS(options: UseSentenceTTSOptions): UseSentenceTTSRe
       // whether items arrive one-at-a-time or are already queued.
       if (queueRef.current.length > 0 && prefetchRef.current) {
         prefetchRef.current(queueRef.current[0]);
+      }
+
+      // Signal "waiting for next chunk" before TTS fetch starts (skip first item — it has the loading indicator)
+      if (drainIndex > 0) {
+        onWaitingForNextRef.current?.();
       }
 
       // Reveal text via onReady callback — fires after TTS fetch completes,

@@ -93,6 +93,7 @@ export default function PracticePage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [chunkBuffering, setChunkBuffering] = useState(false);
   const [taskData, setTaskData] = useState<TaskData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
@@ -204,6 +205,7 @@ export default function PracticePage() {
     speak: (text, onReady) => voice.speak(text, onReady),
     prefetch: (text) => voice.prefetch(text),
     onSentenceStart: (sentence) => {
+      setChunkBuffering(false);
       const isFirst = !sentenceRevealedRef.current;
       sentenceRevealedRef.current += (isFirst ? '' : '\n\n') + sentence;
       const revealed = sentenceRevealedRef.current;
@@ -224,8 +226,12 @@ export default function PracticePage() {
         });
       }
     },
+    onWaitingForNext: () => {
+      setChunkBuffering(true);
+    },
     onAllDone: () => {
       // All sentences spoken — re-enable the isSpeaking effect, then flush full text
+      setChunkBuffering(false);
       chunkModeActiveRef.current = false;
       flushReveal();
       sentenceRevealedRef.current = '';
@@ -246,6 +252,7 @@ export default function PracticePage() {
     },
     onError: () => {
       // TTS error — re-enable the isSpeaking effect, then ensure text is visible
+      setChunkBuffering(false);
       chunkModeActiveRef.current = false;
       flushReveal();
       sentenceRevealedRef.current = '';
@@ -689,6 +696,7 @@ export default function PracticePage() {
     ttsQueueRef.current = [];
     ttsQueueActiveRef.current = false;
     ttsRevealedTextRef.current = '';
+    setChunkBuffering(false);
     if (voice.isListening) {
       voice.stopListening();
     }
@@ -1938,6 +1946,15 @@ export default function PracticePage() {
                   <p key={idx} className={idx > 0 ? 'mt-3' : ''}>{para}</p>
                 ))}
               </div>
+
+              {/* Inter-chunk buffering indicator — shows while waiting for next chunk's TTS */}
+              {chunkBuffering && i === messages.length - 1 && msg.role === 'examiner' && (
+                <div className="flex gap-1 mt-2 h-4 items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-c-amber/60 animate-pulse" style={{ animationDelay: '0ms' }} />
+                  <span className="w-1.5 h-1.5 rounded-full bg-c-amber/60 animate-pulse" style={{ animationDelay: '150ms' }} />
+                  <span className="w-1.5 h-1.5 rounded-full bg-c-amber/60 animate-pulse" style={{ animationDelay: '300ms' }} />
+                </div>
+              )}
 
               {/* Reference images (feature-flagged) */}
               {msg.images && msg.images.length > 0 && (
