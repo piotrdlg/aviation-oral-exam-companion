@@ -73,12 +73,12 @@ describe('CSP Supabase origin derivation', () => {
  */
 
 // Replicate the CSP string construction logic from next.config.ts
-function buildCSPConnectSrc(supabaseOrigin: string): string {
-  return `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com https://us.i.posthog.com https://us-assets.i.posthog.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: ${supabaseOrigin}; font-src 'self' data:; connect-src 'self' ${supabaseOrigin} https://api.stripe.com https://us.i.posthog.com https://www.google-analytics.com https://api.cartesia.ai https://api.deepgram.com wss://api.deepgram.com https://api.openai.com; frame-src https://js.stripe.com; object-src 'none'; base-uri 'self'; report-uri /api/csp-report`;
+function buildCSP(supabaseOrigin: string): string {
+  return `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com https://us.i.posthog.com https://us-assets.i.posthog.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: ${supabaseOrigin}; font-src 'self' data:; media-src 'self' blob: data:; connect-src 'self' ${supabaseOrigin} https://api.stripe.com https://us.i.posthog.com https://www.google-analytics.com https://api.cartesia.ai https://api.deepgram.com wss://api.deepgram.com https://api.openai.com; frame-src https://js.stripe.com; object-src 'none'; base-uri 'self'; report-uri /api/csp-report`;
 }
 
 describe('CSP WebSocket and reporting directives', () => {
-  const csp = buildCSPConnectSrc('https://auth.heydpe.com');
+  const csp = buildCSP('https://auth.heydpe.com');
 
   it('includes wss://api.deepgram.com in connect-src', () => {
     expect(csp).toContain('wss://api.deepgram.com');
@@ -110,5 +110,44 @@ describe('CSP WebSocket and reporting directives', () => {
 
   it('includes PostHog in connect-src', () => {
     expect(csp).toContain('https://us.i.posthog.com');
+  });
+});
+
+/**
+ * Regression test: CSP must include media-src with blob: and data: for TTS playback.
+ *
+ * Root cause of TTS failure in ALL browsers (2026-03-06, Phase C):
+ *   CSP had no media-src directive. Per spec, missing media-src falls back to
+ *   default-src 'self'. Blob URLs (from TTS response) and data: URIs (from
+ *   audio-unlock.ts silent WAV) are NOT 'self', so browsers blocked them:
+ *   - Chrome: "Media load rejected by URL safety check" (code=4)
+ *   - Firefox: "media resource not suitable" (NotSupportedError)
+ *   - Safari: "operation is not supported" (NotSupportedError)
+ *
+ * Fix: Add media-src 'self' blob: data: to CSP.
+ */
+describe('CSP media-src for TTS playback', () => {
+  const csp = buildCSP('https://auth.heydpe.com');
+
+  it('includes media-src directive', () => {
+    expect(csp).toContain('media-src');
+  });
+
+  it('allows blob: URLs in media-src (TTS blob playback)', () => {
+    const mediaSrc = csp.split(';').find(d => d.trim().startsWith('media-src'));
+    expect(mediaSrc).toBeDefined();
+    expect(mediaSrc).toContain('blob:');
+  });
+
+  it('allows data: URIs in media-src (audio-unlock silent WAV)', () => {
+    const mediaSrc = csp.split(';').find(d => d.trim().startsWith('media-src'));
+    expect(mediaSrc).toBeDefined();
+    expect(mediaSrc).toContain('data:');
+  });
+
+  it('includes self in media-src', () => {
+    const mediaSrc = csp.split(';').find(d => d.trim().startsWith('media-src'));
+    expect(mediaSrc).toBeDefined();
+    expect(mediaSrc).toContain("'self'");
   });
 });
