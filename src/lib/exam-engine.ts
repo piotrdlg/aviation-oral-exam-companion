@@ -407,27 +407,41 @@ export async function generateExaminerTurnStreaming(
     ? `\n\nFAA SOURCE MATERIAL (use to ask accurate, specific questions):\n${ragContext}`
     : '';
 
-  // Append structured response instruction when chunked TTS is requested
-  const structuredInstr = structuredResponse ? STRUCTURED_RESPONSE_INSTRUCTION : '';
-
-  // When structured JSON response is requested, remove the conflicting free-form-only instructions.
-  // The prompt ends with TWO lines that contradict JSON output:
-  //   1. "IMPORTANT: Respond ONLY as the examiner. No JSON, metadata, or system text."
-  //   2. "NEVER include stage directions... only output words the examiner would actually say."
-  // Both lines must be stripped — they tell Claude to avoid JSON and output only spoken words,
-  // which directly contradicts the STRUCTURED_RESPONSE_INSTRUCTION requiring JSON output.
-  let composedSystem = systemPrompt + personaFragment + nameInstruction + ragSection + structuredInstr;
+  // When structured JSON response is requested, strip the conflicting free-form-only instructions
+  // from the DB prompt FIRST, then inject STRUCTURED_RESPONSE_INSTRUCTION immediately after
+  // the system prompt (before persona/name/RAG). This ensures the JSON format instruction
+  // appears early in the prompt where Claude weights it more heavily, rather than being
+  // buried after thousands of tokens of RAG material.
+  let basePrompt = systemPrompt;
   if (structuredResponse) {
-    composedSystem = composedSystem.replace(
+    basePrompt = basePrompt.replace(
       /IMPORTANT: Respond ONLY as the examiner\.[^\n]*\n?NEVER include stage directions[^\n]*\n?/,
       ''
     );
   }
+  const structuredInstr = structuredResponse ? STRUCTURED_RESPONSE_INSTRUCTION : '';
 
-  const messages = history.map((msg) => ({
+  // Compose: systemPrompt + structuredInstr (early!) + persona + name + RAG
+  let composedSystem = basePrompt + structuredInstr + personaFragment + nameInstruction + ragSection;
+
+  let messages = history.map((msg) => ({
     role: msg.role === 'examiner' ? 'assistant' as const : 'user' as const,
     content: msg.text,
   }));
+
+  // Fix 2: When structured JSON mode is active, append a format reminder to the last
+  // user message. Claude weights user-turn instructions more heavily than content buried
+  // in long system prompts, making JSON compliance more reliable.
+  if (structuredResponse && messages.length > 0) {
+    const lastIdx = messages.length - 1;
+    if (messages[lastIdx].role === 'user') {
+      messages = [...messages];
+      messages[lastIdx] = {
+        ...messages[lastIdx],
+        content: messages[lastIdx].content + '\n\n[Respond in the JSON format specified in the system prompt. Output ONLY the JSON object with feedback_quick, feedback_detail, and question fields.]',
+      };
+    }
+  }
 
   // Append paragraph structure instruction when responding to student answers
   // (not on opening questions where messages is empty).
@@ -438,7 +452,7 @@ export async function generateExaminerTurnStreaming(
 
   const stream = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: structuredResponse ? 800 : (messages.length > 0 ? 250 : 500),
+    max_tokens: structuredResponse ? 500 : (messages.length > 0 ? 250 : 500),
     system: finalSystem,
     stream: true,
     messages:
@@ -546,9 +560,30 @@ export async function generateExaminerTurnStreaming(
             }
           }
           // Safety net: if NO chunks were extracted at all (model ignored JSON instruction),
-          // emit the entire plain text as a single feedback_quick chunk so the client still receives it.
+          // split the plain text into up to 3 paragraph-like chunks for progressive delivery,
+          // rather than emitting the entire response as a single blob.
           if (emittedChunks.size === 0 && missingChunks) {
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: 'feedback_quick', text: missingChunks })}\n\n`));
+            // Try to split into 3 parts: first sentence, middle, rest
+            const firstSentenceMatch = missingChunks.match(/^(.{10,}?[.!?])(\s)/);
+            if (firstSentenceMatch) {
+              const p1 = firstSentenceMatch[1].trim();
+              const rest = missingChunks.slice(firstSentenceMatch[1].length + firstSentenceMatch[2].length);
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: 'feedback_quick', text: p1 })}\n\n`));
+              // Split remaining at first \n\n or midpoint sentence boundary
+              const nnIdx = rest.indexOf('\n\n');
+              if (nnIdx !== -1) {
+                const p2 = rest.slice(0, nnIdx).trim();
+                const p3 = rest.slice(nnIdx + 2).trim();
+                if (p2) controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: 'feedback_detail', text: p2 })}\n\n`));
+                if (p3) controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: 'question', text: p3 })}\n\n`));
+              } else {
+                // No paragraph break — emit rest as feedback_detail
+                if (rest.trim()) controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: 'feedback_detail', text: rest.trim() })}\n\n`));
+              }
+            } else {
+              // Can't split — emit entire text as feedback_quick (original behavior)
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: 'feedback_quick', text: missingChunks })}\n\n`));
+            }
           }
           plainText = missingChunks;
         } else {

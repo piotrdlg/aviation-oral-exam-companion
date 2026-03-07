@@ -252,11 +252,53 @@ All changes are additive. To rollback:
 2. Path B (paragraphs) continues working unchanged
 3. Code changes are inert when flag is off
 
+## 5b. Prompt Architecture Fix (Phase E.2)
+
+After deployment of Phase E.1 fixes, user testing revealed the 3-chunk system was still delivering responses as "one shot after long latency" with "very fast" speech.
+
+### 4.6 Root Cause: STRUCTURED_RESPONSE_INSTRUCTION Buried in Prompt
+
+The code pipeline was intact end-to-end. The structural response path was NOT broken by newer engine changes. However, the `STRUCTURED_RESPONSE_INSTRUCTION` was appended at the END of a 3000-6000 token system prompt:
+
+1. IMMUTABLE_SAFETY_PREFIX (~100 tokens)
+2. DB prompt content (~300-500 tokens, DPE persona + instructions)
+3. Task section (~200-300 tokens)
+4. GROUNDING_CONTRACT (~100 tokens)
+5. Persona section (~100-200 tokens)
+6. Name instruction (~30 tokens)
+7. RAG section (~2000-5000 tokens of FAA material)
+8. **STRUCTURED_RESPONSE_INSTRUCTION (~150 tokens) ← buried here**
+
+Claude Sonnet 4.6 received thousands of tokens saying "speak naturally as a DPE" before encountering the JSON format instruction. The model frequently ignored the JSON instruction, triggering the safety net which emitted the ENTIRE response as a single `feedback_quick` chunk at stream end.
+
+### Fix 7: Move STRUCTURED_RESPONSE_INSTRUCTION early (exam-engine.ts)
+
+Moved the JSON format instruction from after RAG to immediately after `buildSystemPrompt()`, before persona/name/RAG sections. New prompt order:
+
+1. Safety prefix + DB prompt (anti-JSON lines stripped)
+2. **STRUCTURED_RESPONSE_INSTRUCTION** ← now early, right after core prompt
+3. Persona section
+4. Name instruction
+5. RAG section
+
+### Fix 8: User message JSON reminder (exam-engine.ts)
+
+Added a format reminder appended to the last user message when `structuredResponse = true`. Claude weights user-turn instructions more heavily than system prompt content, improving JSON compliance.
+
+### Fix 9: Reduce max_tokens 800 → 500 (exam-engine.ts)
+
+Reduced `max_tokens` for structured mode. Even when the safety net fires (model ignores JSON), a shorter response reduces latency and speaking duration.
+
+### Fix 10: Paragraph-splitting safety net (exam-engine.ts)
+
+When the safety net fires (no JSON chunks extracted), the plain text is now split into up to 3 paragraph-like chunks (first sentence / middle / rest) instead of being emitted as a single blob. This ensures progressive delivery even when JSON output fails.
+
 ## 12. Known Limitations
 
 - Feature flag cached for 60s by `/api/flags` — toggling takes up to 60s to propagate
-- If Claude ignores the JSON instruction, safety net (exam-logic.ts:548-552) emits entire text as `feedback_quick` — user sees one chunk instead of three (graceful degradation)
+- If Claude ignores the JSON instruction, paragraph-splitting safety net provides graceful degradation (up to 3 chunks from plain text)
 - `useSentenceTTS` refs (`flushedRef`, `hasSentencesRef`) not reset after `onAllDone` — mitigated by `cancel()` call in `sendAnswer()` before each new response
+- Consider migrating to Anthropic `tool_use` for guaranteed structured output (future hardening)
 
 ## 13. Verification Evidence
 
@@ -265,14 +307,15 @@ TypeScript: 0 errors
 Tests: 56 files, 1224 tests (14 new) — all pass
 GPT-5.1 Codex review: original 4 bugs confirmed, fixes verified safe
 GPT-5.2 review: 2 post-activation bugs confirmed, fixes 5+6 verified safe
+Phase E.2: systematic code review confirmed pipeline intact, prompt architecture issue identified and fixed
 ```
 
 ## 14. Recommendations
 
-1. **Enable flag in staging first** — validate 3-chunk delivery in real browser before production
-2. **Monitor PostHog** — track `tts_sentence_stream` usage patterns after activation
-3. **Clean up dead code** — `useStreamingPlayer.ts` and `pcm-playback-processor.js` are unused
-4. **Fix pre-existing TTS quota bug** — counts rows, not character sum
+1. **Monitor PostHog** — track `tts_sentence_stream` usage patterns after activation
+2. **Clean up dead code** — `useStreamingPlayer.ts` and `pcm-playback-processor.js` are unused
+3. **Fix pre-existing TTS quota bug** — counts rows, not character sum
+4. **Consider Anthropic tool_use** — native structured output is more reliable than instruction-based JSON
 
 ## 15. References
 
@@ -280,4 +323,6 @@ GPT-5.2 review: 2 post-activation bugs confirmed, fixes 5+6 verified safe
 - Phase B: Browser Playback Fix (commit after Phase A)
 - Phase C: CSP media-src Fix
 - Phase D: Audio Overlap + Text Sync Fix (commits b90a585, b4d725a)
-- Phase E (this): Response Delivery Coordination
+- Phase E: Response Delivery Coordination (fixes 1-4, commit 13db516)
+- Phase E.1: Post-Activation Bug Fixes (fixes 5-6, commit 13db516)
+- Phase E.2: Prompt Architecture Fix (fixes 7-10)
