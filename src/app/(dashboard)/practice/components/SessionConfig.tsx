@@ -57,7 +57,8 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [voiceEnabled, setVoiceEnabled] = useState(preferredVoiceEnabled ?? true);
   const resolvedProfile = examinerProfileKey ? EXAMINER_PROFILES[examinerProfileKey] : EXAMINER_PROFILES.maria_methodical;
-  const [showTaskPicker, setShowTaskPicker] = useState(false);
+  const [expandedAreas, setExpandedAreas] = useState<Set<string>>(new Set());
+  const [showSecondary, setShowSecondary] = useState(true);
   const [allTasks, setAllTasks] = useState<AcsTaskItem[]>([]);
   const [tasksLoading, setTasksLoading] = useState(false);
 
@@ -129,6 +130,30 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
     return Array.from(areas);
   }, [selectedTasks]);
 
+  // Auto-expand first area when areaGroups loads
+  useEffect(() => {
+    if (areaGroups.length > 0 && expandedAreas.size === 0) {
+      setExpandedAreas(new Set([areaGroups[0].areaId]));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [areaGroups.length]);
+
+  function toggleExpandArea(areaId: string) {
+    setExpandedAreas((prev) => {
+      const next = new Set(prev);
+      if (next.has(areaId)) next.delete(areaId);
+      else next.add(areaId);
+      return next;
+    });
+  }
+
+  // Summary computation
+  const summaryMode = studyMode === 'linear' ? 'Area by Area' : studyMode === 'cross_acs' ? 'Across ACS' : studyMode === 'weak_areas' ? 'Weak Areas' : 'Quick Drill';
+  const summaryScope = selectedTasks.length > 0
+    ? `${selectedAreas.length} ${selectedAreas.length === 1 ? 'area' : 'areas'} \u00b7 ${selectedTasks.length} ${selectedTasks.length === 1 ? 'task' : 'tasks'}`
+    : `All ${filteredTasks.length} tasks`;
+  const summaryDiff = difficulty === 'mixed' ? 'Mixed' : difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+
   return (
     <div className="bezel rounded-lg border border-c-border p-6">
       <h2 className="font-mono font-semibold text-base text-c-amber mb-5 tracking-wider uppercase">NEW EXAM</h2>
@@ -188,155 +213,201 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
           </div>
         </div>
 
-        {/* Difficulty */}
+        {/* Focus Section */}
         <div>
-          <label className="block font-mono text-xs text-c-muted mb-2 tracking-wider uppercase">DIFFICULTY</label>
-          <div className="flex gap-2">
-            {[
-              { value: 'mixed' as const, label: 'MIXED' },
-              { value: 'easy' as const, label: 'EASY' },
-              { value: 'medium' as const, label: 'MEDIUM' },
-              { value: 'hard' as const, label: 'HARD' },
-            ].map((d) => (
+          <label className="block font-mono text-xs text-c-muted mb-2 tracking-wider uppercase">FOCUS</label>
+          <div className="border border-c-border rounded-lg bg-c-panel overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-c-border">
+              <span className="font-mono text-xs text-c-cyan uppercase tracking-wide">
+                ACS Areas &mdash; {(RATING_LABELS[rating] || rating)}
+              </span>
+              {selectedTasks.length > 0 && (
+                <span className="font-mono text-xs text-c-dim">
+                  {selectedAreas.length} of {areaGroups.length} selected
+                </span>
+              )}
+            </div>
+
+            {/* Area rows */}
+            {tasksLoading ? (
+              <p className="p-3 font-mono text-sm text-c-dim">LOADING...</p>
+            ) : areaGroups.length === 0 ? (
+              <p className="p-3 font-mono text-sm text-c-dim">NO TASKS FOUND.</p>
+            ) : (
+              areaGroups.map((group, groupIdx) => {
+                const areaTaskIds = group.tasks.map((t) => t.id);
+                const allSelected = areaTaskIds.length > 0 && areaTaskIds.every((id) => selectedTasks.includes(id));
+                const someSelected = areaTaskIds.some((id) => selectedTasks.includes(id));
+                const isExpanded = expandedAreas.has(group.areaId);
+                const isLast = groupIdx === areaGroups.length - 1;
+
+                return (
+                  <div key={group.areaId}>
+                    {/* Area row */}
+                    <div className={`flex items-center gap-2.5 px-4 py-2 cursor-pointer transition-colors hover:bg-c-cyan/[0.03] ${!isLast && !isExpanded ? 'border-b border-c-border/50' : ''} ${isExpanded ? 'bg-c-cyan/[0.03]' : ''}`}>
+                      {/* Checkbox */}
+                      <button
+                        onClick={() => toggleArea(group.areaId)}
+                        className={`w-4 h-4 rounded flex items-center justify-center text-[10px] flex-shrink-0 transition-all ${
+                          allSelected
+                            ? 'bg-c-cyan border-[1.5px] border-c-cyan text-c-bg'
+                            : someSelected
+                            ? 'bg-c-cyan/30 border-[1.5px] border-c-cyan/50 text-c-cyan'
+                            : 'border-[1.5px] border-c-border-hi'
+                        }`}
+                      >
+                        {allSelected ? '\u2713' : someSelected ? '\u2013' : ''}
+                      </button>
+                      {/* Roman numeral */}
+                      <span className="font-mono text-xs text-c-dim w-7 flex-shrink-0">{group.areaId}</span>
+                      {/* Area name */}
+                      <span className={`text-[13px] font-medium flex-1 ${allSelected || someSelected ? 'text-c-cyan' : 'text-c-text'}`} onClick={() => toggleArea(group.areaId)}>
+                        {group.areaName}
+                      </span>
+                      {/* Task count + expand toggle */}
+                      <button
+                        onClick={() => toggleExpandArea(group.areaId)}
+                        className={`font-mono text-xs flex items-center gap-1 transition-opacity flex-shrink-0 ${
+                          allSelected || someSelected ? 'text-c-cyan opacity-80 hover:opacity-100' : 'text-c-dim opacity-50 hover:opacity-80 hover:text-c-cyan'
+                        }`}
+                      >
+                        {group.tasks.length} {group.tasks.length === 1 ? 'task' : 'tasks'} {isExpanded ? '\u25BE' : '\u25B8'}
+                      </button>
+                    </div>
+
+                    {/* Expanded tasks */}
+                    {isExpanded && (
+                      <div className={`pl-[52px] pr-4 pb-2 ${!isLast ? 'border-b border-c-border/50' : ''}`}>
+                        {group.tasks.map((task) => {
+                          const isTaskSelected = selectedTasks.includes(task.id);
+                          return (
+                            <button
+                              key={task.id}
+                              onClick={() => toggleTask(task.id)}
+                              className={`flex items-center gap-2 py-1 w-full text-left transition-colors hover:text-c-cyan ${
+                                isTaskSelected ? 'text-c-cyan' : 'text-c-dim'
+                              }`}
+                            >
+                              <span className={`w-3 h-3 rounded-sm flex items-center justify-center text-[8px] flex-shrink-0 transition-all ${
+                                isTaskSelected
+                                  ? 'bg-c-cyan border-[1.5px] border-c-cyan text-c-bg'
+                                  : 'border-[1.5px] border-c-border-hi'
+                              }`}>
+                                {isTaskSelected ? '\u2713' : ''}
+                              </span>
+                              <span className="text-[11px]">{task.task}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Helper text */}
+          <div className="flex items-center justify-between mt-1.5 px-0.5">
+            <span className="font-mono text-xs text-c-dim">Select none for all areas</span>
+            {selectedTasks.length > 0 && (
               <button
-                key={d.value}
-                onClick={() => setDifficulty(d.value)}
-                className={`px-4 py-2 rounded-lg font-mono text-sm transition-colors ${
-                  difficulty === d.value
-                    ? 'bg-c-amber text-c-bg font-semibold'
-                    : 'bg-c-bezel text-c-muted border border-c-border font-medium hover:border-c-border-hi'
-                }`}
+                onClick={() => setSelectedTasks([])}
+                className="font-mono text-[10px] text-c-muted hover:text-c-text uppercase tracking-wider transition-colors"
               >
-                {d.label}
+                CLEAR SELECTION
               </button>
-            ))}
+            )}
           </div>
         </div>
 
-        {/* Examiner Profile (read-only from Settings) */}
-        <div className="flex items-center justify-between px-4 py-3 bg-c-panel rounded-lg border border-c-border">
-          {prefsLoading ? (
-            <span className="font-mono text-sm text-c-dim">LOADING EXAMINER...</span>
-          ) : (
-            <span className="font-mono text-sm">
-              <span className="text-c-green font-semibold glow-g">{resolvedProfile.defaultDisplayName.toUpperCase()}</span>
-              <span className="text-c-muted mx-2">&middot;</span>
-              <span className="text-c-cyan font-semibold">{resolvedProfile.description.toUpperCase()}</span>
-            </span>
-          )}
-          <Link
-            href="/settings"
-            className="font-mono text-xs text-c-amber hover:text-c-amber/80 transition-colors whitespace-nowrap ml-3 uppercase tracking-wider"
-          >
-            CHANGE IN SETTINGS &rarr;
-          </Link>
-        </div>
-
-        {/* Task Selection Toggle */}
+        {/* Secondary Settings Toggle */}
         <div>
           <button
-            onClick={() => setShowTaskPicker(!showTaskPicker)}
-            className="font-mono text-sm text-c-cyan hover:text-c-cyan/80 transition-colors flex items-center gap-1"
+            onClick={() => setShowSecondary(!showSecondary)}
+            className="flex items-center gap-1.5 font-mono text-xs text-c-dim hover:text-c-muted uppercase tracking-wider transition-colors"
           >
-            <span className="text-xs">{showTaskPicker ? '\u25BC' : '\u25B6'}</span>
-            CUSTOMIZE TASKS...
-            {selectedTasks.length > 0 && (
-              <span className="text-xs text-c-dim ml-1">
-                ({selectedTasks.length} of {filteredTasks.length} selected)
-              </span>
-            )}
+            <span>{showSecondary ? '\u25BC' : '\u25B6'}</span>
+            DIFFICULTY &amp; EXAMINER
           </button>
 
-          {showTaskPicker && (
-            <div className="mt-3 max-h-64 overflow-y-auto border border-c-border rounded-lg bg-c-panel">
-              {tasksLoading ? (
-                <p className="p-3 font-mono text-sm text-c-dim">LOADING TASKS...</p>
-              ) : areaGroups.length === 0 ? (
-                <p className="p-3 font-mono text-sm text-c-dim">NO TASKS FOUND.</p>
-              ) : (
-                areaGroups.map((group) => {
-                  const areaTaskIds = group.tasks.map((t) => t.id);
-                  const allSelected = areaTaskIds.every((id) => selectedTasks.includes(id));
-                  const someSelected = areaTaskIds.some((id) => selectedTasks.includes(id));
+          {showSecondary && (
+            <div className="mt-3 space-y-4">
+              {/* Difficulty */}
+              <div>
+                <label className="block font-mono text-xs text-c-muted mb-2 tracking-wider uppercase">DIFFICULTY</label>
+                <div className="flex gap-2">
+                  {[
+                    { value: 'mixed' as const, label: 'MIXED' },
+                    { value: 'easy' as const, label: 'EASY' },
+                    { value: 'medium' as const, label: 'MEDIUM' },
+                    { value: 'hard' as const, label: 'HARD' },
+                  ].map((d) => (
+                    <button
+                      key={d.value}
+                      onClick={() => setDifficulty(d.value)}
+                      className={`px-4 py-2 rounded-lg font-mono text-sm transition-colors ${
+                        difficulty === d.value
+                          ? 'bg-c-amber text-c-bg font-semibold'
+                          : 'bg-c-bezel text-c-muted border border-c-border font-medium hover:border-c-border-hi'
+                      }`}
+                    >
+                      {d.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-                  return (
-                    <div key={group.areaId} className="border-b border-c-border last:border-b-0">
-                      {/* Area header */}
-                      <button
-                        onClick={() => toggleArea(group.areaId)}
-                        className={`w-full px-3 py-2 flex items-center gap-2 text-left text-sm font-medium transition-colors hover:bg-c-elevated ${
-                          allSelected ? 'text-c-cyan' : someSelected ? 'text-c-cyan/70' : 'text-c-text'
-                        }`}
-                      >
-                        <span className={`w-3 h-3 rounded-sm border flex items-center justify-center text-[8px] ${
-                          allSelected
-                            ? 'bg-c-cyan border-c-cyan text-c-bg'
-                            : someSelected
-                            ? 'bg-c-cyan/30 border-c-cyan/50 text-c-cyan'
-                            : 'border-c-border'
-                        }`}>
-                          {allSelected ? '\u2713' : someSelected ? '\u2013' : ''}
-                        </span>
-                        <span className="font-mono text-xs text-c-dim">{group.areaId}</span>
-                        {group.areaName}
-                        <span className="ml-auto text-xs text-c-dim">{group.tasks.length}</span>
-                      </button>
-
-                      {/* Individual tasks */}
-                      <div className="pl-8 pb-1">
-                        {group.tasks.map((task) => (
-                          <button
-                            key={task.id}
-                            onClick={() => toggleTask(task.id)}
-                            className={`w-full px-2 py-1 text-left text-[11px] transition-colors rounded hover:bg-c-elevated ${
-                              selectedTasks.includes(task.id)
-                                ? 'text-c-cyan'
-                                : 'text-c-dim hover:text-c-cyan'
-                            }`}
-                          >
-                            <span className="font-mono text-c-dim/50 mr-1.5">{task.id.replace(/^(PA|CA|IR)\./, '')}</span>
-                            {task.task}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })
-              )}
+              {/* Examiner - Condensed */}
+              <div className="flex items-center justify-between px-4 py-2.5 bg-c-panel rounded-lg border border-c-border">
+                {prefsLoading ? (
+                  <span className="font-mono text-sm text-c-dim">LOADING...</span>
+                ) : (
+                  <span className="font-mono text-[13px]">
+                    <span className="text-c-green font-semibold glow-g">{resolvedProfile.defaultDisplayName.toUpperCase()}</span>
+                    <span className="text-c-dim mx-1.5 text-xs">&mdash;</span>
+                    <span className="text-c-dim text-xs">{resolvedProfile.description.charAt(0).toUpperCase() + resolvedProfile.description.slice(1).toLowerCase().split('.')[0]}</span>
+                  </span>
+                )}
+                <Link
+                  href="/settings"
+                  className="font-mono text-[10px] text-c-amber hover:text-c-amber/80 transition-colors whitespace-nowrap ml-3 uppercase tracking-wider"
+                >
+                  SETTINGS &rarr;
+                </Link>
+              </div>
             </div>
-          )}
-
-          {showTaskPicker && selectedTasks.length === 0 && (
-            <p className="text-xs text-c-dim font-mono mt-1.5">All tasks for {aircraftClass} will be included if none selected</p>
-          )}
-          {showTaskPicker && selectedTasks.length > 0 && (
-            <button
-              onClick={() => setSelectedTasks([])}
-              className="text-xs text-c-muted hover:text-c-text font-mono mt-1 transition-colors"
-            >
-              CLEAR SELECTION
-            </button>
           )}
         </div>
 
-        {/* Start Button */}
-        <button
-          data-testid="start-exam-button"
-          onClick={() => onStart({
-            rating,
-            studyMode,
-            difficulty,
-            aircraftClass,
-            selectedAreas,
-            selectedTasks,
-            voiceEnabled,
-            examinerProfileKey: examinerProfileKey || 'maria_methodical',
-          })}
-          disabled={loading || prefsLoading}
-          className="w-full py-3.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg rounded-lg font-mono font-bold text-base tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
-        >
-          {loading ? 'STARTING...' : 'START PRACTICE EXAM'}
-        </button>
+        {/* Summary + Start */}
+        <div>
+          <p className="font-mono text-xs text-c-dim text-center mb-2">
+            <span className="text-c-text font-medium">{summaryMode}</span>
+            {' \u00b7 '}
+            <span className="text-c-text font-medium">{summaryScope}</span>
+            {' \u00b7 '}
+            <span className="text-c-text font-medium">{summaryDiff}</span>
+          </p>
+          <button
+            data-testid="start-exam-button"
+            onClick={() => onStart({
+              rating,
+              studyMode,
+              difficulty,
+              aircraftClass,
+              selectedAreas,
+              selectedTasks,
+              voiceEnabled,
+              examinerProfileKey: examinerProfileKey || 'maria_methodical',
+            })}
+            disabled={loading || prefsLoading}
+            className="w-full py-3.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg rounded-lg font-mono font-bold text-base tracking-wider uppercase transition-colors shadow-lg shadow-c-amber/20"
+          >
+            {loading ? 'STARTING...' : 'START PRACTICE EXAM'}
+          </button>
+        </div>
       </div>
     </div>
   );
