@@ -326,6 +326,22 @@ export async function POST(request: NextRequest) {
       examPlan?: ExamPlanV1;
     };
 
+    // CRITICAL: Verify session ownership (W1.3 IDOR fix)
+    // Prevent authenticated users from writing to other users' exam sessions.
+    // Use RLS-scoped client to verify ownership before any service-role writes.
+    if (sessionId) {
+      const { data: sessionOwnershipCheck } = await supabase
+        .from('exam_sessions')
+        .select('id')
+        .eq('id', sessionId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (!sessionOwnershipCheck) {
+        return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+      }
+    }
+
     // Parallel pre-checks: profile fetch + session enforcement are independent.
     // Persona resolution depends on the profile result but is fast (cached config).
     const profilePromise = serviceSupabase
