@@ -92,6 +92,7 @@
     "@nivo/core": "^0.99.0",
     "@nivo/treemap": "^0.99.0",
     "@react-email/components": "^1.0.8",
+    "@sentry/nextjs": "^10.57.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.95.3",
     "@upstash/ratelimit": "^2.0.4",
