@@ -200,3 +200,19 @@ Scheduled pg_cron jobs that purge old rows:
 | `purge-old-subscription-events` | daily 03:30 | `subscription_events` older than 18 months (Stripe payloads incl. PII) — migration `20260610000006` |
 
 > Telemetry-table retention (`latency_logs`, `usage_logs`) is added in plan task W6.3.
+
+### ⚠️ pg_cron is NOT enabled (discovered W3.4, 2026-06-10)
+
+The `cron` schema does not exist in production, so **no pg_cron jobs are
+running**, including the session-lifecycle jobs from `20260219100002`
+(`expire-trial-exams`, `clear-stale-activity-windows`, `cleanup-orphaned-exams`)
+and the retention job above. Their migrations are recorded as applied but the
+`cron.schedule` calls never took effect.
+
+Mitigation already in place: free-trial expiry is enforced at request time in
+`/api/exam` (W3.2), so expired free sessions are blocked even without the
+`expire-trial-exams` cron.
+
+To activate the crons: Dashboard → Database → Extensions → enable **pg_cron**,
+then run the `cron.schedule(...)` statements from `20260219100002` and
+`20260610000006` via the SQL editor (they are idempotent).
