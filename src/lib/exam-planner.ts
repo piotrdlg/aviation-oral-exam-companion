@@ -18,6 +18,7 @@ import {
   useBonusQuestion,
   creditMentionedElements,
   canFollowUp,
+  shouldAdvanceElement,
   type ExamPlanV1,
   type ExamPlanDefaults,
   DEFAULT_PLAN_DEFAULTS,
@@ -454,6 +455,7 @@ export {
   useBonusQuestion,
   creditMentionedElements,
   canFollowUp,
+  shouldAdvanceElement,
   type ExamPlanV1,
 };
 export { type DepthDifficultyContract } from './difficulty-contract';

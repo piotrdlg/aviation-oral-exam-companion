@@ -192,3 +192,28 @@ export function canFollowUp(
 ): boolean {
   return currentAttempts < plan.follow_up_max_per_element + 1; // +1 because first ask is attempt 1
 }
+
+/**
+ * Server-side advancement decision (W2.1): after an answer is assessed,
+ * should the exam move to the next element, or stay for a follow-up?
+ *
+ * Advance when:
+ *  - the answer was satisfactory (element covered), or
+ *  - the plan budget is already exhausted (next-task will close the exam), or
+ *  - the element has used up its follow-up budget.
+ * Never advance for legacy sessions without a plan/planner state.
+ */
+export function shouldAdvanceElement(
+  score: 'satisfactory' | 'partial' | 'unsatisfactory',
+  plan: ExamPlanV1 | undefined,
+  plannerState: { recent?: string[]; attempts?: Record<string, number> } | undefined
+): boolean {
+  const currentElement = plannerState?.recent?.length
+    ? plannerState.recent[plannerState.recent.length - 1]
+    : undefined;
+  if (!plan || !plannerState || !currentElement) return false;
+  if (isExamComplete(plan)) return true;
+  if (score === 'satisfactory') return true;
+  const attemptCount = plannerState.attempts?.[currentElement] || 1;
+  return !canFollowUp(plan, currentElement, attemptCount);
+}

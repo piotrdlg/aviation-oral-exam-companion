@@ -52,10 +52,48 @@ export async function enforceOneActiveExam(
   tokenHash: string,
   action: 'start' | 'respond' | 'next-task' | 'resume-current'
 ): Promise<EnforcementResult & { rejected?: boolean }> {
-  // Upsert the current session's active_sessions row (device tracking)
-  // The UNIQUE constraint is on (user_id, session_token_hash), so onConflict must match
-  // The examSessionId MUST be verified as owned by userId before this call
-  // to prevent IDOR writes to other users' exam_sessions (W1.3).
+  // CLAIM actions (start / resume-current): this device takes over the exam —
+  // pause any other device's active exam, then claim.
+  //
+  // VERIFY actions (respond / next-task): check FIRST whether another device
+  // holds the active-exam claim — if so, reject WITHOUT writing. (The previous
+  // implementation upserted before checking, so the check always passed
+  // against its own freshly-written row and superseded devices could silently
+  // reactivate themselves — W2.1 / review-02 bug 4.)
+  const nowIso = new Date().toISOString();
+
+  if (action === 'respond' || action === 'next-task') {
+    const { data: activeRows } = await serviceSupabase
+      .from('active_sessions')
+      .select('session_token_hash, exam_session_id')
+      .eq('user_id', userId)
+      .eq('is_exam_active', true);
+
+    const otherDeviceClaim = (activeRows || []).find(
+      (r) => r.session_token_hash !== tokenHash
+    );
+    if (otherDeviceClaim) {
+      // Another device holds the user's active-exam claim — this one was superseded.
+      return { rejected: true };
+    }
+
+    // No competing claim: (re)assert this device's claim and proceed.
+    await serviceSupabase
+      .from('active_sessions')
+      .upsert(
+        {
+          user_id: userId,
+          session_token_hash: tokenHash,
+          is_exam_active: true,
+          exam_session_id: examSessionId,
+          last_activity_at: nowIso,
+        },
+        { onConflict: 'user_id,session_token_hash' }
+      );
+    return {};
+  }
+
+  // start / resume-current: claim the exam for this device.
   await serviceSupabase
     .from('active_sessions')
     .upsert(
@@ -64,66 +102,48 @@ export async function enforceOneActiveExam(
         session_token_hash: tokenHash,
         is_exam_active: true,
         exam_session_id: examSessionId,
-        last_activity_at: new Date().toISOString(),
+        last_activity_at: nowIso,
       },
       { onConflict: 'user_id,session_token_hash' }
     );
 
-  if (action === 'start') {
-    // Find ALL other active exam sessions for this user (not the current device)
-    const { data: otherActives } = await serviceSupabase
-      .from('active_sessions')
-      .select('id, exam_session_id')
-      .eq('user_id', userId)
-      .eq('is_exam_active', true)
-      .neq('session_token_hash', tokenHash);
+  // Find ALL other active exam sessions for this user (not the current device)
+  const { data: otherActives } = await serviceSupabase
+    .from('active_sessions')
+    .select('id, exam_session_id')
+    .eq('user_id', userId)
+    .eq('is_exam_active', true)
+    .neq('session_token_hash', tokenHash);
 
-    let pausedSessionId: string | undefined;
+  let pausedSessionId: string | undefined;
 
-    if (otherActives && otherActives.length > 0) {
-      // Pause the most recently active exam (return it to the client)
-      pausedSessionId = otherActives[0].exam_session_id ?? undefined;
+  if (otherActives && otherActives.length > 0) {
+    // Pause the most recently active exam (return it to the client)
+    pausedSessionId = otherActives[0].exam_session_id ?? undefined;
 
-      // Pause all other active exam sessions
-      const examIds = otherActives
-        .map((s) => s.exam_session_id)
-        .filter((id): id is string => !!id);
+    // Pause all other active exam sessions (but never the one being claimed)
+    const examIds = otherActives
+      .map((s) => s.exam_session_id)
+      .filter((id): id is string => !!id && id !== examSessionId);
 
-      if (examIds.length > 0) {
-        await serviceSupabase
-          .from('exam_sessions')
-          .update({ status: 'paused' })
-          .in('id', examIds)
-          .eq('user_id', userId);
-      }
-
-      // Clear the active flag on all other devices
-      const activeIds = otherActives.map((s) => s.id);
+    if (examIds.length > 0) {
       await serviceSupabase
-        .from('active_sessions')
-        .update({
-          is_exam_active: false,
-          exam_session_id: null,
-        })
-        .in('id', activeIds);
+        .from('exam_sessions')
+        .update({ status: 'paused' })
+        .in('id', examIds)
+        .eq('user_id', userId);
     }
 
-    return { pausedSessionId };
+    // Clear the active flag on all other devices
+    const activeIds = otherActives.map((s) => s.id);
+    await serviceSupabase
+      .from('active_sessions')
+      .update({
+        is_exam_active: false,
+        exam_session_id: null,
+      })
+      .in('id', activeIds);
   }
 
-  // For respond / next-task: verify this session is the active one
-  const { data: currentActive } = await serviceSupabase
-    .from('active_sessions')
-    .select('exam_session_id')
-    .eq('user_id', userId)
-    .eq('session_token_hash', tokenHash)
-    .eq('is_exam_active', true)
-    .maybeSingle();
-
-  if (!currentActive || currentActive.exam_session_id !== examSessionId) {
-    // This session was superseded by another device
-    return { rejected: true };
-  }
-
-  return {};
+  return { pausedSessionId };
 }

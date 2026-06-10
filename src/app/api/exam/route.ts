@@ -20,10 +20,9 @@ import { computeExamResultV2 } from '@/lib/exam-result';
 import {
   initPlanner,
   advancePlanner,
-  isExamComplete,
   useBonusQuestion,
   creditMentionedElements,
-  canFollowUp,
+  shouldAdvanceElement,
   type ExamPlanV1,
   type DepthDifficultyContract,
 } from '@/lib/exam-planner';
@@ -329,10 +328,15 @@ export async function POST(request: NextRequest) {
     // CRITICAL: Verify session ownership (W1.3 IDOR fix)
     // Prevent authenticated users from writing to other users' exam sessions.
     // Use RLS-scoped client to verify ownership before any service-role writes.
+    // W2.1: the same query loads metadata — exam_sessions.metadata is the
+    // single source of truth for plannerState / examPlan / sessionConfig /
+    // taskData. Client-supplied copies are accepted for backward compat but
+    // IGNORED whenever server state exists.
+    let serverMeta: Record<string, unknown> = {};
     if (sessionId) {
       const { data: sessionOwnershipCheck } = await supabase
         .from('exam_sessions')
-        .select('id')
+        .select('id, metadata')
         .eq('id', sessionId)
         .eq('user_id', user.id)
         .single();
@@ -340,7 +344,12 @@ export async function POST(request: NextRequest) {
       if (!sessionOwnershipCheck) {
         return NextResponse.json({ error: 'Session not found' }, { status: 404 });
       }
+      serverMeta = (sessionOwnershipCheck.metadata as Record<string, unknown>) || {};
     }
+    const srvPlannerState = (serverMeta.plannerState as PlannerState | undefined) ?? clientPlannerState;
+    const srvExamPlan = (serverMeta.examPlan as ExamPlanV1 | undefined) ?? clientExamPlan;
+    const srvSessionConfig = (serverMeta.sessionConfig as SessionConfig | undefined) ?? sessionConfig;
+    const srvTaskData = (serverMeta.taskData as typeof taskData) ?? taskData;
 
     // Parallel pre-checks: profile fetch + session enforcement are independent.
     // Persona resolution depends on the profile result but is fast (cached config).
@@ -441,10 +450,13 @@ export async function POST(request: NextRequest) {
         }
 
         // Persist planner state + session config + taskData + examPlan + fingerprintMeta + contract + persona + promptTrace to metadata for resume
+        // Merge over existing metadata (e.g. voice_enabled set at session creation) — W2.1.
         if (sessionId) {
           const { error: metaErr } = await serviceSupabase
             .from('exam_sessions')
             .update({ metadata: {
+              ...serverMeta,
+              advanceDue: false,
               plannerState: plannerResult.plannerState,
               sessionConfig,
               taskData: plannerResult.task,
@@ -600,12 +612,26 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'respond') {
-      if (!taskData || !history || !studentAnswer) {
+      // W2.1: server-owned state — the task being answered is the server's
+      // current task; the current element is the most recently asked one
+      // (plannerState.recent last), NOT queue[cursor] which is the NEXT element.
+      const respondTask = srvTaskData;
+      if (!respondTask || !history || !studentAnswer) {
         return NextResponse.json(
           { error: 'Missing taskData, history, or studentAnswer' },
           { status: 400 }
         );
       }
+      const currentElementCode = srvPlannerState?.recent?.length
+        ? srvPlannerState.recent[srvPlannerState.recent.length - 1]
+        : undefined;
+
+      // Server-side advancement decision (W2.1): advance to the next element
+      // when the answer is satisfactory, or when the element has used up its
+      // follow-up budget. The decision rides on the assessment object so the
+      // SSE stream delivers it to the client, which then calls next-task.
+      const decideAdvance = (score: AssessmentData['score']): boolean =>
+        shouldAdvanceElement(score, srvExamPlan, srvPlannerState);
 
       timing.start('exchange.total');
 
@@ -627,10 +653,10 @@ export async function POST(request: NextRequest) {
               .select('id')
               .single()
           : Promise.resolve({ data: null }),
-        fetchRagContext(taskData, history, studentAnswer, 5, {
+        fetchRagContext(respondTask, history, studentAnswer, 5, {
           systemConfig: config,
           timing,
-          elementCode: clientPlannerState?.queue?.[clientPlannerState?.cursor] ?? undefined,
+          elementCode: currentElementCode,
         }),
       ]);
       const studentTranscriptId = studentTranscriptResult.data?.id ?? null;
@@ -649,17 +675,15 @@ export async function POST(request: NextRequest) {
 
       // Step 3: Run assessment + examiner generation IN PARALLEL (key optimization)
       // The examiner's next question depends on history, NOT on the assessment result.
-      const respondRating = sessionConfig?.rating || 'private';
+      const respondConfig = srvSessionConfig;
+      const respondRating = respondConfig?.rating || 'private';
       // Pass difficulty as-is (including 'mixed') for prompt selection
-      const respondDifficulty = sessionConfig?.difficulty || undefined;
+      const respondDifficulty = respondConfig?.difficulty || undefined;
 
       // Build depth & difficulty contract sections for examiner + assessment (Phase 10)
       let respondExaminerContract: string | undefined;
       let respondGradingContract: string | undefined;
-      if (sessionConfig) {
-        const currentElementCode = clientPlannerState?.recent?.length
-          ? clientPlannerState.recent[clientPlannerState.recent.length - 1]
-          : undefined;
+      if (respondConfig) {
         const elementType = currentElementCode?.match(/\.(K|R|S)\d+$/)?.[1] === 'R' ? 'risk' as const
           : currentElementCode?.match(/\.(K|R|S)\d+$/)?.[1] === 'S' ? 'skill' as const
           : 'knowledge' as const;
@@ -671,20 +695,25 @@ export async function POST(request: NextRequest) {
       }
 
       if (stream) {
-        // Streaming path: start assessment in background, stream examiner immediately
+        // Streaming path: start assessment in background, stream examiner immediately.
+        // The assessment is decorated with the server's advancement decision so the
+        // engine's `{assessment}` SSE event carries it to the client (W2.1).
         timing.start('llm.assessment.total');
         timing.start('llm.examiner.total');
         timing.start('llm.examiner.ttft');
-        const assessmentPromise = assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty, respondGradingContract)
-          .then(a => { timing.end('llm.assessment.total'); return a; });
+        const assessmentPromise: Promise<AssessmentData & { advance?: boolean }> =
+          assessAnswer(respondTask, history, studentAnswer, rag, rag.ragImages, respondRating, respondConfig?.studyMode, respondDifficulty, respondGradingContract)
+            .then(a => {
+              timing.end('llm.assessment.total');
+              return { ...a, advance: decideAdvance(a.score) };
+            });
 
         // Build semantic asset selection context (Phase 13)
         // Extract area roman numeral from task ID (e.g., "PA.I.A" → "I", "IR.XI.B" → "XI")
-        const currentElementCode = clientPlannerState?.queue?.[clientPlannerState?.cursor] ?? undefined;
-        const areaRoman = taskData.id?.split('.')?.[1] || '';
+        const areaRoman = respondTask.id?.split('.')?.[1] || '';
         const assetContext: AssetSelectionContext = {
           acsArea: areaRoman,
-          acsTaskCode: taskData.id || '',
+          acsTaskCode: respondTask.id || '',
           elementCode: currentElementCode,
           rating: respondRating,
           questionText: updatedHistory[updatedHistory.length - 1]?.text || '',
@@ -695,7 +724,7 @@ export async function POST(request: NextRequest) {
         const onAssetSelected = (asset: SelectedAsset) => { selectedAssetData = asset; };
 
         const { stream: readableStream, fullTextPromise } = await generateExaminerTurnStreaming(
-          taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass, rag, assessmentPromise, undefined, respondRating, sessionConfig?.studyMode, personaSection, studentName, chunkedResponse, timing, respondExaminerContract, assetContext, onAssetSelected
+          respondTask, updatedHistory, respondDifficulty, respondConfig?.aircraftClass, rag, assessmentPromise, undefined, respondRating, respondConfig?.studyMode, personaSection, studentName, chunkedResponse, timing, respondExaminerContract, assetContext, onAssetSelected
         );
 
         // Use after() to ensure ALL DB writes complete even after stream closes.
@@ -750,9 +779,10 @@ export async function POST(request: NextRequest) {
               }
             }
 
-            // 5. ExamPlan updates (mention credit + bonus) — streaming path
-            if (clientExamPlan && assessment && sessionId) {
-              let streamPlan = clientExamPlan;
+            // 5. Server-side plan + advancement bookkeeping (W2.1) — streaming path.
+            // Read-merge-write so concurrent metadata writers are never clobbered.
+            if (srvExamPlan && srvPlannerState && currentElementCode && assessment && sessionId) {
+              let streamPlan = srvExamPlan;
               if (assessment.mentioned_elements.length > 0) {
                 streamPlan = creditMentionedElements(streamPlan, assessment.mentioned_elements);
               }
@@ -760,14 +790,31 @@ export async function POST(request: NextRequest) {
                 const bonusPlan = useBonusQuestion(streamPlan);
                 if (bonusPlan) streamPlan = bonusPlan;
               }
+              const advance = (assessment as AssessmentData & { advance?: boolean }).advance === true;
+              // Staying on the element consumes a follow-up attempt, so the
+              // next non-satisfactory answer advances (canFollowUp sees it).
+              const updatedPlanner: PlannerState = advance ? srvPlannerState : {
+                ...srvPlannerState,
+                attempts: {
+                  ...srvPlannerState.attempts,
+                  [currentElementCode]: (srvPlannerState.attempts?.[currentElementCode] || 1) + 1,
+                },
+                version: (srvPlannerState.version || 0) + 1,
+              };
+              const { data: freshRow } = await serviceSupabase
+                .from('exam_sessions')
+                .select('metadata')
+                .eq('id', sessionId)
+                .single();
+              const freshMeta = (freshRow?.metadata as Record<string, unknown>) || {};
               const { error: metaErr } = await serviceSupabase
                 .from('exam_sessions')
                 .update({
                   metadata: {
-                    plannerState: clientPlannerState,
-                    sessionConfig,
-                    taskData,
+                    ...freshMeta,
+                    plannerState: updatedPlanner,
                     examPlan: streamPlan,
+                    advanceDue: advance,
                   },
                 })
                 .eq('id', sessionId);
@@ -808,7 +855,7 @@ export async function POST(request: NextRequest) {
             'Content-Type': 'text/event-stream',
             'Cache-Control': 'no-cache',
             'Connection': 'keep-alive',
-            'X-Task-Id': taskData.id,
+            'X-Task-Id': respondTask.id,
           },
         });
       }
@@ -817,9 +864,9 @@ export async function POST(request: NextRequest) {
       timing.start('llm.assessment.total');
       timing.start('llm.examiner.total');
       const [assessment, turn] = await Promise.all([
-        assessAnswer(taskData, history, studentAnswer, rag, rag.ragImages, respondRating, sessionConfig?.studyMode, respondDifficulty, respondGradingContract)
+        assessAnswer(respondTask, history, studentAnswer, rag, rag.ragImages, respondRating, respondConfig?.studyMode, respondDifficulty, respondGradingContract)
           .then(a => { timing.end('llm.assessment.total'); return a; }),
-        generateExaminerTurn(taskData, updatedHistory, respondDifficulty, sessionConfig?.aircraftClass as import('@/types/database').AircraftClass | undefined, rag, respondRating, sessionConfig?.studyMode, personaSection, studentName, undefined, respondExaminerContract)
+        generateExaminerTurn(respondTask, updatedHistory, respondDifficulty, respondConfig?.aircraftClass as import('@/types/database').AircraftClass | undefined, rag, respondRating, respondConfig?.studyMode, personaSection, studentName, undefined, respondExaminerContract)
           .then(t => { timing.end('llm.examiner.total'); return t; }),
       ]);
       timing.end('exchange.total');
@@ -883,9 +930,10 @@ export async function POST(request: NextRequest) {
         writeTimings(serviceSupabase, sessionId, exchangeNumber, timing);
       }
 
-      // Apply ExamPlan updates based on assessment
-      let updatedExamPlan = clientExamPlan;
-      if (updatedExamPlan && assessment) {
+      // Server-side plan + advancement bookkeeping (W2.1) — non-streaming path
+      const respondAdvance = decideAdvance(assessment.score);
+      let updatedExamPlan = srvExamPlan;
+      if (updatedExamPlan && srvPlannerState && currentElementCode && assessment) {
         // Credit mentioned elements
         if (assessment.mentioned_elements.length > 0) {
           updatedExamPlan = creditMentionedElements(updatedExamPlan, assessment.mentioned_elements);
@@ -895,16 +943,30 @@ export async function POST(request: NextRequest) {
           const bonusPlan = useBonusQuestion(updatedExamPlan);
           if (bonusPlan) updatedExamPlan = bonusPlan;
         }
-        // Persist updated plan to metadata
+        // Persist updated plan + advancement state (read-merge-write)
         if (sessionId) {
+          const updatedPlanner: PlannerState = respondAdvance ? srvPlannerState : {
+            ...srvPlannerState,
+            attempts: {
+              ...srvPlannerState.attempts,
+              [currentElementCode]: (srvPlannerState.attempts?.[currentElementCode] || 1) + 1,
+            },
+            version: (srvPlannerState.version || 0) + 1,
+          };
+          const { data: freshRow } = await serviceSupabase
+            .from('exam_sessions')
+            .select('metadata')
+            .eq('id', sessionId)
+            .single();
+          const freshMeta = (freshRow?.metadata as Record<string, unknown>) || {};
           const { error: metaErr } = await serviceSupabase
             .from('exam_sessions')
             .update({
               metadata: {
-                plannerState: clientPlannerState,
-                sessionConfig,
-                taskData,
+                ...freshMeta,
+                plannerState: updatedPlanner,
                 examPlan: updatedExamPlan,
+                advanceDue: respondAdvance,
               },
             })
             .eq('id', sessionId);
@@ -913,10 +975,11 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json({
-        taskId: taskData.id,
-        taskData,
+        taskId: respondTask.id,
+        taskData: respondTask,
         examinerMessage: turn.examinerMessage,
-        assessment,
+        assessment: { ...assessment, advance: respondAdvance },
+        advance: respondAdvance,
         ...(updatedExamPlan ? { examPlan: updatedExamPlan } : {}),
       });
     }
@@ -924,11 +987,17 @@ export async function POST(request: NextRequest) {
     if (action === 'resume-current') {
       // Return current element's task data without advancing the planner or calling LLM.
       // Used by session resume when the examiner's last question is still pending.
-      if (!clientPlannerState || !sessionConfig) {
+      // W2.1: state comes from exam_sessions.metadata (client copies ignored when present).
+      if (!srvPlannerState || !srvSessionConfig) {
         return NextResponse.json({ error: 'Missing plannerState or sessionConfig' }, { status: 400 });
       }
 
-      const currentElementCode = clientPlannerState.queue[clientPlannerState.cursor];
+      // The pending question belongs to the most recently asked element
+      // (recent last). queue[cursor] is the NEXT element — using it resumed
+      // onto the wrong element (review-02 bug 5).
+      const currentElementCode = srvPlannerState.recent?.length
+        ? srvPlannerState.recent[srvPlannerState.recent.length - 1]
+        : srvPlannerState.queue[srvPlannerState.cursor];
       if (!currentElementCode) {
         return NextResponse.json({ examinerMessage: 'Session complete', sessionComplete: true });
       }
@@ -975,9 +1044,11 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // If planner state provided, advance via planner
-      if (clientPlannerState && sessionConfig) {
-        const plannerResult = await advancePlanner(clientPlannerState, sessionConfig, undefined, clientExamPlan);
+      // Advance via planner using SERVER-owned state (W2.1) — exam_sessions.metadata
+      // is authoritative; client copies are only a legacy fallback.
+      const ntConfig = srvSessionConfig;
+      if (srvPlannerState && ntConfig) {
+        const plannerResult = await advancePlanner(srvPlannerState, ntConfig, undefined, srvExamPlan);
         if (!plannerResult) {
           // All elements exhausted — auto-complete with grading
           if (sessionId) {
@@ -998,7 +1069,7 @@ export async function POST(request: NextRequest) {
               ]);
 
               const serverPlannerState = (examRow?.metadata as Record<string, unknown>)?.plannerState as { queue: string[] } | undefined;
-              const totalElements = serverPlannerState?.queue?.length || clientPlannerState.queue.length;
+              const totalElements = serverPlannerState?.queue?.length || srvPlannerState.queue.length;
 
               if (totalElements > 0) {
                 const attemptData = (attempts || []).map(a => ({
@@ -1011,14 +1082,14 @@ export async function POST(request: NextRequest) {
                 // V2 grading: plan-based denominator + per-area gating
                 const serverExamPlan = (examRow?.metadata as Record<string, unknown>)?.examPlan as ExamPlanV1 | undefined;
                 const serverSessionConfig = (examRow?.metadata as Record<string, unknown>)?.sessionConfig as SessionConfig | undefined;
-                const effectivePlan = serverExamPlan || clientExamPlan;
+                const effectivePlan = serverExamPlan || srvExamPlan;
                 let examResultV2: Record<string, unknown> | undefined;
                 if (effectivePlan) {
                   examResultV2 = computeExamResultV2(
                     attemptData,
                     effectivePlan,
                     'all_tasks_covered',
-                    serverSessionConfig?.rating || sessionConfig?.rating || 'private',
+                    serverSessionConfig?.rating || ntConfig?.rating || 'private',
                   ) as unknown as Record<string, unknown>;
                 }
 
@@ -1045,15 +1116,15 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        const nextTaskRating = sessionConfig.rating || 'private';
+        const nextTaskRating = ntConfig.rating || 'private';
 
         // Compute transition hint for cross_acs mode (Phase 9)
-        const previousElementCode = clientPlannerState.recent?.length
-          ? clientPlannerState.recent[clientPlannerState.recent.length - 1]
+        const previousElementCode = srvPlannerState.recent?.length
+          ? srvPlannerState.recent[srvPlannerState.recent.length - 1]
           : undefined;
         const transitionHint = buildTransitionHint(
           previousElementCode, plannerResult.elementCode,
-          sessionConfig.studyMode, nextTaskRating
+          ntConfig.studyMode, nextTaskRating
         );
 
         // Format depth & difficulty contract for next-task examiner prompt (Phase 10)
@@ -1062,14 +1133,14 @@ export async function POST(request: NextRequest) {
           : undefined;
 
         const turn = await generateExaminerTurn(
-          plannerResult.task, sessionHistory, plannerResult.difficulty, sessionConfig.aircraftClass, undefined, nextTaskRating, sessionConfig.studyMode, personaSection, studentName, transitionHint, nextTaskExaminerContract
+          plannerResult.task, sessionHistory, plannerResult.difficulty, ntConfig.aircraftClass, undefined, nextTaskRating, ntConfig.studyMode, personaSection, studentName, transitionHint, nextTaskExaminerContract
         );
 
         // Log LLM usage (non-blocking)
         logLlmUsage(user.id, turn.usage, tier, sessionId, { action: 'next-task', call: 'generateExaminerTurn' });
 
         // Fire PostHog event for cross-area transitions (Phase 9, non-blocking)
-        if (transitionHint && sessionConfig.studyMode === 'cross_acs') {
+        if (transitionHint && ntConfig.studyMode === 'cross_acs') {
           after(async () => {
             const { captureServerEvent } = await import('@/lib/posthog-server');
             captureServerEvent(user.id, 'flow_transition_generated', {
@@ -1089,7 +1160,7 @@ export async function POST(request: NextRequest) {
               session_id: sessionId,
               ...contractSummary(plannerResult.depthDifficultyContract!),
               element_code: plannerResult.elementCode,
-              study_mode: sessionConfig.studyMode,
+              study_mode: ntConfig.studyMode,
               action: 'next-task',
             });
           });
@@ -1110,15 +1181,24 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        // Persist updated planner state + taskData + examPlan + contract to metadata for resume
+        // Persist updated planner state + taskData + examPlan + contract to metadata for resume.
+        // Read-merge-write (W2.1): preserves persona, promptTrace, fingerprintMeta, etc.
         if (sessionId) {
+          const { data: freshRow } = await serviceSupabase
+            .from('exam_sessions')
+            .select('metadata')
+            .eq('id', sessionId)
+            .single();
+          const freshMeta = (freshRow?.metadata as Record<string, unknown>) || {};
           const { error: metaErr } = await serviceSupabase
             .from('exam_sessions')
             .update({ metadata: {
+              ...freshMeta,
               plannerState: plannerResult.plannerState,
-              sessionConfig,
+              sessionConfig: ntConfig,
               taskData: plannerResult.task,
               examPlan: plannerResult.examPlan,
+              advanceDue: false,
               ...(plannerResult.depthDifficultyContract ? { depthDifficultyContract: plannerResult.depthDifficultyContract } : {}),
             } })
             .eq('id', sessionId);

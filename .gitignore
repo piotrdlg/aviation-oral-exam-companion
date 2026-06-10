@@ -61,3 +61,7 @@ docs/screenshots/
 # supabase temp
 supabase/.temp/
 .env*.local
+
+# throwaway local dev scripts (may contain credentials — never commit)
+scripts/_dev/
+mockups/

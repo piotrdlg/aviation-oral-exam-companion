@@ -175,6 +175,8 @@ export default function PracticePage() {
 
   // Track per-task assessment scores (ref avoids stale closures in fire-and-forget fetches)
   const taskScoresRef = useRef<Record<string, { score: 'satisfactory' | 'unsatisfactory' | 'partial'; attempts: number }>>({});
+  // W2.1: guards the server-driven advancement call (one per exchange)
+  const advanceInFlightRef = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const voiceEnabledRef = useRef(false);
@@ -259,6 +261,13 @@ export default function PracticePage() {
       sentenceRevealedRef.current = '';
     },
   });
+
+  // W2.1: mirror TTS activity into a ref so async waits see fresh values
+  // (React state is frozen inside long-running closures).
+  const ttsBusyRef = useRef(false);
+  useEffect(() => {
+    ttsBusyRef.current = sentenceTTS.isSpeaking || voice.isSpeaking;
+  }, [sentenceTTS.isSpeaking, voice.isSpeaking]);
 
   // Fetch feature flags on mount
   useEffect(() => {
@@ -761,6 +770,7 @@ export default function PracticePage() {
         let examinerMsg = '';
         let chunksReceived = 0;
         let receivedAssessment: Assessment | null = null;
+        let receivedAdvance = false; // server's advancement decision (W2.1)
         let receivedSources: Source[] | undefined;
         let paragraphsReceived = 0;
         let paragraphText = '';
@@ -963,6 +973,7 @@ export default function PracticePage() {
                 vtAssessmentReceived = performance.now();
                 console.log(`[VOICE-TIMING] Assessment SSE: +${Math.round(vtAssessmentReceived - vt0)}ms (${vtLastChunk ? Math.round(vtAssessmentReceived - vtLastChunk) + 'ms after last chunk' : 'n/a'})`);
                 receivedAssessment = parsed.assessment;
+                if (parsed.assessment.advance === true) receivedAdvance = true;
                 receivedSources = parsed.assessment.rag_chunks?.map((c: { doc_abbreviation: string; heading: string | null; content: string; page_start: number | null }) => ({
                   doc_abbreviation: c.doc_abbreviation,
                   heading: c.heading,
@@ -987,6 +998,7 @@ export default function PracticePage() {
               const parsed = JSON.parse(payload);
               if (parsed.assessment) {
                 receivedAssessment = parsed.assessment;
+                if (parsed.assessment.advance === true) receivedAdvance = true;
                 receivedSources = parsed.assessment.rag_chunks?.map((c: { doc_abbreviation: string; heading: string | null; content: string; page_start: number | null }) => ({
                   doc_abbreviation: c.doc_abbreviation,
                   heading: c.heading,
@@ -1066,6 +1078,8 @@ export default function PracticePage() {
         );
 
         // Update session stats (examiner transcript is persisted server-side via onComplete callback)
+        // W2.1: planner_state/session_config/task_data are server-owned now —
+        // the client no longer writes them (prevents metadata write races).
         if (sessionId) {
           fetch('/api/session', {
             method: 'POST',
@@ -1079,9 +1093,6 @@ export default function PracticePage() {
                 status: s.score,
                 attempts: s.attempts,
               })),
-              planner_state: plannerState,
-              session_config: sessionConfig,
-              task_data: taskData,
               voice_enabled: voiceEnabled,
             }),
           }).catch(() => {});
@@ -1113,6 +1124,13 @@ export default function PracticePage() {
             pendingFullTextRef.current = examinerMsg;
             speakText(examinerMsg);
           }
+        }
+
+        // W2.1: server decided this element is done — fetch the transition
+        // turn (next-task) once playback settles. Server state drives which
+        // element comes next; this client only triggers and renders it.
+        if (receivedAdvance && sessionId) {
+          void advanceAfterAnswer();
         }
       } else {
         // Fallback: non-streaming JSON response
@@ -1176,9 +1194,6 @@ export default function PracticePage() {
                 status: s.score,
                 attempts: s.attempts,
               })),
-              planner_state: plannerState,
-              session_config: sessionConfig,
-              task_data: taskData,
               voice_enabled: voiceEnabled,
             }),
           }).catch(() => {});
@@ -1186,6 +1201,11 @@ export default function PracticePage() {
 
         if (voiceEnabledRef.current) {
           speakText(examinerMsg);
+        }
+
+        // W2.1: server advancement decision (non-streaming path)
+        if (data.advance === true && sessionId) {
+          void advanceAfterAnswer();
         }
       }
     } catch (err) {
@@ -1204,6 +1224,65 @@ export default function PracticePage() {
     setShowErrorRecovery(false);
     setError(null);
     sendAnswer(lastFailedAnswer);
+  }
+
+  /** Wait until TTS playback is idle (or timeout) before the transition turn speaks. */
+  async function waitForTtsIdle(maxMs = 45000): Promise<void> {
+    const start = Date.now();
+    while ((ttsBusyRef.current || ttsQueueActiveRef.current) && Date.now() - start < maxMs) {
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  }
+
+  /**
+   * W2.1: The server decided the current element is complete (assessment.advance).
+   * Fetch the transition turn via next-task — the server's planner state decides
+   * which element comes next; this client only triggers and renders the result.
+   */
+  async function advanceAfterAnswer() {
+    if (advanceInFlightRef.current || !sessionId) return;
+    advanceInFlightRef.current = true;
+    try {
+      const res = await fetchWithRetry('/api/exam', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'next-task', sessionId, sessionConfig }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        console.error('Advance to next element failed:', data.error);
+        return;
+      }
+
+      // Let the current turn's audio finish before the transition speaks
+      if (voiceEnabledRef.current) await waitForTtsIdle();
+
+      if (data.sessionComplete) {
+        // Plan budget exhausted — natural exam completion. gradeSession()
+        // marks completed, grades, and shows the results modal.
+        setMessages((prev) => [...prev, { role: 'examiner', text: data.examinerMessage || 'We have covered everything in your study plan. Great job today!' }]);
+        await gradeSession();
+        return;
+      }
+
+      if (data.taskData) setTaskData(data.taskData);
+      if (data.elementCode) setCurrentElement(data.elementCode);
+      if (data.plannerState) setPlannerState(data.plannerState);
+
+      const transitionMsg = data.examinerMessage as string | undefined;
+      if (!transitionMsg) return;
+      if (voiceEnabledRef.current) {
+        setMessages((prev) => [...prev, { role: 'examiner', text: '' }]);
+        pendingFullTextRef.current = transitionMsg;
+        speakText(transitionMsg);
+      } else {
+        setMessages((prev) => [...prev, { role: 'examiner', text: transitionMsg }]);
+      }
+    } catch (err) {
+      console.error('Advance to next element error:', err);
+    } finally {
+      advanceInFlightRef.current = false;
+    }
   }
 
   /** Grade and end the current in-session exam, showing the results modal. */
@@ -1232,8 +1311,6 @@ export default function PracticePage() {
               status: s.score,
               attempts: s.attempts,
             })),
-            planner_state: plannerState,
-            session_config: sessionConfig,
           }),
         });
         const data = await res.json();
@@ -1304,9 +1381,6 @@ export default function PracticePage() {
               status: s.score,
               attempts: s.attempts,
             })),
-            planner_state: plannerState,
-            session_config: sessionConfig,
-            task_data: taskData,
             voice_enabled: voiceEnabled,
           }),
         });
@@ -1426,7 +1500,9 @@ export default function PracticePage() {
       const examinerAskedLast = lastMessage?.role === 'examiner';
 
       if (examinerAskedLast) {
-        // Examiner's question is still pending — fetch current task from DB without advancing
+        // Examiner's question is still pending — fetch current task from DB without advancing.
+        // W2.1: server loads planner state from exam_sessions.metadata; this call also
+        // CLAIMS the exam for this device (resume-current = claim semantics).
         setMessages(loadedMessages);
 
         const res = await fetchWithRetry('/api/exam', {
@@ -1434,8 +1510,8 @@ export default function PracticePage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'resume-current',
+            sessionId: session.id,
             sessionConfig: metadata.sessionConfig,
-            plannerState: metadata.plannerState,
           }),
         });
 
@@ -1446,8 +1522,20 @@ export default function PracticePage() {
         }
         // If resume-current fails, user can still see transcript and type answers
       } else {
-        // Student answered last (or no transcripts) — need to advance planner for next question
+        // Student answered last (or no transcripts) — need to advance planner for next question.
+        // First reclaim the exam for this device (resume-current = claim semantics);
+        // next-task alone would be rejected if another device still held the claim.
         setMessages(loadedMessages);
+        await fetchWithRetry('/api/exam', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'resume-current',
+            sessionId: session.id,
+            sessionConfig: metadata.sessionConfig,
+          }),
+        }).catch(() => {});
+
         const res = await fetchWithRetry('/api/exam', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1455,7 +1543,6 @@ export default function PracticePage() {
             action: 'next-task',
             sessionId: session.id,
             sessionConfig: metadata.sessionConfig,
-            plannerState: metadata.plannerState,
           }),
         });
 
