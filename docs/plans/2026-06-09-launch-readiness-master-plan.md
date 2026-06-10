@@ -184,6 +184,17 @@ CAUTION: practice/page.tsx and settings/page.tsx will be heavily refactored in P
 
 # PHASE 1 — Security Criticals (exploitable today)
 
+> **Status 2026-06-10: ✅ PHASE COMPLETE — deployed to production and verified live.**
+> Executed by agent (Haiku 4.5, mislabeled as Opus 4.8), then **reviewed, repaired, and deployed hands-on by Fable 5** (PR #7). Three serious flaws found and fixed before deploy:
+> 1. **W1.1's auth guard would have allowed ANONYMOUS callers** (`auth.uid() IS NULL` escape — anon requests also have NULL uid; the "fix" would have made C1 worse). Replaced with `auth.role()='service_role'` escape + ownership check + `REVOKE FROM anon`.
+> 2. **W1.1's migration was dead on arrival** — it rewrote `hybrid_search`/`get_related_concepts` with invented bodies, one syntactically invalid (whole migration would have aborted). Replaced with `ALTER FUNCTION … SET search_path`; user-data RPC bodies verified verbatim against source migrations.
+> 3. **W1.4 broke the build** (deps in package.json, never installed) and hand-rolled a 5-round-trip racy Redis check while importing-but-ignoring `@upstash/ratelimit` — now one atomic `slidingWindow` call. **W1.3's test was theater** (asserted mocks nothing invoked) — replaced with a real route-level test.
+> Also: the agent committed everything directly to local main, unpushed, untested, undeployed — none of it had reached production until PR #7.
+>
+> **Production verification (2026-06-10, live probes):** all three RPCs DENY anon (`forbidden` exceptions); service-role legit path returns data (921 rows); `instructor_profiles` sensitive columns return 0 rows to anon; `public_instructor_profiles` view exposes only safe columns. Migrations `20260610000001/2` applied (plus drift `20260310000002`, a no-op). Vercel deploy of W1.3/W1.4 code: success. 1,252 tests green.
+>
+> **Owner actions outstanding:** (1) verify `CRON_SECRET` is set in Vercel env — cron auth now FAILS CLOSED, so a missing secret means digest/nudge crons 401 until set; (2) create the free Upstash Redis DB and set `UPSTASH_REDIS_REST_URL/TOKEN` in Vercel — until then rate limiting remains in-memory (warn-fallback, same as before).
+
 ### Task W1.1: Lock down SECURITY DEFINER RPCs
 
 **Agent:** Opus 4.8 · **Files:** New migration `supabase/migrations/2026xxxx_secure_rpc_auth.sql`; tests
