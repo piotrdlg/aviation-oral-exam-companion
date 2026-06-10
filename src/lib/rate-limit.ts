@@ -52,6 +52,7 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig & { keyType: 'us
   '/api/stripe/webhook': { limit: 100, windowMs: 60_000, keyType: 'ip' },
   '/api/stripe/checkout': { limit: 5, windowMs: 60_000, keyType: 'user' },
   '/api/report': { limit: 10, windowMs: 60_000, keyType: 'user' },
+  '/api/user/export': { limit: 1, windowMs: 3_600_000, keyType: 'user' },
   '/api/admin': { limit: 60, windowMs: 60_000, keyType: 'user' },
 };
 

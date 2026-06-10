@@ -198,8 +198,10 @@ Scheduled pg_cron jobs that purge old rows:
 | Job | Schedule (UTC) | Deletes |
 |-----|----------------|---------|
 | `purge-old-subscription-events` | daily 03:30 | `subscription_events` older than 18 months (Stripe payloads incl. PII) — migration `20260610000006` |
+| `purge-old-latency-logs` | daily 03:40 | `latency_logs` older than 90 days — migration `20260611000001` |
+| `purge-old-usage-logs` | daily 03:50 | `usage_logs` older than 13 months (kept 13 for year-over-year billing) — migration `20260611000001` |
 
-> Telemetry-table retention (`latency_logs`, `usage_logs`) is added in plan task W6.3.
+> `session_transcripts` / `element_attempts` are USER DATA — never auto-deleted (GDPR export/delete owns their lifecycle).
 
 ### ⚠️ pg_cron is NOT enabled (discovered W3.4, 2026-06-10)
 

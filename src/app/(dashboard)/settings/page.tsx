@@ -102,6 +102,10 @@ export default function SettingsPage() {
   const [activeSessions, setActiveSessions] = useState<ActiveSessionItem[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(true);
   const [signOutOthersLoading, setSignOutOthersLoading] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [exportLoading, setExportLoading] = useState(false);
   const [sessionsMessage, setSessionsMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   // Email notification preferences state
@@ -1661,6 +1665,81 @@ export default function SettingsPage() {
             {signOutOthersLoading ? 'SIGNING OUT...' : 'SIGN OUT ALL OTHER SESSIONS'}
           </button>
         )}
+      </div>
+
+      {/* 7. Data & Danger Zone (W6.3 — GDPR export + account deletion) */}
+      <div className="bezel rounded-lg border border-c-red/30 p-6">
+        <h2 className="font-mono font-semibold text-base text-c-red mb-1 tracking-wider uppercase">YOUR DATA</h2>
+        <p className="font-mono text-xs text-c-muted mb-5">
+          Export everything we store about you, or delete your account permanently.
+        </p>
+
+        <button
+          onClick={async () => {
+            setExportLoading(true);
+            try {
+              const res = await fetch('/api/user/export');
+              if (res.status === 429) { alert('Export is limited to once per hour.'); return; }
+              if (!res.ok) throw new Error('export failed');
+              const blob = await res.blob();
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `heydpe-export-${new Date().toISOString().slice(0, 10)}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+            } catch {
+              alert('Export failed. Try again later.');
+            } finally {
+              setExportLoading(false);
+            }
+          }}
+          disabled={exportLoading}
+          className="px-4 py-2 bg-c-bezel hover:bg-c-border disabled:opacity-50 text-c-text font-mono text-sm font-semibold rounded-lg transition-colors uppercase tracking-wide border border-c-border-hi"
+        >
+          {exportLoading ? 'PREPARING…' : 'DOWNLOAD MY DATA (JSON)'}
+        </button>
+
+        <div className="mt-6 pt-5 border-t border-c-red/20">
+          <p className="font-mono text-xs text-c-red mb-2 uppercase tracking-wider">Delete account</p>
+          <p className="text-sm text-c-muted mb-3">
+            Permanently deletes your profile, exam history, transcripts, and progress, and cancels any
+            active subscription. This cannot be undone. Type <span className="font-mono text-c-red">DELETE</span> to confirm.
+          </p>
+          <div className="flex gap-3 items-center">
+            <input
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder="DELETE"
+              className="px-3 py-2 bg-c-panel border border-c-border rounded-lg font-mono text-sm text-c-text w-32 focus:outline-none focus:ring-1 focus:ring-c-red"
+            />
+            <button
+              onClick={async () => {
+                if (deleteConfirmText !== 'DELETE') return;
+                setDeleteLoading(true);
+                setDeleteError(null);
+                try {
+                  const res = await fetch('/api/user/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ confirm: 'DELETE' }),
+                  });
+                  const data = await res.json().catch(() => ({}));
+                  if (!res.ok) throw new Error(data.detail || data.error || 'Deletion failed');
+                  window.location.href = '/';
+                } catch (err) {
+                  setDeleteError(err instanceof Error ? err.message : 'Deletion failed');
+                  setDeleteLoading(false);
+                }
+              }}
+              disabled={deleteConfirmText !== 'DELETE' || deleteLoading}
+              className="px-4 py-2 bg-c-red/80 hover:bg-c-red disabled:opacity-40 text-c-text font-mono text-sm font-semibold rounded-lg transition-colors uppercase tracking-wide"
+            >
+              {deleteLoading ? 'DELETING…' : 'DELETE MY ACCOUNT'}
+            </button>
+          </div>
+          {deleteError && <p className="mt-2 text-sm text-c-red">{deleteError}</p>}
+        </div>
       </div>
 
       {/* 6.5 Email Notifications */}
