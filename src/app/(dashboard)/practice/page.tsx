@@ -491,7 +491,8 @@ export default function PracticePage() {
           if (data?.tier) {
             setTier(data.tier);
             setCheckoutSuccess(true);
-            setQuotaWarning(null); // Clear any quota warning after upgrade
+            setQuotaWarning(null);
+          captureVoiceEvent('quota_warning_shown', { session_id: sessionId }); // Clear any quota warning after upgrade
           }
         })
         .catch(() => {});
@@ -620,6 +621,7 @@ export default function PracticePage() {
     setPlannerState(null);
     taskScoresRef.current = {};
     setVoiceEnabled(configData.voiceEnabled);
+    captureVoiceEvent('voice_mode_toggled', { enabled: configData.voiceEnabled, at: 'session_config' });
     voiceEnabledRef.current = configData.voiceEnabled;
 
     // Build session config for the planner
@@ -1867,6 +1869,7 @@ export default function PracticePage() {
               <p className="text-c-muted text-base mb-6">{quotaModalCopy(quotaReason).body}</p>
               <div className="flex gap-3">
                 <a
+                  onClick={() => captureVoiceEvent('upgrade_clicked', { source: 'quota_modal' })}
                   href="/pricing"
                   className="flex-1 py-2.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-base text-center transition-colors uppercase tracking-wider"
                 >
@@ -2308,6 +2311,7 @@ export default function PracticePage() {
               <p className="text-c-muted text-base mb-6">{quotaModalCopy(quotaReason).body}</p>
             <div className="flex gap-3">
               <a
+                onClick={() => captureVoiceEvent('upgrade_clicked', { source: 'quota_modal' })}
                 href="/pricing"
                 className="flex-1 py-2.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-base text-center transition-colors uppercase tracking-wider"
               >

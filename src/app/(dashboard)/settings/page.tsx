@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { captureVoiceEvent } from '@/lib/voice-telemetry';
 import type { VoiceTier, TierFeatures } from '@/lib/voice/types';
 import type { Rating, AircraftClass, ExaminerProfileKey, CertificateType } from '@/types/database';
 import { THEMES, setTheme } from '@/lib/theme';
@@ -633,6 +634,7 @@ export default function SettingsPage() {
   }
 
   async function saveVoiceEnabled(enabled: boolean) {
+    captureVoiceEvent('settings_voice_changed', { enabled });
     setDefaultsSaving(true);
     setDefaultsMessage(null);
     try {

@@ -522,6 +522,13 @@ export async function POST(request: NextRequest) {
 
         const rating = sessionConfig.rating || 'private';
 
+        // W6.4: weak-area training funnel
+        if (sessionConfig.studyMode === 'weak_areas' || sessionConfig.studyMode === 'quick_drill') {
+          captureServerEvent(user.id, 'weak_area_drill_started', {
+            session_id: sessionId, mode: sessionConfig.studyMode, rating,
+          });
+        }
+
         // Prompt audit: capture which prompt version powers this session
         const { versionId: examinerVersionId } = await loadPromptFromDB(
           serviceSupabase, 'examiner_system', rating, sessionConfig.studyMode, sessionConfig.difficulty
@@ -909,6 +916,9 @@ export async function POST(request: NextRequest) {
           assessAnswer(respondTask, history, studentAnswer, rag, rag.ragImages, respondRating, respondConfig?.studyMode, respondDifficulty, respondGradingContract)
             .then(a => {
               timing.end('llm.assessment.total');
+              // W6.4 funnel events (streaming path)
+              captureServerEvent(user.id, 'exchange_completed', { session_id: sessionId, element: currentElementCode, streaming: true });
+              captureServerEvent(user.id, 'assessment_scored', { session_id: sessionId, score: a.score, element: a.primary_element });
               return { ...a, advance: decideAdvance(a.score) };
             });
 
@@ -1102,6 +1112,10 @@ export async function POST(request: NextRequest) {
       logLlmUsage(user.id, assessment.usage, tier, sessionId, { action: 'respond', call: 'assessAnswer' });
       logLlmUsage(user.id, turn.usage, tier, sessionId, { action: 'respond', call: 'generateExaminerTurn' });
 
+      // W6.4 funnel events
+      captureServerEvent(user.id, 'exchange_completed', { session_id: sessionId, element: currentElementCode, streaming: false });
+      captureServerEvent(user.id, 'assessment_scored', { session_id: sessionId, score: assessment.score, element: assessment.primary_element });
+
       // Step 4: Persist all DB writes (awaited to prevent silent data loss)
       if (studentTranscriptId && assessment) {
         // 1. Assessment update on student transcript
@@ -1246,6 +1260,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Task not found' }, { status: 404 });
       }
 
+      captureServerEvent(user.id, 'session_resumed', { session_id: sessionId, element: currentElementCode });
       return NextResponse.json({
         taskId: task.id,
         taskData: task,

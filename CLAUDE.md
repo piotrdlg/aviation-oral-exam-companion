@@ -29,7 +29,7 @@
 | Payments | Stripe | Checkout, billing portal, webhooks |
 | Email | Resend + React Email | Transactional, digest, nudges |
 | Analytics | PostHog | Client + server-side events |
-| Testing | Vitest + Playwright | Unit (743+) + E2E (6 browser projects) |
+| Testing | Vitest + Playwright | Unit (1,350+) + E2E (6 browser projects) |
 | Deployment | Vercel | Auto-deploy from `main`, cron jobs |
 
 ---
@@ -114,7 +114,7 @@ src/
 │   ├── rate-limit.ts               # Sliding-window rate limiter
 │   ├── timing.ts                   # Latency instrumentation
 │   ├── supabase/                   # client.ts, server.ts, middleware.ts
-│   └── __tests__/                  # 50+ Vitest test files (743+ tests)
+│   └── __tests__/                  # 60+ Vitest test files (1,350+ tests)
 ├── types/
 │   ├── database.ts                 # 813-line type definitions (34 tables)
 │   └── speech.d.ts                 # Web Speech API type declarations
@@ -330,7 +330,7 @@ npm run test:watch  # Watch mode
 npm run typecheck   # TypeScript type checking
 ```
 
-### Unit Tests (743+ tests across 50+ files)
+### Unit Tests (1,350+ tests across 60+ files)
 
 | Category | Coverage |
 |----------|----------|
@@ -364,12 +364,12 @@ npm run typecheck   # TypeScript type checking
 - **Knowledge graph ARCHIVED (W5.1 / decision D4, 2026-06-10)** — the graph left the exam runtime; `hybrid_search`/`get_related_concepts` RPCs dropped; `concepts`/`concept_relations` data + admin explorer remain read-only archive. Non-linear exams are delivered by the **Scenario Engine** (`docs/plans/2026-06-09-scenario-engine-design.md`), gated behind `exam.scenario_engine` and two proof gates.
 - **Transcript persistence active** — `session_transcripts` + `element_attempts` tables populated via exam engine.
 - **Latency logging active** — `latency_logs` populated with per-exchange timing spans via `src/lib/timing.ts`.
-- **STT Chrome-primary** — Deepgram Nova-3 WebSocket STT works cross-browser. Legacy Web Speech API was Chrome-only.
+- **STT cross-browser** — Deepgram Nova-3 WebSocket STT works in all modern browsers (the old Chrome-only claim referred to the removed legacy Web Speech API). Mid-session reconnect + Safari audio/mp4 fallback shipped in W4.1; 43-term aviation keyterm boost in W4.3.
 - **Admin interface complete** — 13 admin pages: dashboard, analytics, config, graph explorer, instructors, moderation, prompts, support, TTS monitoring, voicelab, user management.
 - **Three ratings supported** — Private Pilot (61 tasks), Commercial Pilot (60 tasks), and Instrument Rating (22 tasks) fully seeded. ATP schemaed but not populated.
-- **No CI/CD pipeline** — No `.github` directory; relies on Vercel auto-deploy and preview deployments.
-- **Load testing deferred** — Launched with "LAUNCH WITH CAUTION" (Phase 18); no formal load testing performed.
-- **PostHog events partially active** — 3 MVP events active; 11 additional events deferred post-launch.
+- **CI active** — GitHub Actions runs typecheck + the full Vitest suite on every PR (added W0.x); Vercel auto-deploys main.
+- **Load testing** — k6 suite at scripts/load/ (W6.2); see docs/reviews/2026-06-09-comprehensive-review/09-load-test-report.md for the measured ceiling.
+- **PostHog funnel complete (W6.4)** — the 11 deferred events shipped: voice_mode_toggled, exchange_completed, assessment_scored, session_resumed, quota_warning_shown, paywall_shown, upgrade_clicked, onboarding_completed, instructor_invite_sent, weak_area_drill_started, settings_voice_changed — plus the scenario/quota/arm telemetry from Phases 3-5.
 - **Instructor program launched** — Full lifecycle: application, verification, invites, connections, KPIs, milestones, referrals.
 
 ---
