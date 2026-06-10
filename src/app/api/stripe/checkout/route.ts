@@ -57,11 +57,21 @@ export async function POST(request: NextRequest) {
       metadata: { supabase_user_id: user.id },
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
-      // W3.4 / decision D3: collect tax automatically. Requires Stripe Tax to
-      // be registered/enabled in the dashboard first (checkout errors otherwise).
-      automatic_tax: { enabled: true },
-      customer_update: { address: 'auto' },
-      tax_id_collection: { enabled: true },
+      // W3.4 / decision D3: collect tax automatically. Stripe REJECTS session
+      // creation with automatic_tax until the account has a tax registration/
+      // origin address, so this is gated on STRIPE_TAX_ENABLED — set it in
+      // Vercel ONLY AFTER completing Stripe Tax registration in the dashboard.
+      // (Review correction: the unconditional version would have broken every
+      // checkout the moment it deployed, ahead of the manual prerequisite.)
+      ...(process.env.STRIPE_TAX_ENABLED === 'true'
+        ? {
+            automatic_tax: { enabled: true },
+            // name: 'auto' is REQUIRED by Stripe when tax_id_collection is
+            // used with an existing customer (otherwise session creation errors).
+            customer_update: { address: 'auto' as const, name: 'auto' as const },
+            tax_id_collection: { enabled: true },
+          }
+        : {}),
       subscription_data: {
         ...(hasTrialed ? {} : { trial_period_days: 7 }),
         metadata: { supabase_user_id: user.id },
