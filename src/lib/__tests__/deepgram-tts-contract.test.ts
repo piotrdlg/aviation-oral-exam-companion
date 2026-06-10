@@ -209,3 +209,63 @@ describe('FIXED_RATE_ENCODINGS coverage (source inspection)', () => {
     expect(providerSource).toContain('if (!isFixedRate)');
   });
 });
+
+// W4.1 (review-04 #4): timeout + single retry on transient failures
+describe('transient retry (W4.1)', () => {
+  it('retries once on a 503 and succeeds', async () => {
+    let calls = 0;
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(async (url: string) => {
+      capturedUrl = url;
+      calls++;
+      if (calls === 1) return { ok: false, status: 503, text: async () => 'busy' };
+      return {
+        ok: true,
+        body: new ReadableStream({ start(c) { c.enqueue(new Uint8Array([0xff])); c.close(); } }),
+      };
+    }));
+
+    const result = await callSynthesize();
+    expect(calls).toBe(2);
+    expect(result.contentType).toBe('audio/mpeg');
+  });
+
+  it('retries once on a timeout-style failure', async () => {
+    let calls = 0;
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(async (url: string) => {
+      capturedUrl = url;
+      calls++;
+      if (calls === 1) {
+        const err = new Error('The operation was aborted due to timeout');
+        err.name = 'TimeoutError';
+        throw err;
+      }
+      return {
+        ok: true,
+        body: new ReadableStream({ start(c) { c.enqueue(new Uint8Array([0xff])); c.close(); } }),
+      };
+    }));
+
+    const result = await callSynthesize();
+    expect(calls).toBe(2);
+    expect(result.encoding).toBe('mp3');
+  });
+
+  it('does NOT retry a non-transient 400 (provider fallback handles it)', async () => {
+    let calls = 0;
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(async (url: string) => {
+      capturedUrl = url;
+      calls++;
+      return { ok: false, status: 400, text: async () => 'bad request' };
+    }));
+
+    await expect(callSynthesize()).rejects.toThrow('400');
+    expect(calls).toBe(1);
+  });
+
+  it('throws after the retry also fails', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(async () => (
+      { ok: false, status: 503, text: async () => 'still busy' }
+    )));
+    await expect(callSynthesize()).rejects.toThrow('503');
+  });
+});

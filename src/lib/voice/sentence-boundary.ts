@@ -112,6 +112,13 @@ function isAbbreviation(candidate: string): boolean {
 
 /** Check if the period is part of a FAA reference like "91.205", "AIM 7-1-11", "AC 61-98". */
 function isFAAReference(buffer: string, periodIndex: number): boolean {
+  // W4.1 (review-04 #5): a period can only be INSIDE a reference if a digit
+  // follows it directly. A terminal period after "…121.5." or "…91.205." is a
+  // real sentence boundary — the old window test matched the nearby decimal
+  // and rejected it, so sentences ending in a frequency/altitude/CFR cite
+  // never split and only flushed at the 200-char force-cut.
+  const charAfter = buffer[periodIndex + 1];
+  if (!charAfter || !/\d/.test(charAfter)) return false;
   const window = buffer.slice(Math.max(0, periodIndex - 20), periodIndex + 5);
   return /\d+\s*CFR\s*\d+\.\d/.test(window) ||
     /\bAIM\s+\d+-\d+-\d+/.test(window) ||
