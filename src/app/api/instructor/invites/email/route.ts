@@ -201,6 +201,7 @@ export async function POST(request: NextRequest) {
     await flushPostHog();
 
     // 11. Return success
+    captureServerEvent(user.id, 'instructor_invite_sent', { channel: 'email' });
     return NextResponse.json({
       success: true,
       inviteId: inviteResult.invite.id,

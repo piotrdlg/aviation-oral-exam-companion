@@ -1,3 +1,8 @@
+> **⚠ HISTORICAL RECORD (banner added 2026-06-10).** This audit series is superseded by
+> `docs/reviews/2026-06-09-comprehensive-review/` (findings) and
+> `docs/plans/2026-06-09-launch-readiness-master-plan.md` (remediation status) for current state.
+> Engine design reference: `docs/design/exam-engine-design.html`.
+
 ---
 date: 2026-02-20
 type: system-audit

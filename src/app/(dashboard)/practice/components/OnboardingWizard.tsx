@@ -75,6 +75,8 @@ const RATING_LABELS: Record<string, string> = {
   atp: 'ATP',
 };
 
+import { captureVoiceEvent } from '@/lib/voice-telemetry';
+
 export default function OnboardingWizard({ defaultRating, defaultAircraftClass, defaultTheme, onComplete, onSkip, onLearnMore, loading }: Props) {
   const [step, setStep] = useState(1);
   const [rating, setRating] = useState<Rating>(defaultRating);
@@ -108,6 +110,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
     } catch {
       // Continue anyway — session will still start
     }
+    captureVoiceEvent('onboarding_completed', {});
     onComplete({
       rating,
       aircraftClass,
