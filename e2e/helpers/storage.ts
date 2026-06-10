@@ -1,15 +1,5 @@
 import { type Page } from '@playwright/test';
 
-interface ConsentData {
-  analytics: boolean;
-  marketing: boolean;
-  timestamp: number;
-}
-
-interface DataLayerEvent extends Record<string, unknown> {
-  event?: string;
-}
-
 interface WindowWithDataLayer extends Window {
   dataLayer?: Array<Record<string, unknown> | unknown[]>;
 }
