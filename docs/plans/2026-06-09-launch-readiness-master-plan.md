@@ -454,6 +454,20 @@ Wire into .github/workflows/ci.yml as a separate job IF it can run hermetically 
 
 # PHASE 3 — Monetization Enforcement (Stripe)
 
+> **Status 2026-06-10: ✅ PHASE COMPLETE — executed hands-on by Fable 5, deployed to production, 3 payers verified intact.**
+> PRs #14–#17 (W3.1–W3.4), each CI-green and squash-merged; migrations `20260610000004/5/6` applied. Post-deploy probe confirmed all 3 `dpe_live/active` payers unchanged (`has_trialed=true` backfilled, guard column NULL). Closes review-05 #1–#18.
+> - **W3.1 webhook**: event.created ordering guard (was processing-time no-op); dunning grace (past_due keeps tier); price→tier mapping; new events (refund/dispute/trial_will_end); CHECK widened (paused/incomplete_expired); has_trialed anti-re-trial; idempotency in-flight guard. 10 fixture tests.
+> - **W3.2 quotas** (decision D1: voice universal, theft-bounded): get_monthly_usage/get_daily_usage RPCs SUM chars/seconds (was row-count); free TTS budget 500k→35k + STT ~70min; exam respond requires active/unexpired session under exchange cap (free hard, paid flag-gated); abandoned counts toward the 3-exam limit + server-only `discard` action; STT metered; daily caps backstop; hasTtsAccess universal. **All hard-enforce flags seeded OFF (log-only soft launch).**
+> - **W3.3 pricing+paywall+courtesy**: pricing page no longer lies (voice/resume free in trial); reason-aware upgrade modal + `paywall_shown`; `paid_equivalent` overrides now grant dpe_live in getUserTier.
+> - **W3.4 commercial finish**: Stripe Tax (automatic_tax + customer_update + tax_id_collection); lazy getStripe() everywhere + prod-test-key guard (removed the `null as Stripe` footgun); subscription_events 18-month retention.
+>
+> **Findings flagged for the owner:**
+> 1. **pg_cron is NOT enabled** in production (`cron` schema absent) — the session-lifecycle crons (`expire-trial-exams`, stale-activity, orphan cleanup) from `20260219100002` and the new retention job are not running. Mitigated for trial expiry by W3.2's request-time `expires_at` enforcement. Enable via Dashboard → Extensions → pg_cron, then re-run the schedule blocks (see `docs/runbooks/DATABASE.md`).
+> 2. **`dpe_live/none` anomaly**: one user has top tier with no Stripe subscription (likely the owner's comp/test account). Left untouched — changing a user's tier needs owner confirmation.
+>
+> **Owner actions (from the PRs):** (a) Stripe Dashboard — subscribe the endpoint to `charge.refunded`, `charge.dispute.created`, `customer.subscription.trial_will_end`; (b) enable Stripe Tax registration before next checkout; (c) enable "email customers for successful payments"; (d) optional `ALERT_EMAIL` env; (e) when ready to enforce, flip `quota.*_hard_enforce` flags after reviewing PostHog `*_logonly` events.
+> Tests: 1,275 → 1,295.
+
 > Read order for every agent in this phase: `docs/reviews/2026-06-09-comprehensive-review/05-stripe-commercialization.md` in full, including the **Migration safety notes** — two paying users must never be broken.
 
 ### Task W3.1: Webhook correctness (ordering, grace, events, mapping)
