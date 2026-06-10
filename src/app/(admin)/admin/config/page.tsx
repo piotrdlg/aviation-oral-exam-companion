@@ -21,7 +21,6 @@ const KILL_SWITCH_GROUPS = {
     { key: 'kill_switch.anthropic', label: 'Anthropic (Claude)', description: 'Disables all LLM API calls' },
     { key: 'kill_switch.openai', label: 'OpenAI', description: 'Disables TTS and legacy STT' },
     { key: 'kill_switch.deepgram', label: 'Deepgram', description: 'Disables Deepgram STT' },
-    { key: 'kill_switch.cartesia', label: 'Cartesia', description: 'Disables Cartesia TTS' },
   ],
   tiers: [
     { key: 'kill_switch.tier.ground_school', label: 'Ground School', description: 'Free tier' },

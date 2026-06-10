@@ -17,7 +17,7 @@ const plans = [
       'Unlimited exam sessions',
       'All 3 ratings: Private, Commercial, Instrument',
       'AI-powered answer assessment with FAA sources',
-      'Voice mode with premium TTS',
+      'Full voice mode — speak your answers, hear a realistic DPE',
       'Progress tracking & ACS coverage map',
       'Session resume across devices',
       'Cross-browser support',

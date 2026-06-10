@@ -22,7 +22,6 @@ export interface BrowserCapabilities {
   /** Browser requires user gesture before playing audio */
   requiresUserGestureForAudio: boolean;
   /** Browser supports Web Speech API (SpeechRecognition) */
-  supportsSpeechRecognition: boolean;
 }
 
 /**
@@ -83,7 +82,6 @@ export function detectBrowserCapabilities(): BrowserCapabilities {
       isIOSChrome: false,
       isIOS: false,
       requiresUserGestureForAudio: false,
-      supportsSpeechRecognition: false,
     };
   }
 
@@ -115,13 +113,6 @@ export function detectBrowserCapabilities(): BrowserCapabilities {
   // iOS and Safari require a user gesture to start audio playback
   const requiresUserGestureForAudio = parsed.isIOS || parsed.isSafari || parsed.isIOSSafari;
 
-  // Web Speech API (SpeechRecognition) — only Chrome and Edge support it natively
-  const supportsSpeechRecognition =
-    typeof window !== 'undefined' &&
-    !!(
-      (window as unknown as { SpeechRecognition?: unknown }).SpeechRecognition ||
-      (window as unknown as { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition
-    );
 
   return {
     supportsAudioWorklet,
@@ -131,6 +122,5 @@ export function detectBrowserCapabilities(): BrowserCapabilities {
     isIOSChrome: parsed.isIOSChrome,
     isIOS: parsed.isIOS,
     requiresUserGestureForAudio,
-    supportsSpeechRecognition,
   };
 }

@@ -74,7 +74,7 @@ describe('CSP Supabase origin derivation', () => {
 
 // Replicate the CSP string construction logic from next.config.ts
 function buildCSP(supabaseOrigin: string): string {
-  return `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com https://us.i.posthog.com https://us-assets.i.posthog.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: ${supabaseOrigin}; font-src 'self' data:; media-src 'self' blob: data:; connect-src 'self' ${supabaseOrigin} https://api.stripe.com https://us.i.posthog.com https://www.google-analytics.com https://api.cartesia.ai https://api.deepgram.com wss://api.deepgram.com https://api.openai.com; frame-src https://js.stripe.com; object-src 'none'; base-uri 'self'; report-uri /api/csp-report`;
+  return `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com https://us.i.posthog.com https://us-assets.i.posthog.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: ${supabaseOrigin}; font-src 'self' data:; media-src 'self' blob: data:; connect-src 'self' ${supabaseOrigin} https://api.stripe.com https://us.i.posthog.com https://www.google-analytics.com https://api.deepgram.com wss://api.deepgram.com https://api.openai.com; frame-src https://js.stripe.com; object-src 'none'; base-uri 'self'; report-uri /api/csp-report`;
 }
 
 describe('CSP WebSocket and reporting directives', () => {

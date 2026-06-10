@@ -24,7 +24,7 @@
 | Database | Supabase (PostgreSQL) | pgvector, RLS, RPC functions |
 | Auth | Supabase Auth | Email OTP, Google, Apple, Microsoft OAuth |
 | AI Examiner | Claude Sonnet (`claude-sonnet-4-6`) | DPE persona + answer assessment |
-| TTS | Multi-provider (Cartesia/Deepgram/OpenAI) | Tier-based voice selection via provider factory |
+| TTS | Deepgram Aura-2 (all tiers) + OpenAI runtime fallback | Single product voice per decision D2 (2026-06-09); runtime fallback chain in provider factory |
 | STT | Deepgram Nova-3 | WebSocket, MediaRecorder (Opus/WebM) |
 | Payments | Stripe | Checkout, billing portal, webhooks |
 | Email | Resend + React Email | Transactional, digest, nudges |
@@ -100,7 +100,7 @@ src/
 │   ├── exam-planner.ts             # Planner state machine
 │   ├── exam-result.ts              # Result calculation & grading
 │   ├── voice/                      # Provider factory, sentence boundary, tier lookup, usage
-│   │   └── tts/                    # OpenAI, Deepgram, Cartesia adapters
+│   │   └── tts/                    # Deepgram (primary) + OpenAI (fallback) adapters
 │   ├── rag-retrieval.ts            # Hybrid vector + FTS search
 │   ├── graph-retrieval.ts          # Knowledge graph traversal
 │   ├── rag-filters.ts              # Metadata filter inference
@@ -270,7 +270,6 @@ Optional but commonly used:
 | Variable | Description |
 |----------|-------------|
 | `DEEPGRAM_API_KEY` | Deepgram API key for STT + TTS |
-| `CARTESIA_API_KEY` | Cartesia API key for premium TTS |
 | `STRIPE_SECRET_KEY` | Stripe API key (TEST or LIVE) |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe public key |
 | `RESEND_API_KEY` | Resend email service |
@@ -292,7 +291,7 @@ The API has grown to 60+ routes across 8 domains. Key routes:
 ### Voice Services
 | Route | Methods | Purpose |
 |-------|---------|---------|
-| `/api/tts` | POST | Multi-provider TTS (Cartesia/Deepgram/OpenAI) |
+| `/api/tts` | POST | TTS — Deepgram Aura-2 with OpenAI runtime fallback |
 | `/api/stt/token` | GET | Deepgram ephemeral token |
 | `/api/stt/usage` | GET | STT usage stats |
 
