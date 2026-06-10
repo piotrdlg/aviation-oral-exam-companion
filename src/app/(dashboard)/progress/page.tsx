@@ -101,8 +101,12 @@ export default function ProgressPage() {
   const [selectedClass, setSelectedClass] = useState<AircraftClass>('ASEL');
   const [selectedRating, setSelectedRating] = useState<Rating>('private');
   const [prefsLoaded, setPrefsLoaded] = useState(false);
-  // Session-scoped treemap: null = "All Exams (Lifetime)"
+  // Session-scoped treemap selection. W2.5 (bug 15): 'lifetime' is an
+  // explicit sentinel — null only means "not yet auto-selected", so choosing
+  // All Exams no longer snaps back to the latest session.
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  // W2.5 (bug 16): server-computed lifetime aggregates (all sessions, not the 20-row window)
+  const [lifetimeStats, setLifetimeStats] = useState<{ totalSessions: number; completedSessions: number; totalExchanges: number; uniqueTasksCovered: number } | null>(null);
   const [sessionScores, setSessionScores] = useState<ElementScore[]>([]);
   const [sessionScoresLoading, setSessionScoresLoading] = useState(false);
 
@@ -128,11 +132,14 @@ export default function ProgressPage() {
       fetch('/api/session').then((res) => res.json()),
       fetch(`/api/session?action=element-scores&rating=${selectedRating}`).then((res) => res.json()).catch(() => ({ scores: [] })),
       fetch(`/api/exam?action=list-tasks&rating=${selectedRating}`).then((res) => res.json()).catch(() => ({ tasks: [] })),
+      // W2.5 (bug 16): lifetime stats computed server-side over ALL sessions
+      fetch(`/api/session?action=stats&rating=${selectedRating}`).then((res) => res.json()).catch(() => ({ stats: null })),
     ])
-      .then(([sessionData, scoresData, taskData]) => {
+      .then(([sessionData, scoresData, taskData, statsData]) => {
         setSessions(sessionData.sessions || []);
         setElementScores(scoresData.scores || []);
         setTasks(taskData.tasks || []);
+        setLifetimeStats(statsData.stats || null);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -147,13 +154,13 @@ export default function ProgressPage() {
   // Auto-select latest session when sessions load
   useEffect(() => {
     if (filteredSessions.length > 0 && selectedSessionId === null) {
-      setSelectedSessionId(filteredSessions[0].id);
+      setSelectedSessionId(filteredSessions[0].id); // first load only — 'lifetime' is sticky
     }
   }, [filteredSessions, selectedSessionId]);
 
   // Fetch session-specific scores when selectedSessionId changes
   useEffect(() => {
-    if (!selectedSessionId) {
+    if (!selectedSessionId || selectedSessionId === 'lifetime') {
       setSessionScores([]);
       return;
     }
@@ -189,13 +196,14 @@ export default function ProgressPage() {
   );
 
   // Choose which scores to display in the treemap
-  const treemapScores = selectedSessionId ? filteredSessionScores : filteredScores;
+  const treemapScores = selectedSessionId && selectedSessionId !== 'lifetime' ? filteredSessionScores : filteredScores;
 
-  const totalSessions = filteredSessions.length;
-  const completedSessions = filteredSessions.filter((s) => s.status === 'completed').length;
-  const totalExchanges = filteredSessions.reduce((sum, s) => sum + (s.exchange_count || 0), 0);
-  const allCoveredTasks = filteredSessions.flatMap((s) => s.acs_tasks_covered || []);
-  const uniqueTasksCovered = new Set(allCoveredTasks.map((t) => t.task_id)).size;
+  // W2.5 (bug 16): tiles + achievements use server aggregates; the 20-row
+  // session list remains only for the dropdown.
+  const totalSessions = lifetimeStats?.totalSessions ?? filteredSessions.length;
+  const completedSessions = lifetimeStats?.completedSessions ?? filteredSessions.filter((s) => s.status === 'completed').length;
+  const totalExchanges = lifetimeStats?.totalExchanges ?? filteredSessions.reduce((sum, s) => sum + (s.exchange_count || 0), 0);
+  const uniqueTasksCovered = lifetimeStats?.uniqueTasksCovered ?? new Set(filteredSessions.flatMap((s) => s.acs_tasks_covered || []).map((t) => t.task_id)).size;
   const attemptedElements = filteredScores.filter(s => s.total_attempts > 0).length;
   const totalElements = filteredScores.length;
 
@@ -424,11 +432,11 @@ export default function ProgressPage() {
               <div className="flex items-center gap-2">
                 <label className="font-mono text-xs text-c-muted uppercase tracking-wider">EXAM:</label>
                 <select
-                  value={selectedSessionId || ''}
-                  onChange={(e) => setSelectedSessionId(e.target.value || null)}
+                  value={selectedSessionId === 'lifetime' || !selectedSessionId ? 'lifetime' : selectedSessionId}
+                  onChange={(e) => setSelectedSessionId(e.target.value)}
                   className="bg-c-panel border border-c-border rounded-lg text-sm text-c-text font-mono px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber"
                 >
-                  <option value="">All Exams (Lifetime)</option>
+                  <option value="lifetime">All Exams (Lifetime)</option>
                   {filteredSessions.map((s) => (
                     <option key={s.id} value={s.id}>
                       {new Date(s.started_at).toLocaleDateString('en-US', {
