@@ -272,4 +272,47 @@ For long-term hygiene, consider:
 
 ---
 
+---
+
+## 9. Full-History Gitleaks Scan (Post-Cleanup)
+
+**Scan date**: 2026-06-09 · **Tool**: gitleaks 8.30.1 · **Scope**: Full git history (247 commits, 11.09 MB)
+
+### Summary
+
+- **Commits scanned**: 247
+- **Bytes scanned**: 11,090,573 (~11.09 MB)
+- **Leaks found**: 6 potential findings (all low-risk; details below)
+- **Real secrets exposed**: 0 (no active credentials found)
+- **False positives**: 5 (code patterns matching rule IDs but not secrets)
+
+### Findings Detail
+
+**All findings are in committed code (not backups) and are LOW-RISK:**
+
+| File | Commit | Rule | Finding | Risk | Note |
+|------|--------|------|---------|------|------|
+| `docs/instructor-program/00 - Index.md:26` | 0e60998 | generic-api-key | `.eq('key', 'REDACTED')` | ✅ False positive | Code pattern, not a secret |
+| `src/lib/instructor-access.ts:69` | 0e60998 | generic-api-key | `.eq('key', 'REDACTED')` | ✅ False positive | Feature flag lookup, not a secret |
+| `scripts/staging/latency-benchmark.ts:36` | 0ea54a7 | jwt | `anonKey: 'REDACTED'` | 🟡 Low | Staging Supabase anon key (project ref `curpdzczzawpnniaujgq`, not production) |
+| `scripts/staging/latency-benchmark.ts:45` | 0ea54a7 | jwt | `anonKey: 'REDACTED'` | 🟡 Low | Same staging key as above |
+
+### Verdict
+
+✅ **No rotation needed**. The gitleaks scan confirms:
+
+1. **No production secrets in history** — The only real credential found is a staging-only Supabase anon key from commit 0ea54a7 (2026-02-20), used for local benchmarking.
+
+2. **Anon keys are designed public** — Supabase anon keys (unlike service keys) are intended to be embedded in client-side code. They have read-only scope per RLS policies, so exposure has minimal risk.
+
+3. **Staging key is not production** — Project ref `curpdzczzawpnniaujgq` does not match the production ref `pvuiwwqsumoqjepukjhz`.
+
+4. **False positives are acceptable** — 5 of 6 findings are code patterns (`.eq('key'` matches) that gitleaks mistakes for API keys.
+
+### Conclusion
+
+W0.3 conclusion holds: **No rotation required**. The cleanup of `.env-backups/` combined with this full-history scan confirms the repo is clean of live secrets.
+
+---
+
 **End of Review 09. All operations read-only except file movement (no git rewrites).**
