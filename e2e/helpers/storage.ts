@@ -1,5 +1,19 @@
 import { type Page } from '@playwright/test';
 
+interface ConsentData {
+  analytics: boolean;
+  marketing: boolean;
+  timestamp: number;
+}
+
+interface DataLayerEvent extends Record<string, unknown> {
+  event?: string;
+}
+
+interface WindowWithDataLayer extends Window {
+  dataLayer?: Array<Record<string, unknown> | unknown[]>;
+}
+
 export async function clearConsentStorage(page: Page): Promise<void> {
   await page.evaluate(() => localStorage.removeItem('heydpe_consent'));
 }
@@ -9,7 +23,7 @@ export async function setConsentStorage(
   prefs: { analytics: boolean; marketing: boolean }
 ): Promise<void> {
   await page.evaluate(
-    (p) => localStorage.setItem('heydpe_consent', JSON.stringify({ ...p, timestamp: Date.now() })),
+    (p: { analytics: boolean; marketing: boolean }) => localStorage.setItem('heydpe_consent', JSON.stringify({ ...p, timestamp: Date.now() })),
     prefs
   );
 }
@@ -35,20 +49,22 @@ export async function getUTMStorage(page: Page): Promise<Record<string, string> 
 }
 
 export async function getDataLayer(page: Page): Promise<unknown[]> {
-  return page.evaluate(() => (window as any).dataLayer || []);
+  return page.evaluate(() => (window as WindowWithDataLayer).dataLayer || []);
 }
 
 export async function getDataLayerEvents(page: Page, eventName: string): Promise<Record<string, unknown>[]> {
   return page.evaluate(
-    (name) => ((window as any).dataLayer || []).filter((e: any) => e && e.event === name),
+    (name: string) => {
+      const dataLayer = (window as WindowWithDataLayer).dataLayer || [];
+      return dataLayer.filter((e): e is Record<string, unknown> => typeof e === 'object' && !Array.isArray(e) && e !== null && 'event' in e && e.event === name);
+    },
     eventName
   );
 }
 
 export async function getConsentUpdates(page: Page): Promise<unknown[]> {
-  return page.evaluate(() =>
-    ((window as any).dataLayer || []).filter(
-      (e: any) => e && e[0] === 'consent' && e[1] === 'update'
-    )
-  );
+  return page.evaluate(() => {
+    const dataLayer = (window as WindowWithDataLayer).dataLayer || [];
+    return dataLayer.filter((e): e is unknown[] => Array.isArray(e) && e[0] === 'consent' && e[1] === 'update');
+  });
 }

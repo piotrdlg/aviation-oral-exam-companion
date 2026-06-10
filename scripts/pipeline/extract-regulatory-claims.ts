@@ -371,5 +371,7 @@ async function main() {
 
 main().catch((err) => {
   console.error('Pipeline error:', err);
-  process.exit(1);
+  if (!process.env.VITEST) {
+    process.exit(1);
+  }
 });

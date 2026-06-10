@@ -46,8 +46,14 @@ next-env.d.ts
 sources/
 !sources/README.md
 
-# scripts artifacts
+# scripts artifacts & pycache
 scripts/__pycache__/
+**/__pycache__/
+
+# playwright test artifacts
+.playwright-mcp/
+playwright-report/
+test-results/
 
 # test/evidence screenshots (large PNGs, not source code)
 docs/screenshots/

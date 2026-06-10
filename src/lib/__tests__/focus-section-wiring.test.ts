@@ -11,6 +11,7 @@ interface TestElement {
   order_index: number;
   difficulty_default: 'easy' | 'medium' | 'hard';
   weight: number;
+  created_at: string;
 }
 
 function makeElement(code: string, opts?: Partial<TestElement>): TestElement {
@@ -24,6 +25,7 @@ function makeElement(code: string, opts?: Partial<TestElement>): TestElement {
     order_index: opts?.order_index ?? 0,
     difficulty_default: opts?.difficulty_default ?? 'medium',
     weight: opts?.weight ?? 1.0,
+    created_at: opts?.created_at ?? '2026-01-01T00:00:00Z',
   };
 }
 
