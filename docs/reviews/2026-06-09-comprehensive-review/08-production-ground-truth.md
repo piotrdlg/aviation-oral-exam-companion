@@ -82,7 +82,7 @@ Snapshot at 2026-06-09 20:47 UTC:
 | `element_attempts` | 1,634 | Stable | Per-element attempt records (avg 14 per session) |
 | `user_profiles` | 19 | Small cohort | 19 total users; **3 paying** (`dpe_live`/`active` with Stripe IDs — see corrected §4) |
 | `usage_logs` | 6,361 | Stable | API call logging across all events |
-| `latency_logs` | 1,508 | **Stale** | **Last entry Feb 2026; no June data** — instrumentation broken (Review 03 §12) |
+| `latency_logs` | 1,508 | Quiet | Newest row 2026-05-19; W0.5 verdict: instrumentation works, there has simply been zero voice traffic since (see §Facts item 4) |
 
 **Scale reality check vs CLAUDE.md claims:**
 - source_chunks: 4,674 ≠ "~10K+" — actual is 2.2x smaller
