@@ -93,12 +93,14 @@ async function countTotalOralElements(rating: string): Promise<number> {
 }
 
 /**
- * Load taxonomy fingerprints for ACS elements.
- * Path: acs_element.code → concepts.slug (acs:element:CODE) → concept_chunk_evidence → source_chunks → kb_chunk_taxonomy → kb_taxonomy_nodes.slug
+ * Load fingerprints for ACS elements.
  *
- * For efficiency, uses a single RPC-like join query:
- *   acs_elements → concepts (via matching slug pattern) → evidence → chunk taxonomy
- * Falls back gracefully to empty map if graph data unavailable.
+ * W5.1 / decision D4: the graph evidence-chain loader
+ * (concepts → concept_chunk_evidence → kb_chunk_taxonomy) was REMOVED — it
+ * never produced fingerprints in production (the slug-format bug meant zero
+ * concept matches), so structural fingerprints were always the real
+ * implementation. They are now the explicit one, until W5.3 replaces this
+ * layer with the element_adjacency table.
  */
 interface FingerprintLoadResult {
   fingerprints: TaxonomyFingerprints;
@@ -114,133 +116,9 @@ async function loadTaxonomyFingerprints(
   };
   if (elementCodes.length === 0) return emptyResult;
 
-  const fingerprints: TaxonomyFingerprints = new Map();
-
-  try {
-    // Build a map of element_code → concept_id by matching ACS element concepts
-    // ACS element concepts have slugs like "acs:element:pa-i-a-k1" (lowercase, hyphenated)
-    const slugPatterns = elementCodes.map(code =>
-      `acs:element:${code.toLowerCase().replace(/\./g, '-')}`
-    );
-
-    // Batch fetch: concept IDs for these slugs
-    const { data: concepts } = await supabase
-      .from('concepts')
-      .select('id, slug')
-      .in('slug', slugPatterns);
-
-    if (concepts && concepts.length > 0) {
-      const slugToCode = new Map<string, string>();
-      for (const code of elementCodes) {
-        const slug = `acs:element:${code.toLowerCase().replace(/\./g, '-')}`;
-        slugToCode.set(slug, code);
-      }
-
-      const conceptIdToCode = new Map<string, string>();
-      for (const c of concepts) {
-        const code = slugToCode.get(c.slug);
-        if (code) conceptIdToCode.set(c.id, code);
-      }
-
-      if (conceptIdToCode.size > 0) {
-        // Fetch evidence chunk IDs for these concepts
-        const conceptIds = [...conceptIdToCode.keys()];
-        const { data: evidence } = await supabase
-          .from('concept_chunk_evidence')
-          .select('concept_id, chunk_id')
-          .in('concept_id', conceptIds);
-
-        if (evidence && evidence.length > 0) {
-          // Build concept → chunk_ids map
-          const conceptChunks = new Map<string, string[]>();
-          for (const ev of evidence) {
-            const chunks = conceptChunks.get(ev.concept_id) || [];
-            chunks.push(ev.chunk_id);
-            conceptChunks.set(ev.concept_id, chunks);
-          }
-
-          // Fetch taxonomy assignments for these chunks
-          const allChunkIds = [...new Set(evidence.map(e => e.chunk_id))];
-          const taxonomyMap = new Map<string, string>();
-          for (let i = 0; i < allChunkIds.length; i += 500) {
-            const batch = allChunkIds.slice(i, i + 500);
-            const { data: taxRows } = await supabase
-              .from('kb_chunk_taxonomy')
-              .select('chunk_id, taxonomy_node_id')
-              .in('chunk_id', batch);
-
-            if (taxRows) {
-              for (const row of taxRows) {
-                taxonomyMap.set(row.chunk_id, row.taxonomy_node_id);
-              }
-            }
-          }
-
-          // Fetch taxonomy node slugs
-          const taxNodeIds = [...new Set(taxonomyMap.values())];
-          const taxSlugMap = new Map<string, string>();
-          if (taxNodeIds.length > 0) {
-            for (let i = 0; i < taxNodeIds.length; i += 500) {
-              const batch = taxNodeIds.slice(i, i + 500);
-              const { data: nodes } = await supabase
-                .from('kb_taxonomy_nodes')
-                .select('id, slug')
-                .in('id', batch);
-
-              if (nodes) {
-                for (const node of nodes) {
-                  taxSlugMap.set(node.id, node.slug);
-                }
-              }
-            }
-          }
-
-          // Build final fingerprints: element_code → Set<taxonomy_slug>
-          for (const [conceptId, code] of conceptIdToCode) {
-            const chunkIds = conceptChunks.get(conceptId) || [];
-            const slugs = new Set<string>();
-            for (const chunkId of chunkIds) {
-              const taxNodeId = taxonomyMap.get(chunkId);
-              if (taxNodeId) {
-                const taxSlug = taxSlugMap.get(taxNodeId);
-                if (taxSlug && !taxSlug.includes('triage-unclassified')) {
-                  slugs.add(taxSlug);
-                }
-              }
-            }
-            if (slugs.size > 0) {
-              fingerprints.set(code, slugs);
-            }
-          }
-        }
-      }
-    }
-  } catch (err) {
-    console.error('Taxonomy fingerprint loading failed (non-critical):', err instanceof Error ? err.message : err);
-  }
-
-  // If evidence chain produced fingerprints, return them
-  if (fingerprints.size > 0) {
-    const stats = computeFingerprintStats(elementCodes, fingerprints);
-    return {
-      fingerprints,
-      meta: {
-        source: 'evidence_chain',
-        elementCount: elementCodes.length,
-        fingerprintCount: stats.elementsWithFingerprints,
-        coveragePercent: stats.coveragePercent,
-        uniqueSlugs: stats.uniqueSlugs,
-      },
-    };
-  }
-
-  // Fallback: use structural fingerprints built from ACS area keyword overlap
   const structural = buildStructuralFingerprints(elementCodes);
   if (structural.size > 0) {
     const stats = computeFingerprintStats(elementCodes, structural);
-    console.log(
-      `Taxonomy fingerprints: using structural fallback (${stats.elementsWithFingerprints}/${stats.totalElements} elements, ${stats.uniqueSlugs} unique slugs)`
-    );
     return {
       fingerprints: structural,
       meta: {

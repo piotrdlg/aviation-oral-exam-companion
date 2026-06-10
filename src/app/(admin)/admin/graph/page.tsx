@@ -45,6 +45,13 @@ export default function GraphPage() {
 
   return (
     <div className="-mx-6 -mt-8 h-[calc(100vh-44px)] flex flex-col">
+      {/* W5.1 / D4: the graph left the exam runtime — this explorer is an archive */}
+      <div className="px-6 py-2 bg-c-amber/10 border-b border-c-amber/30 flex-shrink-0">
+        <p className="font-mono text-[11px] text-c-amber tracking-wide">
+          &#9888; ARCHIVED EXPERIMENT &mdash; not used in the exam path since 2026-06 (decision D4).
+          Non-linear exams are delivered by the Scenario Engine. See docs/plans/2026-06-09-scenario-engine-design.md.
+        </p>
+      </div>
       {/* ── Page header + tab bar ─────────────────────────────────── */}
       <div className="flex items-center justify-between px-6 border-b border-c-border bg-c-panel flex-shrink-0">
         <h1 className="font-mono text-sm font-bold text-c-amber glow-a uppercase tracking-widest py-3">

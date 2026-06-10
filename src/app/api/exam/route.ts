@@ -723,7 +723,6 @@ export async function POST(request: NextRequest) {
         fetchRagContext(respondTask, history, studentAnswer, 5, {
           systemConfig: config,
           timing,
-          elementCode: currentElementCode,
         }),
       ]);
       const studentTranscriptId = studentTranscriptResult.data?.id ?? null;

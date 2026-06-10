@@ -268,9 +268,7 @@ async function collectSnapshot(): Promise<SnapshotResult> {
     'get_images_for_chunks',
     'get_element_scores',
     'get_session_element_scores',
-    'get_related_concepts',
-    'hybrid_search',
-    'get_concept_bundle',
+    'get_concept_bundle',  // archive: admin explorer + weak-area report (hybrid_search/get_related_concepts dropped by W5.1)
     'get_uncovered_acs_tasks',
     'get_orphan_concepts',
   ];

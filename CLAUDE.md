@@ -102,7 +102,6 @@ src/
 │   ├── voice/                      # Provider factory, sentence boundary, tier lookup, usage
 │   │   └── tts/                    # Deepgram (primary) + OpenAI (fallback) adapters
 │   ├── rag-retrieval.ts            # Hybrid vector + FTS search
-│   ├── graph-retrieval.ts          # Knowledge graph traversal
 │   ├── rag-filters.ts              # Metadata filter inference
 │   ├── asset-selector.ts           # Semantic image/text scoring
 │   ├── instructor-*.ts             # 12 instructor program modules
@@ -228,11 +227,9 @@ Only 9 of 12 ACS areas are used for oral exam simulation. Areas IV (Takeoffs/Lan
 | `ticket_replies` | Support conversation threads | Admin-only |
 | `subscription_events` | Idempotent Stripe event log | Service-only |
 
-### RPC Functions (8)
+### RPC Functions
 
 - **`is_admin()`** — Admin check helper for RLS policies
-- **`hybrid_search()`** — Concept vector + FTS + exact match search (60/40 weighting)
-- **`get_related_concepts()`** — Recursive CTE graph traversal (up to depth 3)
 - **`get_uncovered_acs_tasks()`** — Find ACS tasks not yet satisfactorily covered in a session
 - **`chunk_hybrid_search()`** — RAG chunk retrieval (vector 65% + FTS 35%, doc type/abbreviation filters)
 - **`get_images_for_chunks()`** — Image retrieval linked to RAG chunks with public URLs
@@ -332,7 +329,7 @@ npm run typecheck   # TypeScript type checking
 |----------|----------|
 | Core exam | exam-logic, exam-plan, exam-result, difficulty-contract, depth-profile |
 | Voice stack | voice-stack-contract, voice-usage, voice-telemetry, deepgram-tts, sentence-boundary |
-| RAG & retrieval | rag-filters (32+ tests), image-retrieval, asset-selector, graph-retrieval, citation-relevance |
+| RAG & retrieval | rag-filters (32+ tests), image-retrieval, asset-selector, citation-relevance |
 | Instructor (15 files) | access, entitlements, verification, identity, insights, kpis, quotas, fraud, referrals, connections |
 | System | timing, ttl-cache, email, analytics, browser-detect, csp-config, rate-limit, utm |
 | Persona | persona-contract, examiner-profile, transition-explanation, rating-parity |
@@ -357,7 +354,7 @@ npm run typecheck   # TypeScript type checking
 
 ## Known Limitations / Future Work
 
-- **Knowledge graph behind feature flag** — ~24K concepts + edges populated. Enhanced retrieval behind `graph.enhanced_retrieval` flag; shadow mode available for testing.
+- **Knowledge graph ARCHIVED (W5.1 / decision D4, 2026-06-10)** — the graph left the exam runtime; `hybrid_search`/`get_related_concepts` RPCs dropped; `concepts`/`concept_relations` data + admin explorer remain read-only archive. Non-linear exams are delivered by the **Scenario Engine** (`docs/plans/2026-06-09-scenario-engine-design.md`), gated behind `exam.scenario_engine` and two proof gates.
 - **Transcript persistence active** — `session_transcripts` + `element_attempts` tables populated via exam engine.
 - **Latency logging active** — `latency_logs` populated with per-exchange timing spans via `src/lib/timing.ts`.
 - **STT Chrome-primary** — Deepgram Nova-3 WebSocket STT works cross-browser. Legacy Web Speech API was Chrome-only.
