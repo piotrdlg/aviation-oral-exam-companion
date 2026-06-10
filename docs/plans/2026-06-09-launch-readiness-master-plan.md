@@ -571,6 +571,14 @@ Repo: aviation-oral-exam-companion. Read docs/reviews/2026-06-09-comprehensive-r
 
 # PHASE 4 — Voice Stack Hardening (parallel with Phase 5)
 
+> **Status 2026-06-10: ✅ PHASE COMPLETE — executed hands-on by Fable 5, deployed to production.**
+> PRs #19–#21 (W4.1–W4.3), each CI-green and squash-merged; migration `20260610000007` applied. Closes review-04 #1, #3–#5, #7–#9, #12–#14 (+#11 done in W3.2). Tests 1,295 → 1,311.
+> - **W4.1 reliability pack** (PR #19): TTS fallback chain now wraps the synthesize() CALL (was import-only — runtime failures 500'd and skipped the sentence); 8s timeout + 1 transient retry on Deepgram, 10s on OpenAI; sentence-boundary terminal-decimal fix ("…on 121.5. What…" now splits — the window check could ONLY ever block legitimate boundaries since candidates require trailing whitespace); STT mid-session reconnect (2 cycles, cached token, hot-mic released on exhaustion); Safari audio/mp4 probe + recorder-failure rejection + 10s connect timeout; OpenAI fallback tts-1→gpt-4o-mini-tts (lazy client); /api/tts maxDuration=30.
+> - **W4.2 Aura-2 commit, D2** (PR #20): deleted cartesia-tts.ts, useStreamingPlayer.ts, CartesiaTTSConfig/'cartesia'/'pcm_f32le' types, browser-detect.supportsSpeechRecognition, kill_switch.cartesia toggle, admin/tts Cartesia section, api.cartesia.ai from CSP. KEPT: the PCM worklet file — review-04 wrongly called it unreferenced; the admin-only VoiceLab uses it. Claims truth pass: pricing "premium TTS" line + CLAUDE.md voice rows + CARTESIA_API_KEY env row. Inert tts.cartesia/kill_switch.cartesia config rows left for W6.4.
+> - **W4.3 STT accuracy + latency** (PR #21): 43-term aviation keyterm list on every STT URL (Nova-3 keyterm prompting) — **live-verified handshake** against Deepgram with a real JWT before merge (the NOVA-2-era keywords= attempt broke production handshakes; that's the regression class guarded). Measured on synthetic Aura-2 audio (lower bound): term recall 77%→91%, WER 6.1%→4.8% (`scripts/eval/stt-aviation-accuracy.ts`). TTS monthly-quota RPC was per-sentence — now 60s/user cache with local advance (auth deliberately uncached: security boundary). Flux pilot behind `stt.flux_pilot` (seeded OFF): /v2/listen + TurnInfo client schema, webm/opus confirmed compatible, both URLs live-verified.
+> - **Deliberate scope choices:** MP3/HTMLAudioElement playback architecture untouched (March incident class); admin VoiceLab untouched; no auth caching.
+> - **Owner manual checks (when convenient):** Chrome + macOS Safari + iOS Safari full voice exchange; mid-answer Wi-Fi toggle (expect retry indicator → reconnect, mic OFF after 2 failed cycles); sentence ending in a frequency speaks promptly. Flux: trial via `stt.flux_pilot` on your own account first.
+
 > Read order: `docs/reviews/2026-06-09-comprehensive-review/04-voice-stack.md` in full.
 
 ### Task W4.1: Voice reliability pack
