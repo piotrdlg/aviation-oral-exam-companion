@@ -145,6 +145,7 @@ export default function PracticePage() {
     difficulty_preference: string;
     aircraft_class: string;
     metadata: Record<string, unknown>;
+    acs_tasks_covered?: { task_id: string; status: string; attempts?: number }[];
   } | null>(null);
   const [preferredVoiceEnabled, setPreferredVoiceEnabled] = useState(true);
   // Exam results modal state
@@ -1470,7 +1471,16 @@ export default function PracticePage() {
     setPlannerState(metadata.plannerState);
     setExchangeCount(session.exchange_count || 0);
     setResumableSession(null);
+    // W2.4 (bug 10): seed coverage from the stored session so the first
+    // post-resume update can never wipe the accumulated history (the server
+    // also merges now — this keeps the client's own view complete).
     taskScoresRef.current = {};
+    for (const t of session.acs_tasks_covered ?? []) {
+      taskScoresRef.current[t.task_id] = {
+        score: (t.status as 'satisfactory' | 'unsatisfactory' | 'partial') || 'partial',
+        attempts: t.attempts ?? 1,
+      };
+    }
 
     try {
       // Mark session as active (in case it was paused)

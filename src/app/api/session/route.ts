@@ -120,7 +120,24 @@ export async function POST(request: NextRequest) {
 
     const updateData: Record<string, unknown> = {};
     if (status) updateData.status = status;
-    if (acs_tasks_covered) updateData.acs_tasks_covered = acs_tasks_covered;
+    if (acs_tasks_covered) {
+      // W2.4 (bug 10): MERGE with the stored set — never replace/shrink.
+      // A freshly-resumed client only knows about tasks seen since resume;
+      // a full replace wiped the session's earlier coverage history.
+      type CoveredEntry = { task_id: string; status?: string; attempts?: number };
+      const { data: existingRow } = await supabase
+        .from('exam_sessions')
+        .select('acs_tasks_covered')
+        .eq('id', sessionId)
+        .eq('user_id', user.id)
+        .single();
+      const existing = (existingRow?.acs_tasks_covered as CoveredEntry[] | null) || [];
+      const merged = new Map(existing.map((e) => [e.task_id, e]));
+      for (const e of acs_tasks_covered as CoveredEntry[]) {
+        merged.set(e.task_id, e); // incoming entry wins for the same task
+      }
+      updateData.acs_tasks_covered = [...merged.values()];
+    }
     if (exchange_count !== undefined) updateData.exchange_count = exchange_count;
 
     // Grade the exam when completing

@@ -628,8 +628,20 @@ export async function POST(request: NextRequest) {
 
       timing.start('exchange.total');
 
-      // Calculate exchange number from history length
-      const exchangeNumber = Math.floor(history.length / 2) + 1;
+      // W2.4 (bug 14): exchange number derived server-side from the stored
+      // transcript (MAX+1), identically for respond and next-task — client
+      // history length drifted after transitions/resume and broke ordering.
+      let exchangeNumber = Math.floor(history.length / 2) + 1; // legacy fallback (no session)
+      if (sessionId) {
+        const { data: maxRow } = await serviceSupabase
+          .from('session_transcripts')
+          .select('exchange_number')
+          .eq('session_id', sessionId)
+          .order('exchange_number', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        exchangeNumber = (maxRow?.exchange_number ?? -1) + 1;
+      }
 
       // Step 1: Persist student transcript + fetch RAG in parallel
       timing.start('rag.total');
@@ -1173,11 +1185,15 @@ export async function POST(request: NextRequest) {
         }
 
         if (sessionId) {
-          const { count } = await supabase
+          // W2.4 (bug 14): MAX+1, not row-count+1 (rows per exchange vary)
+          const { data: maxRow } = await serviceSupabase
             .from('session_transcripts')
-            .select('*', { count: 'exact', head: true })
-            .eq('session_id', sessionId);
-          const exchangeNumber = (count || 0) + 1;
+            .select('exchange_number')
+            .eq('session_id', sessionId)
+            .order('exchange_number', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          const exchangeNumber = (maxRow?.exchange_number ?? -1) + 1;
 
           await supabase.from('session_transcripts').insert({
             session_id: sessionId,
@@ -1239,11 +1255,15 @@ export async function POST(request: NextRequest) {
 
       // Persist examiner transition to transcript
       if (sessionId) {
-        const { count } = await supabase
+        // W2.4 (bug 14): MAX+1, not row-count+1 (rows per exchange vary)
+        const { data: maxRow } = await serviceSupabase
           .from('session_transcripts')
-          .select('*', { count: 'exact', head: true })
-          .eq('session_id', sessionId);
-        const exchangeNumber = (count || 0) + 1;
+          .select('exchange_number')
+          .eq('session_id', sessionId)
+          .order('exchange_number', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        const exchangeNumber = (maxRow?.exchange_number ?? -1) + 1;
 
         await supabase.from('session_transcripts').insert({
           session_id: sessionId,

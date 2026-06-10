@@ -482,6 +482,36 @@ describe('update — grading', () => {
     expect(body.ok).toBe(true);
     expect(body.result).toBeNull();
   });
+
+  it('W2.4: MERGES acs_tasks_covered with the stored set — never shrinks it', async () => {
+    // Stored session already covered two tasks; a resumed client reports only one
+    const existingQ = q({
+      data: {
+        acs_tasks_covered: [
+          { task_id: 'PA.I.A', status: 'satisfactory', attempts: 2 },
+          { task_id: 'PA.II.B', status: 'partial', attempts: 1 },
+        ],
+      },
+    });
+    const updateQ = q({ data: null });
+    mocks.userFrom.mockReturnValueOnce(existingQ).mockReturnValueOnce(updateQ);
+
+    const res = await POST(postReq({
+      action: 'update',
+      sessionId: 'sess-7',
+      acs_tasks_covered: [
+        { task_id: 'PA.II.B', status: 'satisfactory', attempts: 2 }, // upgraded
+        { task_id: 'PA.III.A', status: 'partial', attempts: 1 },     // new
+      ],
+    }));
+    expect(res.status).toBe(200);
+    const upd = updateQ.update.mock.calls[0][0];
+    const covered = upd.acs_tasks_covered as Array<{ task_id: string; status: string }>;
+    const byTask = Object.fromEntries(covered.map((c) => [c.task_id, c.status]));
+    expect(Object.keys(byTask).sort()).toEqual(['PA.I.A', 'PA.II.B', 'PA.III.A']);
+    expect(byTask['PA.I.A']).toBe('satisfactory');   // preserved from store
+    expect(byTask['PA.II.B']).toBe('satisfactory');  // incoming wins
+  });
 });
 
 // ================================================================
