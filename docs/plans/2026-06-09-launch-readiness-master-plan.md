@@ -294,6 +294,16 @@ Note in the PR: the owner must create a free Upstash database and set the two en
 
 # PHASE 2 — Exam Engine Correctness (the heart of the product)
 
+> **Status 2026-06-10: ✅ PHASE COMPLETE — executed hands-on by Fable 5, deployed to production.**
+> PRs #8–#13 (W2.1–W2.6), each CI-green and squash-merged; migration `20260610000003` applied to production (anon-guard verified intact post-replace). All 20 confirmed bugs + 5 architecture risks from review 02 closed:
+> - **W2.1** server-owned exam state in `exam_sessions.metadata`; live planner advancement (`shouldAdvanceElement` rides the assessment SSE event → client triggers server-validated next-task); resume-current fixed; enforce-one-active-exam verify-before-write; all metadata writes read-merge-write.
+> - **W2.2** `ungraded` state for infrastructure failures (never fake 'partial'); element-code validation vs the task's real codes; separated attempt/mention writes; examiner transcript persists independently of assessment; prompt-cache + content[0] guards.
+> - **W2.3** V2 canonical (V1 grade derived via `v2ToV1Grade`); ordered deterministic dedupe; plan-filtered ≤100% math (200-trial property test); mention credit only on satisfactory; grading waits for the final exchange's background writes; shared `PARTIAL_CREDIT`.
+> - **W2.4** coverage merges (never shrinks) server-side + client seeds from store on resume; exchange numbers = server-side MAX+1 on every path.
+> - **W2.5** lifetime treemap selectable ('lifetime' sentinel); server-side `action=stats` aggregates; abandoned/expired excluded from lifetime scores (migration, W1.1 guard preserved); oral-area exclusion enforced in queue + plan sizing.
+> - **W2.6** regression harness: in-memory DB fake drives the REAL routes + REAL planner through a full exam (advancement, completion, write integrity, resume, follow-up policy) in CI; `examiner_assessment_mismatch` telemetry added.
+> Tests: 1,243 → 1,275. Incident note: GitHub push protection blocked one push (leftover local dev script with a hardcoded DB credential) — file deleted, `scripts/_dev/` gitignored, secret never reached the remote.
+
 > Read order for every agent in this phase: `docs/reviews/2026-06-09-comprehensive-review/02-exam-engine-grading.md` in full.
 
 ### Task W2.1: Server-side exam state ownership (the root-cause refactor)
