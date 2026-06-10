@@ -31,6 +31,10 @@ export interface EnforcementResult {
 /**
  * Enforce that only one exam session is active per user at a time.
  *
+ * ⚠️  SECURITY REQUIREMENT: The caller MUST verify that examSessionId belongs
+ * to the authenticated user (via RLS check on exam_sessions table) before calling
+ * this function. See src/app/api/exam/route.ts POST handler ownership check.
+ *
  * For the `start` action:
  * 1. Check for other active exam sessions for this user
  * 2. If found: pause the other exam, clear its active flag
@@ -50,6 +54,8 @@ export async function enforceOneActiveExam(
 ): Promise<EnforcementResult & { rejected?: boolean }> {
   // Upsert the current session's active_sessions row (device tracking)
   // The UNIQUE constraint is on (user_id, session_token_hash), so onConflict must match
+  // The examSessionId MUST be verified as owned by userId before this call
+  // to prevent IDOR writes to other users' exam_sessions (W1.3).
   await serviceSupabase
     .from('active_sessions')
     .upsert(

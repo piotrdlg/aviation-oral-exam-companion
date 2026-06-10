@@ -1,12 +1,21 @@
 /**
- * In-memory sliding window rate limiter.
+ * Distributed sliding window rate limiter with Upstash Redis fallback.
  *
- * Suitable for single-region Vercel deployment. For production scale with
- * multiple regions, migrate to Upstash Redis.
+ * When UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are configured:
+ * - Uses Upstash Redis for distributed rate limiting (works across Vercel instances)
+ * - Suitable for production serverless deployments
  *
- * NOTE: In-memory state resets on Lambda cold starts. This is acceptable for
- * abuse prevention but should not be relied upon for billing enforcement.
+ * When Redis env vars are missing:
+ * - Falls back to in-memory limiter (with console.warn)
+ * - Suitable for local development and testing
+ * - Per-instance state resets on Lambda cold starts
+ *
+ * NOTE: The owner must create a free Upstash database and set env vars in Vercel
+ * for this to provide protection; until then behavior is unchanged with a warning.
  */
+
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
 
 interface RateLimitEntry {
   timestamps: number[];
@@ -46,47 +55,74 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig & { keyType: 'us
   '/api/admin': { limit: 60, windowMs: 60_000, keyType: 'user' },
 };
 
-// Global in-memory store. Entries are keyed by `route:identifier`.
-const store = new Map<string, RateLimitEntry>();
+// Fallback in-memory store when Redis is unavailable
+const memoryStore = new Map<string, RateLimitEntry>();
 
-// Periodic cleanup interval (every 5 minutes)
+// Cleanup interval for memory store
 let cleanupInterval: ReturnType<typeof setInterval> | null = null;
 
-function startCleanup() {
+// Initialize Upstash client if Redis env vars are configured
+let redisClient: Redis | null = null;
+let hasWarnedAboutMissingRedis = false;
+
+function initRedisClient(): Redis | null {
+  if (redisClient) return redisClient;
+
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (!url || !token) {
+    if (!hasWarnedAboutMissingRedis && typeof process !== 'undefined') {
+      hasWarnedAboutMissingRedis = true;
+      console.warn(
+        '[rate-limit] UPSTASH_REDIS_REST_URL/TOKEN not configured. ' +
+        'Using in-memory fallback (ineffective across Lambda instances). ' +
+        'See docs/SECURITY-FIX-W1.4.md for setup instructions.'
+      );
+    }
+    return null;
+  }
+
+  try {
+    redisClient = new Redis({ url, token });
+    return redisClient;
+  } catch (err) {
+    console.error('[rate-limit] Failed to initialize Redis client:', err);
+    return null;
+  }
+}
+
+function startMemoryCleanup() {
   if (cleanupInterval) return;
   cleanupInterval = setInterval(() => {
     const now = Date.now();
-    // Find the max window across all configs to determine stale threshold
     const maxWindow = Math.max(...Object.values(RATE_LIMIT_CONFIGS).map((c) => c.windowMs));
     const threshold = now - maxWindow * 2;
 
-    for (const [key, entry] of store.entries()) {
-      // Remove entries where all timestamps are older than 2x the max window
+    for (const [key, entry] of memoryStore.entries()) {
       if (entry.timestamps.length === 0 || entry.timestamps[entry.timestamps.length - 1] < threshold) {
-        store.delete(key);
+        memoryStore.delete(key);
       }
     }
   }, 5 * 60_000);
 
-  // Don't prevent process exit
   if (typeof cleanupInterval === 'object' && 'unref' in cleanupInterval) {
     cleanupInterval.unref();
   }
 }
 
 /**
- * Check and consume a rate limit token for the given route and identifier.
+ * Check and consume a rate limit token using Redis if available, otherwise in-memory.
  *
  * @param route - The API route path (e.g., '/api/exam')
  * @param identifier - User ID or IP address
  * @returns Rate limit result
  */
-export function checkRateLimit(route: string, identifier: string): RateLimitResult {
-  // Find matching config — check exact match first, then prefix match for /api/admin/*
+export async function checkRateLimit(route: string, identifier: string): Promise<RateLimitResult> {
+  // Find matching config
   let config = RATE_LIMIT_CONFIGS[route];
   let matchedPattern = route;
   if (!config) {
-    // Check prefix matches (e.g., /api/admin/users matches /api/admin)
     for (const [pattern, cfg] of Object.entries(RATE_LIMIT_CONFIGS)) {
       if (route.startsWith(pattern)) {
         config = cfg;
@@ -101,27 +137,83 @@ export function checkRateLimit(route: string, identifier: string): RateLimitResu
     return { allowed: true, remaining: Infinity, limit: Infinity, resetAt: 0 };
   }
 
-  startCleanup();
-
-  // Use the matched config pattern (not the full dynamic path) as the bucket key
-  // so /api/admin/users/abc and /api/admin/users/xyz share one bucket per user
   const key = `${matchedPattern}:${identifier}`;
+
+  // Try Redis first if configured
+  const redis = initRedisClient();
+  if (redis) {
+    return checkRateLimitRedis(redis, matchedPattern, identifier, key, config);
+  }
+
+  // Fallback to in-memory
+  return checkRateLimitMemory(key, config);
+}
+
+// One Ratelimit instance per route pattern (each pattern has its own
+// limit/window). @upstash/ratelimit's sliding window runs as a single
+// atomic Redis script — one round trip per check, no race conditions.
+const ratelimiters = new Map<string, Ratelimit>();
+
+function getRatelimiter(pattern: string, config: RateLimitConfig, redis: Redis): Ratelimit {
+  let rl = ratelimiters.get(pattern);
+  if (!rl) {
+    rl = new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(config.limit, `${config.windowMs} ms`),
+      prefix: `rl:${pattern}`,
+    });
+    ratelimiters.set(pattern, rl);
+  }
+  return rl;
+}
+
+/**
+ * Check rate limit using Upstash Redis (atomic sliding window via @upstash/ratelimit).
+ */
+async function checkRateLimitRedis(
+  redis: Redis,
+  pattern: string,
+  identifier: string,
+  memoryKey: string,
+  config: RateLimitConfig
+): Promise<RateLimitResult> {
+  try {
+    const rl = getRatelimiter(pattern, config, redis);
+    const result = await rl.limit(identifier);
+    return {
+      allowed: result.success,
+      remaining: result.remaining,
+      limit: result.limit,
+      resetAt: result.reset,
+    };
+  } catch (err) {
+    console.error('[rate-limit] Redis operation failed:', err);
+    // Graceful degradation: fall back to in-memory on Redis error
+    return checkRateLimitMemory(memoryKey, config);
+  }
+}
+
+/**
+ * Check rate limit using in-memory sliding window (fallback).
+ */
+function checkRateLimitMemory(key: string, config: RateLimitConfig): RateLimitResult {
+  startMemoryCleanup();
+
   const now = Date.now();
   const windowStart = now - config.windowMs;
 
   // Get or create entry
-  let entry = store.get(key);
+  let entry = memoryStore.get(key);
   if (!entry) {
     entry = { timestamps: [] };
-    store.set(key, entry);
+    memoryStore.set(key, entry);
   }
 
-  // Remove expired timestamps (outside the sliding window)
+  // Remove expired timestamps
   entry.timestamps = entry.timestamps.filter((t) => t > windowStart);
 
   // Check limit
   if (entry.timestamps.length >= config.limit) {
-    // Rate limited — calculate when the oldest request in the window expires
     const oldestInWindow = entry.timestamps[0];
     const resetAt = oldestInWindow + config.windowMs;
 
@@ -162,8 +254,8 @@ export function getRateLimitConfig(route: string): (RateLimitConfig & { keyType:
 }
 
 /**
- * Reset the rate limit store. Primarily used for testing.
+ * Reset the in-memory store. Primarily used for testing.
  */
 export function resetRateLimitStore(): void {
-  store.clear();
+  memoryStore.clear();
 }

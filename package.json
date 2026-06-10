@@ -92,6 +92,8 @@
     "@react-email/components": "^1.0.8",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.95.3",
+    "@upstash/ratelimit": "^2.0.4",
+    "@upstash/redis": "^1.34.1",
     "ai": "^6.0.86",
     "next": "16.1.6",
     "openai": "^6.22.0",

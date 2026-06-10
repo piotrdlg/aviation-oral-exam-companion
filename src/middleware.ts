@@ -4,8 +4,11 @@ import { checkRateLimit, getRateLimitConfig } from '@/lib/rate-limit';
 
 export async function middleware(request: NextRequest) {
   // E2E test bypass: skip Supabase auth so Playwright can mock APIs client-side.
-  // Only active when the dev server is started with PLAYWRIGHT_TEST=1.
-  if (process.env.PLAYWRIGHT_TEST === '1') {
+  // Only active when: (1) PLAYWRIGHT_TEST=1 AND (2) NOT in production environment
+  // Prevents accidental bypass if env var leaks to production.
+  const isProductionEnv = process.env.NEXT_PUBLIC_APP_ENV === 'production'
+    || process.env.VERCEL_ENV === 'production';
+  if (process.env.PLAYWRIGHT_TEST === '1' && !isProductionEnv) {
     return NextResponse.next({ request });
   }
 
@@ -49,7 +52,7 @@ export async function middleware(request: NextRequest) {
         }
       }
 
-      const result = checkRateLimit(pathname, identifier);
+      const result = await checkRateLimit(pathname, identifier);
       if (!result.allowed) {
         return NextResponse.json(
           { error: 'rate_limited', message: 'Too many requests. Please try again shortly.' },
