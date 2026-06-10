@@ -594,6 +594,9 @@ export function initPlannerState(queue: string[]): PlannerState {
  *   - satisfactory: score_percentage >= 70%
  *   - unsatisfactory: score_percentage < 70%
  */
+/** Partial-credit weight shared by ALL grading surfaces (engine, V2, readiness). */
+export const PARTIAL_CREDIT = 0.7;
+
 export function computeExamResult(
   attempts: Array<{ element_code: string; score: 'satisfactory' | 'unsatisfactory' | 'partial'; area: string }>,
   totalElementsInSet: number,
@@ -630,8 +633,8 @@ export function computeExamResult(
   const elementsPartial = uniqueAttempts.filter(a => a.score === 'partial').length;
   const elementsNotAsked = Math.max(0, totalElementsInSet - elementsAsked);
 
-  // Point-based scoring: sat=1.0, partial=0.7, unsat=0
-  const pointsEarned = elementsSatisfactory * 1.0 + elementsPartial * 0.7;
+  // Point-based scoring: sat=1.0, partial=PARTIAL_CREDIT, unsat=0
+  const pointsEarned = elementsSatisfactory * 1.0 + elementsPartial * PARTIAL_CREDIT;
   const pointsPossible = elementsAsked; // 1.0 per element asked
   const scorePercentage = pointsPossible > 0
     ? Math.round((pointsEarned / pointsPossible) * 100) / 100

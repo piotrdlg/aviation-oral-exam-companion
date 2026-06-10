@@ -130,13 +130,33 @@ export async function POST(request: NextRequest) {
       try {
         const { computeExamResult } = await import('@/lib/exam-logic');
 
-        // Load scored element attempts for this session
+        // W2.3 (bug 19): the last exchange's assessment + attempts are written
+        // in a background after() — don't grade until the latest student
+        // transcript has its assessment (retry up to 3x at 1.5s).
+        for (let i = 0; i < 3; i++) {
+          const { data: lastStudent } = await supabase
+            .from('session_transcripts')
+            .select('assessment')
+            .eq('session_id', sessionId)
+            .eq('role', 'student')
+            .order('exchange_number', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (!lastStudent || lastStudent.assessment) break;
+          await new Promise((r) => setTimeout(r, 1500));
+        }
+
+        // Load scored element attempts for this session.
+        // W2.3 (bug 11): explicit chronological order — "last write wins"
+        // dedupe in the graders depends on it; unordered reads made grades
+        // nondeterministic.
         const { data: attempts } = await supabase
           .from('element_attempts')
           .select('element_code, score')
           .eq('session_id', sessionId)
           .eq('tag_type', 'attempt')
-          .not('score', 'is', null);
+          .not('score', 'is', null)
+          .order('created_at', { ascending: true });
 
         // Load the planner state to determine total elements in the exam set
         const { data: examRow } = await supabase
@@ -158,22 +178,25 @@ export async function POST(request: NextRequest) {
           // Use planner queue length if available, otherwise fall back to number of attempts
           const effectiveTotal = totalElements > 0 ? totalElements : attemptData.length;
           const result = computeExamResult(attemptData, effectiveTotal, 'user_ended');
-          updateData.result = result;
 
-          // V2 grading: plan-based denominator + per-area gating
+          // V2 grading: plan-based denominator + per-area gating.
+          // W2.3: V2 is CANONICAL — when a plan exists, the V1 grade label is
+          // derived from the V2 outcome so badge and modal always agree.
           const examPlan = (examRow?.metadata as Record<string, unknown>)?.examPlan as import('@/lib/exam-plan').ExamPlanV1 | undefined;
           const examSessionConfig = (examRow?.metadata as Record<string, unknown>)?.sessionConfig as { rating?: string } | undefined;
           if (examPlan) {
-            const { computeExamResultV2 } = await import('@/lib/exam-result');
+            const { computeExamResultV2, v2ToV1Grade } = await import('@/lib/exam-result');
             const examResultV2 = computeExamResultV2(
               attemptData,
               examPlan,
               'user_ended',
               examSessionConfig?.rating || 'private',
             );
+            result.grade = v2ToV1Grade(examResultV2.overall_status);
             // Will be merged into metadata below
             (updateData as Record<string, unknown>)._examResultV2 = examResultV2;
           }
+          updateData.result = result;
         } else {
           console.warn(`Exam grading skipped for session ${sessionId}: attempts=${attempts?.length ?? 'null'}, totalElements=${totalElements}`);
         }

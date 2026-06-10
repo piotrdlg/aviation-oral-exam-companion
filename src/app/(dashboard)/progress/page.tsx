@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import WeakAreas from './components/WeakAreas';
 import StudyRecommendations from './components/StudyRecommendations';
 import type { ElementScore, AircraftClass, Rating } from '@/types/database';
+import { PARTIAL_CREDIT } from '@/lib/exam-logic';
 
 const RATING_OPTIONS: { value: Rating; label: string }[] = [
   { value: 'private', label: 'PPL' },
@@ -205,7 +206,7 @@ export default function ProgressPage() {
     const partial = filteredScores.filter(s => s.latest_score === 'partial').length;
     const coverageWeight = attemptedElements / totalElements;
     const qualityWeight = totalElements > 0
-      ? (satisfactory + partial * 0.5) / totalElements
+      ? (satisfactory + partial * PARTIAL_CREDIT) / totalElements // W2.3: shared grading weight
       : 0;
     return Math.round(coverageWeight * 40 + qualityWeight * 60);
   }, [filteredScores, attemptedElements, totalElements]);

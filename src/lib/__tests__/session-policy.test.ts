@@ -70,7 +70,7 @@ function q(result: { data?: unknown; error?: unknown; count?: number | null }) {
     count: result.count !== undefined ? result.count : null,
   };
   const builder: Record<string, any> = {};
-  for (const m of ['select', 'eq', 'neq', 'in', 'not', 'is', 'insert', 'update', 'order', 'limit', 'single']) {
+  for (const m of ['select', 'eq', 'neq', 'in', 'not', 'is', 'insert', 'update', 'order', 'limit', 'single', 'maybeSingle']) {
     builder[m] = vi.fn().mockReturnValue(builder);
   }
   builder.then = (resolve: (v: any) => any, reject?: (e: any) => any) =>
@@ -341,7 +341,9 @@ describe('update — grading', () => {
       data: { metadata: { plannerState: { queue: ['PA.I.A.K1', 'PA.I.A.K2', 'PA.I.A.R1'] } } },
     });
     const updateQ = q({ data: null });
+    // W2.3: grading first checks the latest student transcript's assessment
     mocks.userFrom
+      .mockReturnValueOnce(q({ data: { assessment: { score: 'satisfactory' } } }))
       .mockReturnValueOnce(attemptsQ)
       .mockReturnValueOnce(metaQ)
       .mockReturnValueOnce(updateQ);
@@ -377,7 +379,9 @@ describe('update — grading', () => {
       data: { metadata: { plannerState: { queue: ['PA.I.A.K1', 'PA.I.A.K2', 'PA.I.A.R1'] } } },
     });
     const updateQ = q({ data: null });
+    // W2.3: grading first checks the latest student transcript's assessment
     mocks.userFrom
+      .mockReturnValueOnce(q({ data: { assessment: { score: 'satisfactory' } } }))
       .mockReturnValueOnce(attemptsQ)
       .mockReturnValueOnce(metaQ)
       .mockReturnValueOnce(updateQ);
@@ -400,7 +404,9 @@ describe('update — grading', () => {
       data: { metadata: { plannerState: { queue: ['PA.I.A.K1', 'PA.I.A.K2', 'PA.I.A.R1'] } } },
     });
     const updateQ = q({ data: null });
+    // W2.3: grading first checks the latest student transcript's assessment
     mocks.userFrom
+      .mockReturnValueOnce(q({ data: { assessment: { score: 'satisfactory' } } }))
       .mockReturnValueOnce(attemptsQ)
       .mockReturnValueOnce(metaQ)
       .mockReturnValueOnce(updateQ);
@@ -423,7 +429,9 @@ describe('update — grading', () => {
       data: { metadata: { plannerState: { queue: ['PA.I.A.K1'] } } },
     });
     const updateQ = q({ data: null });
+    // W2.3: grading first checks the latest student transcript's assessment
     mocks.userFrom
+      .mockReturnValueOnce(q({ data: { assessment: { score: 'satisfactory' } } }))
       .mockReturnValueOnce(attemptsQ)
       .mockReturnValueOnce(metaQ)
       .mockReturnValueOnce(updateQ);
@@ -445,7 +453,9 @@ describe('update — grading', () => {
     });
     const metaQ = q({ data: { metadata: {} } });
     const updateQ = q({ data: null });
+    // W2.3: grading first checks the latest student transcript's assessment
     mocks.userFrom
+      .mockReturnValueOnce(q({ data: { assessment: { score: 'satisfactory' } } }))
       .mockReturnValueOnce(attemptsQ)
       .mockReturnValueOnce(metaQ)
       .mockReturnValueOnce(updateQ);

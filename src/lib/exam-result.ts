@@ -13,6 +13,7 @@
 
 import type { ExamPlanV1, ElementCoverageStatus } from '@/lib/exam-plan';
 import type { CompletionTrigger } from '@/types/database';
+import { PARTIAL_CREDIT } from '@/lib/exam-logic';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -185,9 +186,14 @@ export function computeExamResultV2(
     };
   }
 
-  // Deduplicate attempts (last write wins — handles retries)
+  // Deduplicate attempts (last write wins — handles retries).
+  // W2.3: attempts are FILTERED to elements that exist in the plan — the
+  // assessment prompt can attribute answers to out-of-plan codes (e.g.
+  // skill elements), which inflated the numerator past 100% (bug 12).
+  const planSet = new Set(planElements);
   const deduped = new Map<string, typeof attempts[0]>();
   for (const a of attempts) {
+    if (!planSet.has(a.element_code)) continue;
     deduped.set(a.element_code, a);
   }
 
@@ -197,10 +203,12 @@ export function computeExamResultV2(
     scoreMap.set(code, a.score);
   }
 
-  // Count coverage statuses from plan
+  // Count coverage statuses from plan.
+  // W2.3: an element both credited-by-mention AND later scored counts once,
+  // as scored — never double (bug 12).
   let elementsCredited = 0;
-  for (const status of Object.values(examPlan.coverage)) {
-    if (status === 'credited_by_mention') elementsCredited++;
+  for (const [code, status] of Object.entries(examPlan.coverage)) {
+    if (status === 'credited_by_mention' && !scoreMap.has(code)) elementsCredited++;
   }
 
   // Count scored elements
@@ -208,10 +216,12 @@ export function computeExamResultV2(
   const elementsSatisfactory = [...scoreMap.values()].filter(s => s === 'satisfactory').length;
   const elementsPartial = [...scoreMap.values()].filter(s => s === 'partial').length;
   const elementsUnsatisfactory = [...scoreMap.values()].filter(s => s === 'unsatisfactory').length;
+  // Invariant (post-filtering): asked + credited <= totalInPlan, so this can
+  // no longer go negative — Math.max kept as a defensive belt only.
   const elementsNotAsked = Math.max(0, totalInPlan - elementsAsked - elementsCredited);
 
   // Points
-  const pointsEarned = elementsSatisfactory * 1.0 + elementsPartial * 0.7;
+  const pointsEarned = elementsSatisfactory * 1.0 + elementsPartial * PARTIAL_CREDIT;
 
   // Plan-based score: denominator = total plan elements (not-asked = 0 points)
   // Credited-by-mention elements count as satisfactory (1.0 point each)
@@ -246,7 +256,8 @@ export function computeExamResultV2(
 
     for (const code of codes) {
       const coverageStatus = examPlan.coverage[code];
-      if (coverageStatus === 'credited_by_mention') {
+      // Credited counts only when the element was never actually scored
+      if (coverageStatus === 'credited_by_mention' && !scoreMap.has(code)) {
         areaCredited++;
         continue;
       }
@@ -259,7 +270,7 @@ export function computeExamResultV2(
       }
     }
 
-    const areaPoints = areaSat * 1.0 + areaPart * 0.7;
+    const areaPoints = areaSat * 1.0 + areaPart * PARTIAL_CREDIT;
     const areaScore = areaAsked > 0
       ? Math.round((areaPoints / areaAsked) * 100) / 100
       : 0;
@@ -384,6 +395,17 @@ export function computeExamResultV2(
     plan_exhausted: planExhausted,
     graded_at: new Date().toISOString(),
   };
+}
+
+/**
+ * W2.3: V2 is the canonical grade. The legacy V1 `exam_sessions.result.grade`
+ * (badge + results modal) is DERIVED from the V2 outcome so the two surfaces
+ * can never contradict each other (review-02 arch risk 4).
+ */
+export function v2ToV1Grade(status: OverallStatus): 'satisfactory' | 'unsatisfactory' | 'incomplete' {
+  if (status === 'pass') return 'satisfactory';
+  if (status === 'fail') return 'unsatisfactory';
+  return 'incomplete';
 }
 
 // ---------------------------------------------------------------------------
