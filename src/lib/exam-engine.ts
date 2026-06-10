@@ -19,7 +19,6 @@ import type { SystemConfigMap } from './system-config';
 import type { TimingContext } from './timing';
 import { getPromptContent } from './prompts';
 import { TtlCache } from './ttl-cache';
-import { fetchConceptBundle, formatBundleForPrompt } from './graph-retrieval';
 import { captureServerEvent } from './posthog-server';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
@@ -214,9 +213,8 @@ export async function fetchRagContext(
   options?: {
     systemConfig?: SystemConfigMap;
     timing?: TimingContext;
-    elementCode?: string;
   }
-): Promise<{ ragContext: string; ragChunks: ChunkSearchResult[]; ragImages: ImageResult[]; graphContext: string }> {
+): Promise<{ ragContext: string; ragChunks: ChunkSearchResult[]; ragImages: ImageResult[] }> {
   try {
     // Combine task, recent history, and student answer for a comprehensive query
     const recentText = history.slice(-2).map(m => m.text).join(' ');
@@ -224,25 +222,8 @@ export async function fetchRagContext(
     const query = `${task.task} ${recentText}${answerText}`.slice(0, 500);
 
     const filterEnabled = !!(options?.systemConfig?.['rag.metadata_filter'] as { enabled?: boolean } | undefined)?.enabled;
-    const graphEnabled = !!(options?.systemConfig?.['graph.enhanced_retrieval'] as { enabled?: boolean } | undefined)?.enabled;
-    const shadowMode = !!(options?.systemConfig?.['graph.shadow_mode'] as { enabled?: boolean } | undefined)?.enabled;
 
     let ragChunks: ChunkSearchResult[];
-
-    // Start graph retrieval in parallel if enabled or in shadow mode
-    let graphPromise: Promise<string> | null = null;
-    if ((graphEnabled || shadowMode) && options?.elementCode) {
-      graphPromise = (async () => {
-        options?.timing?.start('rag.graph.bundle');
-        try {
-          const bundle = await fetchConceptBundle(options.elementCode!);
-          const formatted = formatBundleForPrompt(bundle);
-          return formatted;
-        } finally {
-          options?.timing?.end('rag.graph.bundle');
-        }
-      })();
-    }
 
     if (filterEnabled) {
       // Infer metadata filters from conversation context
@@ -265,36 +246,16 @@ export async function fetchRagContext(
       ragChunks = await searchChunks(query, { matchCount, timing: options?.timing });
     }
 
-    let ragContext = formatChunksForPrompt(ragChunks);
-
-    // Resolve graph context
-    let graphContext = '';
-    if (graphPromise) {
-      try {
-        graphContext = await graphPromise;
-      } catch (err) {
-        console.error('Graph retrieval failed (non-critical):', err instanceof Error ? err.message : err);
-      }
-    }
-
-    // Prepend graph context to RAG when graph.enhanced_retrieval is enabled
-    if (graphEnabled && graphContext) {
-      ragContext = `KNOWLEDGE GRAPH CONTEXT:\n${graphContext}\n\nCHUNK-BASED RETRIEVAL:\n${ragContext}`;
-    }
-
-    // Shadow mode: log graph context without injecting into prompt
-    if (shadowMode && !graphEnabled && graphContext) {
-      console.log(`[graph.shadow_mode] Element ${options?.elementCode}: ${graphContext.length} chars, ${graphContext.split('\n').length} lines`);
-    }
+    const ragContext = formatChunksForPrompt(ragChunks);
 
     // Fetch linked images for the retrieved chunks
     const chunkIds = ragChunks.map(c => c.id);
     const ragImages = await getImagesForChunks(chunkIds, options?.timing);
 
-    return { ragContext, ragChunks, ragImages, graphContext };
+    return { ragContext, ragChunks, ragImages };
   } catch (err) {
     console.error('fetchRagContext failed:', err instanceof Error ? err.message : err);
-    return { ragContext: '', ragChunks: [], ragImages: [], graphContext: '' };
+    return { ragContext: '', ragChunks: [], ragImages: [] };
   }
 }
 
@@ -692,7 +653,7 @@ export async function assessAnswer(
   task: AcsTaskRow,
   history: ExamMessage[],
   studentAnswer: string,
-  prefetchedRag?: { ragContext: string; ragChunks: ChunkSearchResult[]; graphContext?: string },
+  prefetchedRag?: { ragContext: string; ragChunks: ChunkSearchResult[] },
   questionImages?: ImageResult[],
   rating: Rating = 'private',
   studyMode?: string,
@@ -742,11 +703,6 @@ export async function assessAnswer(
     ? `\n\nFAA SOURCE MATERIAL (use to validate the answer):\n${ragContext}`
     : '';
 
-  // Inject verified regulatory claims from graph if available
-  const graphSection = prefetchedRag?.graphContext
-    ? `\n\nVERIFIED REGULATORY CLAIMS (check student answers against these known-correct values):\n${prefetchedRag.graphContext}`
-    : '';
-
   // Grading calibration contract (Phase 10) — injected when provided
   const gradingContract = gradingContractSection ? `\n\n${gradingContractSection}` : '';
 
@@ -766,7 +722,7 @@ EXAM CONTEXT:
 Certificate: ${ratingLabel}
 ACS Task: ${task.id} - ${task.task}
 All elements for this task:
-${elementList}${ragSection}${graphSection}${gradingContract}
+${elementList}${ragSection}${gradingContract}
 
 OUTPUT FORMAT — Respond in JSON only with this exact schema:
 {
