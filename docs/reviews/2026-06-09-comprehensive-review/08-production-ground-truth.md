@@ -22,7 +22,13 @@
 
 3. **Knowledge graph flags are ON but shadow mode is also ON** — Review 01 §28 flagged this as "wasteful and should be disabled." Both `graph.enhanced_retrieval: true` and `graph.shadow_mode: true` are active simultaneously, causing double-graph work. **Decision required**: disable shadow mode or confirm it's intentional (likely artifact of testing).
 
-4. **Latency logging gap (CORRECTED — original report wrongly said "stale since Feb").** `latency_logs` has 1,508 rows; the timestamp column is `timestamp`, and the **newest row is 2026-05-19** — instrumentation worked through mid-May. There are no rows in the ~3 weeks since, which may simply reflect low/no voice-exam traffic in that window (19 users) rather than broken instrumentation. **Action**: correlate with `exam_sessions` activity after 2026-05-19 before treating this as a bug (folded into plan task W0.5); do not block on it.
+4. **Latency logging: NO BUG (W0.5 diagnosis complete).** `latency_logs` has 1,508 rows; newest is **2026-05-19T05:39:52Z**. Query correlation (W0.5):
+   - exam_sessions created after 2026-05-19: **0**
+   - session_transcripts created after 2026-05-19: **0**
+   - TTS/STT API calls after 2026-05-19: **0**
+   - Latency logs after 2026-05-19: **10 rows** (all on 2026-05-19, ~6AM window)
+   
+   **Verdict**: ✅ No instrumentation bug. The 3-week silence reflects **zero voice exam activity** since mid-May, not broken logging. With only 19 users (mostly trial/free tier) and 3 paying users, no traffic → no logs is expected. Instrumentation is working correctly; will resume logging when voice traffic resumes.
 
 5. **No TTS usage this month** — `usage_logs` shows 0 entries for `event_type='tts_request'` in June. This blocks quota analysis and cost tracking needed before review 05 (user quota fix). Last recorded TTS usage was from earlier months (table has 6361 total rows but no June entries).
 
@@ -76,7 +82,7 @@ Snapshot at 2026-06-09 20:47 UTC:
 | `element_attempts` | 1,634 | Stable | Per-element attempt records (avg 14 per session) |
 | `user_profiles` | 19 | Small cohort | 19 total users; **3 paying** (`dpe_live`/`active` with Stripe IDs — see corrected §4) |
 | `usage_logs` | 6,361 | Stable | API call logging across all events |
-| `latency_logs` | 1,508 | **Stale** | **Last entry Feb 2026; no June data** — instrumentation broken (Review 03 §12) |
+| `latency_logs` | 1,508 | Quiet | Newest row 2026-05-19; W0.5 verdict: instrumentation works, there has simply been zero voice traffic since (see §Facts item 4) |
 
 **Scale reality check vs CLAUDE.md claims:**
 - source_chunks: 4,674 ≠ "~10K+" — actual is 2.2x smaller
