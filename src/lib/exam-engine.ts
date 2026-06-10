@@ -304,7 +304,8 @@ export async function generateExaminerTurn(
   personaSection?: string,
   studentName?: string,
   transitionHint?: string,
-  depthContractSection?: string
+  depthContractSection?: string,
+  scenarioSection?: string
 ): Promise<ExamTurn> {
   // Load the best-matching prompt from DB (specificity: rating + studyMode + difficulty)
   const { content: dbPromptContent } = await loadPromptFromDB(
@@ -342,7 +343,8 @@ export async function generateExaminerTurn(
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 500,
-    system: buildCachedSystem(systemPrompt + personaFragment + nameInstruction, transitionSection + ragSection),
+    // W5.4: the scenario block lives in the session-static cached region
+    system: buildCachedSystem(systemPrompt + personaFragment + nameInstruction + (scenarioSection ?? ''), transitionSection + ragSection),
     messages:
       messages.length === 0
         ? [{ role: 'user', content: 'Begin the oral examination.' }]
@@ -389,7 +391,8 @@ export async function generateExaminerTurnStreaming(
   depthContractSection?: string,
   assetContext?: AssetSelectionContext,
   onAssetSelected?: (asset: SelectedAsset) => void,
-  onUsage?: (usage: LlmUsage) => void
+  onUsage?: (usage: LlmUsage) => void,
+  scenarioSection?: string
 ): Promise<{ stream: ReadableStream; fullTextPromise: Promise<string> }> {
   // Load the best-matching prompt from DB (specificity: rating + studyMode + difficulty)
   const { content: dbPromptContent } = await loadPromptFromDB(
@@ -432,7 +435,7 @@ export async function generateExaminerTurnStreaming(
   // W5.2: session-static region (cached across the task's exchanges).
   // The W5.4 Scenario Engine renders its EXAM SCENARIO block into THIS
   // region (via scenarioSection) so it is cache-priced per exchange.
-  const sessionStatic = basePrompt + structuredInstr + personaFragment + nameInstruction;
+  const sessionStatic = basePrompt + structuredInstr + personaFragment + nameInstruction + (scenarioSection ?? '');
 
   let messages = history.map((msg) => ({
     role: msg.role === 'examiner' ? 'assistant' as const : 'user' as const,

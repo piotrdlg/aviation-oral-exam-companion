@@ -448,3 +448,140 @@ describe('exam quota enforcement (W3.2)', () => {
     expect(on.status).toBe(429);
   });
 });
+
+// ---------------------------------------------------------------------------
+// W5.4 Scenario Engine — flag-gated transition policy through the full route
+// ---------------------------------------------------------------------------
+import { buildExamPlan } from '@/lib/exam-plan';
+import { generateExaminerTurn as mockedTurn } from '@/lib/exam-engine';
+
+function seedScenarioSession() {
+  const queue = ['PA.I.A.K1', 'PA.I.A.K2', 'PA.II.A.K1', 'PA.II.A.K2'];
+  const plan = buildExamPlan(queue, 'cross_acs', queue.length);
+  // current element answered satisfactorily; transition due
+  plan.coverage['PA.I.A.K1'] = 'asked_satisfactory' as never;
+  const scenario = {
+    spine: {
+      scenario: { aircraft: 'C172S N735KT', mission: 'KCRG-KOCF', conditions: 'July, buildups west', pilot: 'You', constraints: ['back by 6'] },
+      hooks: [{ element_code: 'PA.II.A.K1', hook: 'the buildups west of the route' }],
+      events: [],
+    },
+    usedHooks: [],
+    firedEvents: [],
+    source: 'generated',
+  };
+  h.db.exam_sessions[0].metadata = {
+    plannerState: { version: 1, queue, cursor: 1, recent: ['PA.I.A.K1'], attempts: { 'PA.I.A.K1': 1 } },
+    sessionConfig: SESSION_CONFIG,
+    examPlan: plan,
+    scenario,
+    scenarioAdjacency: {
+      'PA.I.A.K1': [
+        { code: 'PA.II.A.K1', score: 0.9 },
+        { code: 'PA.I.A.K2', score: 0.6 },
+      ],
+    },
+    scenarioDescriptions: {
+      'PA.I.A.K2': 'Currency requirements',
+      'PA.II.A.K1': 'Weather information',
+      'PA.II.A.K2': 'Weather products',
+    },
+    scenarioWeakElements: [],
+  };
+}
+
+describe('scenario engine transitions (W5.4)', () => {
+  beforeEach(() => {
+    h.reset();
+    h.pendingAfters.length = 0;
+    h.events.length = 0;
+    h.tier = 'dpe_live';
+    h.config = { 'exam.scenario_engine': { mode: 'on' } };
+  });
+
+  it('falls back to top-ranked when the examiner omits the tag, burns the hook, and advances the planner', async () => {
+    seedScenarioSession();
+    const res = await examPost(req({ action: 'next-task', sessionId: 'sess-1', sessionConfig: SESSION_CONFIG, stream: false }));
+    const data = await res.json();
+    await flushAfters();
+
+    // Top-ranked = PA.II.A.K1 (adjacency 0.9 + unused hook bonus)
+    expect(data.elementCode).toBe('PA.II.A.K1');
+    expect(data.taskData.id).toBe('PA.II.A');
+    // Tag-less mock reply is delivered verbatim as the bridge text
+    expect(data.examinerMessage).toContain('Good.');
+    // Planner advanced server-side to the chosen element
+    const meta = h.db.exam_sessions[0].metadata as Record<string, never>;
+    expect((meta.plannerState as { recent: string[] }).recent.slice(-1)[0]).toBe('PA.II.A.K1');
+    // Hook burned exactly once
+    expect((meta.scenario as { usedHooks: string[] }).usedHooks).toEqual(['PA.II.A.K1']);
+    // Plan recorded the question
+    expect((meta.examPlan as { asked_count: number }).asked_count).toBeGreaterThanOrEqual(1);
+    // Transition telemetry emitted with followed_llm=false
+    const t = h.events.find((e) => e.name === 'scenario_transition');
+    expect(t?.props.followed_llm).toBe(false);
+    expect(t?.props.top_ranked).toBe('PA.II.A.K1');
+    // Examiner transcript persisted with the clean text
+    expect(h.db.session_transcripts.some((r) => r.role === 'examiner' && String(r.text).includes('Good.'))).toBe(true);
+  });
+
+  it('follows a VALID emitted <next_element> tag and strips it from the reply', async () => {
+    seedScenarioSession();
+    vi.mocked(mockedTurn).mockResolvedValueOnce({
+      examinerMessage: '<next_element>PA.I.A.K2</next_element>\nSpeaking of staying legal — how current are you tonight?',
+      usage: { input_tokens: 10, output_tokens: 10, latency_ms: 5 },
+    });
+    const res = await examPost(req({ action: 'next-task', sessionId: 'sess-1', sessionConfig: SESSION_CONFIG, stream: false }));
+    const data = await res.json();
+    await flushAfters();
+
+    expect(data.elementCode).toBe('PA.I.A.K2');
+    expect(data.examinerMessage).not.toContain('<next_element>');
+    expect(data.examinerMessage).toContain('Speaking of staying legal');
+    const t = h.events.find((e) => e.name === 'scenario_transition');
+    expect(t?.props.followed_llm).toBe(true);
+  });
+
+  it('rejects an out-of-shortlist tag and falls back to top-ranked', async () => {
+    seedScenarioSession();
+    vi.mocked(mockedTurn).mockResolvedValueOnce({
+      examinerMessage: '<next_element>PA.IX.Z.K9</next_element>\nLet me take you somewhere illegal.',
+      usage: { input_tokens: 10, output_tokens: 10, latency_ms: 5 },
+    });
+    const res = await examPost(req({ action: 'next-task', sessionId: 'sess-1', sessionConfig: SESSION_CONFIG, stream: false }));
+    const data = await res.json();
+    await flushAfters();
+    expect(data.elementCode).toBe('PA.II.A.K1'); // server says no
+    const t = h.events.find((e) => e.name === 'scenario_transition');
+    expect(t?.props.followed_llm).toBe(false);
+  });
+
+  it('FLAG OFF: identical metadata, no scenario branch — linear advance, no telemetry', async () => {
+    seedScenarioSession();
+    h.config = {}; // flag off
+    const res = await examPost(req({ action: 'next-task', sessionId: 'sess-1', sessionConfig: SESSION_CONFIG, stream: false }));
+    const data = await res.json();
+    await flushAfters();
+    // Linear queue walk picks the next non-recent element (PA.I.A.K2 at cursor)
+    expect(data.elementCode).toBe('PA.I.A.K2');
+    expect(h.events.find((e) => e.name === 'scenario_transition')).toBeUndefined();
+    // Scenario state untouched
+    const meta = h.db.exam_sessions[0].metadata as Record<string, never>;
+    expect((meta.scenario as { usedHooks: string[] }).usedHooks).toEqual([]);
+  });
+
+  it('start action with flag ON persists a spine via after() without blocking (template fallback offline)', async () => {
+    h.db.exam_sessions[0].metadata = {};
+    const res = await examPost(req({ action: 'start', sessionId: 'sess-1', sessionConfig: SESSION_CONFIG, stream: false }));
+    expect(res.status).toBe(200);
+    await flushAfters(); // spine generation runs post-response
+    const meta = h.db.exam_sessions[0].metadata as Record<string, unknown>;
+    const scenario = meta.scenario as { source: string; spine: { scenario: { aircraft: string } } } | undefined;
+    expect(scenario).toBeDefined();
+    // No ANTHROPIC key in tests → the engine degrades to a template spine
+    expect(scenario!.source).toBe('template');
+    expect(scenario!.spine.scenario.aircraft.length).toBeGreaterThan(5);
+    expect(meta.scenarioDescriptions).toBeDefined();
+    expect(h.events.some((e) => e.name === 'scenario_spine_generated')).toBe(true);
+  });
+});

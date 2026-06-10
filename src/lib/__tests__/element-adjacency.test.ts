@@ -9,7 +9,8 @@ import {
   ADJACENCY_TOP_K,
   type AdjacencyNeighbors,
 } from '../element-adjacency';
-import { buildElementQueue, type AcsElementDB, type SessionConfig } from '../exam-logic';
+import { buildElementQueue } from '../exam-logic';
+import type { AcsElement as AcsElementDB, SessionConfig } from '@/types/database';
 
 describe('blendAdjacency (design §3: 0.60/0.25/0.15)', () => {
   it('applies the exact design weights', () => {

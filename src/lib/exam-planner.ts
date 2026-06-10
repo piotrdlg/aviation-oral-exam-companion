@@ -376,6 +376,68 @@ async function advancePlannerInternal(
   };
 }
 
+/**
+ * W5.4 (Scenario Engine): advance the planner to a SPECIFIC element — the
+ * examiner's validated shortlist choice — instead of the queue walk.
+ * Mirrors advancePlannerInternal's result contract exactly: recent/attempts/
+ * cursor updates, task load, difficulty + depth contract, plan recording.
+ */
+export async function advanceToElement(
+  state: PlannerState,
+  config: SessionConfig,
+  elementCode: string,
+  examPlan: ExamPlanV1
+): Promise<PlannerResult | null> {
+  if (isExamComplete(examPlan)) return null;
+  if (!state.queue.includes(elementCode)) return null;
+
+  const updatedState: PlannerState = {
+    ...state,
+    // Cursor moves past the chosen element's position so a fallback queue
+    // walk resumes from there rather than re-walking covered ground.
+    cursor: (state.queue.indexOf(elementCode) + 1) % state.queue.length,
+    recent: [...(state.recent ?? []), elementCode].slice(-5),
+    attempts: {
+      ...state.attempts,
+      [elementCode]: (state.attempts?.[elementCode] || 0) + 1,
+    },
+    version: (state.version || 0) + 1,
+  };
+
+  const { data: element } = await supabase
+    .from('acs_elements')
+    .select('*')
+    .eq('code', elementCode)
+    .single();
+  if (!element) return null;
+  const el = element as AcsElementDB;
+
+  const { data: task } = await supabase
+    .from('acs_tasks')
+    .select('*')
+    .eq('id', el.task_id)
+    .single();
+  if (!task) return null;
+
+  const difficulty: Difficulty =
+    config.difficulty === 'mixed' ? el.difficulty_default : (config.difficulty as Difficulty);
+  const rating = config.rating || 'private';
+  const depthDifficultyContract = buildDepthDifficultyContract(rating, difficulty, el.element_type);
+  const systemPrompt = buildSystemPrompt(task as AcsTaskRow, difficulty, config.aircraftClass, rating);
+  const updatedPlan = recordQuestionAsked(examPlan, elementCode);
+
+  return {
+    elementCode,
+    element: el,
+    task: task as AcsTaskRow,
+    difficulty,
+    plannerState: updatedState,
+    examPlan: updatedPlan,
+    systemPrompt,
+    depthDifficultyContract,
+  };
+}
+
 // Re-export plan mutation helpers for use by route.ts
 export {
   isExamComplete,
