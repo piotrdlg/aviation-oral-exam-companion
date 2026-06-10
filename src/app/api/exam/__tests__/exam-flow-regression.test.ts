@@ -150,7 +150,7 @@ const h = vi.hoisted(() => {
   const pendingAfters: Promise<unknown>[] = [];
   const events: Array<{ name: string; props: Record<string, unknown> }> = [];
 
-  return { db, reset, client, pendingAfters, events };
+  return { db, reset, client, pendingAfters, events, tier: 'dpe_live', config: {} as Record<string, unknown> };
 });
 
 // ---------------------------------------------------------------------------
@@ -163,10 +163,10 @@ vi.mock('next/server', async (importOriginal) => {
 });
 vi.mock('@/lib/supabase/server', () => ({ createClient: vi.fn(async () => h.client) }));
 vi.mock('@supabase/supabase-js', () => ({ createClient: vi.fn(() => h.client) }));
-vi.mock('@/lib/system-config', () => ({ getSystemConfig: vi.fn(async () => ({})) }));
+vi.mock('@/lib/system-config', () => ({ getSystemConfig: vi.fn(async () => h.config) }));
 vi.mock('@/lib/kill-switch', () => ({ checkKillSwitch: vi.fn(() => ({ blocked: false })) }));
 vi.mock('@/lib/app-env', () => ({ requireSafeDbTarget: vi.fn() }));
-vi.mock('@/lib/voice/tier-lookup', () => ({ getUserTier: vi.fn(async () => 'dpe_live') }));
+vi.mock('@/lib/voice/tier-lookup', () => ({ getUserTier: vi.fn(async () => h.tier) }));
 vi.mock('@/lib/timing', () => {
   const permissive = new Proxy({}, { get: () => vi.fn(() => ({})) });
   return { createTimingContext: vi.fn(() => permissive), writeTimings: vi.fn() };
@@ -238,6 +238,8 @@ describe('exam-flow regression (W2.6)', () => {
     h.reset();
     h.pendingAfters.length = 0;
     h.events.length = 0;
+    h.tier = 'dpe_live';
+    h.config = {};
   });
 
   it('runs a full exam: advancement across tasks, natural completion, write integrity', async () => {
@@ -371,5 +373,78 @@ describe('exam-flow regression (W2.6)', () => {
     const d2 = await r2.json();
     await flushAfters();
     expect(d2.advance).toBe(true);
+  });
+});
+
+describe('exam quota enforcement (W3.2)', () => {
+  beforeEach(() => {
+    h.reset();
+    h.pendingAfters.length = 0;
+    h.events.length = 0;
+    h.tier = 'dpe_live';
+    h.config = {};
+  });
+
+  it('rejects respond on a non-active session (409)', async () => {
+    h.db.exam_sessions[0].status = 'paused';
+    const res = await examPost(req({
+      action: 'respond', sessionId: 'sess-1', sessionConfig: SESSION_CONFIG,
+      taskData: { id: 'PA.I.A' }, history: [{ role: 'examiner', text: 'q' }], studentAnswer: 'a', stream: false,
+    }));
+    expect(res.status).toBe(409);
+    expect((await res.json()).error).toBe('session_not_active');
+  });
+
+  it('rejects respond on an expired session (403)', async () => {
+    h.db.exam_sessions[0].expires_at = new Date(Date.now() - 86_400_000).toISOString();
+    const res = await examPost(req({
+      action: 'respond', sessionId: 'sess-1', sessionConfig: SESSION_CONFIG,
+      taskData: { id: 'PA.I.A' }, history: [{ role: 'examiner', text: 'q' }], studentAnswer: 'a', stream: false,
+    }));
+    expect(res.status).toBe(403);
+    expect((await res.json()).error).toBe('session_expired');
+  });
+
+  it('rejects respond when sessionId is missing (400)', async () => {
+    const res = await examPost(req({
+      action: 'respond', sessionConfig: SESSION_CONFIG,
+      taskData: { id: 'PA.I.A' }, history: [], studentAnswer: 'a', stream: false,
+    }));
+    expect(res.status).toBe(400);
+  });
+
+  it('FREE tier is hard-capped at the exchange limit regardless of flags (429)', async () => {
+    h.tier = 'checkride_prep';            // free
+    h.db.exam_sessions[0].exchange_count = 30; // cap for free
+    const res = await examPost(req({
+      action: 'respond', sessionId: 'sess-1', sessionConfig: SESSION_CONFIG,
+      taskData: { id: 'PA.I.A' }, history: [], studentAnswer: 'a', stream: false,
+    }));
+    expect(res.status).toBe(429);
+    expect((await res.json()).error).toBe('quota_exceeded');
+  });
+
+  it('PAID tier at the exchange cap is log-only until the flag is set', async () => {
+    h.tier = 'dpe_live';
+    h.db.exam_sessions[0].exchange_count = 50; // cap for paid
+    // flag OFF: log-only → not 429 (proceeds into the exam loop)
+    const off = await examPost(req({
+      action: 'respond', sessionId: 'sess-1', sessionConfig: SESSION_CONFIG,
+      taskData: { id: 'PA.I.A' }, history: [], studentAnswer: 'a', stream: false,
+    }));
+    expect(off.status).not.toBe(429);
+    expect(h.events.some((e) => e.name === 'exam_exchange_cap_logonly')).toBe(true);
+    await flushAfters();
+
+    // flag ON: hard 429
+    h.reset();
+    h.tier = 'dpe_live';
+    h.config = { 'quota.exchange_hard_enforce': { enabled: true } };
+    h.db.exam_sessions[0].exchange_count = 50;
+    const on = await examPost(req({
+      action: 'respond', sessionId: 'sess-1', sessionConfig: SESSION_CONFIG,
+      taskData: { id: 'PA.I.A' }, history: [], studentAnswer: 'a', stream: false,
+    }));
+    expect(on.status).toBe(429);
   });
 });

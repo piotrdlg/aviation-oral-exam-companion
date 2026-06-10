@@ -24,16 +24,20 @@ describe('checkQuota', () => {
     expect(result.reason).toContain('session');
   });
 
-  it('blocks at TTS char limit (now 500k for ground_school)', () => {
-    const result = checkQuota('ground_school', {
-      ...emptyUsage,
-      ttsCharsThisMonth: 500_001,
-    });
+  it('blocks at the free-tier TTS char budget (W3.2: 35k anti-theft)', () => {
+    // at-or-over the cap (>= per W3.2 off-by-one fix)
+    const result = checkQuota('ground_school', { ...emptyUsage, ttsCharsThisMonth: 35_000 });
     expect(result.allowed).toBe(false);
     expect(result.reason).toContain('TTS');
   });
 
-  it('blocks at exchange limit (now 30 for ground_school)', () => {
+  it('blocks at the free-tier STT seconds budget (W3.2)', () => {
+    const result = checkQuota('checkride_prep', { ...emptyUsage, sttSecondsThisMonth: 4_200 });
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toContain('STT');
+  });
+
+  it('blocks at exchange limit (30 for free tier)', () => {
     const result = checkQuota('ground_school', {
       ...emptyUsage,
       exchangesThisSession: 30,
@@ -59,16 +63,10 @@ describe('checkQuota', () => {
   });
 });
 
-describe('hasTtsAccess', () => {
-  it('denies TTS for ground_school tier', () => {
-    expect(hasTtsAccess('ground_school')).toBe(false);
-  });
-
-  it('allows TTS for checkride_prep tier', () => {
+describe('hasTtsAccess (W3.2 / D1: voice universal)', () => {
+  it('grants TTS on every tier — theft bounded by budgets, not feature gates', () => {
+    expect(hasTtsAccess('ground_school')).toBe(true);
     expect(hasTtsAccess('checkride_prep')).toBe(true);
-  });
-
-  it('allows TTS for dpe_live tier', () => {
     expect(hasTtsAccess('dpe_live')).toBe(true);
   });
 });

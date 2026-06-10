@@ -16,7 +16,7 @@ export interface QuotaCheckResult {
 export function checkQuota(
   tier: VoiceTier,
   usage: UsageSummary,
-  quotaType?: 'session' | 'exchange' | 'tts'
+  quotaType?: 'session' | 'exchange' | 'tts' | 'stt'
 ): QuotaCheckResult {
   const features = TIER_FEATURES[tier];
 
@@ -42,9 +42,10 @@ export function checkQuota(
     }
   }
 
-  // TTS character limit
+  // TTS character limit (W3.2 #1: was `>` — off-by-one let one extra request
+  // through at the cap; now blocks at-or-over).
   if (!quotaType || quotaType === 'tts') {
-    if (usage.ttsCharsThisMonth > features.maxTtsCharsPerMonth) {
+    if (usage.ttsCharsThisMonth >= features.maxTtsCharsPerMonth) {
       return {
         allowed: false,
         reason: `Monthly TTS character limit reached (${features.maxTtsCharsPerMonth.toLocaleString()} chars).`,
@@ -53,13 +54,25 @@ export function checkQuota(
     }
   }
 
+  // STT seconds limit (W3.2 #9)
+  if (!quotaType || quotaType === 'stt') {
+    if (usage.sttSecondsThisMonth >= features.maxSttSecondsPerMonth) {
+      return {
+        allowed: false,
+        reason: `Monthly voice (STT) limit reached (${Math.round(features.maxSttSecondsPerMonth / 60)} min).`,
+        limit: 'stt_seconds_per_month',
+      };
+    }
+  }
+
   return { allowed: true, reason: null };
 }
 
 /**
- * Check if a tier has TTS access.
- * ground_school (free) does not include TTS.
+ * Whether a tier includes TTS. W3.2 / decision D1: voice is universal — every
+ * tier (including the free trial) has TTS access. Theft is prevented by the
+ * monthly char/second budgets and the 3-exam count limit, not by feature-gating.
  */
-export function hasTtsAccess(tier: VoiceTier): boolean {
-  return tier !== 'ground_school';
+export function hasTtsAccess(_tier: VoiceTier): boolean {
+  return true;
 }

@@ -60,13 +60,14 @@ export async function POST(request: NextRequest) {
     let expiresAt: string | null = null;
 
     if (!isPaying && !isOnboarding) {
-      // Count non-onboarding, non-abandoned exams for this user (service role bypasses RLS for accurate count)
+      // W3.2 #3: count ALL non-onboarding exams ever created — including
+      // abandoned ones. Previously abandoned sessions were excluded, so a free
+      // user could discard old exams to mint unlimited new ones.
       const { count, error: countError } = await serviceSupabase
         .from('exam_sessions')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', user.id)
-        .eq('is_onboarding', false)
-        .neq('status', 'abandoned');
+        .eq('is_onboarding', false);
 
       if (countError) {
         return NextResponse.json({ error: countError.message }, { status: 500 });
@@ -111,11 +112,36 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ session: data });
   }
 
+  // W3.2 #3: discarding an exam is a SERVER-controlled transition. Clients
+  // call this dedicated action instead of update{status:'abandoned'} so the
+  // status can't be set arbitrarily (abandoned now counts toward the limit).
+  if (action === 'discard') {
+    const { sessionId } = body;
+    if (!sessionId) {
+      return NextResponse.json({ error: 'sessionId required' }, { status: 400 });
+    }
+    const { error } = await supabase
+      .from('exam_sessions')
+      .update({ status: 'abandoned', ended_at: new Date().toISOString() })
+      .eq('id', sessionId)
+      .eq('user_id', user.id)
+      .in('status', ['active', 'paused']); // only discard live sessions
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ ok: true });
+  }
+
   if (action === 'update') {
     const { sessionId, status, acs_tasks_covered, exchange_count, planner_state, session_config, task_data, voice_enabled } = body;
 
     if (!sessionId) {
       return NextResponse.json({ error: 'sessionId required' }, { status: 400 });
+    }
+
+    // W3.2 #3: 'abandoned' is server-only — use the discard action.
+    if (status === 'abandoned') {
+      return NextResponse.json({ error: 'use_discard_action' }, { status: 400 });
     }
 
     const updateData: Record<string, unknown> = {};

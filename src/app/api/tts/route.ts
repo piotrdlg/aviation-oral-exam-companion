@@ -3,7 +3,8 @@ import { after } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getUserTier, getUserPreferredVoice } from '@/lib/voice/tier-lookup';
 import { createTTSProvider, getTTSProviderName } from '@/lib/voice/provider-factory';
-import { checkQuota, hasTtsAccess } from '@/lib/voice/usage';
+import { checkQuota } from '@/lib/voice/usage';
+import { isQuotaEnforced, getDailyHardCaps } from '@/lib/voice/quota-flags';
 import { getSystemConfig } from '@/lib/system-config';
 import { checkKillSwitch } from '@/lib/kill-switch';
 import { requireSafeDbTarget } from '@/lib/app-env';
@@ -42,14 +43,8 @@ export async function POST(request: NextRequest) {
       getUserPreferredVoice(serviceSupabase, user.id),
     ]);
 
-    // Hard gate: free tier does not include TTS
-    if (!hasTtsAccess(tier)) {
-      captureServerEvent(user.id, 'tts_denied_by_tier', { tier, reason: 'tier_not_eligible' });
-      return NextResponse.json(
-        { error: 'tts_not_available', message: 'TTS is not available on the free plan. Upgrade to access voice mode.', upgrade_url: '/pricing' },
-        { status: 403 }
-      );
-    }
+    // W3.2 / D1: voice is universal — no tier feature-gate. Theft is bounded
+    // by the monthly char budget + 3-exam count limit below.
 
     // Kill switch check for TTS provider
     const ttsProviderName = getTTSProviderName(tier);
@@ -66,31 +61,45 @@ export async function POST(request: NextRequest) {
     // If kill switch suggests a fallback tier, we still proceed — the provider factory
     // has its own fallback chain. The kill switch fallback is informational here.
 
-    // Query monthly TTS usage
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-    const { count: ttsCharsThisMonth } = await serviceSupabase
-      .from('usage_logs')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .eq('event_type', 'tts_request')
-      .eq('status', 'ok')
-      .gte('created_at', monthStart);
+    // W3.2 #1: SUM the chars actually synthesized this month (the old check
+    // counted log ROWS, so the cap was unreachable). get_monthly_usage is the
+    // auth-guarded RPC; service-role bypasses the guard.
+    const { data: ttsCharsThisMonth } = await serviceSupabase.rpc('get_monthly_usage', {
+      p_user_id: user.id, p_event_type: 'tts_request',
+    });
 
-    // Check TTS quota
     const quotaResult = checkQuota(tier, {
-      sessionsThisMonth: 0, // Not checked here
-      ttsCharsThisMonth: ttsCharsThisMonth || 0,
+      sessionsThisMonth: 0,
+      ttsCharsThisMonth: (ttsCharsThisMonth as number) || 0,
       sttSecondsThisMonth: 0,
       exchangesThisSession: 0,
     }, 'tts');
 
     if (!quotaResult.allowed) {
-      captureServerEvent(user.id, 'tts_denied_by_tier', { tier, reason: 'quota_exceeded' });
-      return NextResponse.json(
-        { error: 'quota_exceeded', limit: quotaResult.limit, upgrade_url: '/pricing' },
-        { status: 429 }
-      );
+      // Soft launch: log-only unless quota.tts_hard_enforce is on.
+      if (isQuotaEnforced(config, 'quota.tts_hard_enforce')) {
+        captureServerEvent(user.id, 'tts_denied_by_tier', { tier, reason: 'quota_exceeded', enforced: true });
+        return NextResponse.json(
+          { error: 'quota_exceeded', limit: quotaResult.limit, upgrade_url: '/pricing' },
+          { status: 429 }
+        );
+      }
+      captureServerEvent(user.id, 'tts_quota_exceeded_logonly', { tier, used: (ttsCharsThisMonth as number) || 0, limit: quotaResult.limit });
+    }
+
+    // Daily hard-cap backstop (only queried when the flag is on — zero overhead otherwise).
+    if (isQuotaEnforced(config, 'quota.daily_caps_enforce')) {
+      const caps = getDailyHardCaps(config);
+      const { data: dailyTtsChars } = await serviceSupabase.rpc('get_daily_usage', {
+        p_user_id: user.id, p_event_type: 'tts_request',
+      });
+      if (((dailyTtsChars as number) || 0) >= caps.daily_tts_chars) {
+        captureServerEvent(user.id, 'tts_daily_cap_reached', { tier, used: dailyTtsChars, cap: caps.daily_tts_chars });
+        return NextResponse.json(
+          { error: 'daily_cap_reached', limit: 'daily_tts_chars', upgrade_url: '/pricing' },
+          { status: 429 }
+        );
+      }
     }
 
     // Create provider for user's tier, pass system_config TTS settings

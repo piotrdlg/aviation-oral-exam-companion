@@ -7,6 +7,8 @@ import { getSystemConfig } from '@/lib/system-config';
 import { checkKillSwitch } from '@/lib/kill-switch';
 import { requireSafeDbTarget } from '@/lib/app-env';
 import { captureServerEvent, flushPostHog } from '@/lib/posthog-server';
+import { checkQuota } from '@/lib/voice/usage';
+import { isQuotaEnforced } from '@/lib/voice/quota-flags';
 
 const serviceSupabase = createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,7 +22,8 @@ const TOKEN_TTL_SECONDS = 600; // 10 minutes — enough for a full exam session
  * GET /api/stt/token
  * Issues a temporary Deepgram JWT for direct client-to-Deepgram WebSocket connection.
  * Uses /v1/auth/grant which returns a JWT that works with Sec-WebSocket-Protocol auth.
- * Only available to Tier 2 (checkride_prep) and Tier 3 (dpe_live) users.
+ * W3.2 / D1: voice is universal — available on every tier, bounded by the
+ * monthly STT-seconds budget (free tier ~70 min) rather than feature-gated.
  */
 export async function GET() {
   after(() => flushPostHog());
@@ -63,6 +66,27 @@ export async function GET() {
         { error: 'Token rate limit exceeded. Max 4 tokens per minute.' },
         { status: 429 }
       );
+    }
+
+    // W3.2 #9: monthly STT-seconds budget. Deny new tokens once the user is
+    // over their cap (free ~70 min). Soft launch: log-only unless
+    // quota.stt_hard_enforce is on. Service-role bypasses the RPC auth guard.
+    const { data: sttSecondsThisMonth } = await serviceSupabase.rpc('get_monthly_usage', {
+      p_user_id: user.id, p_event_type: 'stt_session',
+    });
+    const sttQuota = checkQuota(tier, {
+      sessionsThisMonth: 0, ttsCharsThisMonth: 0,
+      sttSecondsThisMonth: (sttSecondsThisMonth as number) || 0, exchangesThisSession: 0,
+    }, 'stt');
+    if (!sttQuota.allowed) {
+      if (isQuotaEnforced(config, 'quota.stt_hard_enforce')) {
+        captureServerEvent(user.id, 'stt_denied_quota', { tier, used: sttSecondsThisMonth, enforced: true });
+        return NextResponse.json(
+          { error: 'quota_exceeded', limit: sttQuota.limit, upgrade_url: '/pricing' },
+          { status: 429 }
+        );
+      }
+      captureServerEvent(user.id, 'stt_quota_exceeded_logonly', { tier, used: (sttSecondsThisMonth as number) || 0, limit: sttQuota.limit });
     }
 
     const deepgramApiKey = process.env.DEEPGRAM_API_KEY;

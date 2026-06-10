@@ -524,6 +524,32 @@ describe('update — validation', () => {
     const body = await res.json();
     expect(body.error).toBe('sessionId required');
   });
+
+  it('W3.2: rejects client-set status=abandoned (server-only)', async () => {
+    const res = await POST(postReq({ action: 'update', sessionId: 's1', status: 'abandoned' }));
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toBe('use_discard_action');
+  });
+});
+
+// ================================================================
+// Discard — server-controlled abandonment (W3.2)
+// ================================================================
+describe('discard', () => {
+  it('marks the session abandoned via the dedicated action', async () => {
+    const updateQ = q({ data: null });
+    mocks.userFrom.mockReturnValueOnce(updateQ);
+    const res = await POST(postReq({ action: 'discard', sessionId: 's1' }));
+    expect(res.status).toBe(200);
+    const upd = updateQ.update.mock.calls[0][0];
+    expect(upd.status).toBe('abandoned');
+    expect(upd.ended_at).toBeTruthy();
+  });
+
+  it('returns 400 without sessionId', async () => {
+    const res = await POST(postReq({ action: 'discard' }));
+    expect(res.status).toBe(400);
+  });
 });
 
 // ================================================================

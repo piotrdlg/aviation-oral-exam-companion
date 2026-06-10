@@ -36,6 +36,9 @@ import { getSystemConfig } from '@/lib/system-config';
 import { checkKillSwitch } from '@/lib/kill-switch';
 import { requireSafeDbTarget } from '@/lib/app-env';
 import { getUserTier } from '@/lib/voice/tier-lookup';
+import { TIER_FEATURES } from '@/lib/voice/types';
+import { isQuotaEnforced, getDailyHardCaps } from '@/lib/voice/quota-flags';
+import { captureServerEvent } from '@/lib/posthog-server';
 import { enforceOneActiveExam, getSessionTokenHash } from '@/lib/session-enforcement';
 import { createTimingContext, writeTimings } from '@/lib/timing';
 import {
@@ -326,10 +329,11 @@ export async function POST(request: NextRequest) {
     // taskData. Client-supplied copies are accepted for backward compat but
     // IGNORED whenever server state exists.
     let serverMeta: Record<string, unknown> = {};
+    let sessionRow: { id: string; status: string; exchange_count: number; expires_at: string | null } | null = null;
     if (sessionId) {
       const { data: sessionOwnershipCheck } = await supabase
         .from('exam_sessions')
-        .select('id, metadata')
+        .select('id, metadata, status, exchange_count, expires_at')
         .eq('id', sessionId)
         .eq('user_id', user.id)
         .single();
@@ -338,6 +342,64 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Session not found' }, { status: 404 });
       }
       serverMeta = (sessionOwnershipCheck.metadata as Record<string, unknown>) || {};
+      sessionRow = {
+        id: sessionOwnershipCheck.id as string,
+        status: sessionOwnershipCheck.status as string,
+        exchange_count: (sessionOwnershipCheck.exchange_count as number) ?? 0,
+        expires_at: (sessionOwnershipCheck.expires_at as string | null) ?? null,
+      };
+    }
+
+    // W3.2 #2/#12: server-side exam-progress enforcement on the answer loop.
+    // sessionId is mandatory for respond/next-task; the session must be active,
+    // unexpired, and under its per-session exchange cap.
+    if (action === 'respond' || action === 'next-task') {
+      if (!sessionId || !sessionRow) {
+        return NextResponse.json({ error: 'sessionId required' }, { status: 400 });
+      }
+      if (sessionRow.status !== 'active') {
+        return NextResponse.json(
+          { error: 'session_not_active', status: sessionRow.status },
+          { status: 409 }
+        );
+      }
+      if (sessionRow.expires_at && new Date(sessionRow.expires_at).getTime() < Date.now()) {
+        return NextResponse.json(
+          { error: 'session_expired', upgrade_url: '/pricing' },
+          { status: 403 }
+        );
+      }
+      if (action === 'respond') {
+        const cap = TIER_FEATURES[tier].maxExchangesPerSession;
+        const used = sessionRow.exchange_count;
+        const isPaid = tier === 'dpe_live';
+        if (used >= cap) {
+          // Free tier is always hard-enforced; paid is flag-gated for the
+          // soft-launch week so a payer is never cut off mid-mock-oral.
+          if (!isPaid || isQuotaEnforced(config, 'quota.exchange_hard_enforce')) {
+            captureServerEvent(user.id, 'exam_exchange_cap_reached', { tier, used, cap, enforced: true });
+            return NextResponse.json(
+              { error: 'quota_exceeded', limit: 'exchanges_per_session', cap, upgrade_url: '/pricing' },
+              { status: 429 }
+            );
+          }
+          captureServerEvent(user.id, 'exam_exchange_cap_logonly', { tier, used, cap });
+        }
+        // Daily LLM-token hard-cap backstop (only queried when flag is on).
+        if (isQuotaEnforced(config, 'quota.daily_caps_enforce')) {
+          const caps = getDailyHardCaps(config);
+          const { data: dailyTokens } = await serviceSupabase.rpc('get_daily_usage', {
+            p_user_id: user.id, p_event_type: 'llm_request',
+          });
+          if (((dailyTokens as number) || 0) >= caps.daily_llm_tokens) {
+            captureServerEvent(user.id, 'exam_daily_cap_reached', { tier, used: dailyTokens, cap: caps.daily_llm_tokens });
+            return NextResponse.json(
+              { error: 'daily_cap_reached', limit: 'daily_llm_tokens', upgrade_url: '/pricing' },
+              { status: 429 }
+            );
+          }
+        }
+      }
     }
     const srvPlannerState = (serverMeta.plannerState as PlannerState | undefined) ?? clientPlannerState;
     const srvExamPlan = (serverMeta.examPlan as ExamPlanV1 | undefined) ?? clientExamPlan;

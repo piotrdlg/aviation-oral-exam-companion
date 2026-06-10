@@ -1780,7 +1780,7 @@ export default function PracticePage() {
                               await fetch('/api/session', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ action: 'update', sessionId: sid, status: 'abandoned' }),
+                                body: JSON.stringify({ action: 'discard', sessionId: sid }),
                               });
                               removeFromResumable(sid);
                             },
@@ -2470,7 +2470,7 @@ export default function PracticePage() {
                                 await fetch('/api/session', {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ action: 'update', sessionId: sid, status: 'abandoned' }),
+                                  body: JSON.stringify({ action: 'discard', sessionId: sid }),
                                 });
                                 removeFromResumable(sid);
                               },
