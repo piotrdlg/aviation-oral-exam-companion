@@ -204,7 +204,7 @@ export function canFollowUp(
  * Never advance for legacy sessions without a plan/planner state.
  */
 export function shouldAdvanceElement(
-  score: 'satisfactory' | 'partial' | 'unsatisfactory',
+  score: 'satisfactory' | 'partial' | 'unsatisfactory' | 'ungraded',
   plan: ExamPlanV1 | undefined,
   plannerState: { recent?: string[]; attempts?: Record<string, number> } | undefined
 ): boolean {
@@ -212,6 +212,9 @@ export function shouldAdvanceElement(
     ? plannerState.recent[plannerState.recent.length - 1]
     : undefined;
   if (!plan || !plannerState || !currentElement) return false;
+  // 'ungraded' = infrastructure failure — carries no signal about the
+  // student; stay on the element so it gets a real attempt.
+  if (score === 'ungraded') return false;
   if (isExamComplete(plan)) return true;
   if (score === 'satisfactory') return true;
   const attemptCount = plannerState.attempts?.[currentElement] || 1;

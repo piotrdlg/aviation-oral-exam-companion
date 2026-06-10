@@ -40,7 +40,8 @@ interface Source {
 }
 
 interface Assessment {
-  score: 'satisfactory' | 'unsatisfactory' | 'partial';
+  score: 'satisfactory' | 'unsatisfactory' | 'partial' | 'ungraded';
+  advance?: boolean;
   feedback: string;
   misconceptions: string[];
   source_summary?: string | null;
@@ -1065,7 +1066,7 @@ export default function PracticePage() {
         const newExchangeCount = exchangeCount + 1;
         setExchangeCount(newExchangeCount);
 
-        if (receivedAssessment?.score && taskData.id) {
+        if (receivedAssessment?.score && receivedAssessment.score !== 'ungraded' && taskData.id) {
           const prev = taskScoresRef.current[taskData.id];
           taskScoresRef.current[taskData.id] = {
             score: receivedAssessment.score,
@@ -1166,7 +1167,7 @@ export default function PracticePage() {
           ]);
         }
 
-        if (data.assessment?.score && data.taskId) {
+        if (data.assessment?.score && data.assessment.score !== 'ungraded' && data.taskId) {
           const prev = taskScoresRef.current[data.taskId];
           taskScoresRef.current[data.taskId] = {
             score: data.assessment.score,
@@ -2068,9 +2069,11 @@ export default function PracticePage() {
                       ? 'bg-c-green-lo/40 text-c-green border-c-green/20'
                       : msg.assessment.score === 'unsatisfactory'
                       ? 'bg-c-red-dim/40 text-c-red border-c-red/20'
+                      : msg.assessment.score === 'ungraded'
+                      ? 'bg-c-border/30 text-c-muted border-c-border'
                       : 'bg-c-amber-lo text-c-amber border-c-amber/20'
                   }`}>
-                    {msg.assessment.score.toUpperCase()}
+                    {msg.assessment.score === 'ungraded' ? 'NOT ASSESSED' : msg.assessment.score.toUpperCase()}
                   </span>
                   {msg.assessment.feedback && (
                     <p className="text-sm text-c-muted mt-1">{msg.assessment.feedback}</p>
