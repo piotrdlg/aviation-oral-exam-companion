@@ -10,6 +10,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { AcsElement as AcsElementDB, ElementScore, PlannerState, SessionConfig, Difficulty } from '@/types/database';
 import { buildElementQueue, pickNextElement, initPlannerState, buildSystemPrompt, ORAL_EXAM_AREA_PREFIXES, type AcsTaskRow, type TaxonomyFingerprints } from './exam-logic';
 import { buildStructuralFingerprints, computeFingerprintStats } from './structural-fingerprints';
+import type { AdjacencyNeighbors } from './element-adjacency';
 import { buildDepthDifficultyContract, type DepthDifficultyContract } from './difficulty-contract';
 import {
   buildExamPlan,
@@ -93,6 +94,32 @@ async function countTotalOralElements(rating: string): Promise<number> {
 }
 
 /**
+ * Load element_adjacency neighbor lists for a set of element codes (W5.3).
+ * Batched .in() queries keep request URLs under PostgREST limits.
+ */
+export async function loadAdjacencyNeighbors(
+  elementCodes: string[]
+): Promise<AdjacencyNeighbors | undefined> {
+  const neighbors: AdjacencyNeighbors = new Map();
+  for (let i = 0; i < elementCodes.length; i += 200) {
+    const batch = elementCodes.slice(i, i + 200);
+    const { data, error } = await supabase
+      .from('element_adjacency')
+      .select('element_code, related_code, score')
+      .in('element_code', batch);
+    if (error) throw new Error(error.message);
+    for (const row of data ?? []) {
+      const list = neighbors.get(row.element_code) ?? [];
+      list.push({ code: row.related_code, score: Number(row.score) });
+      neighbors.set(row.element_code, list);
+    }
+  }
+  if (neighbors.size === 0) return undefined;
+  for (const list of neighbors.values()) list.sort((a, b) => b.score - a.score);
+  return neighbors;
+}
+
+/**
  * Load fingerprints for ACS elements.
  *
  * W5.1 / decision D4: the graph evidence-chain loader
@@ -140,7 +167,8 @@ async function loadTaxonomyFingerprints(
  */
 export async function initPlanner(
   config: SessionConfig,
-  userId: string
+  userId: string,
+  opts?: { adjacencyOrdering?: boolean }
 ): Promise<PlannerResult | null> {
   const prefix = RATING_PREFIX[config.rating] || 'PA.';
 
@@ -203,8 +231,22 @@ export async function initPlanner(
     fingerprintMeta = fpResult.meta;
   }
 
+  // W5.3 (flag exam.adjacency_ordering): load precomputed adjacency for the
+  // rating's elements and order the cross_acs walk by it. Loaded only when
+  // the flag is on; absent rows degrade to the fingerprint walk unchanged.
+  let adjacencyNeighbors: AdjacencyNeighbors | undefined;
+  if (opts?.adjacencyOrdering && config.studyMode === 'cross_acs') {
+    try {
+      adjacencyNeighbors = await loadAdjacencyNeighbors(
+        filteredElements.map((el) => el.code)
+      );
+    } catch (err) {
+      console.error('Adjacency load failed (falling back to fingerprints):', err instanceof Error ? err.message : err);
+    }
+  }
+
   // Build queue using pure function
-  const queue = buildElementQueue(filteredElements, config, weakStats, taxonomyFingerprints);
+  const queue = buildElementQueue(filteredElements, config, weakStats, taxonomyFingerprints, adjacencyNeighbors);
 
   if (queue.length === 0) {
     console.error('Empty element queue after filtering');

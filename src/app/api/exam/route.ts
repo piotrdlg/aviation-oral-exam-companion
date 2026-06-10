@@ -468,7 +468,9 @@ export async function POST(request: NextRequest) {
 
       // If session config provided, use the planner for element-level scheduling
       if (sessionConfig) {
-        const plannerResult = await initPlanner(sessionConfig, user.id);
+        const plannerResult = await initPlanner(sessionConfig, user.id, {
+          adjacencyOrdering: (config['exam.adjacency_ordering'] as { enabled?: boolean } | undefined)?.enabled === true,
+        });
         if (!plannerResult) {
           return NextResponse.json(
             { error: 'No elements found for your session configuration.' },
