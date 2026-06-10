@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { stripe, STRIPE_PRICES } from '@/lib/stripe';
+import { getStripe, STRIPE_PRICES } from '@/lib/stripe';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 
 const serviceSupabase = createServiceClient(
@@ -10,6 +10,7 @@ const serviceSupabase = createServiceClient(
 
 export async function POST(request: NextRequest) {
   try {
+    const stripe = getStripe();
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -56,6 +57,11 @@ export async function POST(request: NextRequest) {
       metadata: { supabase_user_id: user.id },
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
+      // W3.4 / decision D3: collect tax automatically. Requires Stripe Tax to
+      // be registered/enabled in the dashboard first (checkout errors otherwise).
+      automatic_tax: { enabled: true },
+      customer_update: { address: 'auto' },
+      tax_id_collection: { enabled: true },
       subscription_data: {
         ...(hasTrialed ? {} : { trial_period_days: 7 }),
         metadata: { supabase_user_id: user.id },

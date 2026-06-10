@@ -190,3 +190,13 @@ To apply migrations to a linked Supabase project:
 ```bash
 npx supabase db push --linked
 ```
+
+## Data retention (cron)
+
+Scheduled pg_cron jobs that purge old rows:
+
+| Job | Schedule (UTC) | Deletes |
+|-----|----------------|---------|
+| `purge-old-subscription-events` | daily 03:30 | `subscription_events` older than 18 months (Stripe payloads incl. PII) — migration `20260610000006` |
+
+> Telemetry-table retention (`latency_logs`, `usage_logs`) is added in plan task W6.3.
