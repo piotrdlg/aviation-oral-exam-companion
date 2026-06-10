@@ -140,9 +140,10 @@ Given the rating, the planned ACS elements, and the session configuration, outpu
 Rules:
 - Aviation accuracy is paramount: aircraft capabilities, airspace, weather, and regulations must be plausible and internally consistent.
 - The aircraft and mission must fit the RATING (private: simple single; commercial: paid/complex context; instrument: IFR mission in IMC).
-- 6-10 hooks, each element_code copied EXACTLY from the provided plan list; spread across different areas.
+- 6-8 hooks, each element_code copied EXACTLY from the provided plan list; spread across different areas; each hook ≤ 12 words.
 - 1-2 events, each tied to "after_area:<roman numeral>" or "after_exchange:<number>".
-- No flight beyond the aircraft's realistic capability; no invented regulations.`;
+- No flight beyond the aircraft's realistic capability; no invented regulations.
+- Output COMPACT JSON on a single line — no pretty-printing, no trailing commentary.`;
 
 export interface SpineGenInput {
   rating: 'private' | 'commercial' | 'instrument';
@@ -181,7 +182,10 @@ Generate the scenario spine JSON now.`;
     try {
       const response = await getAnthropic().messages.create({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1200,
+        // Gate-1 failure analysis: 1,200 was too small — the JSON truncated
+        // mid-hooks on every attempt. 2,500 gives ~2x headroom over the
+        // largest observed spine; the prompt now also demands compact JSON.
+        max_tokens: 2500,
         system: SPINE_SYSTEM,
         messages: [{ role: 'user', content: userMsg }],
       });

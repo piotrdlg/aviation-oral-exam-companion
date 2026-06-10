@@ -98,6 +98,9 @@ src/
 │   ├── exam-logic.ts               # Pure exam logic, zero deps (741 lines)
 │   ├── exam-plan.ts                # Pre-exam scope planning
 │   ├── exam-planner.ts             # Planner state machine
+│   ├── scenario-engine.ts          # Scenario Engine: spine + transition policy (flag exam.scenario_engine)
+│   ├── scenario-templates.ts       # Fallback scenario library (3 per rating)
+│   ├── element-adjacency.ts        # Pure adjacency blend math (W5.3)
 │   ├── exam-result.ts              # Result calculation & grading
 │   ├── voice/                      # Provider factory, sentence boundary, tier lookup, usage
 │   │   └── tts/                    # Deepgram (primary) + OpenAI (fallback) adapters
@@ -132,6 +135,10 @@ e2e/                                # Playwright E2E tests (6 browser projects)
 
 - **`exam-logic.ts`** — Pure functions with zero dependencies. Contains `ORAL_EXAM_AREAS`, `filterEligibleTasks()`, `selectRandomTask()`, `buildSystemPrompt()`. Fully unit-testable.
 - **`exam-engine.ts`** — Integrates with Supabase (task fetching) and Anthropic API (examiner generation, answer assessment). Imports from `exam-logic.ts`.
+
+### Scenario Engine (non-linear exams, flag-gated)
+
+Decision D4 (2026-06-09): the knowledge graph left the exam runtime. Non-linear exams are delivered by the **Scenario Engine** (`docs/plans/2026-06-09-scenario-engine-design.md`): a one-call scenario spine at exam start (template fallback), a precomputed `element_adjacency` table (built by `npm run pipeline:element-adjacency`), and a per-transition server-built shortlist from which the examiner LLM picks and bridges (`<next_element>` protocol, server-validated). Gated by `exam.scenario_engine` (off | ab | on) behind two binding proof gates: W5.5 offline judged eval, W5.6 production A/B.
 
 ### Two Claude Calls Per Exchange
 
