@@ -2,21 +2,34 @@
 -- Migration: Secure RPC Authorization (W1.1 Security Fix)
 -- ============================================================
 -- CRITICAL FIX: Close cross-user data exposure in SECURITY DEFINER RPCs
+-- (Review 06 finding C1) and pin search_path (finding D1).
 --
--- Three RPCs were callable by any authenticated user with cross-user parameters:
--- - get_element_scores(p_user_id) — allowed reading any user's lifetime scores
--- - get_session_element_scores(p_session_id) — allowed reading any session's scores
--- - get_uncovered_acs_tasks(p_session_id) — allowed reading any session's uncovered tasks
+-- Three RPCs were callable by any authenticated user with cross-user
+-- parameters:
+-- - get_element_scores(p_user_id)         — any user's lifetime scores
+-- - get_session_element_scores(p_session_id) — any session's scores
+-- - get_uncovered_acs_tasks(p_session_id)    — any session's coverage
 --
--- FIXES:
--- 1. Add ownership checks (auth.uid() = p_user_id or via exam_sessions.user_id)
--- 2. Allow service_role (auth.uid() IS NULL) to bypass for server-side calls
--- 3. Add SET search_path = public to all SECURITY DEFINER functions (D1 fix)
+-- AUTH GUARD DESIGN (note: an earlier draft used "allow when
+-- auth.uid() IS NULL" as the service-role escape — that is WRONG,
+-- because anon-key requests also have auth.uid() = NULL and would
+-- have been allowed. The correct escape checks auth.role()):
+--   allow when auth.role() = 'service_role'        (server-side calls:
+--     exam-planner weak-areas, instructor insights, smoke scripts)
+--   else require auth.uid() ownership               (own data only)
+--   anon (auth.uid() NULL, role 'anon')             → forbidden
+-- Plus REVOKE EXECUTE FROM anon as defense in depth.
+--
+-- Function bodies are copied VERBATIM from their latest definitions
+-- (20260218200001 for the two score RPCs, 20260214000001 for
+-- get_uncovered_acs_tasks) — only the guard + search_path are added.
+--
+-- hybrid_search / get_related_concepts (dead code, removed in W5.1)
+-- get search_path pinned via ALTER FUNCTION without touching bodies.
 -- ============================================================
 
 -- ============================================================
--- 1. SECURE get_element_scores — check auth.uid() = p_user_id
---    Service role (auth.uid() IS NULL) is allowed for instructor insights.
+-- 1. SECURE get_element_scores
 -- ============================================================
 DROP FUNCTION IF EXISTS get_element_scores(UUID, TEXT);
 CREATE OR REPLACE FUNCTION get_element_scores(
@@ -38,9 +51,10 @@ RETURNS TABLE (
   latest_attempt_at TIMESTAMPTZ
 ) AS $$
 BEGIN
-  -- Enforce ownership: authenticated user can only read own scores
-  -- Service role (auth.uid() IS NULL) allowed for server-side instructor insights
-  IF auth.uid() IS NOT NULL AND p_user_id IS DISTINCT FROM auth.uid() THEN
+  -- Ownership guard (C1): service_role passes; users only their own id;
+  -- anon (auth.uid() NULL without service_role) is always forbidden.
+  IF auth.role() IS DISTINCT FROM 'service_role'
+     AND (auth.uid() IS NULL OR p_user_id IS DISTINCT FROM auth.uid()) THEN
     RAISE EXCEPTION 'forbidden: cannot access another user''s element scores';
   END IF;
 
@@ -73,9 +87,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
+REVOKE EXECUTE ON FUNCTION get_element_scores(UUID, TEXT) FROM anon;
+
 -- ============================================================
--- 2. SECURE get_session_element_scores — verify session ownership via exam_sessions.user_id
---    Service role (auth.uid() IS NULL) allowed for instructor insights.
+-- 2. SECURE get_session_element_scores
 -- ============================================================
 DROP FUNCTION IF EXISTS get_session_element_scores(UUID);
 CREATE OR REPLACE FUNCTION get_session_element_scores(
@@ -96,11 +111,9 @@ RETURNS TABLE (
   latest_attempt_at TIMESTAMPTZ
 ) AS $$
 BEGIN
-  -- Enforce ownership: verified via exam_sessions.user_id
-  -- Service role (auth.uid() IS NULL) allowed
-  IF auth.uid() IS NOT NULL THEN
-    -- Check that the session belongs to the authenticated user
-    IF NOT EXISTS (
+  -- Ownership guard (C1): session must belong to the caller unless service_role.
+  IF auth.role() IS DISTINCT FROM 'service_role' THEN
+    IF auth.uid() IS NULL OR NOT EXISTS (
       SELECT 1 FROM exam_sessions WHERE id = p_session_id AND user_id = auth.uid()
     ) THEN
       RAISE EXCEPTION 'forbidden: cannot access another user''s session';
@@ -137,9 +150,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
+REVOKE EXECUTE ON FUNCTION get_session_element_scores(UUID) FROM anon;
+
 -- ============================================================
--- 3. SECURE get_uncovered_acs_tasks — verify session ownership via exam_sessions.user_id
---    Service role (auth.uid() IS NULL) allowed.
+-- 3. SECURE get_uncovered_acs_tasks
 -- ============================================================
 DROP FUNCTION IF EXISTS get_uncovered_acs_tasks(UUID);
 CREATE OR REPLACE FUNCTION get_uncovered_acs_tasks(
@@ -152,11 +166,9 @@ RETURNS TABLE (
   concept_count BIGINT
 ) AS $$
 BEGIN
-  -- Enforce ownership: verified via exam_sessions.user_id
-  -- Service role (auth.uid() IS NULL) allowed
-  IF auth.uid() IS NOT NULL THEN
-    -- Check that the session belongs to the authenticated user
-    IF NOT EXISTS (
+  -- Ownership guard (C1): session must belong to the caller unless service_role.
+  IF auth.role() IS DISTINCT FROM 'service_role' THEN
+    IF auth.uid() IS NULL OR NOT EXISTS (
       SELECT 1 FROM exam_sessions WHERE id = p_session_id AND user_id = auth.uid()
     ) THEN
       RAISE EXCEPTION 'forbidden: cannot access another user''s session';
@@ -183,93 +195,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
+REVOKE EXECUTE ON FUNCTION get_uncovered_acs_tasks(UUID) FROM anon;
+
 -- ============================================================
--- 4. ADD SET search_path to remaining SECURITY DEFINER functions (D1 fix)
+-- 4. Pin search_path on remaining SECURITY DEFINER functions (D1)
+-- Bodies untouched — these are dead code slated for removal in W5.1;
+-- ALTER FUNCTION is sufficient and avoids redefinition risk.
+-- (Original signatures from 20260214000001_initial_schema.sql.)
 -- ============================================================
-
--- hybrid_search (20260214000001:367)
-DROP FUNCTION IF EXISTS hybrid_search(TEXT, TEXT);
-CREATE OR REPLACE FUNCTION hybrid_search(
-  query_text TEXT,
-  query_type TEXT DEFAULT 'all'
-)
-RETURNS TABLE (
-  id UUID,
-  slug TEXT,
-  name TEXT,
-  content TEXT,
-  embedding_status TEXT,
-  avg_depth NUMERIC
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT
-    c.id,
-    c.slug,
-    c.name,
-    c.content,
-    c.embedding_status,
-    COALESCE(AVG(cr.to_depth), 0)::NUMERIC AS avg_depth
-  FROM concepts c
-  LEFT JOIN concept_relations cr ON cr.from_id = c.id
-  WHERE (query_type = 'all'
-    OR (query_type = 'evidence' AND c.is_evidence_anchor = true)
-    OR (query_type = 'regulatory' AND c.regulatory_claim IS NOT NULL))
-    AND (query_text IS NULL OR query_text = ''
-    OR c.name ILIKE '%' || query_text || '%'
-    OR c.content ILIKE '%' || query_text || '%')
-  GROUP BY c.id
-  ORDER BY c.name;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
-
--- get_related_concepts (20260214000001:427)
-DROP FUNCTION IF EXISTS get_related_concepts(UUID, INT);
-CREATE OR REPLACE FUNCTION get_related_concepts(
-  start_id UUID,
-  max_depth INT DEFAULT 3
-)
-RETURNS TABLE (
-  id UUID,
-  slug TEXT,
-  name TEXT,
-  relation_type TEXT,
-  depth INT,
-  path UUID[]
-) AS $$
-WITH RECURSIVE concept_tree AS (
-  SELECT
-    c.id,
-    c.slug,
-    c.name,
-    cr.relation_type,
-    1 AS depth,
-    ARRAY[c.id] AS path
-  FROM concepts c
-  LEFT JOIN concept_relations cr ON (c.id = cr.from_id OR c.id = cr.to_id)
-  WHERE c.id = start_id
-
-  UNION ALL
-
-  SELECT
-    c.id,
-    c.slug,
-    c.name,
-    cr.relation_type,
-    ct.depth + 1,
-    ct.path || c.id
-  FROM concept_tree ct
-  JOIN concept_relations cr ON (ct.id = cr.from_id OR ct.id = cr.to_id)
-  JOIN concepts c ON (
-    CASE
-      WHEN ct.id = cr.from_id THEN c.id = cr.to_id
-      ELSE c.id = cr.from_id
-    END
-  )
-  WHERE ct.depth < max_depth
-    AND NOT c.id = ANY(ct.path)
-)
-SELECT DISTINCT ON (id) * FROM concept_tree
-WHERE depth <= max_depth
-ORDER BY id, depth;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+ALTER FUNCTION hybrid_search(TEXT, VECTOR, INT, FLOAT) SET search_path = public;
+ALTER FUNCTION get_related_concepts(UUID, INT) SET search_path = public;

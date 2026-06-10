@@ -142,67 +142,54 @@ export async function checkRateLimit(route: string, identifier: string): Promise
   // Try Redis first if configured
   const redis = initRedisClient();
   if (redis) {
-    return checkRateLimitRedis(redis, key, config);
+    return checkRateLimitRedis(redis, matchedPattern, identifier, key, config);
   }
 
   // Fallback to in-memory
   return checkRateLimitMemory(key, config);
 }
 
+// One Ratelimit instance per route pattern (each pattern has its own
+// limit/window). @upstash/ratelimit's sliding window runs as a single
+// atomic Redis script — one round trip per check, no race conditions.
+const ratelimiters = new Map<string, Ratelimit>();
+
+function getRatelimiter(pattern: string, config: RateLimitConfig, redis: Redis): Ratelimit {
+  let rl = ratelimiters.get(pattern);
+  if (!rl) {
+    rl = new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(config.limit, `${config.windowMs} ms`),
+      prefix: `rl:${pattern}`,
+    });
+    ratelimiters.set(pattern, rl);
+  }
+  return rl;
+}
+
 /**
- * Check rate limit using Upstash Redis (sliding window).
+ * Check rate limit using Upstash Redis (atomic sliding window via @upstash/ratelimit).
  */
 async function checkRateLimitRedis(
   redis: Redis,
-  key: string,
+  pattern: string,
+  identifier: string,
+  memoryKey: string,
   config: RateLimitConfig
 ): Promise<RateLimitResult> {
   try {
-    const now = Date.now();
-    const windowStart = now - config.windowMs;
-
-    // Use Redis sorted set to track timestamps in the window
-    // Score = timestamp, value = timestamp (for uniqueness)
-    const windowKey = `rl:${key}`;
-    const lockKey = `rl:lock:${key}`;
-
-    // Remove expired timestamps
-    await redis.zremrangebyscore(windowKey, '-inf', windowStart);
-
-    // Get current count
-    const count = await redis.zcard(windowKey);
-
-    if ((count || 0) >= config.limit) {
-      // Rate limited — get the oldest timestamp to calculate reset time
-      const oldest = await redis.zrange(windowKey, 0, 0);
-      const resetAt = oldest && oldest.length > 0
-        ? Number(oldest[0]) + config.windowMs
-        : now + config.windowMs;
-
-      return {
-        allowed: false,
-        remaining: 0,
-        limit: config.limit,
-        resetAt,
-      };
-    }
-
-    // Allow and record this request
-    await redis.zadd(windowKey, { score: now, member: String(now) });
-
-    // Set TTL to window size
-    await redis.expire(windowKey, Math.ceil(config.windowMs / 1000));
-
+    const rl = getRatelimiter(pattern, config, redis);
+    const result = await rl.limit(identifier);
     return {
-      allowed: true,
-      remaining: Math.max(0, config.limit - (count || 0) - 1),
-      limit: config.limit,
-      resetAt: now + config.windowMs,
+      allowed: result.success,
+      remaining: result.remaining,
+      limit: result.limit,
+      resetAt: result.reset,
     };
   } catch (err) {
     console.error('[rate-limit] Redis operation failed:', err);
     // Graceful degradation: fall back to in-memory on Redis error
-    return checkRateLimitMemory(key, config);
+    return checkRateLimitMemory(memoryKey, config);
   }
 }
 

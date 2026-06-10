@@ -4,198 +4,153 @@ import { NextRequest } from 'next/server';
 /**
  * Test: Exam Route Session Ownership (IDOR Prevention — W1.3)
  *
- * Verifies that authenticated users cannot write to other users' exam sessions.
- * The POST handler must check session ownership before any service-role writes.
+ * Actually invokes the POST handler (heavy collaborators mocked) and asserts:
+ * - cross-user sessionId → 404 before ANY service-role access
+ * - own sessionId → passes the ownership gate (response is not 404)
  */
 
-describe('/api/exam POST — Session Ownership Verification (W1.3)', () => {
-  // Mock Supabase client
-  const mockSupabaseClient = {
-    auth: {
-      getUser: vi.fn(),
-      getSession: vi.fn(),
-    },
-    from: vi.fn(),
-  };
-
-  const mockServiceSupabaseClient = {
-    from: vi.fn(),
-  };
-
-  // Mock user contexts
+// ---- Shared mock state (hoisted so vi.mock factories can reference it) ----
+const h = vi.hoisted(() => {
   const userA = { id: 'user-a-uuid', email: 'alice@example.com' };
-  const userB = { id: 'user-b-uuid', email: 'bob@example.com' };
 
-  // Session IDs
-  const userASessionId = 'session-a-uuid';
-  const userBSessionId = 'session-b-uuid';
+  // Permissive thenable chain: any method call returns the same chain,
+  // awaiting it resolves to { data, error } — good enough for incidental
+  // supabase calls on the owned-session path.
+  function chain(result: unknown = { data: null, error: null }) {
+    const target: Record<string, unknown> = {};
+    const proxy: unknown = new Proxy(target, {
+      get(_t, prop) {
+        if (prop === 'then') {
+          return (resolve: (v: unknown) => void) => resolve(result);
+        }
+        return () => proxy;
+      },
+    });
+    return proxy;
+  }
 
+  // Ownership-check query chain with spies; resolves per `ownershipResult`.
+  const state = {
+    ownershipResult: { data: null as unknown, error: null as unknown },
+    selectSpy: vi.fn(),
+    eqSpy: vi.fn(),
+    serviceFromSpy: vi.fn(),
+  };
+
+  function ownershipChain() {
+    const c: Record<string, unknown> = {};
+    c.select = (...args: unknown[]) => { state.selectSpy(...args); return c; };
+    c.eq = (...args: unknown[]) => { state.eqSpy(...args); return c; };
+    c.single = () => Promise.resolve(state.ownershipResult);
+    return c;
+  }
+
+  const rlsClient = {
+    auth: {
+      getUser: vi.fn(async () => ({ data: { user: userA } })),
+      getSession: vi.fn(async () => ({ data: { session: { access_token: 'tok' } } })),
+    },
+    from: vi.fn((table: string) => (table === 'exam_sessions' ? ownershipChain() : chain())),
+    rpc: vi.fn(() => chain()),
+  };
+
+  const serviceClient = {
+    from: (...args: unknown[]) => { state.serviceFromSpy(...args); return chain(); },
+    rpc: vi.fn(() => chain()),
+  };
+
+  return { userA, state, rlsClient, serviceClient, chain };
+});
+
+// ---- Module mocks ----
+vi.mock('next/server', async (importOriginal) => {
+  const orig = await importOriginal<typeof import('next/server')>();
+  return { ...orig, after: vi.fn() };
+});
+vi.mock('@/lib/supabase/server', () => ({
+  createClient: vi.fn(async () => h.rlsClient),
+}));
+vi.mock('@supabase/supabase-js', () => ({
+  createClient: vi.fn(() => h.serviceClient),
+}));
+vi.mock('@/lib/exam-engine', () => ({
+  pickStartingTask: vi.fn(),
+  pickNextTask: vi.fn(),
+  generateExaminerTurn: vi.fn(),
+  generateExaminerTurnStreaming: vi.fn(),
+  assessAnswer: vi.fn(),
+  fetchRagContext: vi.fn(async () => ({ chunks: [], images: [] })),
+  loadPromptFromDB: vi.fn(async () => null),
+}));
+vi.mock('@/lib/system-config', () => ({ getSystemConfig: vi.fn(async () => ({})) }));
+vi.mock('@/lib/kill-switch', () => ({ checkKillSwitch: vi.fn(() => ({ blocked: false })) }));
+vi.mock('@/lib/app-env', () => ({ requireSafeDbTarget: vi.fn() }));
+vi.mock('@/lib/voice/tier-lookup', () => ({ getUserTier: vi.fn(async () => 'checkride_prep') }));
+vi.mock('@/lib/session-enforcement', () => ({
+  enforceOneActiveExam: vi.fn(async () => ({ rejected: false })),
+  getSessionTokenHash: vi.fn(async () => 'hash'),
+}));
+vi.mock('@/lib/timing', () => {
+  const permissive = new Proxy({}, { get: () => vi.fn(() => ({})) });
+  return { createTimingContext: vi.fn(() => permissive), writeTimings: vi.fn() };
+});
+vi.mock('@/lib/posthog-server', () => ({
+  flushPostHog: vi.fn(),
+  capturePostHogEvent: vi.fn(),
+  captureServerEvent: vi.fn(),
+}));
+
+function makeRequest(body: Record<string, unknown>): NextRequest {
+  return new NextRequest('http://localhost:3000/api/exam', {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: { 'content-type': 'application/json' },
+  });
+}
+
+describe('/api/exam POST — Session Ownership Verification (W1.3)', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    h.state.selectSpy.mockClear();
+    h.state.eqSpy.mockClear();
+    h.state.serviceFromSpy.mockClear();
   });
 
-  it('should return 404 when user A attempts to start exam with user B\'s sessionId', async () => {
-    // Setup: User A authenticated, requests user B's session
-    mockSupabaseClient.auth.getUser.mockResolvedValue({ data: { user: userA } });
+  it("returns 404 for another user's sessionId, before any service-role access", async () => {
+    h.state.ownershipResult = { data: null, error: { code: 'PGRST116' } };
+    const { POST } = await import('../route');
 
-    // Ownership check should return nothing (user B's session)
-    const examSessionsQuery = {
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: null, // Session not found (belongs to user B)
-        error: null,
-      }),
-    };
+    const res = await POST(makeRequest({
+      action: 'respond',
+      sessionId: 'session-of-user-b',
+      history: [],
+      studentAnswer: 'answer',
+    }));
 
-    mockSupabaseClient.from.mockImplementation((table: string) => {
-      if (table === 'exam_sessions') {
-        return examSessionsQuery;
-      }
-      // Other tables not needed for this test
-      return {
-        select: vi.fn().mockReturnThis(),
-        insert: vi.fn().mockResolvedValue({ error: null }),
-        update: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({ data: {}, error: null }),
-      };
-    });
-
-    // Create request: User A tries to start exam with user B's session
-    const request = new NextRequest('http://localhost:3000/api/exam', {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'start',
-        sessionId: userBSessionId, // ← User B's session!
-        sessionConfig: {
-          rating: 'private',
-          studyMode: 'linear',
-        },
-      }),
-    });
-
-    // In a real test, we'd call the handler here. For this test structure,
-    // we're verifying the ownership check logic is in place.
-    // The key assertion: if ownership check returns null, handler returns 404
-
-    // Verify the ownership check is called with correct parameters
-    expect(examSessionsQuery.select).toHaveBeenCalledWith('id');
-    expect(examSessionsQuery.eq).toHaveBeenCalledWith('id', userBSessionId);
-    expect(examSessionsQuery.eq).toHaveBeenCalledWith('user_id', userA.id);
+    expect(res.status).toBe(404);
+    // Ownership query used both filters
+    expect(h.state.eqSpy).toHaveBeenCalledWith('id', 'session-of-user-b');
+    expect(h.state.eqSpy).toHaveBeenCalledWith('user_id', h.userA.id);
+    // No service-role table access happened after the gate
+    expect(h.state.serviceFromSpy.mock.calls.filter(
+      (c) => !['user_profiles'].includes(String(c[0]))
+    ).length).toBe(0);
   });
 
-  it('should allow user to start exam with their own sessionId', async () => {
-    // Setup: User A authenticated, requests their own session
-    mockSupabaseClient.auth.getUser.mockResolvedValue({ data: { user: userA } });
+  it('passes the ownership gate for the caller-owned sessionId', async () => {
+    h.state.ownershipResult = { data: { id: 'session-of-user-a' }, error: null };
+    const { POST } = await import('../route');
 
-    // Ownership check should return the session (user A's session)
-    const examSessionsQuery = {
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: { id: userASessionId }, // ← Session found!
-        error: null,
-      }),
-    };
+    const res = await POST(makeRequest({
+      action: 'respond',
+      sessionId: 'session-of-user-a',
+      history: [],
+      studentAnswer: 'answer',
+    }));
 
-    mockSupabaseClient.from.mockImplementation((table: string) => {
-      if (table === 'exam_sessions') {
-        return examSessionsQuery;
-      }
-      return {
-        select: vi.fn().mockReturnThis(),
-        insert: vi.fn().mockResolvedValue({ error: null }),
-        update: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({ data: {}, error: null }),
-      };
-    });
-
-    // Create request: User A starts exam with their own session
-    const request = new NextRequest('http://localhost:3000/api/exam', {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'start',
-        sessionId: userASessionId, // ← User A's own session
-        sessionConfig: {
-          rating: 'private',
-          studyMode: 'linear',
-        },
-      }),
-    });
-
-    // Verify ownership check passes (data is not null)
-    expect(examSessionsQuery.select).toHaveBeenCalledWith('id');
-    expect(examSessionsQuery.eq).toHaveBeenCalledWith('id', userASessionId);
-    expect(examSessionsQuery.eq).toHaveBeenCalledWith('user_id', userA.id);
-  });
-
-  it('should verify ownership check happens before any writes', async () => {
-    // This test verifies that the ownership check is not bypassed
-    // and happens early in the request lifecycle.
-
-    mockSupabaseClient.auth.getUser.mockResolvedValue({ data: { user: userA } });
-
-    const examSessionsQuery = {
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: null, // Ownership check fails
-        error: null,
-      }),
-    };
-
-    let writes: Array<{ table: string; method: string }> = [];
-
-    mockSupabaseClient.from.mockImplementation((table: string) => {
-      if (table === 'exam_sessions') {
-        return examSessionsQuery;
-      }
-      return {
-        select: vi.fn().mockReturnThis(),
-        insert: () => {
-          writes.push({ table, method: 'insert' });
-          return Promise.resolve({ error: null });
-        },
-        update: () => {
-          writes.push({ table, method: 'update' });
-          return Promise.resolve({ error: null });
-        },
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({ data: {}, error: null }),
-      };
-    });
-
-    mockServiceSupabaseClient.from.mockImplementation((table: string) => {
-      return {
-        insert: () => {
-          writes.push({ table, method: 'insert' });
-          return Promise.resolve({ error: null });
-        },
-        update: () => {
-          writes.push({ table, method: 'update' });
-          return Promise.resolve({ error: null });
-        },
-        eq: vi.fn().mockReturnThis(),
-        upsert: () => {
-          writes.push({ table, method: 'upsert' });
-          return Promise.resolve({ error: null });
-        },
-      };
-    });
-
-    // Create request with another user's session
-    const request = new NextRequest('http://localhost:3000/api/exam', {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'start',
-        sessionId: userBSessionId, // ← User B's session!
-      }),
-    });
-
-    // If handler returns 404 early (ownership check failed),
-    // no writes should have occurred
-    expect(writes.length).toBe(0);
+    // Downstream collaborators are mocked shallowly, so the handler may fail
+    // later — the assertion is only that the ownership gate did NOT fire.
+    expect(res.status).not.toBe(404);
+    expect(h.state.eqSpy).toHaveBeenCalledWith('id', 'session-of-user-a');
+    expect(h.state.eqSpy).toHaveBeenCalledWith('user_id', h.userA.id);
   });
 });
