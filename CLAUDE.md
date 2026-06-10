@@ -22,12 +22,15 @@
 | Framework | Next.js 16.1.6 | App Router, TypeScript, Turbopack |
 | Styling | Tailwind CSS v4 | Dark theme (gray-950 base) |
 | Database | Supabase (PostgreSQL) | pgvector, RLS, RPC functions |
-| Auth | Supabase Auth | Email/password, email confirmation |
+| Auth | Supabase Auth | Email OTP, Google, Apple, Microsoft OAuth |
 | AI Examiner | Claude Sonnet (`claude-sonnet-4-6`) | DPE persona + answer assessment |
 | TTS | Multi-provider (Cartesia/Deepgram/OpenAI) | Tier-based voice selection via provider factory |
-| STT | Web Speech API (browser-native) | Chrome only, interim results |
-| Testing | Vitest | Unit tests for pure logic |
-| Deployment | Vercel | Auto-deploy from `main` branch |
+| STT | Deepgram Nova-3 | WebSocket, MediaRecorder (Opus/WebM) |
+| Payments | Stripe | Checkout, billing portal, webhooks |
+| Email | Resend + React Email | Transactional, digest, nudges |
+| Analytics | PostHog | Client + server-side events |
+| Testing | Vitest + Playwright | Unit (743+) + E2E (6 browser projects) |
+| Deployment | Vercel | Auto-deploy from `main`, cron jobs |
 
 ---
 
@@ -36,42 +39,90 @@
 ```
 src/
 ├── app/
-│   ├── (auth)/                 # Route group: login, signup (no dashboard nav)
-│   │   ├── login/page.tsx
-│   │   └── signup/page.tsx
-│   ├── (dashboard)/            # Route group: protected pages with nav bar
-│   │   ├── layout.tsx          # Nav bar + sign out button
-│   │   ├── loading.tsx         # Skeleton loading state
-│   │   ├── practice/page.tsx   # Main exam interface (chat + voice)
-│   │   ├── progress/page.tsx   # Session history + stats dashboard
-│   │   └── settings/page.tsx   # Account info
-│   ├── api/
-│   │   ├── exam/route.ts       # Exam engine API (start, respond, next-task)
-│   │   ├── session/route.ts    # Session CRUD (create, update, list)
-│   │   └── tts/route.ts        # OpenAI TTS proxy
-│   ├── auth/
-│   │   └── callback/route.ts   # Email confirmation code exchange
-│   ├── error.tsx               # Global error boundary
-│   ├── not-found.tsx           # 404 page
-│   ├── layout.tsx              # Root layout (Geist font, dark bg)
-│   └── page.tsx                # Landing page (unauthenticated)
-├── lib/
-│   ├── exam-engine.ts          # Supabase + Anthropic API integration
-│   ├── exam-logic.ts           # Pure logic (no external deps, fully testable)
-│   ├── __tests__/
-│   │   └── exam-logic.test.ts  # 17 unit tests
-│   └── supabase/
-│       ├── client.ts           # Browser Supabase client
-│       ├── middleware.ts        # Auth session refresh + route protection
-│       └── server.ts           # Server-side Supabase client (cookies)
+│   ├── (auth)/                     # Route group: login, signup (no nav)
+│   │   ├── login/page.tsx          # Email OTP + OAuth
+│   │   └── signup/page.tsx         # Email OTP + OAuth + verification
+│   ├── (dashboard)/                # Route group: protected pages with nav bar
+│   │   ├── layout.tsx, loading.tsx
+│   │   ├── home/page.tsx           # Dashboard home with stats & tips
+│   │   ├── practice/page.tsx       # Main exam interface (chat + voice)
+│   │   │   └── components/         # SessionConfig, OnboardingWizard
+│   │   ├── progress/page.tsx       # Session history + ACS coverage
+│   │   │   └── components/         # AcsCoverageTreemap, WeakAreas, StudyRecommendations
+│   │   └── settings/page.tsx       # Account, voice, theme, avatar
+│   ├── (admin)/                    # Route group: admin-only with guard checks
+│   │   ├── admin/page.tsx          # Dashboard (KPIs, cost, anomalies)
+│   │   ├── admin/analytics/        # DAU/WAU/MAU, session metrics
+│   │   ├── admin/config/           # Kill switches, feature flags
+│   │   ├── admin/graph/            # Knowledge graph explorer (3D)
+│   │   ├── admin/instructors/      # Instructor management
+│   │   ├── admin/moderation/       # Content moderation queue
+│   │   ├── admin/partnership/      # Referral/partner metrics
+│   │   ├── admin/prompts/          # Prompt versioning & rollback
+│   │   ├── admin/support/          # Support ticket queue
+│   │   ├── admin/tts/              # TTS provider monitoring
+│   │   ├── admin/voicelab/         # Voice testing lab
+│   │   └── admin/users/            # User management + [id] detail
+│   ├── api/                        # 60+ API routes
+│   │   ├── exam/                   # Exam engine (start, respond, next-task)
+│   │   ├── session/                # Session CRUD
+│   │   ├── tts/, stt/              # Voice services (TTS + STT token/usage/test)
+│   │   ├── user/                   # Tier, sessions, milestones, avatar, email-preferences
+│   │   ├── user/instructor/        # Instructor connections, search, invites
+│   │   ├── admin/                  # Analytics, config, graph, moderation, prompts, support, users
+│   │   ├── instructor/             # Connections, invites, students, KPIs
+│   │   ├── stripe/                 # Checkout, portal, status, webhook
+│   │   ├── referral/, invite/      # Referral codes, invite tokens
+│   │   ├── cron/                   # daily-digest, nudges (Vercel cron)
+│   │   ├── email/, webhooks/       # Email preferences, Resend inbound
+│   │   └── health, flags, report   # System endpoints
+│   ├── pricing/, privacy/, terms/, help/  # Public pages
+│   ├── try/, banned/, suspended/          # Special pages
+│   ├── invite/[token]/, instructor/[slug]/, ref/[code]/  # Dynamic routes
+│   ├── auth/callback/route.ts      # Email OTP code exchange
+│   ├── layout.tsx                  # Root (Geist font, PostHog, GTM)
+│   └── page.tsx                    # Landing page
+├── components/
+│   ├── CookieConsent.tsx, Footer.tsx, PostHogProvider.tsx, JsonLd.tsx
+│   ├── ui/                         # ExamImages, ImageLightbox, TextAssetCard
+│   ├── voice/                      # VoiceLab
+│   └── graph/                      # Graph visualization components
+├── hooks/
+│   ├── useSentenceTTS.ts           # Sentence-level TTS streaming
+│   ├── useVoiceProvider.ts         # Unified STT + TTS
+│   ├── useDeepgramSTT.ts           # Deepgram WebSocket STT
+│   ├── useStreamingPlayer.ts       # AudioWorklet PCM playback
+│   └── useInstructorConnection.ts  # Instructor detection
+├── lib/                            # 68+ modules
+│   ├── exam-engine.ts              # Claude + Supabase integration (842 lines)
+│   ├── exam-logic.ts               # Pure exam logic, zero deps (741 lines)
+│   ├── exam-plan.ts                # Pre-exam scope planning
+│   ├── exam-planner.ts             # Planner state machine
+│   ├── exam-result.ts              # Result calculation & grading
+│   ├── voice/                      # Provider factory, sentence boundary, tier lookup, usage
+│   │   └── tts/                    # OpenAI, Deepgram, Cartesia adapters
+│   ├── rag-retrieval.ts            # Hybrid vector + FTS search
+│   ├── graph-retrieval.ts          # Knowledge graph traversal
+│   ├── rag-filters.ts              # Metadata filter inference
+│   ├── asset-selector.ts           # Semantic image/text scoring
+│   ├── instructor-*.ts             # 12 instructor program modules
+│   ├── email*.ts                   # Email routing, logging, preferences
+│   ├── stripe.ts                   # Stripe payment integration
+│   ├── system-config.ts            # Runtime config + feature flags
+│   ├── rate-limit.ts               # Sliding-window rate limiter
+│   ├── timing.ts                   # Latency instrumentation
+│   ├── supabase/                   # client.ts, server.ts, middleware.ts
+│   └── __tests__/                  # 50+ Vitest test files (743+ tests)
 ├── types/
-│   ├── database.ts             # TypeScript interfaces for all DB tables
-│   └── speech.d.ts             # Web Speech API type declarations
-└── middleware.ts                # Next.js middleware entry point
+│   ├── database.ts                 # 813-line type definitions (34 tables)
+│   └── speech.d.ts                 # Web Speech API type declarations
+├── emails/                         # React Email templates
+└── middleware.ts                    # Auth + route protection
 
-supabase/migrations/
-├── 20260214000001_initial_schema.sql   # Full schema (8 tables, RLS, RPC)
-└── 20260214000002_seed_acs_tasks.sql   # 61 ACS tasks from FAA-S-ACS-6C
+supabase/migrations/                # 62+ migration files (34 tables, RLS, RPC, triggers)
+scripts/                            # 80+ scripts (pipeline, graph, eval, audit, email)
+docs/                               # 50+ audit docs, design docs, implementation plans
+e2e/                                # Playwright E2E tests (6 browser projects)
 ```
 
 ---
@@ -95,11 +146,12 @@ Only 9 of 12 ACS areas are used for oral exam simulation. Areas IV (Takeoffs/Lan
 
 ### Auth Flow
 
-1. Signup creates account via Supabase Auth
-2. Confirmation email links to `/auth/callback?code=...`
-3. Callback route exchanges code for session, redirects to `/practice`
-4. Middleware protects `/practice`, `/progress`, `/settings` routes
-5. Logged-in users are redirected away from `/login` and `/signup`
+1. Signup via Email OTP or OAuth (Google, Apple, Microsoft)
+2. OTP verification or OAuth callback at `/auth/callback?code=...`
+3. Callback exchanges code for session, auto-creates `user_profiles` row, redirects to `/home`
+4. Middleware protects `(dashboard)/*` and `(admin)/*` routes
+5. Admin routes additionally guarded by `checkAdminAccess()` in layout
+6. Logged-in users redirected away from `/login` and `/signup`
 
 ### Session Tracking
 
@@ -116,24 +168,76 @@ Only 9 of 12 ACS areas are used for oral exam simulation. Areas IV (Takeoffs/Lan
 **Supabase project ref**: `pvuiwwqsumoqjepukjhz`
 **Region**: East US (North Virginia)
 
-### Tables
+### Tables (34 total)
 
+**Reference Data:**
 | Table | Purpose | RLS |
 |-------|---------|-----|
-| `acs_tasks` | 61 ACS task definitions (immutable reference data) | Read-only for authenticated |
-| `concepts` | Knowledge graph nodes (pgvector embeddings, FTS) | Read validated; admin CRUD |
-| `concept_relations` | Knowledge graph edges (6 relation types) | Read all; admin CRUD |
-| `admin_users` | Admin allowlist | Admin-only read |
-| `exam_sessions` | User exam sessions with coverage tracking | User owns their own |
-| `session_transcripts` | Full Q&A transcripts per session | Via session ownership |
-| `latency_logs` | Voice pipeline performance metrics | Via session ownership |
-| `off_graph_mentions` | Student mentions not in knowledge graph | User insert; admin read |
+| `acs_tasks` | 143 ACS task definitions (PA/CA/IR) | Read: authenticated |
+| `acs_elements` | Normalized K/R/S elements (~300+) | Read: authenticated |
 
-### RPC Functions
+**Knowledge Graph & RAG:**
+| Table | Purpose | RLS |
+|-------|---------|-----|
+| `concepts` | Knowledge graph nodes (~24K, pgvector, FTS) | Read validated; Admin CRUD |
+| `concept_relations` | Knowledge graph edges (6 relation types) | Read all; Admin CRUD |
+| `concept_chunk_evidence` | Graph-to-RAG evidence links | Read all; Service writes |
+| `source_documents` | FAA document registry (~50) | Read: authenticated |
+| `source_chunks` | RAG text chunks + embeddings (~10K+) | Read: authenticated |
+| `source_images` | Extracted PDF images (~500+) | Read: authenticated |
+| `chunk_image_links` | Text-image relationships | Read: authenticated |
 
-- **`hybrid_search()`** — Combined vector + full-text + exact match search on concepts
+**Exam & Sessions:**
+| Table | Purpose | RLS |
+|-------|---------|-----|
+| `exam_sessions` | User exam sessions (rating, study mode, results) | User owns own |
+| `session_transcripts` | Q&A exchange records + assessments | Via session ownership |
+| `element_attempts` | Per-element scoring (attempt/mention) | Via session ownership |
+| `transcript_citations` | RAG chunk references per exchange | Via session ownership |
+| `latency_logs` | Voice pipeline timing | Via session ownership |
+| `off_graph_mentions` | Out-of-vocabulary mentions | User insert; Admin read |
+
+**Users & Identity:**
+| Table | Purpose | RLS |
+|-------|---------|-----|
+| `user_profiles` | Tier, subscription, preferences, auth method | User reads own |
+| `usage_logs` | API usage tracking (TTS/STT/LLM) | User reads own |
+| `active_sessions` | Login session tracking | User reads own |
+| `email_preferences` | Email opt-in/opt-out | User owns own |
+
+**Instructor Program:**
+| Table | Purpose | RLS |
+|-------|---------|-----|
+| `instructor_profiles` | Verification & onboarding (CFI/CFII/MEI) | User reads/creates own |
+| `instructor_invites` | Token-based invite system (link/email/QR) | Instructor reads own |
+| `student_instructor_connections` | State machine (pending→approved→rejected) | Via role |
+| `user_entitlement_overrides` | Courtesy access grants | Service-only |
+| `student_milestones` | Milestone audit trail (4 types) | Student reads own |
+
+**Admin & System:**
+| Table | Purpose | RLS |
+|-------|---------|-----|
+| `admin_users` | Admin allowlist | Admin-only |
+| `admin_devices` | Trusted device registry | Admin-only |
+| `admin_audit_log` | Immutable audit trail | Admin read/insert |
+| `admin_notes` | Internal notes on users | Admin-only |
+| `system_config` | Runtime config + feature flags (~15 keys) | Admin read/update |
+| `prompt_versions` | Versioned system prompts (draft/published) | Admin manage; Auth read published |
+| `moderation_queue` | User reports + safety incidents | User insert; Admin manage |
+| `support_tickets` | Support email tickets + replies | Admin-only |
+| `ticket_replies` | Support conversation threads | Admin-only |
+| `subscription_events` | Idempotent Stripe event log | Service-only |
+
+### RPC Functions (8)
+
+- **`is_admin()`** — Admin check helper for RLS policies
+- **`hybrid_search()`** — Concept vector + FTS + exact match search (60/40 weighting)
 - **`get_related_concepts()`** — Recursive CTE graph traversal (up to depth 3)
 - **`get_uncovered_acs_tasks()`** — Find ACS tasks not yet satisfactorily covered in a session
+- **`chunk_hybrid_search()`** — RAG chunk retrieval (vector 65% + FTS 35%, doc type/abbreviation filters)
+- **`get_images_for_chunks()`** — Image retrieval linked to RAG chunks with public URLs
+- **`get_element_scores()`** — User-wide element performance aggregation by rating
+- **`get_session_element_scores()`** — Session-scoped element performance
 
 ### ACS Task ID Format
 
@@ -150,7 +254,7 @@ Element codes: `{PREFIX}.{Area}.{Task}.{K/R/S}{number}` where K=Knowledge, R=Ris
 
 ## Environment Variables
 
-See `.env.example` for the full list. Required:
+See `.env.example` for the full list (32 variables). Required:
 
 | Variable | Description |
 |----------|-------------|
@@ -158,38 +262,60 @@ See `.env.example` for the full list. Required:
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key (client-safe) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (server-only, bypasses RLS) |
 | `ANTHROPIC_API_KEY` | Anthropic API key for Claude Sonnet |
-| `OPENAI_API_KEY` | OpenAI API key for TTS |
+| `OPENAI_API_KEY` | OpenAI API key for embeddings + TTS fallback |
+| `NEXT_PUBLIC_APP_ENV` | Environment identifier (local/staging/production) |
+
+Optional but commonly used:
+
+| Variable | Description |
+|----------|-------------|
+| `DEEPGRAM_API_KEY` | Deepgram API key for STT + TTS |
+| `CARTESIA_API_KEY` | Cartesia API key for premium TTS |
+| `STRIPE_SECRET_KEY` | Stripe API key (TEST or LIVE) |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe public key |
+| `RESEND_API_KEY` | Resend email service |
+| `NEXT_PUBLIC_POSTHOG_KEY` | PostHog analytics project key |
+| `POSTHOG_PERSONAL_API_KEY` | PostHog server-side (admin only) |
 
 ---
 
-## API Routes
+## API Routes (60+)
 
-### `POST /api/exam`
+The API has grown to 60+ routes across 8 domains. Key routes:
 
-Requires auth. Actions:
+### Core Exam
+| Route | Methods | Purpose |
+|-------|---------|---------|
+| `/api/exam` | POST | Exam engine: `start`, `respond`, `next-task` |
+| `/api/session` | GET, POST | Session CRUD (create, update, list) |
 
-| Action | Payload | Returns |
-|--------|---------|---------|
-| `start` | `{}` | `{ taskId, taskData, examinerMessage }` |
-| `respond` | `{ taskData, history, studentAnswer }` | `{ taskId, taskData, examinerMessage, assessment }` |
-| `next-task` | `{ taskData, coveredTaskIds }` | `{ taskId, taskData, examinerMessage }` or `{ sessionComplete }` |
+### Voice Services
+| Route | Methods | Purpose |
+|-------|---------|---------|
+| `/api/tts` | POST | Multi-provider TTS (Cartesia/Deepgram/OpenAI) |
+| `/api/stt/token` | GET | Deepgram ephemeral token |
+| `/api/stt/usage` | GET | STT usage stats |
 
-### `POST /api/session`
+### User API (`/api/user/`)
+- `tier`, `sessions`, `milestones`, `avatar`, `email-preferences`
+- `instructor/` — connections, search, invites, student insights/milestones
 
-Requires auth. Actions:
+### Admin API (`/api/admin/`)
+- `analytics/overview`, `dashboard`, `config`
+- `graph/`, `moderation/`, `instructors/`, `prompts/`, `support/`, `users/`
+- `quality/*`, `partnership/*`, `user-overrides`
 
-| Action | Payload | Returns |
-|--------|---------|---------|
-| `create` | `{}` | `{ session }` |
-| `update` | `{ sessionId, status?, exchange_count?, acs_tasks_covered? }` | `{ ok: true }` |
+### Instructor API (`/api/instructor/`)
+- `connections`, `invites/email`, `students/`, `kpis`
 
-### `GET /api/session`
+### Payments (`/api/stripe/`)
+- `checkout`, `portal`, `status`, `webhook`
 
-Requires auth. Returns user's last 20 sessions: `{ sessions: [...] }`
-
-### `POST /api/tts`
-
-Requires auth. Input: `{ text }` (max 2000 chars). Returns: MP3 audio stream.
+### Other
+- `/api/referral/lookup`, `/api/referral/claim` — Referral system
+- `/api/invite/[token]` — Invite acceptance
+- `/api/cron/daily-digest`, `/api/cron/nudges` — Scheduled tasks
+- `/api/health`, `/api/flags`, `/api/report`, `/api/csp-report` — System
 
 ---
 
@@ -198,13 +324,24 @@ Requires auth. Input: `{ text }` (max 2000 chars). Returns: MP3 audio stream.
 ```bash
 npm test          # Run all tests (Vitest)
 npm run test:watch  # Watch mode
+npm run typecheck   # TypeScript type checking
 ```
 
-235+ unit tests across 12 test files covering:
-- `exam-logic.ts` — area filtering, task selection, prompt construction
-- `rag-filters.ts` — metadata filter inference (32 tests)
-- `timing.ts`, `ttl-cache.ts`, `eval-helpers.ts` — observability + caching
-- `session-policy.ts`, `browser-detect.ts`, `email-routing.ts` — runtime logic
+### Unit Tests (743+ tests across 50+ files)
+
+| Category | Coverage |
+|----------|----------|
+| Core exam | exam-logic, exam-plan, exam-result, difficulty-contract, depth-profile |
+| Voice stack | voice-stack-contract, voice-usage, voice-telemetry, deepgram-tts, sentence-boundary |
+| RAG & retrieval | rag-filters (32+ tests), image-retrieval, asset-selector, graph-retrieval, citation-relevance |
+| Instructor (15 files) | access, entitlements, verification, identity, insights, kpis, quotas, fraud, referrals, connections |
+| System | timing, ttl-cache, email, analytics, browser-detect, csp-config, rate-limit, utm |
+| Persona | persona-contract, examiner-profile, transition-explanation, rating-parity |
+
+### E2E Tests (Playwright)
+- 6 projects: setup, chromium, firefox, webkit, admin, no-auth
+- Stored auth states for user and admin flows
+- Categories: landing, SEO, consent, analytics, UTM, marketing, integration, admin
 
 ---
 
@@ -221,12 +358,16 @@ npm run test:watch  # Watch mode
 
 ## Known Limitations / Future Work
 
-- **Knowledge graph populated but unused at runtime** — ACS skeleton (areas, tasks, elements + `is_component_of` edges) is populated via migration `20260220100002`. Not yet used by exam engine for graph-enhanced retrieval.
-- **No transcript persistence** — Conversation history is client-side only; `session_transcripts` table exists but isn't written to yet.
-- **Latency logging implemented** — `latency_logs` table is populated with per-exchange timing spans via `src/lib/timing.ts`. Requires migration `20260220100001`.
-- **Voice mode is Chrome-only** — Web Speech API (`SpeechRecognition`) is not available in Firefox/Safari.
-- **No admin interface** — Admin RLS policies exist but no UI for managing concepts or reviewing off-graph mentions.
-- **Three ratings supported** — Private Pilot (61 tasks), Commercial Pilot (60 tasks), and Instrument Rating (22 tasks) are fully seeded. ATP is schemaed but not yet populated.
+- **Knowledge graph behind feature flag** — ~24K concepts + edges populated. Enhanced retrieval behind `graph.enhanced_retrieval` flag; shadow mode available for testing.
+- **Transcript persistence active** — `session_transcripts` + `element_attempts` tables populated via exam engine.
+- **Latency logging active** — `latency_logs` populated with per-exchange timing spans via `src/lib/timing.ts`.
+- **STT Chrome-primary** — Deepgram Nova-3 WebSocket STT works cross-browser. Legacy Web Speech API was Chrome-only.
+- **Admin interface complete** — 13 admin pages: dashboard, analytics, config, graph explorer, instructors, moderation, prompts, support, TTS monitoring, voicelab, user management.
+- **Three ratings supported** — Private Pilot (61 tasks), Commercial Pilot (60 tasks), and Instrument Rating (22 tasks) fully seeded. ATP schemaed but not populated.
+- **No CI/CD pipeline** — No `.github` directory; relies on Vercel auto-deploy and preview deployments.
+- **Load testing deferred** — Launched with "LAUNCH WITH CAUTION" (Phase 18); no formal load testing performed.
+- **PostHog events partially active** — 3 MVP events active; 11 additional events deferred post-launch.
+- **Instructor program launched** — Full lifecycle: application, verification, invites, connections, KPIs, milestones, referrals.
 
 ---
 
@@ -319,4 +460,4 @@ The Obsidian vault is the **single source of truth** for project continuity acro
 
 ---
 
-*Last updated: February 2026*
+*Last updated: March 26, 2026*
