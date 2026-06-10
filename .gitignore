@@ -65,3 +65,4 @@ supabase/.temp/
 # throwaway local dev scripts (may contain credentials — never commit)
 scripts/_dev/
 mockups/
+scripts/.cache/

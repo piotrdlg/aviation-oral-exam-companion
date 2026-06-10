@@ -1,7 +1,9 @@
 /**
  * Pure logic for ACS task filtering and exam planning — no external dependencies.
  * Separated from exam-engine.ts for testability.
+ * (element-adjacency is also a pure zero-dependency module — W5.3.)
  */
+import { connectedWalkByAdjacency, type AdjacencyNeighbors } from './element-adjacency';
 
 import type { AcsElement as AcsElementDB, ElementScore, PlannerState, SessionConfig, Difficulty, AircraftClass, Rating, ExamResult, ExamGrade, CompletionTrigger } from '@/types/database';
 
@@ -366,7 +368,8 @@ export function buildElementQueue(
   elements: AcsElementDB[],
   config: SessionConfig,
   weakStats?: ElementScore[],
-  taxonomyFingerprints?: TaxonomyFingerprints
+  taxonomyFingerprints?: TaxonomyFingerprints,
+  adjacencyNeighbors?: AdjacencyNeighbors
 ): string[] {
   let filtered = elements;
 
@@ -419,6 +422,14 @@ export function buildElementQueue(
       return codes;
 
     case 'cross_acs':
+      // W5.3 (flag exam.adjacency_ordering): adjacency-scored walk replaces
+      // the keyword-fingerprint walk. The planner only passes neighbors when
+      // the flag is on AND rows exist, so flag-off behavior is unchanged.
+      if (adjacencyNeighbors && adjacencyNeighbors.size > 0) {
+        // Random start preserves the existing variety contract
+        const start = codes.length > 0 ? codes[Math.floor(Math.random() * codes.length)] : undefined;
+        return connectedWalkByAdjacency(codes, adjacencyNeighbors, start);
+      }
       // Connected walk using taxonomy fingerprints for natural topic transitions
       if (taxonomyFingerprints && taxonomyFingerprints.size > 0) {
         return connectedWalk(codes, taxonomyFingerprints);

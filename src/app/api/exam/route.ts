@@ -20,6 +20,7 @@ import { computeExamResultV2, v2ToV1Grade } from '@/lib/exam-result';
 import {
   initPlanner,
   advancePlanner,
+  advanceToElement,
   useBonusQuestion,
   creditMentionedElements,
   shouldAdvanceElement,
@@ -38,6 +39,32 @@ import { requireSafeDbTarget } from '@/lib/app-env';
 import { getUserTier } from '@/lib/voice/tier-lookup';
 import { TIER_FEATURES } from '@/lib/voice/types';
 import { isQuotaEnforced, getDailyHardCaps } from '@/lib/voice/quota-flags';
+import {
+  generateScenarioSpine,
+  renderScenarioBlock,
+  buildTransitionShortlist,
+  buildTransitionAddendum,
+  parseTransitionChoice,
+  matchPendingEvent,
+  pendingPlanCodes,
+  areaProgressFromPlan,
+  completedAreas,
+  type ScenarioState,
+} from '@/lib/scenario-engine';
+import { loadAdjacencyNeighbors } from '@/lib/exam-planner';
+import type { AdjacencyNeighbors } from '@/lib/element-adjacency';
+
+/** W5.4: exam.scenario_engine flag — {"mode": "off" | "ab" | "on"}. */
+function getScenarioMode(config: Record<string, unknown>): 'off' | 'ab' | 'on' {
+  const v = config['exam.scenario_engine'] as { mode?: string } | undefined;
+  return v?.mode === 'on' ? 'on' : v?.mode === 'ab' ? 'ab' : 'off';
+}
+
+/** Rebuild the AdjacencyNeighbors map from its metadata-persisted plain object. */
+function adjacencyFromMeta(meta: Record<string, unknown>): AdjacencyNeighbors {
+  const raw = (meta.scenarioAdjacency as Record<string, Array<{ code: string; score: number }>> | undefined) ?? {};
+  return new Map(Object.entries(raw));
+}
 import { captureServerEvent } from '@/lib/posthog-server';
 import { enforceOneActiveExam, getSessionTokenHash } from '@/lib/session-enforcement';
 import { createTimingContext, writeTimings } from '@/lib/timing';
@@ -87,6 +114,9 @@ function logLlmUsage(
       metadata: {
         input_tokens: usage.input_tokens,
         output_tokens: usage.output_tokens,
+        // W5.2: prompt-cache savings visible per call in usage_logs
+        ...(usage.cache_creation_input_tokens !== undefined ? { cache_creation_input_tokens: usage.cache_creation_input_tokens } : {}),
+        ...(usage.cache_read_input_tokens !== undefined ? { cache_read_input_tokens: usage.cache_read_input_tokens } : {}),
         ...metadata,
       },
     })
@@ -465,7 +495,9 @@ export async function POST(request: NextRequest) {
 
       // If session config provided, use the planner for element-level scheduling
       if (sessionConfig) {
-        const plannerResult = await initPlanner(sessionConfig, user.id);
+        const plannerResult = await initPlanner(sessionConfig, user.id, {
+          adjacencyOrdering: (config['exam.adjacency_ordering'] as { enabled?: boolean } | undefined)?.enabled === true,
+        });
         if (!plannerResult) {
           return NextResponse.json(
             { error: 'No elements found for your session configuration.' },
@@ -489,6 +521,61 @@ export async function POST(request: NextRequest) {
         const turn = await generateExaminerTurn(
           plannerResult.task, [], plannerResult.difficulty, sessionConfig.aircraftClass, undefined, rating, sessionConfig.studyMode, personaSection, studentName, undefined, examinerContractSection
         );
+
+        // W5.4 (Scenario Engine, flag-gated): generate the scenario spine OFF
+        // the critical path — the opening question is linear (design §6); the
+        // spine attaches from exchange 2 once persisted. after() keeps the
+        // serverless function alive until it lands.
+        if (getScenarioMode(config) !== 'off' && sessionId) {
+          const spineStartedAt = Date.now();
+          const spineSessionId = sessionId;
+          after(async () => {
+            try {
+              const queueCodes: string[] = plannerResult.plannerState.queue;
+              const descs: Record<string, string> = {};
+              for (let i = 0; i < queueCodes.length; i += 200) {
+                const { data: descRows } = await serviceSupabase
+                  .from('acs_elements').select('code, description')
+                  .in('code', queueCodes.slice(i, i + 200));
+                for (const e of descRows ?? []) descs[e.code as string] = (e.description as string).slice(0, 100);
+              }
+              const [scenarioState, adjacency, scoreRows] = await Promise.all([
+                generateScenarioSpine({
+                  rating: rating as 'private' | 'commercial' | 'instrument',
+                  planElements: queueCodes.map((c) => ({ code: c, description: descs[c] ?? '' })),
+                  difficulty: sessionConfig.difficulty,
+                  studyMode: sessionConfig.studyMode,
+                }),
+                loadAdjacencyNeighbors(queueCodes).catch(() => undefined),
+                serviceSupabase.rpc('get_element_scores', { p_user_id: user.id, p_rating: rating }).then((r) => r.data ?? []),
+              ]);
+              const weakElements = (scoreRows as Array<{ element_code: string; unsatisfactory_count: number; partial_count: number }>)
+                .filter((w) => Number(w.unsatisfactory_count) > 0 || Number(w.partial_count) > 0)
+                .map((w) => w.element_code);
+              const { data: freshRow } = await serviceSupabase
+                .from('exam_sessions').select('metadata').eq('id', spineSessionId).single();
+              const freshMeta = (freshRow?.metadata as Record<string, unknown>) || {};
+              await serviceSupabase.from('exam_sessions').update({
+                metadata: {
+                  ...freshMeta,
+                  scenario: scenarioState,
+                  scenarioAdjacency: adjacency ? Object.fromEntries(adjacency) : {},
+                  scenarioDescriptions: descs,
+                  scenarioWeakElements: weakElements,
+                },
+              }).eq('id', spineSessionId);
+              captureServerEvent(user.id, 'scenario_spine_generated', {
+                session_id: spineSessionId,
+                source: scenarioState.source,
+                hooks: scenarioState.spine.hooks.length,
+                events: scenarioState.spine.events.length,
+                latency_ms: Date.now() - spineStartedAt,
+              });
+            } catch (err) {
+              console.error('[scenario] spine persist failed (exam continues linear):', err instanceof Error ? err.message : err);
+            }
+          });
+        }
 
         // Log LLM usage (non-blocking)
         logLlmUsage(user.id, turn.usage, tier, sessionId, { action: 'start', call: 'generateExaminerTurn' });
@@ -612,7 +699,11 @@ export async function POST(request: NextRequest) {
       // Support streaming for start — no chunkedResponse here intentionally:
       // the opening examiner question has no student feedback to split into 3 chunks.
       if (stream) {
-        const { stream: readableStream, fullTextPromise: startTextPromise } = await generateExaminerTurnStreaming(task, [], undefined, undefined, undefined, undefined, undefined, undefined, undefined, personaSection, studentName);
+        const { stream: readableStream, fullTextPromise: startTextPromise } = await generateExaminerTurnStreaming(
+          task, [], undefined, undefined, undefined, undefined, undefined, undefined, undefined, personaSection, studentName,
+          undefined, undefined, undefined, undefined, undefined,
+          (u) => logLlmUsage(user.id, u, tier, sessionId, { action: 'start', call: 'generateExaminerTurnStreaming' })
+        );
 
         after(async () => {
           try {
@@ -685,6 +776,13 @@ export async function POST(request: NextRequest) {
       // when the answer is satisfactory, or when the element has used up its
       // follow-up budget. The decision rides on the assessment object so the
       // SSE stream delivers it to the client, which then calls next-task.
+      // W5.4: render the scenario block (cached static region) when the engine
+      // is on and a spine has been persisted for this session.
+      const respondScenario = getScenarioMode(config) !== 'off' && serverMeta.scenario
+        ? (serverMeta.scenario as ScenarioState)
+        : null;
+      const respondScenarioSection = respondScenario ? renderScenarioBlock(respondScenario.spine) : undefined;
+
       const decideAdvance = (score: AssessmentData['score']): boolean =>
         shouldAdvanceElement(score, srvExamPlan, srvPlannerState);
 
@@ -790,7 +888,9 @@ export async function POST(request: NextRequest) {
         const onAssetSelected = (asset: SelectedAsset) => { selectedAssetData = asset; };
 
         const { stream: readableStream, fullTextPromise } = await generateExaminerTurnStreaming(
-          respondTask, updatedHistory, respondDifficulty, respondConfig?.aircraftClass, rag, assessmentPromise, undefined, respondRating, respondConfig?.studyMode, personaSection, studentName, chunkedResponse, timing, respondExaminerContract, assetContext, onAssetSelected
+          respondTask, updatedHistory, respondDifficulty, respondConfig?.aircraftClass, rag, assessmentPromise, undefined, respondRating, respondConfig?.studyMode, personaSection, studentName, chunkedResponse, timing, respondExaminerContract, assetContext, onAssetSelected,
+          (u) => logLlmUsage(user.id, u, tier, sessionId, { action: 'respond', call: 'generateExaminerTurnStreaming' }),
+          respondScenarioSection
         );
 
         // Use after() to ensure ALL DB writes complete even after stream closes.
@@ -952,7 +1052,7 @@ export async function POST(request: NextRequest) {
       const [assessment, turn] = await Promise.all([
         assessAnswer(respondTask, history, studentAnswer, rag, rag.ragImages, respondRating, respondConfig?.studyMode, respondDifficulty, respondGradingContract)
           .then(a => { timing.end('llm.assessment.total'); return a; }),
-        generateExaminerTurn(respondTask, updatedHistory, respondDifficulty, respondConfig?.aircraftClass as import('@/types/database').AircraftClass | undefined, rag, respondRating, respondConfig?.studyMode, personaSection, studentName, undefined, respondExaminerContract)
+        generateExaminerTurn(respondTask, updatedHistory, respondDifficulty, respondConfig?.aircraftClass as import('@/types/database').AircraftClass | undefined, rag, respondRating, respondConfig?.studyMode, personaSection, studentName, undefined, respondExaminerContract, respondScenarioSection)
           .then(t => { timing.end('llm.examiner.total'); return t; }),
       ]);
       timing.end('exchange.total');
@@ -1134,6 +1234,142 @@ export async function POST(request: NextRequest) {
       // Advance via planner using SERVER-owned state (W2.1) — exam_sessions.metadata
       // is authoritative; client copies are only a legacy fallback.
       const ntConfig = srvSessionConfig;
+
+      // ── W5.4 Scenario Engine transition policy (design §5) ──────────────
+      // The server builds a ranked shortlist of pending elements; the examiner
+      // LLM picks the most natural one and bridges to it; the server validates
+      // the choice and advances the planner TO it. Grading, coverage, and
+      // budgets are untouched — only ORDER changes. Any failure in this branch
+      // falls through to the linear advancePlanner path below.
+      if (
+        getScenarioMode(config) !== 'off' &&
+        srvPlannerState && ntConfig && srvExamPlan &&
+        serverMeta.scenario
+      ) {
+        try {
+          const scenarioState = serverMeta.scenario as ScenarioState;
+          const adjacency = adjacencyFromMeta(serverMeta);
+          const descs = (serverMeta.scenarioDescriptions as Record<string, string> | undefined) ?? {};
+          const weakElements = new Set((serverMeta.scenarioWeakElements as string[] | undefined) ?? []);
+          const pending = pendingPlanCodes(srvExamPlan, srvPlannerState);
+
+          const prevElementCode = srvPlannerState.recent?.length
+            ? srvPlannerState.recent[srvPlannerState.recent.length - 1]
+            : undefined;
+
+          if (pending.length > 0 && prevElementCode) {
+            const shortlist = buildTransitionShortlist({
+              currentElement: prevElementCode,
+              pendingCodes: pending,
+              descriptions: new Map(Object.entries(descs)),
+              adjacency,
+              scenario: scenarioState,
+              weakElements,
+              areaProgress: areaProgressFromPlan(srvExamPlan),
+            });
+
+            if (shortlist.length > 0) {
+              const exchangeCount = sessionRow?.exchange_count ?? sessionHistory.length;
+              const pendingEvent = matchPendingEvent(scenarioState, completedAreas(srvExamPlan), exchangeCount);
+              const addendum = buildTransitionAddendum(shortlist, pendingEvent?.event);
+              const scenarioSection = renderScenarioBlock(scenarioState.spine);
+
+              // Generate the bridge + first question. The prompt is anchored on
+              // the PREVIOUS task (we are leaving it); the shortlist carries
+              // the candidates' one-liners.
+              const prevTaskId = prevElementCode.split('.').slice(0, -1).join('.');
+              const { data: prevTask } = await supabase
+                .from('acs_tasks').select('*').eq('id', prevTaskId).single();
+
+              if (prevTask) {
+                const turn = await generateExaminerTurn(
+                  prevTask, sessionHistory, undefined, ntConfig.aircraftClass,
+                  undefined, ntConfig.rating || 'private', ntConfig.studyMode,
+                  personaSection, studentName, addendum, undefined, scenarioSection
+                );
+                logLlmUsage(user.id, turn.usage, tier, sessionId, { action: 'next-task', call: 'scenarioTransition' });
+
+                const { code: llmChoice, cleanText } = parseTransitionChoice(turn.examinerMessage);
+                const validChoice = llmChoice && shortlist.some((c) => c.code === llmChoice) ? llmChoice : null;
+                const chosen = validChoice ?? shortlist[0].code;
+
+                const plannerResult = await advanceToElement(srvPlannerState, ntConfig, chosen, srvExamPlan);
+                if (plannerResult && cleanText.trim()) {
+                  // Telemetry feeds the W5.5/W5.6 gates
+                  captureServerEvent(user.id, 'scenario_transition', {
+                    session_id: sessionId,
+                    chosen,
+                    top_ranked: shortlist[0].code,
+                    followed_llm: validChoice !== null,
+                    used_hook: shortlist.find((c) => c.code === chosen)?.hook ? true : false,
+                    event_fired: pendingEvent?.trigger ?? null,
+                    spine_source: scenarioState.source,
+                  });
+
+                  // Update scenario bookkeeping (hooks burn once; events fire once)
+                  const chosenHook = scenarioState.spine.hooks.find((h) => h.element_code === chosen);
+                  const updatedScenario: ScenarioState = {
+                    ...scenarioState,
+                    usedHooks: chosenHook ? [...scenarioState.usedHooks, chosen] : scenarioState.usedHooks,
+                    firedEvents: pendingEvent ? [...scenarioState.firedEvents, pendingEvent.trigger] : scenarioState.firedEvents,
+                  };
+
+                  // Transcript: the CLEANED text (tag stripped) is what the student sees
+                  if (sessionId) {
+                    const { data: maxRow } = await serviceSupabase
+                      .from('session_transcripts')
+                      .select('exchange_number')
+                      .eq('session_id', sessionId)
+                      .order('exchange_number', { ascending: false })
+                      .limit(1)
+                      .maybeSingle();
+                    const exchangeNumber = (maxRow?.exchange_number ?? -1) + 1;
+                    await supabase.from('session_transcripts').insert({
+                      session_id: sessionId,
+                      exchange_number: exchangeNumber,
+                      role: 'examiner',
+                      text: cleanText,
+                    });
+
+                    const { data: freshRow } = await serviceSupabase
+                      .from('exam_sessions').select('metadata').eq('id', sessionId).single();
+                    const freshMeta = (freshRow?.metadata as Record<string, unknown>) || {};
+                    const { error: metaErr } = await serviceSupabase
+                      .from('exam_sessions')
+                      .update({ metadata: {
+                        ...freshMeta,
+                        plannerState: plannerResult.plannerState,
+                        sessionConfig: ntConfig,
+                        taskData: plannerResult.task,
+                        examPlan: plannerResult.examPlan,
+                        advanceDue: false,
+                        scenario: updatedScenario,
+                        ...(plannerResult.depthDifficultyContract ? { depthDifficultyContract: plannerResult.depthDifficultyContract } : {}),
+                      } })
+                      .eq('id', sessionId);
+                    if (metaErr) console.error('Scenario transition persist error:', metaErr.message);
+                  }
+
+                  return NextResponse.json({
+                    taskId: plannerResult.task.id,
+                    taskData: plannerResult.task,
+                    examinerMessage: cleanText,
+                    elementCode: chosen,
+                    plannerState: plannerResult.plannerState,
+                    examPlan: plannerResult.examPlan,
+                  });
+                }
+              }
+            }
+          }
+          // pending empty / shortlist empty / advance failed → linear path below
+          // (which also owns the exam-complete grading flow).
+        } catch (err) {
+          console.error('[scenario] transition failed — falling back to linear advance:', err instanceof Error ? err.message : err);
+        }
+      }
+      // ── end Scenario Engine branch ───────────────────────────────────────
+
       if (srvPlannerState && ntConfig) {
         const plannerResult = await advancePlanner(srvPlannerState, ntConfig, undefined, srvExamPlan);
         if (!plannerResult) {

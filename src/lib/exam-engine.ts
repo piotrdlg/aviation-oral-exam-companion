@@ -57,6 +57,30 @@ export interface LlmUsage {
   input_tokens: number;
   output_tokens: number;
   latency_ms: number;
+  // W5.2: Anthropic prompt-cache metrics (present when caching is active)
+  cache_creation_input_tokens?: number;
+  cache_read_input_tokens?: number;
+}
+
+/** Anthropic system content block with optional cache breakpoint. */
+type SystemBlock = { type: 'text'; text: string; cache_control?: { type: 'ephemeral' } };
+
+/**
+ * W5.2: split the system prompt into [session-static (cached), dynamic].
+ *
+ * Anthropic caches the prompt PREFIX up to the cache_control marker, so the
+ * static block must contain only parts identical across a task's exchanges:
+ * the system prompt, persona, name instruction — and, when the Scenario
+ * Engine flag is on (W5.4), the EXAM SCENARIO block. Per-exchange material
+ * (RAG, transition hints) goes in the uncached dynamic block AFTER the
+ * marker. Blocks under the model's 1024-token cache minimum no-op silently.
+ */
+export function buildCachedSystem(sessionStatic: string, dynamic: string): SystemBlock[] {
+  const blocks: SystemBlock[] = [
+    { type: 'text', text: sessionStatic, cache_control: { type: 'ephemeral' } },
+  ];
+  if (dynamic) blocks.push({ type: 'text', text: dynamic });
+  return blocks;
 }
 
 export interface ExamTurn {
@@ -214,7 +238,7 @@ export async function fetchRagContext(
     systemConfig?: SystemConfigMap;
     timing?: TimingContext;
   }
-): Promise<{ ragContext: string; ragChunks: ChunkSearchResult[]; ragImages: ImageResult[] }> {
+): Promise<{ ragContext: string; ragChunks: ChunkSearchResult[]; ragImages: Promise<ImageResult[]> }> {
   try {
     // Combine task, recent history, and student answer for a comprehensive query
     const recentText = history.slice(-2).map(m => m.text).join(' ');
@@ -248,14 +272,19 @@ export async function fetchRagContext(
 
     const ragContext = formatChunksForPrompt(ragChunks);
 
-    // Fetch linked images for the retrieved chunks
+    // W5.2 (review-03 #12): the image fetch no longer blocks the critical
+    // path — it starts here and resolves in parallel with prompt assembly +
+    // the LLM calls; consumers await it only at the point of use.
     const chunkIds = ragChunks.map(c => c.id);
-    const ragImages = await getImagesForChunks(chunkIds, options?.timing);
+    const ragImages = getImagesForChunks(chunkIds, options?.timing).catch((err) => {
+      console.error('Image fetch failed (non-critical):', err instanceof Error ? err.message : err);
+      return [] as ImageResult[];
+    });
 
     return { ragContext, ragChunks, ragImages };
   } catch (err) {
     console.error('fetchRagContext failed:', err instanceof Error ? err.message : err);
-    return { ragContext: '', ragChunks: [], ragImages: [] };
+    return { ragContext: '', ragChunks: [], ragImages: Promise.resolve([]) };
   }
 }
 
@@ -275,7 +304,8 @@ export async function generateExaminerTurn(
   personaSection?: string,
   studentName?: string,
   transitionHint?: string,
-  depthContractSection?: string
+  depthContractSection?: string,
+  scenarioSection?: string
 ): Promise<ExamTurn> {
   // Load the best-matching prompt from DB (specificity: rating + studyMode + difficulty)
   const { content: dbPromptContent } = await loadPromptFromDB(
@@ -313,7 +343,8 @@ export async function generateExaminerTurn(
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 500,
-    system: systemPrompt + personaFragment + nameInstruction + transitionSection + ragSection,
+    // W5.4: the scenario block lives in the session-static cached region
+    system: buildCachedSystem(systemPrompt + personaFragment + nameInstruction + (scenarioSection ?? ''), transitionSection + ragSection),
     messages:
       messages.length === 0
         ? [{ role: 'user', content: 'Begin the oral examination.' }]
@@ -332,6 +363,8 @@ export async function generateExaminerTurn(
       input_tokens: response.usage.input_tokens,
       output_tokens: response.usage.output_tokens,
       latency_ms: latencyMs,
+      cache_creation_input_tokens: response.usage.cache_creation_input_tokens ?? undefined,
+      cache_read_input_tokens: response.usage.cache_read_input_tokens ?? undefined,
     },
   };
 }
@@ -346,7 +379,7 @@ export async function generateExaminerTurnStreaming(
   history: ExamMessage[],
   difficulty?: import('@/types/database').Difficulty,
   aircraftClass?: AircraftClass,
-  prefetchedRag?: { ragContext: string; ragImages?: ImageResult[]; ragChunks?: ChunkSearchResult[] },
+  prefetchedRag?: { ragContext: string; ragImages?: ImageResult[] | Promise<ImageResult[]>; ragChunks?: ChunkSearchResult[] },
   assessmentPromise?: Promise<AssessmentData>,
   onComplete?: (fullText: string) => Promise<void> | void,
   rating: Rating = 'private',
@@ -357,7 +390,9 @@ export async function generateExaminerTurnStreaming(
   timing?: TimingContext,
   depthContractSection?: string,
   assetContext?: AssetSelectionContext,
-  onAssetSelected?: (asset: SelectedAsset) => void
+  onAssetSelected?: (asset: SelectedAsset) => void,
+  onUsage?: (usage: LlmUsage) => void,
+  scenarioSection?: string
 ): Promise<{ stream: ReadableStream; fullTextPromise: Promise<string> }> {
   // Load the best-matching prompt from DB (specificity: rating + studyMode + difficulty)
   const { content: dbPromptContent } = await loadPromptFromDB(
@@ -397,8 +432,10 @@ export async function generateExaminerTurnStreaming(
   }
   const structuredInstr = structuredResponse ? STRUCTURED_RESPONSE_INSTRUCTION : '';
 
-  // Compose: systemPrompt + structuredInstr (early!) + persona + name + RAG
-  let composedSystem = basePrompt + structuredInstr + personaFragment + nameInstruction + ragSection;
+  // W5.2: session-static region (cached across the task's exchanges).
+  // The W5.4 Scenario Engine renders its EXAM SCENARIO block into THIS
+  // region (via scenarioSection) so it is cache-priced per exchange.
+  const sessionStatic = basePrompt + structuredInstr + personaFragment + nameInstruction + (scenarioSection ?? '');
 
   let messages = history.map((msg) => ({
     role: msg.role === 'examiner' ? 'assistant' as const : 'user' as const,
@@ -421,15 +458,14 @@ export async function generateExaminerTurnStreaming(
 
   // Append paragraph structure instruction when responding to student answers
   // (not on opening questions where messages is empty).
-  // Placed BEFORE ragSection so it's not buried after thousands of tokens of reference material.
   // When NOT in structured JSON mode, append brevity instruction for paragraph TTS streaming
   const paragraphInstruction = (!structuredResponse && messages.length > 0) ? PARAGRAPH_STRUCTURE_INSTRUCTION : '';
-  const finalSystem = composedSystem + paragraphInstruction;
+  const dynamicTail = ragSection + paragraphInstruction;
 
   const stream = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: structuredResponse ? 350 : (messages.length > 0 ? 250 : 500),
-    system: finalSystem,
+    system: buildCachedSystem(sessionStatic, dynamicTail),
     stream: true,
     messages:
       messages.length === 0
@@ -460,9 +496,21 @@ export async function generateExaminerTurnStreaming(
       const isResponseToStudent = messages.length > 0;
 
       let firstTokenRecorded = false;
+      const streamStartMs = Date.now();
+      const streamUsage: LlmUsage = { input_tokens: 0, output_tokens: 0, latency_ms: 0 };
 
       try {
         for await (const event of stream) {
+          // W5.2: streaming usage (incl. prompt-cache metrics) arrives on
+          // message_start (input side) and message_delta (output side).
+          if (event.type === 'message_start') {
+            const u = event.message.usage;
+            streamUsage.input_tokens = u.input_tokens ?? 0;
+            streamUsage.cache_creation_input_tokens = u.cache_creation_input_tokens ?? undefined;
+            streamUsage.cache_read_input_tokens = u.cache_read_input_tokens ?? undefined;
+          } else if (event.type === 'message_delta' && event.usage) {
+            streamUsage.output_tokens = event.usage.output_tokens ?? streamUsage.output_tokens;
+          }
           if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
             if (!firstTokenRecorded) {
               // Matches timing.start('llm.examiner.ttft') in api/exam/route.ts
@@ -570,7 +618,7 @@ export async function generateExaminerTurnStreaming(
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ examinerMessage: plainText })}\n\n`));
 
         // Send linked images (if any) — semantic selection with threshold
-        const ragImages = prefetchedRag?.ragImages ?? [];
+        const ragImages = await Promise.resolve(prefetchedRag?.ragImages ?? []).catch(() => [] as ImageResult[]);
         const ragChunks = prefetchedRag?.ragChunks ?? [];
         if (ragImages.length > 0 || ragChunks.length > 0) {
           if (assetContext) {
@@ -595,6 +643,12 @@ export async function generateExaminerTurnStreaming(
 
         // Resolve full text so after() block can persist reliably
         resolveFullText(plainText);
+
+        // W5.2: report stream usage (incl. cache metrics) to the caller
+        if (onUsage && streamUsage.input_tokens > 0) {
+          streamUsage.latency_ms = Date.now() - streamStartMs;
+          try { onUsage(streamUsage); } catch { /* telemetry must not break the stream */ }
+        }
 
         // Legacy onComplete callback (fire-and-forget, non-critical)
         if (onComplete) {
@@ -654,7 +708,7 @@ export async function assessAnswer(
   history: ExamMessage[],
   studentAnswer: string,
   prefetchedRag?: { ragContext: string; ragChunks: ChunkSearchResult[] },
-  questionImages?: ImageResult[],
+  questionImages?: ImageResult[] | Promise<ImageResult[]> | null,
   rating: Rating = 'private',
   studyMode?: string,
   difficulty?: string,
@@ -699,6 +753,13 @@ export async function assessAnswer(
     }
   }
 
+  // W5.2: assessment needs grounding for the SPECIFIC claim, not breadth —
+  // cap at 3 chunks (the examiner call keeps the full 5).
+  if (ragChunks.length > 3) {
+    ragChunks = ragChunks.slice(0, 3);
+    ragContext = formatChunksForPrompt(ragChunks);
+  }
+
   const ragSection = ragContext
     ? `\n\nFAA SOURCE MATERIAL (use to validate the answer):\n${ragContext}`
     : '';
@@ -716,13 +777,18 @@ export async function assessAnswer(
     : rating === 'atp' ? 'Airline Transport Pilot'
     : 'Private Pilot';
 
-  // Dynamic section always appended (task context + JSON schema)
-  const dynamicSection = `
+  // W5.2 prompt-cache structure: the DB prompt, task context, element list,
+  // grading contract, and output schema are all TASK-stable — they form the
+  // cached static block (comfortably over the 1,024-token cache minimum,
+  // which the DB prompt alone is not). Only the RAG section varies per
+  // exchange and stays in the uncached dynamic block.
+  const staticSection = `${dbPromptContent}
+
 EXAM CONTEXT:
 Certificate: ${ratingLabel}
 ACS Task: ${task.id} - ${task.task}
 All elements for this task:
-${elementList}${ragSection}${gradingContract}
+${elementList}${gradingContract}
 
 OUTPUT FORMAT — Respond in JSON only with this exact schema:
 {
@@ -736,9 +802,12 @@ OUTPUT FORMAT — Respond in JSON only with this exact schema:
 }`;
 
   const textOnlyContent = `Recent conversation:\n${recentContext}\n\nStudent's answer: ${studentAnswer}\n\nAssess this answer.`;
-  const imageContent = questionImages && questionImages.length > 0
+  // W5.2: images may arrive as a promise (fetched in parallel with prompt
+  // assembly); resolve them here, just before they are needed.
+  const resolvedImages = questionImages ? await Promise.resolve(questionImages).catch(() => []) : null;
+  const imageContent = resolvedImages && resolvedImages.length > 0
     ? [
-        ...questionImages.map(img => ({
+        ...resolvedImages.map(img => ({
           type: 'image' as const,
           source: { type: 'url' as const, url: img.public_url },
         })),
@@ -761,7 +830,8 @@ OUTPUT FORMAT — Respond in JSON only with this exact schema:
       response = await anthropic.messages.create({
         model: 'claude-sonnet-4-6',
         max_tokens: 400,
-        system: dbPromptContent + dynamicSection,
+        // W5.2: task-stable prefix cached; per-exchange RAG uncached.
+        system: buildCachedSystem(staticSection, ragSection),
         messages: [{ role: 'user', content: withImages && imageContent ? imageContent : textOnlyContent }],
       });
     } catch (err) {
@@ -771,7 +841,7 @@ OUTPUT FORMAT — Respond in JSON only with this exact schema:
         response = await anthropic.messages.create({
           model: 'claude-sonnet-4-6',
           max_tokens: 400,
-          system: dbPromptContent + dynamicSection,
+          system: buildCachedSystem(staticSection, ragSection),
           messages: [{ role: 'user', content: textOnlyContent }],
         });
       } else {
@@ -783,6 +853,8 @@ OUTPUT FORMAT — Respond in JSON only with this exact schema:
       input_tokens: response.usage.input_tokens,
       output_tokens: response.usage.output_tokens,
       latency_ms: latencyMs,
+      cache_creation_input_tokens: response.usage.cache_creation_input_tokens ?? undefined,
+      cache_read_input_tokens: response.usage.cache_read_input_tokens ?? undefined,
     };
     // W2.2: find the text block — content can be empty on max-tokens/refusal stops
     const textBlock = response.content.find((b) => b.type === 'text');

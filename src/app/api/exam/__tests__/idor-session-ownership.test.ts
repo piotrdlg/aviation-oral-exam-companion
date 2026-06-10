@@ -63,6 +63,7 @@ const h = vi.hoisted(() => {
 });
 
 // ---- Module mocks ----
+vi.mock('server-only', () => ({}));
 vi.mock('next/server', async (importOriginal) => {
   const orig = await importOriginal<typeof import('next/server')>();
   return { ...orig, after: vi.fn() };
