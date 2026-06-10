@@ -57,6 +57,9 @@ export function useDeepgramSTT(options: UseDeepgramSTTOptions = {}): UseDeepgram
   const tokenRef = useRef<{ token: string; wsUrl: string; expiresAt: number } | null>(null);
   const reconnectCyclesRef = useRef(0);
   const reconnectRef = useRef<(stream: MediaStream) => void>(() => {});
+  // W4.3: whether the server issued a Flux (/v2/listen) URL — different
+  // message schema (TurnInfo events instead of Results).
+  const fluxRef = useRef(false);
 
   // Keep sessionId ref up to date
   useEffect(() => {
@@ -220,6 +223,20 @@ export function useDeepgramSTT(options: UseDeepgramSTTOptions = {}): UseDeepgram
             } else {
               setInterimTranscript(transcriptText);
             }
+          } else if (data.type === 'TurnInfo' && fluxRef.current) {
+            // W4.3 Flux pilot (/v2/listen): model-based end-of-turn detection.
+            // `transcript` covers the WHOLE current turn, so EndOfTurn replaces
+            // (not appends within) the turn; completed turns accumulate.
+            const turnText = (data.transcript || '').trim();
+            if (data.event === 'EndOfTurn') {
+              if (turnText && turnText !== lastFinalTextRef.current) {
+                lastFinalTextRef.current = turnText;
+                setTranscript(prev => (prev ? prev + ' ' : '') + turnText);
+              }
+              setInterimTranscript('');
+            } else if (data.event === 'Update' || data.event === 'EagerEndOfTurn' || data.event === 'TurnResumed') {
+              setInterimTranscript(turnText);
+            }
           }
         } catch {
           // Ignore non-JSON messages
@@ -322,6 +339,7 @@ export function useDeepgramSTT(options: UseDeepgramSTTOptions = {}): UseDeepgram
           const d = await res.json();
           tok = { token: d.token, wsUrl: d.url, expiresAt: d.expiresAt };
           tokenRef.current = tok;
+          fluxRef.current = d.flux === true; // W4.3
         }
       } catch { /* fall through with the cached token, if any */ }
     }
@@ -392,6 +410,7 @@ export function useDeepgramSTT(options: UseDeepgramSTTOptions = {}): UseDeepgram
         const tokenData = await tokenRes.json();
         token = tokenData.token;
         wsUrl = tokenData.url;
+        fluxRef.current = tokenData.flux === true; // W4.3
         // Cache for mid-session reconnects (W4.1)
         tokenRef.current = { token, wsUrl, expiresAt: tokenData.expiresAt ?? Date.now() + 9 * 60_000 };
 

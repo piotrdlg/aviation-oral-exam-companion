@@ -22,6 +22,15 @@ const serviceSupabase = createServiceClient(
 // 2-provider chain) worst-cases well under 30s (audit-62 WARN fix).
 export const maxDuration = 30;
 
+// W4.3: this route fires once PER SENTENCE during streaming TTS, so the
+// monthly-usage RPC was a per-sentence DB round trip on the latency path.
+// Cache the sum for 60s per user and advance it locally after each synthesis.
+// Worst-case overshoot past the cap: one user's synthesis volume in 60s on a
+// stale warm instance — negligible against a 35k/1M char budget, and the next
+// refresh corrects it. Correctness never depends on a hit (cold start = miss).
+import { TtlCache } from '@/lib/ttl-cache';
+const ttsQuotaCache = new TtlCache<number>(60_000);
+
 export async function POST(request: NextRequest) {
   after(() => flushPostHog());
 
@@ -68,13 +77,19 @@ export async function POST(request: NextRequest) {
     // W3.2 #1: SUM the chars actually synthesized this month (the old check
     // counted log ROWS, so the cap was unreachable). get_monthly_usage is the
     // auth-guarded RPC; service-role bypasses the guard.
-    const { data: ttsCharsThisMonth } = await serviceSupabase.rpc('get_monthly_usage', {
-      p_user_id: user.id, p_event_type: 'tts_request',
-    });
+    // W4.3: cached 60s per user — see ttsQuotaCache above.
+    let ttsCharsThisMonth = ttsQuotaCache.get(user.id);
+    if (ttsCharsThisMonth === undefined) {
+      const { data } = await serviceSupabase.rpc('get_monthly_usage', {
+        p_user_id: user.id, p_event_type: 'tts_request',
+      });
+      ttsCharsThisMonth = (data as number) || 0;
+      ttsQuotaCache.set(user.id, ttsCharsThisMonth);
+    }
 
     const quotaResult = checkQuota(tier, {
       sessionsThisMonth: 0,
-      ttsCharsThisMonth: (ttsCharsThisMonth as number) || 0,
+      ttsCharsThisMonth,
       sttSecondsThisMonth: 0,
       exchangesThisSession: 0,
     }, 'tts');
@@ -88,7 +103,7 @@ export async function POST(request: NextRequest) {
           { status: 429 }
         );
       }
-      captureServerEvent(user.id, 'tts_quota_exceeded_logonly', { tier, used: (ttsCharsThisMonth as number) || 0, limit: quotaResult.limit });
+      captureServerEvent(user.id, 'tts_quota_exceeded_logonly', { tier, used: ttsCharsThisMonth, limit: quotaResult.limit });
     }
 
     // Daily hard-cap backstop (only queried when the flag is on — zero overhead otherwise).
@@ -127,6 +142,10 @@ export async function POST(request: NextRequest) {
       ? { ...safeTtsConfig, model: activeVoice }
       : Object.keys(safeTtsConfig).length > 0 ? safeTtsConfig : undefined;
     const result = await provider.synthesize(truncated, { config: effectiveConfig });
+
+    // Advance the cached month-sum so back-to-back sentences see fresh usage
+    // without re-querying (W4.3).
+    ttsQuotaCache.set(user.id, ttsCharsThisMonth + truncated.length);
 
     // Log usage (non-blocking)
     serviceSupabase

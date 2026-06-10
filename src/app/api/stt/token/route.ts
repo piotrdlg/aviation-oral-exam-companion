@@ -9,6 +9,7 @@ import { requireSafeDbTarget } from '@/lib/app-env';
 import { captureServerEvent, flushPostHog } from '@/lib/posthog-server';
 import { checkQuota } from '@/lib/voice/usage';
 import { isQuotaEnforced } from '@/lib/voice/quota-flags';
+import { appendKeytermParams } from '@/lib/voice/aviation-keyterms';
 
 const serviceSupabase = createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -135,18 +136,36 @@ export async function GET() {
 
     const expiresAt = Date.now() + expiresIn * 1000;
 
-    // Build pre-configured WebSocket URL (minimal params — keywords removed
-    // per GPT-5.2/Gemini consensus: 30 repeated keywords= params caused
-    // Deepgram to reject the WebSocket handshake)
-    const params = new URLSearchParams({
-      model: 'nova-3',
-      language: 'en-US',
-      smart_format: 'true',
-      interim_results: 'true',
-      utterance_end_ms: '1500',
-      vad_events: 'true',
-    });
-    const wsUrl = 'wss://api.deepgram.com/v1/listen?' + params.toString();
+    // W4.3: Flux pilot — model-based end-of-turn detection (/v2/listen).
+    // Default OFF via stt.flux_pilot; Flux accepts MediaRecorder webm/opus
+    // containers directly, so the client capture path is unchanged.
+    const fluxEnabled = (config['stt.flux_pilot'] as { enabled?: boolean } | undefined)?.enabled === true;
+
+    let wsUrl: string;
+    let keytermCount = 0;
+    if (fluxEnabled) {
+      const params = new URLSearchParams({
+        model: 'flux-general-en',
+        eot_threshold: '0.7',
+      });
+      keytermCount = appendKeytermParams(params, config['stt.keyterms']).length;
+      wsUrl = 'wss://api.deepgram.com/v2/listen?' + params.toString();
+    } else {
+      // Nova-3 (default). History: the NOVA-2-era `keywords=` param (30
+      // repeats) broke the WS handshake — removed after a GPT-5.2/Gemini
+      // consensus. Nova-3's `keyterm=` is its replacement (W4.3) and the
+      // handshake was live-verified with the full list before shipping.
+      const params = new URLSearchParams({
+        model: 'nova-3',
+        language: 'en-US',
+        smart_format: 'true',
+        interim_results: 'true',
+        utterance_end_ms: '1500',
+        vad_events: 'true',
+      });
+      keytermCount = appendKeytermParams(params, config['stt.keyterms']).length;
+      wsUrl = 'wss://api.deepgram.com/v1/listen?' + params.toString();
+    }
 
     // Log token issuance (non-blocking)
     serviceSupabase
@@ -172,12 +191,14 @@ export async function GET() {
       token: accessToken,
       url: wsUrl,
       expiresAt,
+      flux: fluxEnabled,
       _debug: {
         method: 'auth_grant',
         tokenLen: accessToken.length,
         tokenPrefix: accessToken.slice(0, 12) + '...',
         expiresIn,
         ttlSeconds: TOKEN_TTL_SECONDS,
+        keytermCount,
       },
     });
   } catch (error) {
