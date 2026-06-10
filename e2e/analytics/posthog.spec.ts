@@ -3,6 +3,12 @@ import { mockPostHogEndpoints } from '../helpers/analytics-mocks';
 import { clearConsentStorage } from '../helpers/storage';
 import { CookieConsentBanner } from '../pages/CookieConsentBanner';
 
+interface WindowWithPostHog extends Window {
+  posthog?: {
+    capture?: (eventName: string, properties?: Record<string, unknown>) => void;
+  };
+}
+
 /**
  * PostHog analytics consent-gating tests.
  *
@@ -69,7 +75,7 @@ test.describe('PostHog — Consent Gating', () => {
     // PostHog only initializes if NEXT_PUBLIC_POSTHOG_KEY is set in the build environment.
     // In local dev without the key, PostHog won't fire — skip assertion in that case.
     if (requests.length === 0) {
-      const hasPostHog = await page.evaluate(() => typeof (window as any).posthog?.capture === 'function');
+      const hasPostHog = await page.evaluate(() => typeof (window as WindowWithPostHog).posthog?.capture === 'function');
       if (!hasPostHog) {
         test.skip(true, 'PostHog not initialized — NEXT_PUBLIC_POSTHOG_KEY likely missing from env');
         return;
