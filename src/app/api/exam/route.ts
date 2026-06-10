@@ -759,6 +759,20 @@ export async function POST(request: NextRequest) {
             // Log assessment LLM usage
             logLlmUsage(user.id, assessment.usage, tier, sessionId, { action: 'respond', call: 'assessAnswer' });
 
+            // W2.6 telemetry (review-02 arch risk 2): flag exchanges where the
+            // examiner's spoken feedback contradicts the persisted score.
+            try {
+              const spokenText = await fullTextPromise;
+              if (assessment.score === 'unsatisfactory' && /exactly right|that's correct|well done|good answer|excellent/i.test(spokenText || '')) {
+                const { captureServerEvent } = await import('@/lib/posthog-server');
+                captureServerEvent(user.id, 'examiner_assessment_mismatch', {
+                  session_id: sessionId,
+                  exchange_number: exchangeNumber,
+                  score: assessment.score,
+                });
+              }
+            } catch { /* telemetry only */ }
+
             if (studentTranscriptId && assessment) {
               // 2. Assessment update on student transcript
               const { error: assessErr } = await serviceSupabase
