@@ -35,7 +35,12 @@ export interface ExamMessage {
 }
 
 export interface AssessmentData {
-  score: 'satisfactory' | 'unsatisfactory' | 'partial';
+  /**
+   * 'ungraded' (W2.2) marks infrastructure/parse failures — it is excluded
+   * from element_attempts and point math, and rendered as "Not assessed".
+   * It must never be conflated with 'partial' (a real half-credit answer).
+   */
+  score: 'satisfactory' | 'unsatisfactory' | 'partial' | 'ungraded';
   feedback: string;
   misconceptions: string[];
   follow_up_needed: boolean;
@@ -46,6 +51,8 @@ export interface AssessmentData {
   rag_chunks?: ChunkSearchResult[];
   usage?: LlmUsage;
 }
+
+const VALID_SCORES = new Set(['satisfactory', 'unsatisfactory', 'partial']);
 
 export interface LlmUsage {
   input_tokens: number;
@@ -89,14 +96,20 @@ export async function loadPromptFromDB(
 ): Promise<{ content: string; versionId: string | null }> {
   let candidates = promptCache.get(promptKey);
   if (!candidates) {
-    const { data } = await supabaseClient
+    const { data, error } = await supabaseClient
       .from('prompt_versions')
       .select('id, content, rating, study_mode, difficulty, version')
       .eq('prompt_key', promptKey)
       .eq('status', 'published')
       .order('version', { ascending: false });
     candidates = (data ?? []) as PromptCandidate[];
-    promptCache.set(promptKey, candidates);
+    // W2.2: only cache successful queries — a transient DB error must not
+    // pin every session to the hardcoded fallback prompt for 5 minutes.
+    if (!error) {
+      promptCache.set(promptKey, candidates);
+    } else {
+      console.error(`loadPromptFromDB(${promptKey}) query failed (not cached):`, error.message);
+    }
   }
 
   const scored = (candidates ?? [])
@@ -347,8 +360,10 @@ export async function generateExaminerTurn(
   });
   const latencyMs = Date.now() - startMs;
 
-  const examinerMessage =
-    response.content[0].type === 'text' ? response.content[0].text : '';
+  // W2.2: content may be empty (max-tokens edge / refusal stop) — find the
+  // text block instead of indexing [0] blindly.
+  const textBlock = response.content.find((b) => b.type === 'text');
+  const examinerMessage = textBlock && textBlock.type === 'text' ? textBlock.text : '';
 
   return {
     examinerMessage,
@@ -639,10 +654,11 @@ export async function generateExaminerTurnStreaming(
             clearInterval(keepAlive);
             const errMsg = err instanceof Error ? err.message : String(err);
             console.error('Assessment failed during streaming:', errMsg, err);
-            // Send fallback assessment so the client always receives grading
+            // Send an explicit UNGRADED fallback (W2.2) — infrastructure
+            // failures never award the 0.7-point 'partial' credit (bug 7).
             const fallback = {
-              score: 'partial' as const,
-              feedback: 'Assessment could not be completed.',
+              score: 'ungraded' as const,
+              feedback: 'This answer could not be assessed due to a technical issue.',
               misconceptions: [],
               follow_up_needed: false,
               primary_element: null,
@@ -777,65 +793,115 @@ OUTPUT FORMAT — Respond in JSON only with this exact schema:
       ]
     : null;
 
-  const startMs = Date.now();
-  let response;
-  try {
-    response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 400,
-      system: dbPromptContent + dynamicSection,
-      messages: [{ role: 'user', content: imageContent ?? textOnlyContent }],
-    });
-  } catch (err) {
-    // If the error is image-related, retry without images
-    if (imageContent && String(err).includes('Unable to download')) {
-      console.warn('[assessAnswer] Image download failed, retrying without images');
+  // Valid element codes for this task — the LLM's element attributions are
+  // validated against this set (W2.2): one hallucinated code must never
+  // poison the element_attempts write.
+  const validElementCodes = new Set(allElements.map((e) => e.split(':')[0].trim()));
+
+  const callOnce = async (withImages: boolean) => {
+    const startMs = Date.now();
+    let response;
+    try {
       response = await anthropic.messages.create({
         model: 'claude-sonnet-4-6',
         max_tokens: 400,
         system: dbPromptContent + dynamicSection,
-        messages: [{ role: 'user', content: textOnlyContent }],
+        messages: [{ role: 'user', content: withImages && imageContent ? imageContent : textOnlyContent }],
       });
-    } else {
-      throw err;
+    } catch (err) {
+      // If the error is image-related, retry without images
+      if (withImages && imageContent && String(err).includes('Unable to download')) {
+        console.warn('[assessAnswer] Image download failed, retrying without images');
+        response = await anthropic.messages.create({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 400,
+          system: dbPromptContent + dynamicSection,
+          messages: [{ role: 'user', content: textOnlyContent }],
+        });
+      } else {
+        throw err;
+      }
     }
-  }
-  const latencyMs = Date.now() - startMs;
-
-  const usageData: LlmUsage = {
-    input_tokens: response.usage.input_tokens,
-    output_tokens: response.usage.output_tokens,
-    latency_ms: latencyMs,
+    const latencyMs = Date.now() - startMs;
+    const usageData: LlmUsage = {
+      input_tokens: response.usage.input_tokens,
+      output_tokens: response.usage.output_tokens,
+      latency_ms: latencyMs,
+    };
+    // W2.2: find the text block — content can be empty on max-tokens/refusal stops
+    const textBlock = response.content.find((b) => b.type === 'text');
+    const text = textBlock && textBlock.type === 'text' ? textBlock.text : '';
+    return { text, usageData };
   };
 
-  const text =
-    response.content[0].type === 'text' ? response.content[0].text : '{}';
+  // W2.2: one retry on unparseable/empty output before falling back to
+  // 'ungraded'. Infrastructure failures must never masquerade as a real
+  // 'partial' grade (review-02 bug 7).
+  let lastUsage: LlmUsage | undefined;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const { text, usageData } = await callOnce(attempt === 0);
+    lastUsage = usageData;
+    if (!text) continue;
+    try {
+      const cleaned = text.replace(/```json\n?|\n?```/g, '').trim();
+      const parsed = JSON.parse(cleaned);
 
-  try {
-    const cleaned = text.replace(/```json\n?|\n?```/g, '').trim();
-    const parsed = JSON.parse(cleaned);
-    return {
-      score: parsed.score || 'partial',
-      feedback: parsed.feedback || '',
-      misconceptions: parsed.misconceptions || [],
-      follow_up_needed: parsed.follow_up_needed ?? false,
-      primary_element: parsed.primary_element || null,
-      mentioned_elements: parsed.mentioned_elements || [],
-      source_summary: parsed.source_summary || 'Insufficient FAA sources to verify this answer.',
-      rag_chunks: ragChunks.length > 0 ? ragChunks : undefined,
-      usage: usageData,
-    };
-  } catch {
-    return {
-      score: 'partial',
-      feedback: 'Assessment could not be parsed.',
-      misconceptions: [],
-      follow_up_needed: false,
-      primary_element: null,
-      mentioned_elements: [],
-      source_summary: 'Insufficient FAA sources to verify this answer.',
-      rag_chunks: ragChunks.length > 0 ? ragChunks : undefined,
-      usage: usageData,
-    };
+      // Score validation: anything outside the enum is an LLM malfunction
+      const score: AssessmentData['score'] = VALID_SCORES.has(parsed.score)
+        ? parsed.score
+        : 'ungraded';
+      if (score === 'ungraded') {
+        console.warn(`[assessAnswer] invalid score "${parsed.score}" — marking ungraded`);
+      }
+
+      // Element validation: drop hallucinated codes (review-02 bug 6)
+      let primaryElement: string | null = parsed.primary_element || null;
+      if (primaryElement && !validElementCodes.has(primaryElement)) {
+        console.warn(`[assessAnswer] dropped hallucinated primary_element "${primaryElement}"`);
+        primaryElement = null;
+      }
+      const rawMentions: string[] = Array.isArray(parsed.mentioned_elements) ? parsed.mentioned_elements : [];
+      const seenMentions = new Set<string>();
+      const mentionedElements = rawMentions.filter((code) => {
+        if (typeof code !== 'string' || !validElementCodes.has(code) || code === primaryElement || seenMentions.has(code)) {
+          return false;
+        }
+        seenMentions.add(code);
+        return true;
+      });
+      const droppedMentions = rawMentions.length - mentionedElements.length;
+      if (droppedMentions > 0) {
+        console.warn(`[assessAnswer] dropped ${droppedMentions} invalid/duplicate mentioned_elements`);
+      }
+
+      return {
+        score,
+        feedback: parsed.feedback || '',
+        misconceptions: parsed.misconceptions || [],
+        follow_up_needed: parsed.follow_up_needed ?? false,
+        primary_element: primaryElement,
+        mentioned_elements: mentionedElements,
+        source_summary: parsed.source_summary || 'Insufficient FAA sources to verify this answer.',
+        rag_chunks: ragChunks.length > 0 ? ragChunks : undefined,
+        usage: usageData,
+      };
+    } catch {
+      if (attempt === 0) {
+        console.warn('[assessAnswer] unparseable assessment JSON — retrying once');
+      }
+    }
   }
+
+  // Both attempts failed: explicit ungraded state (never fake 'partial')
+  return {
+    score: 'ungraded',
+    feedback: 'This answer could not be assessed due to a technical issue.',
+    misconceptions: [],
+    follow_up_needed: false,
+    primary_element: null,
+    mentioned_elements: [],
+    source_summary: 'Insufficient FAA sources to verify this answer.',
+    rag_chunks: ragChunks.length > 0 ? ragChunks : undefined,
+    usage: lastUsage,
+  };
 }

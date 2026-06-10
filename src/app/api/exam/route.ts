@@ -102,19 +102,14 @@ async function writeElementAttempts(
   transcriptId: string,
   assessment: AssessmentData
 ) {
-  const rows: Array<{
-    session_id: string;
-    transcript_id: string;
-    element_code: string;
-    tag_type: 'attempt' | 'mention';
-    score: string | null;
-    is_primary: boolean;
-    confidence: number | null;
-  }> = [];
+  // W2.2: 'ungraded' assessments (infrastructure failures) never reach
+  // element_attempts — they carry no signal about the student.
+  if (assessment.score === 'ungraded') return;
 
-  // Primary element as scored attempt
+  // Primary attempt is written in its OWN statement so a constraint
+  // violation on a mention can never destroy the scored attempt (bug 6).
   if (assessment.primary_element) {
-    rows.push({
+    const { error } = await supabase.from('element_attempts').insert({
       session_id: sessionId,
       transcript_id: transcriptId,
       element_code: assessment.primary_element,
@@ -123,31 +118,29 @@ async function writeElementAttempts(
       is_primary: true,
       confidence: null,
     });
+    if (error) {
+      console.error('Error writing primary element_attempt:', error.message);
+    }
   }
 
-  // Mentioned elements as unscored mentions
-  for (const code of assessment.mentioned_elements) {
-    // Skip if it's the same as primary (already added)
-    if (code === assessment.primary_element) continue;
-    rows.push({
+  // Mentioned elements as unscored mentions (already validated/deduped by
+  // assessAnswer, but the separation keeps failures independent regardless)
+  const mentionRows = assessment.mentioned_elements
+    .filter((code) => code !== assessment.primary_element)
+    .map((code) => ({
       session_id: sessionId,
       transcript_id: transcriptId,
       element_code: code,
-      tag_type: 'mention',
+      tag_type: 'mention' as const,
       score: null,
       is_primary: false,
       confidence: null,
-    });
-  }
+    }));
 
-  if (rows.length > 0) {
-    const { error } = await supabase
-      .from('element_attempts')
-      .insert(rows);
-
+  if (mentionRows.length > 0) {
+    const { error } = await supabase.from('element_attempts').insert(mentionRows);
     if (error) {
-      // Log but don't fail the request — element tracking is non-critical
-      console.error('Error writing element_attempts:', error.message);
+      console.error('Error writing element mentions:', error.message);
     }
   }
 }
@@ -730,13 +723,11 @@ export async function POST(request: NextRequest) {
         // Use after() to ensure ALL DB writes complete even after stream closes.
         // This keeps the serverless function alive until all writes finish.
         after(async () => {
+          // W2.2 (bug 8): the examiner transcript persists INDEPENDENTLY of
+          // the assessment — an Anthropic failure on assessAnswer must never
+          // lose the examiner turn the client already displayed.
           try {
-            const [examinerFullText, assessment] = await Promise.all([
-              fullTextPromise,
-              assessmentPromise,
-            ]);
-
-            // 1. Persist examiner transcript (guaranteed by after(), not fire-and-forget)
+            const examinerFullText = await fullTextPromise;
             if (sessionId && examinerFullText) {
               const { error } = await serviceSupabase.from('session_transcripts').insert({
                 session_id: sessionId,
@@ -746,6 +737,12 @@ export async function POST(request: NextRequest) {
               });
               if (error) console.error('Examiner transcript write error:', error.message);
             }
+          } catch (err) {
+            console.error('Examiner transcript persist error:', err);
+          }
+
+          try {
+            const assessment = await assessmentPromise;
 
             // Log assessment LLM usage
             logLlmUsage(user.id, assessment.usage, tier, sessionId, { action: 'respond', call: 'assessAnswer' });
@@ -793,7 +790,7 @@ export async function POST(request: NextRequest) {
               const advance = (assessment as AssessmentData & { advance?: boolean }).advance === true;
               // Staying on the element consumes a follow-up attempt, so the
               // next non-satisfactory answer advances (canFollowUp sees it).
-              const updatedPlanner: PlannerState = advance ? srvPlannerState : {
+              const updatedPlanner: PlannerState = (advance || assessment.score === 'ungraded') ? srvPlannerState : {
                 ...srvPlannerState,
                 attempts: {
                   ...srvPlannerState.attempts,
@@ -945,7 +942,7 @@ export async function POST(request: NextRequest) {
         }
         // Persist updated plan + advancement state (read-merge-write)
         if (sessionId) {
-          const updatedPlanner: PlannerState = respondAdvance ? srvPlannerState : {
+          const updatedPlanner: PlannerState = (respondAdvance || assessment.score === 'ungraded') ? srvPlannerState : {
             ...srvPlannerState,
             attempts: {
               ...srvPlannerState.attempts,
