@@ -73,6 +73,29 @@ export async function sendSubscriptionConfirmed(
 }
 
 /**
+ * W6.3: account-deletion confirmation. Plain text (the account no longer
+ * exists — no preference checks apply). Never throws.
+ */
+export async function sendAccountDeleted(to: string): Promise<void> {
+  try {
+    await getResend().emails.send({
+      from: SENDERS.billing,
+      to,
+      subject: 'Your HeyDPE account has been deleted',
+      text: [
+        'Your HeyDPE account and all associated data (profile, exam history, transcripts, progress records) have been permanently deleted, and any active subscription has been cancelled.',
+        '',
+        'If you did not request this, contact pd@imagineflying.com immediately.',
+        '',
+        'Thank you for training with HeyDPE — blue skies.',
+      ].join('\n'),
+    });
+  } catch (error) {
+    console.error('[email] Failed to send account deleted email:', error);
+  }
+}
+
+/**
  * Send subscription cancellation email.
  * Never throws — logs errors and returns silently.
  */
