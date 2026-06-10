@@ -110,6 +110,24 @@ export async function sendPaymentFailed(to: string): Promise<void> {
 }
 
 /**
+ * Send an internal operations alert to the owner (refunds, disputes, etc.).
+ * Plain-text, never throws. Target overridable via ALERT_EMAIL.
+ */
+export async function sendInternalAlert(subject: string, lines: string[]): Promise<void> {
+  const to = process.env.ALERT_EMAIL || 'pd@imagineflying.com';
+  try {
+    await getResend().emails.send({
+      from: SENDERS.noreply,
+      to,
+      subject: `[HeyDPE Alert] ${subject}`,
+      text: lines.join('\n'),
+    });
+  } catch (error) {
+    console.error('[email] Failed to send internal alert:', error);
+  }
+}
+
+/**
  * Send trial ending soon reminder email.
  * Never throws — logs errors and returns silently.
  */

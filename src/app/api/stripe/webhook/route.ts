@@ -3,12 +3,24 @@ import { after } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import type Stripe from 'stripe';
-import { sendSubscriptionConfirmed, sendSubscriptionCancelled, sendPaymentFailed } from '@/lib/email';
+import {
+  sendSubscriptionConfirmed,
+  sendSubscriptionCancelled,
+  sendPaymentFailed,
+  sendTrialEndingReminder,
+  sendInternalAlert,
+} from '@/lib/email';
+import { mapStripePriceToTier, tierForSubscription } from '@/lib/stripe-tier';
 
 const serviceSupabase = createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
+
+/** ISO string of the Stripe event's creation time (epoch seconds → ms). */
+function eventCreatedIso(event: Stripe.Event): string {
+  return new Date(event.created * 1000).toISOString();
+}
 
 export async function POST(request: NextRequest) {
   after(async () => {
@@ -33,8 +45,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
-  // Idempotency: try INSERT; on conflict check if already processed
-  // Uses UNIQUE constraint on stripe_event_id; concurrent calls safely fail
+  // Idempotency: try INSERT; on conflict inspect the existing row.
   const { error: claimError } = await serviceSupabase
     .from('subscription_events')
     .insert({
@@ -47,40 +58,57 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (claimError) {
-    // UNIQUE conflict — check if already successfully processed
     const { data: existing } = await serviceSupabase
       .from('subscription_events')
-      .select('status')
+      .select('status, created_at')
       .eq('stripe_event_id', event.id)
       .maybeSingle();
 
     if (existing?.status === 'processed') {
       return NextResponse.json({ received: true, deduplicated: true });
     }
-    // status is 'processing' or 'failed' — previous attempt didn't finish; re-process below
+    // Concurrent duplicate delivery: another request is processing this same
+    // event right now. Don't double-process (review-05 #15) — only re-process
+    // if the prior attempt is stale (>60s) or already failed.
+    if (existing?.status === 'processing' && existing.created_at) {
+      const ageMs = Date.now() - new Date(existing.created_at).getTime();
+      if (ageMs < 60_000) {
+        return NextResponse.json({ received: true, in_flight: true });
+      }
+    }
+    // status is 'failed', or a stale 'processing' — fall through and re-process.
   }
 
+  const createdIso = eventCreatedIso(event);
+
   try {
-    // First attempt or retry of a failed/incomplete attempt
     switch (event.type) {
       case 'checkout.session.completed':
-        await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session, event.id);
+        await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session, event.id, createdIso);
         break;
       case 'customer.subscription.updated':
-        await handleSubscriptionUpdated(event.data.object as Stripe.Subscription, event.id);
+        await handleSubscriptionUpdated(event.data.object as Stripe.Subscription, event.id, createdIso);
         break;
       case 'customer.subscription.deleted':
-        await handleSubscriptionDeleted(event.data.object as Stripe.Subscription, event.id);
+        await handleSubscriptionDeleted(event.data.object as Stripe.Subscription, event.id, createdIso);
+        break;
+      case 'customer.subscription.trial_will_end':
+        await handleTrialWillEnd(event.data.object as Stripe.Subscription);
         break;
       case 'invoice.paid':
-        await handleInvoicePaid(event.data.object as Stripe.Invoice, event.id);
+        await handleInvoicePaid(event.data.object as Stripe.Invoice, event.id, createdIso);
         break;
       case 'invoice.payment_failed':
-        await handlePaymentFailed(event.data.object as Stripe.Invoice, event.id);
+        await handlePaymentFailed(event.data.object as Stripe.Invoice, event.id, createdIso);
+        break;
+      case 'charge.refunded':
+        await handleChargeRefunded(event.data.object as Stripe.Charge, createdIso);
+        break;
+      case 'charge.dispute.created':
+        await handleDisputeCreated(event.data.object as Stripe.Dispute, createdIso);
         break;
     }
 
-    // Mark event as successfully processed
     await serviceSupabase
       .from('subscription_events')
       .update({ status: 'processed' })
@@ -88,7 +116,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true });
   } catch (err) {
-    // Mark as failed so retries can re-process (not skip)
     await serviceSupabase
       .from('subscription_events')
       .update({ status: 'failed', error: String(err) })
@@ -99,17 +126,17 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function handleCheckoutCompleted(session: Stripe.Checkout.Session, eventId: string) {
+async function handleCheckoutCompleted(session: Stripe.Checkout.Session, eventId: string, createdIso: string) {
   if (session.mode !== 'subscription') return;
 
   const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
   const customerId = session.customer as string;
+  const priceId = subscription.items.data[0]?.price.id;
 
   // Find user by client_reference_id first (most reliable), fallback to stripe_customer_id
   let userId: string | null = session.client_reference_id ?? null;
 
   if (!userId) {
-    // Fallback: lookup by Stripe customer ID
     const { data: profile } = await serviceSupabase
       .from('user_profiles')
       .select('user_id')
@@ -120,17 +147,16 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, eventId
 
   if (!userId) {
     // Throw so the event stays in 'failed' status and Stripe retries
-    // (user mapping may succeed after auth flow completes)
     throw new Error(`No user found for Stripe customer: ${customerId}`);
   }
 
   await serviceSupabase
     .from('user_profiles')
     .update({
-      tier: 'dpe_live',
+      tier: tierForSubscription(subscription.status, priceId),
       subscription_status: subscription.status,
       stripe_subscription_id: subscription.id,
-      stripe_price_id: subscription.items.data[0]?.price.id,
+      stripe_price_id: priceId,
       stripe_product_id: subscription.items.data[0]?.price.product as string,
       stripe_subscription_item_id: subscription.items.data[0]?.id,
       cancel_at_period_end: subscription.cancel_at_period_end,
@@ -140,6 +166,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, eventId
       trial_end: subscription.trial_end
         ? new Date(subscription.trial_end * 1000).toISOString()
         : null,
+      ...(subscription.trial_end ? { has_trialed: true } : {}),
       current_period_start: subscription.items.data[0]
         ? new Date(subscription.items.data[0].current_period_start * 1000).toISOString()
         : null,
@@ -148,7 +175,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, eventId
         : null,
       latest_invoice_status: null,
       last_webhook_event_id: eventId,
-      last_webhook_event_ts: new Date().toISOString(),
+      last_stripe_event_created: createdIso,
     })
     .eq('user_id', userId);
 
@@ -178,7 +205,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, eventId
         }
       );
     } catch (err) {
-      // Non-critical: don't fail the webhook if GA4 reporting fails
       console.error('GA4 Measurement Protocol error:', err);
     }
   }
@@ -201,31 +227,28 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, eventId
   // Send confirmation email
   const customerEmail = session.customer_details?.email || session.customer_email;
   if (customerEmail) {
-    const priceId = subscription.items.data[0]?.price.id;
     const plan = priceId === process.env.STRIPE_PRICE_ANNUAL ? 'annual' as const : 'monthly' as const;
     void sendSubscriptionConfirmed(customerEmail, plan);
   }
 }
 
-async function handleSubscriptionUpdated(subscription: Stripe.Subscription, eventId: string) {
+async function handleSubscriptionUpdated(subscription: Stripe.Subscription, eventId: string, createdIso: string) {
   const customerId = subscription.customer as string;
-  const eventTs = new Date().toISOString();
+  const priceId = subscription.items.data[0]?.price.id;
 
-  const tier = subscription.status === 'active' || subscription.status === 'trialing'
-    ? 'dpe_live'
-    : 'checkride_prep';
-
-  // Guard against out-of-order event delivery: only apply if no newer event was processed
+  // Dunning grace (review-05 #8): past_due keeps the paid tier; only terminal
+  // statuses downgrade. tierForSubscription() encodes that policy.
   await serviceSupabase
     .from('user_profiles')
     .update({
-      tier,
+      tier: tierForSubscription(subscription.status, priceId),
       subscription_status: subscription.status,
       cancel_at_period_end: subscription.cancel_at_period_end,
       cancel_at: subscription.cancel_at
         ? new Date(subscription.cancel_at * 1000).toISOString()
         : null,
-      stripe_price_id: subscription.items.data[0]?.price.id,
+      stripe_price_id: priceId,
+      ...(subscription.trial_end ? { has_trialed: true } : {}),
       current_period_start: subscription.items.data[0]
         ? new Date(subscription.items.data[0].current_period_start * 1000).toISOString()
         : null,
@@ -233,17 +256,16 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription, even
         ? new Date(subscription.items.data[0].current_period_end * 1000).toISOString()
         : null,
       last_webhook_event_id: eventId,
-      last_webhook_event_ts: eventTs,
+      last_stripe_event_created: createdIso,
     })
     .eq('stripe_customer_id', customerId)
-    .or(`last_webhook_event_ts.is.null,last_webhook_event_ts.lt.${eventTs}`);
+    // Out-of-order guard (review-05 #5): apply only if this event is newer.
+    .or(`last_stripe_event_created.is.null,last_stripe_event_created.lt.${createdIso}`);
 }
 
-async function handleSubscriptionDeleted(subscription: Stripe.Subscription, eventId: string) {
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription, eventId: string, createdIso: string) {
   const customerId = subscription.customer as string;
-  const eventTs = new Date().toISOString();
 
-  // Guard against out-of-order event delivery
   await serviceSupabase
     .from('user_profiles')
     .update({
@@ -257,12 +279,13 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription, even
       stripe_subscription_item_id: null,
       latest_invoice_status: null,
       last_webhook_event_id: eventId,
-      last_webhook_event_ts: eventTs,
+      last_stripe_event_created: createdIso,
+      // has_trialed and stripe_customer_id are intentionally preserved.
     })
     .eq('stripe_customer_id', customerId)
-    .or(`last_webhook_event_ts.is.null,last_webhook_event_ts.lt.${eventTs}`);
+    .or(`last_stripe_event_created.is.null,last_stripe_event_created.lt.${createdIso}`);
 
-  // Send cancellation email — need to look up user email
+  // Send cancellation email
   const { data: cancelProfile } = await serviceSupabase
     .from('user_profiles')
     .select('user_id')
@@ -276,63 +299,141 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription, even
   }
 }
 
-async function handleInvoicePaid(invoice: Stripe.Invoice, eventId: string) {
-  const customerId = invoice.customer as string;
-  const eventTs = new Date().toISOString();
+async function handleTrialWillEnd(subscription: Stripe.Subscription) {
+  // Pre-charge notice (review-05 #10): Stripe fires this ~3 days before the
+  // trial converts. The pricing FAQ promises this reminder. Transactional —
+  // sent regardless of marketing email preferences.
+  const customerId = subscription.customer as string;
+  const priceId = subscription.items.data[0]?.price.id;
+  const plan = priceId === process.env.STRIPE_PRICE_ANNUAL ? 'annual' as const : 'monthly' as const;
 
-  // Confirm payment succeeded — clears any previous 'failed' invoice status
-  // and ensures tier is active even if subscription.updated arrives late
+  const daysLeft = subscription.trial_end
+    ? Math.max(1, Math.ceil((subscription.trial_end * 1000 - Date.now()) / 86_400_000))
+    : 3;
+
+  const { data: profile } = await serviceSupabase
+    .from('user_profiles')
+    .select('user_id, display_name')
+    .eq('stripe_customer_id', customerId)
+    .single();
+  if (!profile?.user_id) return;
+
+  const { data: { user } } = await serviceSupabase.auth.admin.getUserById(profile.user_id);
+  if (user?.email) {
+    void sendTrialEndingReminder(user.email, daysLeft, plan, profile.display_name ?? undefined);
+  }
+}
+
+async function handleInvoicePaid(invoice: Stripe.Invoice, eventId: string, createdIso: string) {
+  const customerId = invoice.customer as string;
+
   const subscriptionId = invoice.parent?.subscription_details?.subscription as string | null;
   if (!subscriptionId) return; // one-off invoice, not subscription-related
 
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-
-  const tier = subscription.status === 'active' || subscription.status === 'trialing'
-    ? 'dpe_live'
-    : 'checkride_prep';
+  const priceId = subscription.items.data[0]?.price.id;
 
   await serviceSupabase
     .from('user_profiles')
     .update({
-      tier,
+      tier: tierForSubscription(subscription.status, priceId),
       subscription_status: subscription.status,
       latest_invoice_status: 'paid',
+      ...(subscription.trial_end ? { has_trialed: true } : {}),
       last_webhook_event_id: eventId,
-      last_webhook_event_ts: eventTs,
+      last_stripe_event_created: createdIso,
     })
     .eq('stripe_customer_id', customerId)
-    .or(`last_webhook_event_ts.is.null,last_webhook_event_ts.lt.${eventTs}`);
+    .or(`last_stripe_event_created.is.null,last_stripe_event_created.lt.${createdIso}`);
 }
 
-async function handlePaymentFailed(invoice: Stripe.Invoice, eventId: string) {
+async function handlePaymentFailed(invoice: Stripe.Invoice, eventId: string, createdIso: string) {
   const customerId = invoice.customer as string;
-  const eventTs = new Date().toISOString();
 
-  // Guard against out-of-order event delivery
-  // CRITICAL: Downgrade tier to prevent free access after payment failure
+  // Dunning grace (review-05 #8): a failed renewal does NOT downgrade the
+  // tier. Stripe retries for ~2 weeks; access is revoked only on
+  // subscription.deleted / unpaid. We mark past_due and notify.
   await serviceSupabase
     .from('user_profiles')
     .update({
-      tier: 'checkride_prep',
       subscription_status: 'past_due',
       latest_invoice_status: 'failed',
       last_webhook_event_id: eventId,
-      last_webhook_event_ts: eventTs,
+      last_stripe_event_created: createdIso,
     })
     .eq('stripe_customer_id', customerId)
-    .or(`last_webhook_event_ts.is.null,last_webhook_event_ts.lt.${eventTs}`);
+    .or(`last_stripe_event_created.is.null,last_stripe_event_created.lt.${createdIso}`);
 
   // Send payment failed email
-  const failedCustomerId = invoice.customer as string;
   const { data: failProfile } = await serviceSupabase
     .from('user_profiles')
     .select('user_id')
-    .eq('stripe_customer_id', failedCustomerId)
+    .eq('stripe_customer_id', customerId)
     .single();
   if (failProfile?.user_id) {
     const { data: { user: failUser } } = await serviceSupabase.auth.admin.getUserById(failProfile.user_id);
     if (failUser?.email) {
       void sendPaymentFailed(failUser.email);
     }
+  }
+}
+
+async function handleChargeRefunded(charge: Stripe.Charge, createdIso: string) {
+  // review-05 #7: alert the owner; revoke access on a FULL refund (a partial
+  // refund leaves the subscription intact, so we only alert).
+  const customerId = charge.customer as string | null;
+  const fullRefund = (charge.amount_refunded ?? 0) >= (charge.amount ?? 0) && (charge.amount ?? 0) > 0;
+
+  void sendInternalAlert('Charge refunded', [
+    `Charge: ${charge.id}`,
+    `Customer: ${customerId ?? '(none)'}`,
+    `Amount: ${(charge.amount ?? 0) / 100} ${charge.currency?.toUpperCase()}`,
+    `Refunded: ${(charge.amount_refunded ?? 0) / 100} (${fullRefund ? 'FULL' : 'partial'})`,
+    fullRefund ? 'Action: tier downgraded to checkride_prep.' : 'Action: none (partial) — review manually.',
+  ]);
+
+  if (fullRefund && customerId) {
+    await serviceSupabase
+      .from('user_profiles')
+      .update({
+        tier: 'checkride_prep',
+        latest_invoice_status: 'refunded',
+        last_stripe_event_created: createdIso,
+      })
+      .eq('stripe_customer_id', customerId)
+      .or(`last_stripe_event_created.is.null,last_stripe_event_created.lt.${createdIso}`);
+  }
+}
+
+async function handleDisputeCreated(dispute: Stripe.Dispute, createdIso: string) {
+  // review-05 #7: a chargeback is serious — alert and revoke access.
+  let customerId: string | null = null;
+  try {
+    const charge = await stripe.charges.retrieve(dispute.charge as string);
+    customerId = charge.customer as string | null;
+  } catch (err) {
+    console.error('[stripe] dispute charge lookup failed:', err);
+  }
+
+  void sendInternalAlert('Payment dispute opened', [
+    `Dispute: ${dispute.id}`,
+    `Charge: ${dispute.charge}`,
+    `Customer: ${customerId ?? '(unknown)'}`,
+    `Amount: ${(dispute.amount ?? 0) / 100} ${dispute.currency?.toUpperCase()}`,
+    `Reason: ${dispute.reason}`,
+    'Action: tier downgraded to checkride_prep — respond in the Stripe dashboard.',
+  ]);
+
+  if (customerId) {
+    await serviceSupabase
+      .from('user_profiles')
+      .update({
+        tier: 'checkride_prep',
+        subscription_status: 'unpaid',
+        latest_invoice_status: 'disputed',
+        last_stripe_event_created: createdIso,
+      })
+      .eq('stripe_customer_id', customerId)
+      .or(`last_stripe_event_created.is.null,last_stripe_event_created.lt.${createdIso}`);
   }
 }

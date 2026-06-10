@@ -26,11 +26,14 @@ export async function POST(request: NextRequest) {
     // Get or create Stripe customer
     const { data: profile } = await serviceSupabase
       .from('user_profiles')
-      .select('stripe_customer_id')
+      .select('stripe_customer_id, has_trialed')
       .eq('user_id', user.id)
       .single();
 
     let customerId = profile?.stripe_customer_id;
+    // review-05 #6: a returning customer who already consumed their free
+    // trial does not get another one.
+    const hasTrialed = profile?.has_trialed === true;
 
     if (!customerId) {
       const customer = await stripe.customers.create({
@@ -54,12 +57,14 @@ export async function POST(request: NextRequest) {
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
       subscription_data: {
-        trial_period_days: 7,
+        ...(hasTrialed ? {} : { trial_period_days: 7 }),
         metadata: { supabase_user_id: user.id },
       },
       custom_text: {
         submit: {
-          message: 'Start your 7-day free trial. Cancel anytime \u2014 no questions asked.',
+          message: hasTrialed
+            ? 'Subscribe to HeyDPE. Cancel anytime \u2014 no questions asked.'
+            : 'Start your 7-day free trial. Cancel anytime \u2014 no questions asked.',
         },
         after_submit: {
           message: 'Welcome to HeyDPE! Your practice sessions are ready.',
