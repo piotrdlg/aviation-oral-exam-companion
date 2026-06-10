@@ -399,6 +399,18 @@ export function buildElementQueue(
   // Filter to oral-exam-relevant areas only (K and R elements, not S)
   filtered = filtered.filter((el) => el.element_type !== 'skill');
 
+  // W2.5 (bug 18): apply the documented oral-area exclusion. Flight-skill
+  // areas (e.g. PA.IV Takeoffs/Landings, PA.V Performance Maneuvers) never
+  // belong in an oral exam queue — previously only skill ELEMENTS were
+  // excluded, so K/R elements from excluded AREAS leaked in. Explicit user
+  // selections (areas/tasks) override the default exclusion.
+  const oralPrefixes = ORAL_EXAM_AREA_PREFIXES[config.rating || 'private'] || [];
+  const userNarrowedScope =
+    (config.selectedTasks && config.selectedTasks.length > 0) || config.selectedAreas.length > 0;
+  if (!userNarrowedScope && oralPrefixes.length > 0) {
+    filtered = filtered.filter((el) => oralPrefixes.some((p) => el.code.startsWith(p)));
+  }
+
   const codes = filtered.map((el) => el.code);
 
   switch (config.studyMode) {

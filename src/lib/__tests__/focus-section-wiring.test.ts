@@ -148,10 +148,14 @@ describe('Focus section wiring — area-level selection', () => {
   });
 
   describe('Instrument Rating', () => {
-    it('includes all oral elements when no areas selected', () => {
+    it('includes oral-area elements and excludes flight-only areas when no areas selected', () => {
       const config = { ...BASE_CONFIG, rating: 'instrument' as const };
       const queue = buildElementQueue(INSTRUMENT_ELEMENTS, config);
-      expect(queue).toHaveLength(6);
+      // W2.5 (bug 18): IR Area VI is not an oral-exam area — its K/R
+      // elements no longer leak into default-scope exams.
+      expect(queue).toHaveLength(5);
+      expect(queue).not.toContain('IR.VI.A.K1');
+      expect(queue).toContain('IR.VII.A.K1');
     });
 
     it('filters to Preflight Preparation (Area I) via selectedTasks', () => {

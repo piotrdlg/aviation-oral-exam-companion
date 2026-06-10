@@ -304,6 +304,44 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const action = searchParams.get('action');
 
+  // W2.5 (bug 16): lifetime aggregate stats — computed over ALL of the
+  // user's sessions for the rating, not the 20-row list window the
+  // progress page previously summed client-side.
+  if (action === 'stats') {
+    const rating = searchParams.get('rating') || 'private';
+    const { data: rows, error } = await supabase
+      .from('exam_sessions')
+      .select('status, exchange_count, acs_tasks_covered')
+      .eq('user_id', user.id)
+      .eq('rating', rating)
+      .neq('status', 'abandoned');
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    const sessions = rows || [];
+    const taskIds = new Set<string>();
+    let totalExchanges = 0;
+    let completedSessions = 0;
+    for (const s of sessions) {
+      totalExchanges += (s.exchange_count as number) || 0;
+      if (s.status === 'completed') completedSessions++;
+      for (const t of (s.acs_tasks_covered as Array<{ task_id: string }> | null) || []) {
+        if (t?.task_id) taskIds.add(t.task_id);
+      }
+    }
+
+    return NextResponse.json({
+      stats: {
+        totalSessions: sessions.length,
+        completedSessions,
+        totalExchanges,
+        uniqueTasksCovered: taskIds.size,
+      },
+    });
+  }
+
   // Element scores endpoint (lifetime, all sessions)
   if (action === 'element-scores') {
     const rating = searchParams.get('rating') || 'private';

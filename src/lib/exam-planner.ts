@@ -8,7 +8,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import type { AcsElement as AcsElementDB, ElementScore, PlannerState, SessionConfig, Difficulty } from '@/types/database';
-import { buildElementQueue, pickNextElement, initPlannerState, buildSystemPrompt, type AcsTaskRow, type TaxonomyFingerprints } from './exam-logic';
+import { buildElementQueue, pickNextElement, initPlannerState, buildSystemPrompt, ORAL_EXAM_AREA_PREFIXES, type AcsTaskRow, type TaxonomyFingerprints } from './exam-logic';
 import { buildStructuralFingerprints, computeFingerprintStats } from './structural-fingerprints';
 import { buildDepthDifficultyContract, type DepthDifficultyContract } from './difficulty-contract';
 import {
@@ -74,14 +74,21 @@ async function loadPlanDefaults(): Promise<Partial<ExamPlanDefaults>> {
 
 /**
  * Count total oral-eligible elements for a rating (used for proportional scaling).
+ * W2.5 (bug 18): counts only elements in oral-exam areas, matching
+ * buildElementQueue's filter — keeps plan-size ratios consistent.
  */
 async function countTotalOralElements(rating: string): Promise<number> {
   const prefix = RATING_PREFIX[rating] || 'PA.';
-  const { count } = await supabase
+  const oralPrefixes = ORAL_EXAM_AREA_PREFIXES[(rating || 'private') as keyof typeof ORAL_EXAM_AREA_PREFIXES] || [];
+  let query = supabase
     .from('acs_elements')
     .select('*', { count: 'exact', head: true })
     .like('code', `${prefix}%`)
     .neq('element_type', 'skill');
+  if (oralPrefixes.length > 0) {
+    query = query.or(oralPrefixes.map((p) => `code.like.${p}%`).join(','));
+  }
+  const { count } = await query;
   return count || 0;
 }
 
