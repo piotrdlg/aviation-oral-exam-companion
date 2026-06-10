@@ -22,11 +22,11 @@ vi.mock('server-only', () => ({}));
 vi.mock('@/lib/voice/tier-lookup', () => ({ invalidateTierCache: vi.fn() }));
 
 vi.mock('@/lib/stripe', () => ({
-  stripe: {
+  getStripe: () => ({
     webhooks: { constructEvent: () => h.currentEvent },
     subscriptions: { retrieve: async () => h.currentSubscription },
     charges: { retrieve: async () => h.currentCharge },
-  },
+  }),
   STRIPE_PRICES: { monthly: 'price_monthly', annual: 'price_annual' },
 }));
 

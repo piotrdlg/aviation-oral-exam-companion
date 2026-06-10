@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { after } from 'next/server';
-import { stripe } from '@/lib/stripe';
+import { getStripe } from '@/lib/stripe';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import type Stripe from 'stripe';
 import {
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(
+    event = getStripe().webhooks.constructEvent(
       body, sig, process.env.STRIPE_WEBHOOK_SECRET!
     );
   } catch (err) {
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session, eventId: string, createdIso: string) {
   if (session.mode !== 'subscription') return;
 
-  const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+  const subscription = await getStripe().subscriptions.retrieve(session.subscription as string);
   const customerId = session.customer as string;
   const priceId = subscription.items.data[0]?.price.id;
 
@@ -334,7 +334,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice, eventId: string, creat
   const subscriptionId = invoice.parent?.subscription_details?.subscription as string | null;
   if (!subscriptionId) return; // one-off invoice, not subscription-related
 
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
   const priceId = subscription.items.data[0]?.price.id;
 
   await serviceSupabase
@@ -414,7 +414,7 @@ async function handleDisputeCreated(dispute: Stripe.Dispute, createdIso: string)
   // review-05 #7: a chargeback is serious — alert and revoke access.
   let customerId: string | null = null;
   try {
-    const charge = await stripe.charges.retrieve(dispute.charge as string);
+    const charge = await getStripe().charges.retrieve(dispute.charge as string);
     customerId = charge.customer as string | null;
   } catch (err) {
     console.error('[stripe] dispute charge lookup failed:', err);
