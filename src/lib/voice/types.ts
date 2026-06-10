@@ -52,8 +52,13 @@ export interface TierFeatures {
   maxSessionsPerMonth: number;
   maxExchangesPerSession: number;
   maxTtsCharsPerMonth: number;
+  maxSttSecondsPerMonth: number;
 }
 
+// W3.2 / decision D1: voice (TTS + STT) is available on EVERY tier. The free
+// tier (checkride_prep) is gated by the 3-exam COUNT limit (enforced at session
+// creation) plus tight anti-theft monthly budgets (~3 sessions' worth of TTS +
+// STT). Paid (dpe_live) keeps generous caps. ground_school is legacy/unused.
 export const TIER_FEATURES: Record<VoiceTier, TierFeatures> = {
   ground_school: {
     sttProvider: 'deepgram',
@@ -62,7 +67,8 @@ export const TIER_FEATURES: Record<VoiceTier, TierFeatures> = {
     customVocabulary: true,
     maxSessionsPerMonth: 60,
     maxExchangesPerSession: 30,
-    maxTtsCharsPerMonth: 500_000,
+    maxTtsCharsPerMonth: 35_000,
+    maxSttSecondsPerMonth: 4_200, // ~70 min
   },
   checkride_prep: {
     sttProvider: 'deepgram',
@@ -71,7 +77,8 @@ export const TIER_FEATURES: Record<VoiceTier, TierFeatures> = {
     customVocabulary: true,
     maxSessionsPerMonth: 60,
     maxExchangesPerSession: 30,
-    maxTtsCharsPerMonth: 500_000,
+    maxTtsCharsPerMonth: 35_000,   // ~3 trial sessions (anti-theft backstop)
+    maxSttSecondsPerMonth: 4_200,  // ~70 min trial budget
   },
   dpe_live: {
     sttProvider: 'deepgram',
@@ -81,5 +88,6 @@ export const TIER_FEATURES: Record<VoiceTier, TierFeatures> = {
     maxSessionsPerMonth: Infinity,
     maxExchangesPerSession: 50,
     maxTtsCharsPerMonth: 1_000_000,
+    maxSttSecondsPerMonth: 360_000, // ~100 hours
   },
 };
