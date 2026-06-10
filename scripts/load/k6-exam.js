@@ -49,7 +49,7 @@ const SESSION_CONFIG = {
 export default function () {
   const u = users[(__VU - 1) % users.length];
   const params = {
-    headers: { 'Content-Type': 'application/json', Cookie: `${u.cookieName}=${u.cookieValue}` },
+    headers: { 'Content-Type': 'application/json', 'x-vercel-protection-bypass': __ENV.BYPASS || '', Cookie: u.cookieValue },
     timeout: '60s',
   };
 

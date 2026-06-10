@@ -14,7 +14,10 @@ import fs from 'fs';
 import { createClient } from '@supabase/supabase-js';
 dotenv.config({ path: '.env.local' });
 
-const URL_ = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+// Deployed environments use the custom auth domain (auth.heydpe.com) — the
+// SSR cookie NAME derives from this URL, so cookies must be generated with
+// the SAME url the target deployment uses. Override with LOADTEST_SUPABASE_URL.
+const URL_ = process.env.LOADTEST_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const REF = URL_.split('//')[1].split('.')[0];
 const admin = createClient(URL_, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 const PASSWORD = 'LoadTest!2026-fixed';
@@ -37,10 +40,31 @@ async function create() {
     const { data: signIn, error: sErr } = await anon.auth.signInWithPassword({ email, password: PASSWORD });
     if (sErr || !signIn.session) throw new Error(`signin ${email}: ${sErr?.message}`);
 
-    // @supabase/ssr cookie format: sb-<ref>-auth-token = "base64-" + b64url(JSON(session))
-    const sessionJson = JSON.stringify(signIn.session);
-    const cookieValue = 'base64-' + Buffer.from(sessionJson).toString('base64url');
-    out.push({ email, cookieName: `sb-${REF}-auth-token`, cookieValue });
+    // Let @supabase/ssr ITSELF serialize the cookie (codec + chunking parity
+    // with the server parser) by capturing what setSession writes.
+    const captured: Array<{ name: string; value: string }> = [];
+    const { createServerClient } = await import('@supabase/ssr');
+    const ssrClient = createServerClient(URL_, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+      cookies: {
+        getAll: () => captured,
+        setAll: (cookies: Array<{ name: string; value: string }>) => {
+          for (const c of cookies) {
+            const idx = captured.findIndex((x) => x.name === c.name);
+            if (idx >= 0) captured[idx] = { name: c.name, value: c.value };
+            else captured.push({ name: c.name, value: c.value });
+          }
+        },
+      },
+    });
+    await ssrClient.auth.setSession({
+      access_token: signIn.session.access_token,
+      refresh_token: signIn.session.refresh_token,
+    });
+    const cookieHeader = captured
+      .filter((c) => c.value)
+      .map((c) => `${c.name}=${c.value}`)
+      .join('; ');
+    out.push({ email, cookieName: 'COOKIE_HEADER', cookieValue: cookieHeader });
     process.stdout.write(`  ${i + 1}/${N}\r`);
   }
   fs.writeFileSync('scripts/load/users.local.json', JSON.stringify(out, null, 1));

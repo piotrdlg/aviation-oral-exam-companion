@@ -35,7 +35,7 @@ const rateLimited = new Counter('rate_limited_429');
 
 export default function () {
   const u = users[(__VU - 1) % users.length];
-  const params = { headers: { 'Content-Type': 'application/json', Cookie: `${u.cookieName}=${u.cookieValue}` }, timeout: '30s' };
+  const params = { headers: { 'Content-Type': 'application/json', 'x-vercel-protection-bypass': __ENV.BYPASS || '', Cookie: u.cookieValue }, timeout: '30s' };
 
   const tts = http.post(`${BASE}/api/tts`, JSON.stringify({ text: 'Cleared for the option, runway two seven left.' }), params);
   if (tts.status === 429) rateLimited.add(1);
