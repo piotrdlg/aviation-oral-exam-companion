@@ -22,7 +22,7 @@ export async function GET() {
     const [profileResult, voiceOptionsResult] = await Promise.all([
       serviceSupabase
         .from('user_profiles')
-        .select('tier, preferred_voice, preferred_rating, preferred_aircraft_class, aircraft_type, home_airport, onboarding_completed, preferred_theme, subscription_status, cancel_at_period_end, current_period_end, display_name, avatar_url, voice_enabled, examiner_profile')
+        .select('tier, preferred_voice, preferred_rating, preferred_aircraft_class, aircraft_type, home_airport, onboarding_completed, disclaimer_acknowledged_at, preferred_theme, subscription_status, cancel_at_period_end, current_period_end, display_name, avatar_url, voice_enabled, examiner_profile')
         .eq('user_id', user.id)
         .single(),
       serviceSupabase
@@ -81,6 +81,7 @@ export async function GET() {
       aircraftType: profile?.aircraft_type || null,
       homeAirport: profile?.home_airport || null,
       onboardingCompleted: profile?.onboarding_completed ?? false,
+      disclaimerAcknowledged: !!profile?.disclaimer_acknowledged_at,
       preferredTheme: profile?.preferred_theme || 'cockpit',
       displayName: profile?.display_name || null,
       avatarUrl: profile?.avatar_url || null,

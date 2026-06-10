@@ -133,6 +133,11 @@ export default function PracticePage() {
   // Upgrade prompt states (Task 34 / W3.3)
   const [showQuotaModal, setShowQuotaModal] = useState(false);
   const [scenarioModeAvailable, setScenarioModeAvailable] = useState(false);
+  // W6.5 first-exam FAA disclaimer
+  const [disclaimerAcknowledged, setDisclaimerAcknowledged] = useState(true); // optimistic until profile loads
+  const [showDisclaimerModal, setShowDisclaimerModal] = useState(false);
+  const [pendingStartConfig, setPendingStartConfig] = useState<SessionConfigData | null>(null);
+  const [disclaimerSaving, setDisclaimerSaving] = useState(false);
   const [quotaReason, setQuotaReason] = useState<string | null>(null);
   const [quotaWarning, setQuotaWarning] = useState<string | null>(null);
   // Post-checkout success banner (Task 36)
@@ -316,6 +321,7 @@ export default function PracticePage() {
         if (data?.preferredRating) setPreferredRating(data.preferredRating);
         if (data?.preferredAircraftClass) setPreferredAircraftClass(data.preferredAircraftClass);
         if (data?.onboardingCompleted !== undefined) setOnboardingCompleted(data.onboardingCompleted);
+        if (data?.disclaimerAcknowledged !== undefined) setDisclaimerAcknowledged(data.disclaimerAcknowledged);
         // Sync theme from DB preference
         if (data?.preferredTheme && data.preferredTheme !== 'cockpit') {
           setTheme(data.preferredTheme);
@@ -597,6 +603,12 @@ export default function PracticePage() {
   }, [voice, flushReveal]);
 
   async function startSession(configData: SessionConfigData) {
+    // W6.5: the FAA disclaimer must be acknowledged once before the first exam
+    if (!disclaimerAcknowledged) {
+      setPendingStartConfig(configData);
+      setShowDisclaimerModal(true);
+      return;
+    }
     // Unlock browser audio playback SYNCHRONOUSLY during this user gesture,
     // BEFORE any async work. Required for Safari/iOS autoplay policy.
     if (configData.voiceEnabled) warmUpAudio();
@@ -1862,6 +1874,51 @@ export default function PracticePage() {
         )}
 
         {/* Quota exceeded modal (Task 34) */}
+        {showDisclaimerModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
+            <div className="bezel rounded-lg border border-c-amber/40 p-6 max-w-lg mx-4 shadow-2xl">
+              <h2 className="font-mono font-bold text-xl text-c-amber glow-a mb-3 tracking-wider uppercase">Before your first exam</h2>
+              <ul className="text-sm text-c-text/85 leading-relaxed space-y-2 mb-5 list-disc pl-5">
+                <li>HeyDPE is a <strong>study aid</strong> — not an FAA-approved testing device, and not affiliated with the FAA.</li>
+                <li>The AI examiner <strong>can make mistakes</strong>. Always verify answers against the current FARs, AIM, and ACS.</li>
+                <li>It is <strong>not a substitute for instruction</strong> from a certificated flight instructor, or for an actual DPE checkride.</li>
+              </ul>
+              <div className="flex gap-3">
+                <button
+                  onClick={async () => {
+                    setDisclaimerSaving(true);
+                    try {
+                      await fetch('/api/consent', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ kind: 'disclaimer', choices: { faa_disclaimer_v1: true } }),
+                      });
+                    } catch { /* recorded server-side best-effort; do not block studying */ }
+                    setDisclaimerAcknowledged(true);
+                    setShowDisclaimerModal(false);
+                    setDisclaimerSaving(false);
+                    if (pendingStartConfig) {
+                      const cfg = pendingStartConfig;
+                      setPendingStartConfig(null);
+                      void startSession(cfg);
+                    }
+                  }}
+                  disabled={disclaimerSaving}
+                  className="flex-1 py-2.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg rounded-lg font-mono font-semibold text-base text-center transition-colors uppercase tracking-wider"
+                >
+                  {disclaimerSaving ? 'SAVING…' : 'I UNDERSTAND — BEGIN'}
+                </button>
+                <button
+                  onClick={() => { setShowDisclaimerModal(false); setPendingStartConfig(null); }}
+                  className="px-4 py-2.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-mono text-base transition-colors border border-c-border uppercase"
+                >
+                  NOT NOW
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {showQuotaModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
             <div className="bezel rounded-lg border border-c-border p-6 max-w-md mx-4 shadow-2xl">
