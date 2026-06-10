@@ -309,7 +309,7 @@ export interface PersonaConfig {
   image: string;
 }
 
-export type SubscriptionStatus = 'active' | 'past_due' | 'canceled' | 'trialing' | 'incomplete' | 'none';
+export type SubscriptionStatus = 'active' | 'past_due' | 'canceled' | 'trialing' | 'incomplete' | 'incomplete_expired' | 'unpaid' | 'paused' | 'none';
 export type AuthMethod = 'email_otp' | 'google' | 'apple' | 'microsoft' | 'password';
 
 export interface UserProfile {
@@ -337,6 +337,8 @@ export interface UserProfile {
   current_period_end: string | null;
   last_webhook_event_id: string | null;
   last_webhook_event_ts: string | null;
+  last_stripe_event_created: string | null;
+  has_trialed: boolean;
   latest_invoice_status: string | null;
   account_status: AccountStatus;
   status_reason: string | null;
