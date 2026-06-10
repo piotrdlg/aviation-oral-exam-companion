@@ -64,67 +64,6 @@ const SAMPLE_RATES = [
   { value: 48000, label: '48 kHz' },
 ];
 
-const CARTESIA_VOICES = [
-  // ── Male — Professional / Authority ──
-  { value: '36b42fcb-60c5-4bec-b077-cb1a00a92ec6', label: 'Gordon — Pilot (intercom)', group: 'Male — Professional' },
-  { value: 'bd9120b6-7761-47a6-a446-77ca49132781', label: 'Owen — Tutorial Man (mature)', group: 'Male — Professional' },
-  { value: 'b043dea0-a007-4bbe-a708-769dc0d0c569', label: 'Wise Man (deep, deliberate)', group: 'Male — Professional' },
-  { value: '41534e16-2966-4c6b-9670-111411def906', label: 'Clarence — Newsman (firm, deep)', group: 'Male — Professional' },
-  { value: 'd46abd1d-2d02-43e8-819f-51fb652c1c61', label: 'Grant — Friendly Support (neutral)', group: 'Male — Professional' },
-  { value: '63ff761f-c1e8-414b-b969-d1833d1c870c', label: 'Malcom — Talk Show Host (lively)', group: 'Male — Professional' },
-  { value: '95856005-0332-41b0-935f-352e296aa0df', label: 'Hugo — Teatime Friend (British)', group: 'Male — Professional' },
-  // ── Male — Narrator / Character ──
-  { value: 'c45bc5ec-dc68-4feb-8829-6e6b2748095d', label: 'Trevor — Movieman (deep, elderly)', group: 'Male — Narrator' },
-  { value: '50d6beb4-80ea-4802-8387-6c948fe84208', label: 'Alfred — Cheeky Person (elderly)', group: 'Male — Narrator' },
-  { value: 'ed81fd13-2016-4a49-8fe3-c0d2761695fc', label: 'Zack — Sportsman (energetic)', group: 'Male — Narrator' },
-  { value: '69267136-1bdc-412f-ad78-0caad210fb40', label: 'Friendly Reading Man', group: 'Male — Narrator' },
-  { value: 'f114a467-c40a-4db8-964d-aaba89cd08fa', label: 'Miles — Yogi (deep, soothing)', group: 'Male — Narrator' },
-  // ── Other ──
-  { value: 'fb26447f-308b-471e-8b00-8e9f04284eb5', label: 'Thistle — Troublemaker (neutral)', group: 'Other' },
-  { value: '2ee87190-8f84-4925-97da-e52547f9462c', label: 'Child (young voice)', group: 'Other' },
-  // ── Female — Professional ──
-  { value: '248be419-c632-4f23-adf1-5324ed7dbf1d', label: 'Elizabeth — Manager (clear)', group: 'Female — Professional' },
-  { value: 'c2ac25f9-ecc4-4f56-9095-651354df60c0', label: 'Renee — Commander (firm)', group: 'Female — Professional' },
-  { value: '15a9cd88-84b0-4a8b-95f2-5d583b54c72e', label: 'Claire — Storyteller (soothing)', group: 'Female — Professional' },
-  { value: '694f9389-aac1-45b6-b726-9d9369183238', label: 'Sarah — Mindful Woman (calming)', group: 'Female — Professional' },
-  // ── Female — Casual ──
-  { value: 'f9836c6e-a0bd-460e-9d3c-f7299fa60f94', label: 'Caroline — Southern Guide (friendly)', group: 'Female — Casual' },
-  { value: '21b81c14-f85b-436d-aff5-43f2e788ecf8', label: 'Riley — Chill Friend (casual)', group: 'Female — Casual' },
-  { value: '00a77add-48d5-4ef6-8157-71e5437b282d', label: 'Callie — Encourager (smooth)', group: 'Female — Casual' },
-  { value: '79a125e8-cd45-4c13-8a67-188112f4dd22', label: 'British Lady (elegant)', group: 'Female — Casual' },
-  { value: '156fb8d2-335b-4950-9cb3-a2d33befec77', label: 'Sunny — Pep Talker (upbeat)', group: 'Female — Casual' },
-  { value: 'e3827ec5-697a-4b7c-9704-1a23041bbc51', label: 'Dottie — Sweet Gal (young)', group: 'Female — Casual' },
-];
-
-const CARTESIA_MODELS = [
-  { value: 'sonic-3', label: 'Sonic 3 (Latest)' },
-  { value: 'sonic-turbo', label: 'Sonic Turbo (Faster)' },
-  { value: 'sonic-multilingual', label: 'Sonic Multilingual' },
-];
-
-const CARTESIA_EMOTIONS = [
-  { value: 'confident', label: 'Confident' },
-  { value: 'calm', label: 'Calm' },
-  { value: 'neutral', label: 'Neutral' },
-  { value: 'determined', label: 'Determined' },
-  { value: 'proud', label: 'Proud' },
-  { value: 'authoritative', label: 'Authoritative' },
-  { value: 'professional', label: 'Professional' },
-  { value: 'serious', label: 'Serious' },
-  { value: 'contemplative', label: 'Contemplative' },
-  { value: 'curious', label: 'Curious' },
-  { value: 'excited', label: 'Excited' },
-  { value: 'happy', label: 'Happy' },
-  { value: 'friendly', label: 'Friendly' },
-  { value: 'sympathetic', label: 'Sympathetic' },
-  { value: 'skeptical', label: 'Skeptical' },
-  { value: 'disappointed', label: 'Disappointed' },
-  { value: 'frustrated', label: 'Frustrated' },
-  { value: 'angry', label: 'Angry' },
-  { value: 'sad', label: 'Sad' },
-  { value: 'scared', label: 'Scared' },
-];
-
 const TEST_PHRASE = "Good morning. I'm your designated pilot examiner for today's oral examination. Let's begin with the first area of operation: Preflight Preparation. Can you describe the required documents for airworthiness?";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -141,34 +80,14 @@ interface DeepgramConfig {
   encoding: string;
 }
 
-interface CartesiaConfig {
-  model: string;
-  voice_id: string;
-  voice_name: string;
-  speed: number;
-  volume: number;
-  emotion: string;
-  sample_rate: number;
-}
-
 interface TTSState {
   openai: OpenAIConfig;
   deepgram: DeepgramConfig;
-  cartesia: CartesiaConfig;
 }
 
 const DEFAULTS: TTSState = {
-  openai: { voice: 'onyx', model: 'tts-1', speed: 1.0 },
+  openai: { voice: 'onyx', model: 'gpt-4o-mini-tts', speed: 1.0 },
   deepgram: { model: 'aura-2-orion-en', sample_rate: 48000, encoding: 'linear16' },
-  cartesia: {
-    model: 'sonic-3',
-    voice_id: '95856005-0332-41b0-935f-352e296aa0df',
-    voice_name: 'Hugo — Teatime Friend (British)',
-    speed: 0.95,
-    volume: 1.0,
-    emotion: 'confident',
-    sample_rate: 48000,
-  },
 };
 
 interface UserVoiceOption {
@@ -213,8 +132,6 @@ export default function TTSConfigPage() {
           newState.openai = { ...DEFAULTS.openai, ...entry.value } as OpenAIConfig;
         } else if (entry.key === 'tts.deepgram') {
           newState.deepgram = { ...DEFAULTS.deepgram, ...entry.value } as DeepgramConfig;
-        } else if (entry.key === 'tts.cartesia') {
-          newState.cartesia = { ...DEFAULTS.cartesia, ...entry.value } as CartesiaConfig;
         } else if (entry.key === 'voice.user_options') {
           setUserVoiceOptions(entry.value as unknown as UserVoiceOption[]);
         }
@@ -243,7 +160,6 @@ export default function TTSConfigPage() {
           updates: [
             { key: 'tts.openai', value: state.openai },
             { key: 'tts.deepgram', value: state.deepgram },
-            { key: 'tts.cartesia', value: state.cartesia },
           ],
         }),
       });
@@ -335,11 +251,6 @@ export default function TTSConfigPage() {
 
   function updateDeepgram<K extends keyof DeepgramConfig>(key: K, value: DeepgramConfig[K]) {
     setState((prev) => ({ ...prev, deepgram: { ...prev.deepgram, [key]: value } }));
-    setSaveSuccess(false);
-  }
-
-  function updateCartesia<K extends keyof CartesiaConfig>(key: K, value: CartesiaConfig[K]) {
-    setState((prev) => ({ ...prev, cartesia: { ...prev.cartesia, [key]: value } }));
     setSaveSuccess(false);
   }
 
@@ -454,13 +365,13 @@ export default function TTSConfigPage() {
           )}
         </section>
 
-        {/* ─── Tier 1: Ground School (OpenAI) ─── */}
+        {/* ─── OpenAI (runtime fallback provider) ─── */}
         <section className="bezel rounded-lg border border-c-border p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="font-mono text-xs text-c-muted glow-c tracking-[0.3em] uppercase mb-1">// FREE TIER</p>
               <h2 className="font-mono text-sm font-semibold text-c-amber uppercase tracking-wider">
-                TIER 1 &mdash; GROUND SCHOOL
+                OPENAI &mdash; RUNTIME FALLBACK
               </h2>
               <div className="flex items-center gap-2 mt-1">
                 <span className="font-mono text-[10px] bg-c-cyan-lo text-c-cyan px-2 py-0.5 rounded border border-c-cyan/20">OPENAI TTS</span>
@@ -498,13 +409,13 @@ export default function TTSConfigPage() {
           </div>
         </section>
 
-        {/* ─── Tier 2: Checkride Prep (Deepgram) ─── */}
+        {/* ─── Deepgram Aura-2 (ALL tiers — D2) ─── */}
         <section className="bezel rounded-lg border border-c-border p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="font-mono text-xs text-c-green glow-g tracking-[0.3em] uppercase mb-1">// STANDARD TIER</p>
               <h2 className="font-mono text-sm font-semibold text-c-amber uppercase tracking-wider">
-                TIER 2 &mdash; CHECKRIDE PREP
+                DEEPGRAM AURA-2 &mdash; ALL TIERS
               </h2>
               <div className="flex items-center gap-2 mt-1">
                 <span className="font-mono text-[10px] bg-c-cyan-lo text-c-cyan px-2 py-0.5 rounded border border-c-cyan/20">DEEPGRAM AURA-2</span>
@@ -542,101 +453,6 @@ export default function TTSConfigPage() {
             <p className="font-mono text-[10px] text-c-dim">
               Deepgram Aura-2 does not support speed, pitch, or emotion controls. Prosody is handled automatically by the model.
             </p>
-          </div>
-        </section>
-
-        {/* ─── Tier 3: DPE Live (Cartesia) ─── */}
-        <section className="bezel rounded-lg border border-c-border p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="font-mono text-xs text-c-amber glow-a tracking-[0.3em] uppercase mb-1">// PREMIUM TIER</p>
-              <h2 className="font-mono text-sm font-semibold text-c-amber uppercase tracking-wider">
-                TIER 3 &mdash; DPE LIVE
-              </h2>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="font-mono text-[10px] bg-c-cyan-lo text-c-cyan px-2 py-0.5 rounded border border-c-cyan/20">CARTESIA SONIC 3</span>
-              </div>
-            </div>
-            <button
-              onClick={() => testVoice('cartesia')}
-              disabled={testing !== null}
-              className="px-4 py-2 text-xs rounded-lg bg-c-bezel text-c-text font-mono font-semibold uppercase tracking-wide hover:bg-c-elevated disabled:opacity-50 transition-colors border border-c-border-hi"
-            >
-              {testing === 'cartesia' ? <><span>&#9632;</span> PLAYING...</> : <><span>&#9654;</span> TEST VOICE</>}
-            </button>
-          </div>
-
-          <div className="mb-4">
-            <label className="font-mono text-[10px] text-c-muted uppercase tracking-wider block mb-1.5">VOICE</label>
-            <select
-              value={state.cartesia.voice_id}
-              onChange={(e) => {
-                const voice = CARTESIA_VOICES.find((v) => v.value === e.target.value);
-                updateCartesia('voice_id', e.target.value);
-                if (voice) updateCartesia('voice_name', voice.label);
-              }}
-              className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg font-mono text-xs text-c-text focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber transition-colors"
-            >
-              {Object.entries(
-                CARTESIA_VOICES.reduce<Record<string, typeof CARTESIA_VOICES>>((acc, v) => {
-                  (acc[v.group] ||= []).push(v);
-                  return acc;
-                }, {})
-              ).map(([group, voices]) => (
-                <optgroup key={group} label={group}>
-                  {voices.map((v) => (
-                    <option key={v.value} value={v.value}>
-                      {v.label}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-            <div className="iframe rounded-lg p-2 mt-1.5">
-              <p className="font-mono text-[10px] text-c-dim">
-                ID: {state.cartesia.voice_id}
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-            <SelectField
-              label="Model"
-              value={state.cartesia.model}
-              options={CARTESIA_MODELS}
-              onChange={(v) => updateCartesia('model', v)}
-            />
-            <SelectField
-              label="Emotion"
-              value={state.cartesia.emotion}
-              options={CARTESIA_EMOTIONS}
-              onChange={(v) => updateCartesia('emotion', v)}
-            />
-            <SelectField
-              label="Sample Rate"
-              value={String(state.cartesia.sample_rate)}
-              options={SAMPLE_RATES.map((r) => ({ value: String(r.value), label: r.label }))}
-              onChange={(v) => updateCartesia('sample_rate', Number(v))}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <SliderField
-              label="Speed"
-              value={state.cartesia.speed}
-              min={0.6}
-              max={1.5}
-              step={0.05}
-              onChange={(v) => updateCartesia('speed', v)}
-            />
-            <SliderField
-              label="Volume"
-              value={state.cartesia.volume}
-              min={0.5}
-              max={2.0}
-              step={0.1}
-              onChange={(v) => updateCartesia('volume', v)}
-            />
           </div>
         </section>
 

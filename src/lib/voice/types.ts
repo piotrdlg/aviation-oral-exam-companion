@@ -15,7 +15,7 @@ export interface TTSOptions {
 // Per-provider config stored in system_config JSONB
 export interface OpenAITTSConfig {
   voice: string;    // onyx, alloy, echo, fable, nova, shimmer
-  model: string;    // tts-1, tts-1-hd
+  model: string;    // gpt-4o-mini-tts (default), tts-1, tts-1-hd
   speed: number;    // 0.25 - 4.0
 }
 
@@ -25,20 +25,16 @@ export interface DeepgramTTSConfig {
   encoding: string;    // linear16, mp3, opus, flac, aac
 }
 
-export interface CartesiaTTSConfig {
-  model: string;       // sonic-3, sonic-turbo
-  voice_id: string;    // UUID from Cartesia voice library
-  voice_name: string;  // Display name
-  speed: number;       // 0.6 - 1.5
-  volume: number;      // 0.5 - 2.0
-  emotion: string;     // confident, calm, neutral, determined, etc.
-  sample_rate: number; // 8000-48000
-}
+// W4.2 / decision D2: Cartesia was removed — it never actually served a tier
+// (TIER_FEATURES always pointed at Deepgram) and its pcm_f32le output is
+// incompatible with the MP3/HTMLAudioElement playback path that the March
+// 2026 incident forced. Aura-2 is the single product voice; OpenAI is the
+// runtime fallback.
 
 export interface TTSResult {
   audio: ReadableStream<Uint8Array>;
   contentType: string;
-  encoding: 'mp3' | 'linear16' | 'pcm_f32le';
+  encoding: 'mp3' | 'linear16';
   sampleRate: number;
   channels: 1 | 2;
   ttfbMs: number;
@@ -46,7 +42,7 @@ export interface TTSResult {
 
 export interface TierFeatures {
   sttProvider: 'browser' | 'deepgram';
-  ttsProvider: 'openai' | 'deepgram' | 'cartesia';
+  ttsProvider: 'openai' | 'deepgram';
   supportsAllBrowsers: boolean;
   customVocabulary: boolean;
   maxSessionsPerMonth: number;
