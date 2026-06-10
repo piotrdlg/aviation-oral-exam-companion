@@ -58,11 +58,11 @@ const faqs = [
   },
   {
     q: 'How does voice mode work?',
-    a: 'Voice mode lets you speak your answers naturally, just like a real oral exam. The AI examiner responds with a realistic DPE voice. Works in Chrome with the Web Speech API, and all paid tiers include cross-browser TTS support.',
+    a: 'Voice mode lets you speak your answers naturally, just like a real oral exam. The AI examiner responds with a realistic DPE voice. It works across modern browsers (Chrome, Safari, Edge, Firefox) on desktop and tablet — voice is included on every plan, including the free trial.',
   },
   {
     q: 'Is there a free tier?',
-    a: 'Yes. New accounts get limited free sessions to explore the platform — no credit card required. Upgrade when you\'re ready for unlimited practice.',
+    a: 'Yes. New accounts get 3 free practice exams with the complete experience — full voice mode, AI assessment, and progress tracking — no credit card required. Subscribe when you\'re ready for unlimited practice.',
   },
   {
     q: 'What payment methods do you accept?',
@@ -70,14 +70,17 @@ const faqs = [
   },
 ];
 
+// W3.3: rows now match enforced reality (decision D1). The free trial gets the
+// FULL product — including voice and resume — for 3 exams; the paid plan
+// removes the count limit and raises the usage budgets.
 const featureComparison = [
-  { feature: 'ACS-aligned questions', free: 'Limited', paid: 'Unlimited' },
+  { feature: 'Practice exams', free: '3 free', paid: 'Unlimited' },
   { feature: 'Certificate ratings', free: 'All 3', paid: 'All 3' },
   { feature: 'AI answer assessment', free: true, paid: true },
   { feature: 'FAA source references', free: true, paid: true },
-  { feature: 'Voice mode (TTS)', free: false, paid: true },
-  { feature: 'Progress tracking', free: 'Basic', paid: 'Full' },
-  { feature: 'Session resume', free: false, paid: true },
+  { feature: 'Voice mode (TTS + STT)', free: 'In trial', paid: 'Unlimited' },
+  { feature: 'Progress tracking', free: true, paid: true },
+  { feature: 'Session resume', free: true, paid: true },
   { feature: 'Priority support', free: false, paid: 'Annual' },
 ];
 

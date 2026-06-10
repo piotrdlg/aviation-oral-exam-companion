@@ -16,6 +16,11 @@ const h = vi.hoisted(() => ({
   alerts: [] as string[],
 }));
 
+vi.mock('server-only', () => ({}));
+// invalidateTierCache (W3.3) pulls in tier-lookup → instructor-entitlements
+// (server-only); stub it to keep the webhook unit test lean.
+vi.mock('@/lib/voice/tier-lookup', () => ({ invalidateTierCache: vi.fn() }));
+
 vi.mock('@/lib/stripe', () => ({
   stripe: {
     webhooks: { constructEvent: () => h.currentEvent },
