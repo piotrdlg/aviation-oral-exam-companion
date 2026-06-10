@@ -18,6 +18,10 @@ const serviceSupabase = createServiceClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// W4.1: cap function lifetime — synthesis (8s timeout + 1 retry per provider,
+// 2-provider chain) worst-cases well under 30s (audit-62 WARN fix).
+export const maxDuration = 30;
+
 export async function POST(request: NextRequest) {
   after(() => flushPostHog());
 

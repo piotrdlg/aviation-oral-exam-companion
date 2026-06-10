@@ -61,14 +61,36 @@ export class DeepgramTTSProvider implements TTSProvider {
 
     const start = Date.now();
 
-    const response = await fetch(url.toString(), {
+    // W4.1 (review-04 #4): 8s timeout per attempt + one retry on transient
+    // failures (timeout / network / 429 / 5xx). A hung Deepgram response
+    // previously held the Vercel function and stalled the client drain loop
+    // indefinitely. Non-transient 4xx errors throw immediately so the
+    // provider-factory fallback chain can take over.
+    const doFetch = () => fetch(url.toString(), {
       method: 'POST',
       headers: {
         'Authorization': `Token ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ text }),
+      signal: AbortSignal.timeout(8000),
     });
+
+    let response: Response;
+    try {
+      response = await doFetch();
+      if (!response.ok && (response.status === 429 || response.status >= 500)) {
+        throw new Error(`transient_${response.status}`);
+      }
+    } catch (firstErr) {
+      const msg = firstErr instanceof Error ? firstErr.message : String(firstErr);
+      const isTransient = msg.startsWith('transient_')
+        || (firstErr instanceof Error && (firstErr.name === 'TimeoutError' || firstErr.name === 'AbortError'))
+        || msg.includes('fetch failed');
+      if (!isTransient) throw firstErr;
+      console.warn(`[deepgram-tts] transient failure (${msg}) — retrying once`);
+      response = await doFetch();
+    }
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => 'Unknown error');

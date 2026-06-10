@@ -124,6 +124,46 @@ describe('detectSentenceBoundary', () => {
     expect(result!.remainder).toBe('Second sentence here. Third one too.');
   });
 
+  // W4.1 (review-04 #5): sentences ENDING in a decimal/reference must split.
+  // The old window-based check matched the nearby decimal and rejected the
+  // terminal period, so these only flushed at the 200-char force-cut.
+  describe('terminal decimals and references (W4.1)', () => {
+    it('SPLITS after a sentence ending in a frequency like "121.5."', () => {
+      const result = detectSentenceBoundary(
+        'You would contact approach on frequency 121.5. What would you do next?'
+      );
+      expect(result).not.toBeNull();
+      expect(result!.sentence).toBe('You would contact approach on frequency 121.5.');
+      expect(result!.remainder.trim()).toBe('What would you do next?');
+    });
+
+    it('SPLITS after a sentence ending in a CFR cite like "14 CFR 61.109."', () => {
+      const result = detectSentenceBoundary(
+        'The aeronautical experience requirements are in 14 CFR 61.109. Tell me about them.'
+      );
+      expect(result).not.toBeNull();
+      expect(result!.sentence).toBe('The aeronautical experience requirements are in 14 CFR 61.109.');
+    });
+
+    it('SPLITS after a sentence ending in an AIM citation', () => {
+      const result = detectSentenceBoundary(
+        'Wake turbulence procedures are described in AIM 7-3-9. How would you avoid it?'
+      );
+      expect(result).not.toBeNull();
+      expect(result!.sentence).toBe('Wake turbulence procedures are described in AIM 7-3-9.');
+    });
+
+    it('still does NOT split inside a decimal followed by digits', () => {
+      // The period inside "121.5" is never a candidate (no whitespace after),
+      // and the digit-after guard keeps protecting any future candidate shape.
+      const result = detectSentenceBoundary(
+        'Squawk 7700 and contact approach on 121.5 right away if able. Then fly the airplane first.'
+      );
+      expect(result).not.toBeNull();
+      expect(result!.sentence).toContain('121.5 right away');
+    });
+  });
+
   it('handles streaming scenario: accumulate tokens then detect', () => {
     // Simulate token-by-token accumulation
     let buffer = '';
