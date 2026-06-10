@@ -81,7 +81,8 @@
     "eval:instructor-quotas": "tsx scripts/eval/instructor-quota-analysis.ts",
     "eval:instructor-faa-freshness": "tsx scripts/eval/instructor-faa-freshness.ts",
     "eval:instructor-launch": "tsx scripts/eval/instructor-public-launch-gate.ts",
-    "pipeline:element-adjacency": "tsx scripts/pipeline/build-element-adjacency.ts"
+    "pipeline:element-adjacency": "tsx scripts/pipeline/build-element-adjacency.ts",
+    "audit:scenario-ab": "tsx scripts/audit/scenario-ab-report.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",

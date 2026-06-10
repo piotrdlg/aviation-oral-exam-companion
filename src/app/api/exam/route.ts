@@ -60,6 +60,20 @@ function getScenarioMode(config: Record<string, unknown>): 'off' | 'ab' | 'on' {
   return v?.mode === 'on' ? 'on' : v?.mode === 'ab' ? 'ab' : 'off';
 }
 
+/**
+ * W5.6 Gate 2: stable 50/50 arm assignment by FNV-1a hash of user_id —
+ * sticky per USER (not per session) so a student's experience is coherent
+ * across sessions during the A/B.
+ */
+function assignScenarioArm(userId: string): 'scenario' | 'linear' {
+  let h = 2166136261;
+  for (let i = 0; i < userId.length; i++) {
+    h ^= userId.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0) % 2 === 0 ? 'scenario' : 'linear';
+}
+
 /** Rebuild the AdjacencyNeighbors map from its metadata-persisted plain object. */
 function adjacencyFromMeta(meta: Record<string, unknown>): AdjacencyNeighbors {
   const raw = (meta.scenarioAdjacency as Record<string, Array<{ code: string; score: number }>> | undefined) ?? {};
@@ -522,11 +536,24 @@ export async function POST(request: NextRequest) {
           plannerResult.task, [], plannerResult.difficulty, sessionConfig.aircraftClass, undefined, rating, sessionConfig.studyMode, personaSection, studentName, undefined, examinerContractSection
         );
 
+        // W5.6 Gate 2: resolve the session's arm. mode 'on' → all scenario;
+        // 'ab' → sticky 50/50 by user hash; 'off' → linear (no event).
+        const scenarioMode = getScenarioMode(config);
+        const scenarioArm: 'scenario' | 'linear' =
+          scenarioMode === 'on' ? 'scenario'
+          : scenarioMode === 'ab' ? assignScenarioArm(user.id)
+          : 'linear';
+        if (scenarioMode !== 'off' && sessionId) {
+          captureServerEvent(user.id, 'exam_arm_assigned', {
+            session_id: sessionId, arm: scenarioArm, mode: scenarioMode,
+          });
+        }
+
         // W5.4 (Scenario Engine, flag-gated): generate the scenario spine OFF
         // the critical path — the opening question is linear (design §6); the
         // spine attaches from exchange 2 once persisted. after() keeps the
         // serverless function alive until it lands.
-        if (getScenarioMode(config) !== 'off' && sessionId) {
+        if (scenarioArm === 'scenario' && sessionId) {
           const spineStartedAt = Date.now();
           const spineSessionId = sessionId;
           after(async () => {
@@ -599,6 +626,7 @@ export async function POST(request: NextRequest) {
             .update({ metadata: {
               ...serverMeta,
               advanceDue: false,
+              ...(scenarioMode !== 'off' ? { scenarioArm } : {}),
               plannerState: plannerResult.plannerState,
               sessionConfig,
               taskData: plannerResult.task,

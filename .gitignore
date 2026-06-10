@@ -66,3 +66,4 @@ supabase/.temp/
 scripts/_dev/
 mockups/
 scripts/.cache/
+scenario-ab-transcripts.local.md
