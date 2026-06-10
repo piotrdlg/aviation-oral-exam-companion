@@ -19,7 +19,7 @@
 - **Agent assignment.** Two models are used, by task difficulty:
   - **Fable 5.0** — architectural refactors, ambiguous semantics, cross-cutting changes, evaluation design, specification writing. (Most capable current model.)
   - **Opus 4.8** — well-specified, single-subsystem implementation tasks where the review already pinned down the exact fix.
-- **Production constraint that applies to EVERY task:** **THREE paying users** exist (verified 2026-06-09, corrected ground-truth doc 08 §4: 3 × `dpe_live/active` with Stripe customer+subscription IDs; plus one anomalous `dpe_live/none` grant to investigate in W3.x). No task may run a blanket `UPDATE user_profiles`, replay Stripe webhooks, or change live tier semantics without the explicit sequencing written into the task. When in doubt, the task must stop and report instead of proceeding.
+- **Production constraint that applies to EVERY task:** **THREE paying users** exist — owner-confirmed in the Stripe dashboard 2026-06-09: 3 real clients, **one of whom cancels effective July 2** (cancel-at-period-end). That canceling user is a live test case for W3.1's cancellation semantics: they MUST retain `dpe_live` access until July 2 and downgrade cleanly when `customer.subscription.deleted` fires — W3.1 verifies both. Plus one anomalous `dpe_live/none` tier grant to investigate in W3.x (doc 08 §4). No task may run a blanket `UPDATE user_profiles`, replay Stripe webhooks, or change live tier semantics without the explicit sequencing written into the task. When in doubt, the task must stop and report instead of proceeding.
 - **Verification rule for data-gathering tasks (added after the W0.2 incident):** any task whose output is *facts about production* must (a) print and check the `error` object of every Supabase query — an empty result with a swallowed error is how W0.2 reported "0 paying users" when there were 3; (b) confirm column names against a sampled row before filtering/ordering on them (W0.2 queried a nonexistent `created_at` on `latency_logs` and concluded "stale since Feb" when the newest row was May 19); (c) re-derive every finding labeled CRITICAL via a second, differently-shaped query before reporting it.
 - **Definition of done for every task** (in addition to per-task criteria): `npm run typecheck` passes, `npm test` passes (full suite), new behavior covered by tests, one commit per logical change, and the PR description links the review finding(s) it closes.
 
@@ -42,6 +42,11 @@
 > - **W0.2 ⚠️ done WITH CORRECTIONS** — the agent's two headline findings were wrong (reported 0 paying users → actually **3**; reported latency logs "stale since Feb" → newest row 2026-05-19, wrong column name queried). Doc 08 corrected in place same day; flags/cache/TTS/user-count claims re-verified and held. The verification rule above was added because of this.
 > - **W0.3 ✅ done** — 4 secret backups moved to `~/secure-backups/heydpe/` (chmod 700), `.gitignore` verified, filename-level history scan clean. One rigor gap: "no rotation needed" rests on per-filename `git log` only → full-history content scan added to W0.4.
 > - Confirmed by ground truth: `graph.enhanced_retrieval` AND `graph.shadow_mode` both ON in production (W5.1 turns both off); embedding cache reuse ~0.3% (broken as suspected); June TTS usage = 0 (simplifies the W3.2 quota cutover); PITR status still MANUAL CHECK (owner).
+>
+> **Status update 2026-06-10 (W0.4/W0.5 assessed):**
+> - **W0.4 ✅ done with one bad ending, since repaired** — baseline fixes, gitleaks full-history scan (clean: 0 production secrets; 1 low-risk staging anon key), docs corpus committed, PR #5 merged. BUT the merge left **main's CI red**: lint has 141 pre-existing errors, and the agent misreported them as "in scripts/e2e" — actually **121 are in src/** (94 src/app, 27 src/lib). Repaired via PR #6 (2026-06-10): lint is now `continue-on-error` (advisory) while typecheck + the 1,243-test suite remain hard-blocking; **main is green**. Lint returns to blocking via W0.6.
+> - **W0.5 ✅ done — NO BUG.** Zero exam sessions, transcripts, and TTS/STT calls since 2026-05-19 — the latency-log silence is zero traffic, not broken instrumentation. ⚠️ **Business signal for the owner:** the entire user base, including all 3 paying clients, has run zero exams in 3 weeks, and one client cancels July 2. Engagement/churn is now as urgent as the technical backlog.
+> - **Stripe confirmed by owner (2026-06-10):** 3 real paying clients; 1 cancels effective July 2 — wired into the production constraint above as W3.1's live cancellation test case.
 
 ### Task W0.1: CI pipeline
 
@@ -152,6 +157,28 @@ Print and check the error object of every query (verification rule in the master
 ```
 
 **Success criteria:** Verdict documented with query evidence; if it was a bug, a dev exam demonstrably writes a latency row again; zero production writes during investigation.
+
+---
+
+### Task W0.6: Lint debt burn-down → re-enable blocking lint (added 2026-06-10)
+
+**Agent:** Opus 4.8 · **Files:** ~141 lint errors across `src/app` (94), `src/lib` (27), `scripts` (13), `src/types` (3), `src/hooks` (2), `src/components` (1), `e2e` (1); `.github/workflows/ci.yml`
+
+**Goal:** Pay off the lint debt that forced lint to advisory in PR #6, then make lint blocking again. Type-level changes only — zero behavior change.
+
+**Prompt:**
+```
+Repo: aviation-oral-exam-companion. CI (.github/workflows/ci.yml) currently runs npm run lint with continue-on-error: true because the codebase has ~141 pre-existing eslint errors (mostly @typescript-eslint/no-explicit-any). Fix them ALL with type-level changes only:
+1. Run npm run lint and group errors by file. Work file-by-file, largest first (src/app/(dashboard)/settings/page.tsx and practice/page.tsx likely dominate).
+2. Replace `any` with proper types: prefer existing types from src/types/database.ts and module-local interfaces; use `unknown` + narrowing where the shape is genuinely dynamic (e.g., JSON metadata); use precise event/DOM types in components. NEVER use eslint-disable comments and NEVER loosen tsconfig/eslint config — the point is real types.
+3. ZERO behavior change: no logic edits, no renames beyond types. After every few files: npm run typecheck && npm test must stay green (1,243 tests).
+4. Also clear the ~12 unused-var warnings where trivial (prefix with _ or remove).
+5. When npm run lint exits 0: remove `continue-on-error: true` (and its comment) from .github/workflows/ci.yml so lint blocks again.
+6. One PR; in the description list error counts before/after per directory. CI must be fully green (typecheck + test + lint all blocking) before merge.
+CAUTION: practice/page.tsx and settings/page.tsx will be heavily refactored in Phase 2 — if any fix there risks semantic drift, prefer the most conservative typing (unknown + narrow) over clever restructuring.
+```
+
+**Success criteria:** `npm run lint` exits 0; `continue-on-error` removed; CI green on the PR with lint blocking; zero test/typecheck regressions; no eslint-disable added.
 
 ---
 
