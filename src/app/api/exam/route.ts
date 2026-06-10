@@ -16,7 +16,7 @@ import {
 } from '@/lib/exam-engine';
 import { computeExamResult } from '@/lib/exam-logic';
 import { buildTransitionHint } from '@/lib/transition-explanation';
-import { computeExamResultV2 } from '@/lib/exam-result';
+import { computeExamResultV2, v2ToV1Grade } from '@/lib/exam-result';
 import {
   initPlanner,
   advancePlanner,
@@ -780,7 +780,9 @@ export async function POST(request: NextRequest) {
             // Read-merge-write so concurrent metadata writers are never clobbered.
             if (srvExamPlan && srvPlannerState && currentElementCode && assessment && sessionId) {
               let streamPlan = srvExamPlan;
-              if (assessment.mentioned_elements.length > 0) {
+              // W2.3 (bug 13): mention credit ONLY on satisfactory answers —
+              // topics brushed in a wrong answer are not covered.
+              if (assessment.score === 'satisfactory' && assessment.mentioned_elements.length > 0) {
                 streamPlan = creditMentionedElements(streamPlan, assessment.mentioned_elements);
               }
               if (assessment.score === 'unsatisfactory') {
@@ -932,7 +934,8 @@ export async function POST(request: NextRequest) {
       let updatedExamPlan = srvExamPlan;
       if (updatedExamPlan && srvPlannerState && currentElementCode && assessment) {
         // Credit mentioned elements
-        if (assessment.mentioned_elements.length > 0) {
+        // W2.3 (bug 13): mention credit ONLY on satisfactory answers
+        if (assessment.score === 'satisfactory' && assessment.mentioned_elements.length > 0) {
           updatedExamPlan = creditMentionedElements(updatedExamPlan, assessment.mentioned_elements);
         }
         // Bonus question on unsatisfactory
@@ -1057,7 +1060,8 @@ export async function POST(request: NextRequest) {
                   .select('element_code, score')
                   .eq('session_id', sessionId)
                   .eq('tag_type', 'attempt')
-                  .not('score', 'is', null),
+                  .not('score', 'is', null)
+                  .order('created_at', { ascending: true }),
                 serviceSupabase
                   .from('exam_sessions')
                   .select('metadata')
@@ -1082,12 +1086,17 @@ export async function POST(request: NextRequest) {
                 const effectivePlan = serverExamPlan || srvExamPlan;
                 let examResultV2: Record<string, unknown> | undefined;
                 if (effectivePlan) {
-                  examResultV2 = computeExamResultV2(
+                  const v2 = computeExamResultV2(
                     attemptData,
                     effectivePlan,
                     'all_tasks_covered',
                     serverSessionConfig?.rating || ntConfig?.rating || 'private',
-                  ) as unknown as Record<string, unknown>;
+                  );
+                  // W2.3 (bug 9): V2 is canonical — a naturally-completed exam
+                  // grades pass/fail from the plan, never 'incomplete' just
+                  // because asked < raw queue length.
+                  result.grade = v2ToV1Grade(v2.overall_status);
+                  examResultV2 = v2 as unknown as Record<string, unknown>;
                 }
 
                 // Merge V2 into existing metadata (preserve plannerState, sessionConfig, etc.)
