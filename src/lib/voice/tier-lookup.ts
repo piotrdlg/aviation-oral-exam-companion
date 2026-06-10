@@ -2,6 +2,7 @@ import type { VoiceTier } from './types';
 import { TtlCache } from '../ttl-cache';
 import {
   resolveInstructorEntitlements,
+  hasPaidEquivalentOverride,
   COURTESY_TIER,
 } from '../instructor-entitlements';
 
@@ -58,6 +59,20 @@ export async function getUserTier(
       }
     } catch {
       // Entitlement check failure should not block tier resolution
+    }
+  }
+
+  // W3.3 #16: a direct `paid_equivalent` entitlement override (instructor-
+  // granted courtesy for a connected student) actually grants the full paid
+  // tier. Previously the override existed but getUserTier never consulted it,
+  // so courtesy students got nothing above the free default.
+  if (TIER_ORDER[tier] < TIER_ORDER['dpe_live']) {
+    try {
+      if (await hasPaidEquivalentOverride(userId, supabase)) {
+        tier = 'dpe_live';
+      }
+    } catch {
+      // Override check failure should not block tier resolution
     }
   }
 

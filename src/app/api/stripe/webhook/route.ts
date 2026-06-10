@@ -11,6 +11,7 @@ import {
   sendInternalAlert,
 } from '@/lib/email';
 import { mapStripePriceToTier, tierForSubscription } from '@/lib/stripe-tier';
+import { invalidateTierCache } from '@/lib/voice/tier-lookup';
 
 const serviceSupabase = createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -179,6 +180,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, eventId
     })
     .eq('user_id', userId);
 
+  invalidateTierCache(userId); // W3.3 #4 (best-effort; 5-min TTL covers other instances)
+
   // Fire GA4 server-side purchase event for reliable revenue tracking
   if (process.env.GA4_API_SECRET && process.env.GA4_MEASUREMENT_ID) {
     try {
@@ -292,6 +295,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription, even
     .eq('stripe_customer_id', customerId)
     .single();
   if (cancelProfile?.user_id) {
+    invalidateTierCache(cancelProfile.user_id); // W3.3 #4
     const { data: { user: cancelUser } } = await serviceSupabase.auth.admin.getUserById(cancelProfile.user_id);
     if (cancelUser?.email) {
       void sendSubscriptionCancelled(cancelUser.email);
@@ -371,6 +375,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, eventId: string, cre
     .eq('stripe_customer_id', customerId)
     .single();
   if (failProfile?.user_id) {
+    invalidateTierCache(failProfile.user_id); // W3.3 #4 (status change, though tier kept in grace)
     const { data: { user: failUser } } = await serviceSupabase.auth.admin.getUserById(failProfile.user_id);
     if (failUser?.email) {
       void sendPaymentFailed(failUser.email);

@@ -88,6 +88,24 @@ interface TaskData {
   skill_elements: { code: string; description: string }[];
 }
 
+/** W3.3: reason-aware paywall copy for the upgrade modal. */
+function quotaModalCopy(reason: string | null): { heading: string; body: string } {
+  switch (reason) {
+    case 'exchanges_per_session':
+      return { heading: 'EXAM QUESTION LIMIT', body: "You've reached this exam's question limit. Subscribe for longer mock orals and unlimited exams." };
+    case 'trial_expired':
+    case 'session_expired':
+      return { heading: 'TRIAL ENDED', body: 'Your free trial has ended. Subscribe to keep practicing for your checkride.' };
+    case 'tts_chars_per_month':
+    case 'stt_seconds_per_month':
+    case 'daily_tts_chars':
+    case 'daily_llm_tokens':
+      return { heading: 'VOICE LIMIT REACHED', body: "You've used your free voice allowance. Subscribe for unlimited voice practice." };
+    default:
+      return { heading: 'UPGRADE TO CONTINUE', body: "You've used your free practice. Subscribe for unlimited exams and voice." };
+  }
+}
+
 export default function PracticePage() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -112,8 +130,9 @@ export default function PracticePage() {
   const [examinerProfileKey, setExaminerProfileKey] = useState<ExaminerProfileKey | undefined>(undefined);
   const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
   const [showWizard, setShowWizard] = useState(false);
-  // Upgrade prompt states (Task 34)
+  // Upgrade prompt states (Task 34 / W3.3)
   const [showQuotaModal, setShowQuotaModal] = useState(false);
+  const [quotaReason, setQuotaReason] = useState<string | null>(null);
   const [quotaWarning, setQuotaWarning] = useState<string | null>(null);
   // Post-checkout success banner (Task 36)
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
@@ -747,9 +766,19 @@ export default function PracticePage() {
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        // Show upgrade modal on quota exceeded (Task 34)
-        if (res.status === 429 && errData.error === 'quota_exceeded') {
+        // Show upgrade modal on any usage cap (Task 34 / W3.3 paywall)
+        if (res.status === 429 && (errData.error === 'quota_exceeded' || errData.error === 'daily_cap_reached')) {
+          setQuotaReason(errData.limit || errData.error);
           setShowQuotaModal(true);
+          captureVoiceEvent('paywall_shown', { reason: errData.limit || errData.error, session_id: sessionId });
+          setLoading(false);
+          return;
+        }
+        // Free-trial expired mid-exam (W3.2 #12)
+        if (res.status === 403 && errData.error === 'session_expired') {
+          setQuotaReason('trial_expired');
+          setShowQuotaModal(true);
+          captureVoiceEvent('paywall_shown', { reason: 'session_expired', session_id: sessionId });
           setLoading(false);
           return;
         }
@@ -1829,11 +1858,8 @@ export default function PracticePage() {
         {showQuotaModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
             <div className="bezel rounded-lg border border-c-border p-6 max-w-md mx-4 shadow-2xl">
-              <h2 className="font-mono font-bold text-2xl text-c-amber glow-a mb-2 tracking-wider uppercase">EXAM LIMIT REACHED</h2>
-              <p className="text-c-muted text-base mb-6">
-                You&apos;ve reached your monthly exam limit. Upgrade your plan to continue practicing
-                for your checkride.
-              </p>
+              <h2 className="font-mono font-bold text-2xl text-c-amber glow-a mb-2 tracking-wider uppercase">{quotaModalCopy(quotaReason).heading}</h2>
+              <p className="text-c-muted text-base mb-6">{quotaModalCopy(quotaReason).body}</p>
               <div className="flex gap-3">
                 <a
                   href="/pricing"
@@ -2273,11 +2299,8 @@ export default function PracticePage() {
       {showQuotaModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
           <div className="bezel rounded-lg border border-c-border p-6 max-w-md mx-4 shadow-2xl">
-            <h2 className="font-mono font-bold text-2xl text-c-amber glow-a mb-2 tracking-wider uppercase">EXAM LIMIT REACHED</h2>
-            <p className="text-c-muted text-base mb-6">
-              You&apos;ve reached your monthly exam limit. Upgrade your plan to continue practicing
-              for your checkride.
-            </p>
+            <h2 className="font-mono font-bold text-2xl text-c-amber glow-a mb-2 tracking-wider uppercase">{quotaModalCopy(quotaReason).heading}</h2>
+              <p className="text-c-muted text-base mb-6">{quotaModalCopy(quotaReason).body}</p>
             <div className="flex gap-3">
               <a
                 href="/pricing"
