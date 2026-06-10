@@ -14,10 +14,14 @@ export async function GET() {
 
     const ttsSentenceStream = config['tts_sentence_stream'] as { enabled?: boolean } | undefined;
     const instructorPartnership = config['instructor_partnership_v1'] as { enabled?: boolean } | undefined;
+    const scenarioEngine = config['exam.scenario_engine'] as { mode?: string } | undefined;
 
     return NextResponse.json({
       tts_sentence_stream: ttsSentenceStream?.enabled ?? false,
       instructor_partnership_v1: instructorPartnership?.enabled ?? false,
+      // The 'Mock Checkride' study-mode card shows only at 'on' (during 'ab'
+      // the engine rides invisibly inside Across ACS — no self-selection).
+      scenario_mode: scenarioEngine?.mode === 'on' ? 'on' : scenarioEngine?.mode === 'ab' ? 'ab' : 'off',
     }, {
       headers: { 'Cache-Control': 'public, max-age=60, stale-while-revalidate=300' },
     });
@@ -26,6 +30,7 @@ export async function GET() {
     return NextResponse.json({
       tts_sentence_stream: false,
       instructor_partnership_v1: false,
+      scenario_mode: 'off',
     });
   }
 }

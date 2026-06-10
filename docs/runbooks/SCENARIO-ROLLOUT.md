@@ -6,9 +6,11 @@ The whole rollout is a one-flag operation on `system_config.exam.scenario_engine
 
 | Value | Behavior |
 |---|---|
-| `{"mode": "off"}` | Linear exams for everyone (today's default) |
-| `{"mode": "ab"}` | New sessions assigned 50/50 by sticky user hash; arm persisted in `exam_sessions.metadata.scenarioArm`; `exam_arm_assigned` PostHog event |
-| `{"mode": "on"}` | Scenario Engine for all new sessions |
+| `{"mode": "off"}` | Classic behavior for every mode; the "Mock Checkride" card is hidden |
+| `{"mode": "ab"}` | **A/B population = "Across ACS" (cross_acs) sessions only** — split 50/50 by sticky user hash (scenario vs adjacency walk); arm persisted in `exam_sessions.metadata.scenarioArm`; `exam_arm_assigned` event. Linear / Weak Areas / Quick Drill sessions are NEVER in the experiment. Card still hidden (no self-selection bias) |
+| `{"mode": "on"}` | "Mock Checkride" appears as a first-class study-mode card; the engine runs only for sessions where the student picked it. Across ACS reverts to the pure adjacency walk |
+
+Full mode × flag matrix with diagrams: `docs/design/exam-engine-design.html` §04. Linear order and difficulty behavior are guaranteed by the route-level test matrix in `exam-flow-regression.test.ts` ("mode × flag matrix").
 
 In-flight sessions are never affected by a flag change — the spine and arm are fixed in session metadata at start.
 
@@ -20,7 +22,7 @@ In the Supabase SQL editor (or admin config tooling):
 UPDATE system_config SET value = '{"mode": "ab"}' WHERE key = 'exam.scenario_engine';
 ```
 
-Verify: start a fresh exam on a test account; `exam_sessions.metadata.scenarioArm` is set and PostHog shows `exam_arm_assigned`.
+Verify: start a fresh exam on a test account **in "Across ACS" mode**; `exam_sessions.metadata.scenarioArm` is set and PostHog shows `exam_arm_assigned`. A linear-mode session must NOT get an arm.
 
 ## Step 2 — Monitor weekly
 

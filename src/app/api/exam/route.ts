@@ -536,14 +536,23 @@ export async function POST(request: NextRequest) {
           plannerResult.task, [], plannerResult.difficulty, sessionConfig.aircraftClass, undefined, rating, sessionConfig.studyMode, personaSection, studentName, undefined, examinerContractSection
         );
 
-        // W5.6 Gate 2: resolve the session's arm. mode 'on' → all scenario;
-        // 'ab' → sticky 50/50 by user hash; 'off' → linear (no event).
+        // Scenario Engine activation — mode × flag matrix
+        // (docs/design/exam-engine-design.html §04). The engine is ONE study
+        // mode among several; linear/weak_areas/quick_drill NEVER engage it:
+        //   on  → only sessions whose studyMode is 'scenario' (explicit choice)
+        //   ab  → Gate 2 population = cross_acs (and stray 'scenario')
+        //         sessions, split 50/50 by sticky user hash
+        //   off → never; a stray 'scenario' request degrades gracefully to
+        //         the cross_acs-style walk its queue was built with
         const scenarioMode = getScenarioMode(config);
+        const requestedStudyMode = sessionConfig.studyMode;
+        const inAbPopulation = scenarioMode === 'ab' &&
+          (requestedStudyMode === 'cross_acs' || requestedStudyMode === 'scenario');
         const scenarioArm: 'scenario' | 'linear' =
-          scenarioMode === 'on' ? 'scenario'
-          : scenarioMode === 'ab' ? assignScenarioArm(user.id)
+          scenarioMode === 'on' ? (requestedStudyMode === 'scenario' ? 'scenario' : 'linear')
+          : inAbPopulation ? assignScenarioArm(user.id)
           : 'linear';
-        if (scenarioMode !== 'off' && sessionId) {
+        if (inAbPopulation && sessionId) {
           captureServerEvent(user.id, 'exam_arm_assigned', {
             session_id: sessionId, arm: scenarioArm, mode: scenarioMode,
           });
@@ -626,7 +635,7 @@ export async function POST(request: NextRequest) {
             .update({ metadata: {
               ...serverMeta,
               advanceDue: false,
-              ...(scenarioMode !== 'off' ? { scenarioArm } : {}),
+              ...(inAbPopulation ? { scenarioArm } : {}),
               plannerState: plannerResult.plannerState,
               sessionConfig,
               taskData: plannerResult.task,

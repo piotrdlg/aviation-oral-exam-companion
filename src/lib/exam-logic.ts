@@ -421,6 +421,12 @@ export function buildElementQueue(
       // Already in order_index order from DB
       return codes;
 
+    case 'scenario':
+      // Scenario mode's QUEUE is only the fallback order — the Scenario
+      // Engine's transition policy overrides it at each transition. A
+      // coherent adjacency walk makes the fallback (and the no-spine
+      // degraded mode) behave like cross_acs.
+      // falls through
     case 'cross_acs':
       // W5.3 (flag exam.adjacency_ordering): adjacency-scored walk replaces
       // the keyword-fingerprint walk. The planner only passes neighbors when

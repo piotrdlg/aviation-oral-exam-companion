@@ -570,9 +570,9 @@ describe('scenario engine transitions (W5.4)', () => {
     expect((meta.scenario as { usedHooks: string[] }).usedHooks).toEqual([]);
   });
 
-  it('start action with flag ON persists a spine via after() without blocking (template fallback offline)', async () => {
+  it("start with flag ON + studyMode 'scenario' persists a spine via after() (template fallback offline)", async () => {
     h.db.exam_sessions[0].metadata = {};
-    const res = await examPost(req({ action: 'start', sessionId: 'sess-1', sessionConfig: SESSION_CONFIG, stream: false }));
+    const res = await examPost(req({ action: 'start', sessionId: 'sess-1', sessionConfig: { ...SESSION_CONFIG, studyMode: 'scenario' }, stream: false }));
     expect(res.status).toBe(200);
     await flushAfters(); // spine generation runs post-response
     const meta = h.db.exam_sessions[0].metadata as Record<string, unknown>;
@@ -586,13 +586,12 @@ describe('scenario engine transitions (W5.4)', () => {
   });
 });
 
-describe('A/B arm assignment through the route (W5.6)', () => {
+describe('mode × flag matrix — scenario is ONE option; every other mode is preserved', () => {
   beforeEach(() => {
     h.reset();
     h.pendingAfters.length = 0;
     h.events.length = 0;
     h.tier = 'dpe_live';
-    h.config = { 'exam.scenario_engine': { mode: 'ab' } };
   });
 
   function expectedArm(userId: string): 'scenario' | 'linear' {
@@ -600,25 +599,72 @@ describe('A/B arm assignment through the route (W5.6)', () => {
     for (let i = 0; i < userId.length; i++) { hh ^= userId.charCodeAt(i); hh = Math.imul(hh, 16777619); }
     return (hh >>> 0) % 2 === 0 ? 'scenario' : 'linear';
   }
+  const CROSS_CONFIG = { ...SESSION_CONFIG, studyMode: 'cross_acs' };
+  const SCENARIO_CONFIG = { ...SESSION_CONFIG, studyMode: 'scenario' };
 
-  it("mode 'ab': assigns the sticky hash arm, persists it, and emits exam_arm_assigned", async () => {
+  it("flag 'on' + LINEAR mode: exact ACS order, no spine, no arm, no event", async () => {
+    h.config = { 'exam.scenario_engine': { mode: 'on' } };
     h.db.exam_sessions[0].metadata = {};
     const res = await examPost(req({ action: 'start', sessionId: 'sess-1', sessionConfig: SESSION_CONFIG, stream: false }));
     expect(res.status).toBe(200);
     await flushAfters();
+    const meta = h.db.exam_sessions[0].metadata as Record<string, unknown>;
+    // Linear queue = exact ACS document order of the oral-eligible elements
+    expect((meta.plannerState as { queue: string[] }).queue).toEqual([
+      'PA.I.A.K1', 'PA.I.A.K2', 'PA.II.A.K1', 'PA.II.A.K2',
+    ]);
+    expect(meta.scenario).toBeUndefined();
+    expect(meta.scenarioArm).toBeUndefined();
+    expect(h.events.find((e) => e.name === 'exam_arm_assigned')).toBeUndefined();
+    expect(h.events.find((e) => e.name === 'scenario_spine_generated')).toBeUndefined();
+  });
 
+  it("flag 'on' + WEAK_AREAS mode: no spine, same element set", async () => {
+    h.config = { 'exam.scenario_engine': { mode: 'on' } };
+    h.db.exam_sessions[0].metadata = {};
+    const res = await examPost(req({ action: 'start', sessionId: 'sess-1', sessionConfig: { ...SESSION_CONFIG, studyMode: 'weak_areas' }, stream: false }));
+    expect(res.status).toBe(200);
+    await flushAfters();
+    const meta = h.db.exam_sessions[0].metadata as Record<string, unknown>;
+    expect(meta.scenario).toBeUndefined();
+    expect([...(meta.plannerState as { queue: string[] }).queue].sort()).toEqual([
+      'PA.I.A.K1', 'PA.I.A.K2', 'PA.II.A.K1', 'PA.II.A.K2',
+    ]);
+  });
+
+  it("flag 'on' + SCENARIO mode: spine persisted; same element SET as linear", async () => {
+    h.config = { 'exam.scenario_engine': { mode: 'on' } };
+    h.db.exam_sessions[0].metadata = {};
+    const res = await examPost(req({ action: 'start', sessionId: 'sess-1', sessionConfig: SCENARIO_CONFIG, stream: false }));
+    expect(res.status).toBe(200);
+    await flushAfters();
+    const meta = h.db.exam_sessions[0].metadata as Record<string, unknown>;
+    expect(meta.scenario).toBeDefined();
+    // The non-linear mode reorders but NEVER changes the set
+    expect([...(meta.plannerState as { queue: string[] }).queue].sort()).toEqual([
+      'PA.I.A.K1', 'PA.I.A.K2', 'PA.II.A.K1', 'PA.II.A.K2',
+    ]);
+    // Explicit choice under 'on' is not an experiment — no arm event
+    expect(h.events.find((e) => e.name === 'exam_arm_assigned')).toBeUndefined();
+  });
+
+  it("flag 'ab' + CROSS_ACS: sticky arm assigned + persisted; spine only for the scenario arm", async () => {
+    h.config = { 'exam.scenario_engine': { mode: 'ab' } };
+    h.db.exam_sessions[0].metadata = {};
+    const res = await examPost(req({ action: 'start', sessionId: 'sess-1', sessionConfig: CROSS_CONFIG, stream: false }));
+    expect(res.status).toBe(200);
+    await flushAfters();
     const arm = expectedArm('user-1');
     const meta = h.db.exam_sessions[0].metadata as Record<string, unknown>;
     expect(meta.scenarioArm).toBe(arm);
     const ev = h.events.find((e) => e.name === 'exam_arm_assigned');
     expect(ev?.props.arm).toBe(arm);
     expect(ev?.props.mode).toBe('ab');
-    // Spine generated ONLY for the scenario arm
     expect(!!meta.scenario).toBe(arm === 'scenario');
   });
 
-  it("mode 'off': no arm, no event, no spine", async () => {
-    h.config = {};
+  it("flag 'ab' + LINEAR mode is NEVER in the experiment: no arm, no event, no spine", async () => {
+    h.config = { 'exam.scenario_engine': { mode: 'ab' } };
     h.db.exam_sessions[0].metadata = {};
     const res = await examPost(req({ action: 'start', sessionId: 'sess-1', sessionConfig: SESSION_CONFIG, stream: false }));
     expect(res.status).toBe(200);
@@ -627,5 +673,48 @@ describe('A/B arm assignment through the route (W5.6)', () => {
     expect(meta.scenarioArm).toBeUndefined();
     expect(meta.scenario).toBeUndefined();
     expect(h.events.find((e) => e.name === 'exam_arm_assigned')).toBeUndefined();
+    expect((meta.plannerState as { queue: string[] }).queue).toEqual([
+      'PA.I.A.K1', 'PA.I.A.K2', 'PA.II.A.K1', 'PA.II.A.K2',
+    ]);
+  });
+
+  it("flag 'off' + a stray SCENARIO request degrades gracefully (no spine, walk-style queue, exam starts)", async () => {
+    h.config = {};
+    h.db.exam_sessions[0].metadata = {};
+    const res = await examPost(req({ action: 'start', sessionId: 'sess-1', sessionConfig: SCENARIO_CONFIG, stream: false }));
+    expect(res.status).toBe(200);
+    await flushAfters();
+    const meta = h.db.exam_sessions[0].metadata as Record<string, unknown>;
+    expect(meta.scenario).toBeUndefined();
+    expect([...(meta.plannerState as { queue: string[] }).queue].sort()).toEqual([
+      'PA.I.A.K1', 'PA.I.A.K2', 'PA.II.A.K1', 'PA.II.A.K2',
+    ]);
+  });
+
+  it('DIFFICULTY is enforced in scenario mode exactly as in linear: easy filters the set', async () => {
+    // Make two elements easy; the rest stay medium
+    for (const el of h.db.acs_elements) {
+      el.difficulty_default = (el.code === 'PA.I.A.K1' || el.code === 'PA.II.A.K1') ? 'easy' : 'medium';
+    }
+    h.config = { 'exam.scenario_engine': { mode: 'on' } };
+
+    // Scenario mode, easy
+    h.db.exam_sessions[0].metadata = {};
+    await examPost(req({ action: 'start', sessionId: 'sess-1', sessionConfig: { ...SCENARIO_CONFIG, difficulty: 'easy' }, stream: false }));
+    await flushAfters();
+    const scenarioQueue = ((h.db.exam_sessions[0].metadata as Record<string, unknown>).plannerState as { queue: string[] }).queue;
+    expect([...scenarioQueue].sort()).toEqual(['PA.I.A.K1', 'PA.II.A.K1']);
+
+    // Linear mode, easy — identical SET
+    h.reset();
+    for (const el of h.db.acs_elements) {
+      el.difficulty_default = (el.code === 'PA.I.A.K1' || el.code === 'PA.II.A.K1') ? 'easy' : 'medium';
+    }
+    h.config = { 'exam.scenario_engine': { mode: 'on' } };
+    h.db.exam_sessions[0].metadata = {};
+    await examPost(req({ action: 'start', sessionId: 'sess-1', sessionConfig: { ...SESSION_CONFIG, difficulty: 'easy' }, stream: false }));
+    await flushAfters();
+    const linearQueue = ((h.db.exam_sessions[0].metadata as Record<string, unknown>).plannerState as { queue: string[] }).queue;
+    expect(linearQueue).toEqual(['PA.I.A.K1', 'PA.II.A.K1']); // linear keeps ACS order too
   });
 });

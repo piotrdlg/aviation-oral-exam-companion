@@ -138,7 +138,7 @@ e2e/                                # Playwright E2E tests (6 browser projects)
 
 ### Scenario Engine (non-linear exams, flag-gated)
 
-Decision D4 (2026-06-09): the knowledge graph left the exam runtime. Non-linear exams are delivered by the **Scenario Engine** (`docs/plans/2026-06-09-scenario-engine-design.md`): a one-call scenario spine at exam start (template fallback), a precomputed `element_adjacency` table (built by `npm run pipeline:element-adjacency`), and a per-transition server-built shortlist from which the examiner LLM picks and bridges (`<next_element>` protocol, server-validated). Gated by `exam.scenario_engine` (off | ab | on) behind two binding proof gates: W5.5 offline judged eval, W5.6 production A/B.
+Decision D4 (2026-06-09): the knowledge graph left the exam runtime. Non-linear exams are delivered by the **Scenario Engine** (`docs/plans/2026-06-09-scenario-engine-design.md`): a one-call scenario spine at exam start (template fallback), a precomputed `element_adjacency` table (built by `npm run pipeline:element-adjacency`), and a per-transition server-built shortlist from which the examiner LLM picks and bridges (`<next_element>` protocol, server-validated). Scenario is a first-class study mode ('Mock Checkride', `studyMode: 'scenario'`) — linear/cross_acs/weak_areas/quick_drill keep classic behavior at every difficulty. Flag `exam.scenario_engine` (off | ab | on) controls availability: 'ab' A/Bs inside cross_acs sessions only; 'on' shows the card. Two binding proof gates: W5.5 offline judged eval (PASSED 2026-06-10), W5.6 production A/B. Full design with diagrams: `docs/design/exam-engine-design.html`.
 
 ### Two Claude Calls Per Exchange
 
