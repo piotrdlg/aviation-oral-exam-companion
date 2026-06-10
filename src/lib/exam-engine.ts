@@ -83,6 +83,18 @@ export function buildCachedSystem(sessionStatic: string, dynamic: string): Syste
   return blocks;
 }
 
+
+/**
+ * W6.2 load testing: when LOAD_TEST_MOCK_LLM=1 (and NEVER in production —
+ * double-guarded on VERCEL_ENV), the two Anthropic calls return canned
+ * results after a realistic synthetic hold (~800ms) so k6 can exercise the
+ * full auth/session/RAG/DB path at scale without LLM spend.
+ */
+export function isLoadTestMockActive(): boolean {
+  return process.env.LOAD_TEST_MOCK_LLM === '1' && process.env.VERCEL_ENV !== 'production';
+}
+const LOAD_TEST_HOLD_MS = 800;
+
 export interface ExamTurn {
   examinerMessage: string;
   assessment?: AssessmentData;
@@ -307,6 +319,13 @@ export async function generateExaminerTurn(
   depthContractSection?: string,
   scenarioSection?: string
 ): Promise<ExamTurn> {
+  if (isLoadTestMockActive()) {
+    await new Promise((r) => setTimeout(r, LOAD_TEST_HOLD_MS));
+    return {
+      examinerMessage: 'LOADTEST: Tell me about the certification requirements to act as pilot in command today.',
+      usage: { input_tokens: 1000, output_tokens: 60, latency_ms: LOAD_TEST_HOLD_MS },
+    };
+  }
   // Load the best-matching prompt from DB (specificity: rating + studyMode + difficulty)
   const { content: dbPromptContent } = await loadPromptFromDB(
     supabase, 'examiner_system', rating, studyMode, difficulty
@@ -714,6 +733,14 @@ export async function assessAnswer(
   difficulty?: string,
   gradingContractSection?: string
 ): Promise<AssessmentData> {
+  if (isLoadTestMockActive()) {
+    await new Promise((r) => setTimeout(r, LOAD_TEST_HOLD_MS));
+    return {
+      score: 'satisfactory', feedback: 'LOADTEST canned assessment', misconceptions: [],
+      follow_up_needed: false, primary_element: null, mentioned_elements: [],
+      source_summary: 'LOADTEST', usage: { input_tokens: 800, output_tokens: 80, latency_ms: LOAD_TEST_HOLD_MS },
+    };
+  }
   // Build complete element list for the assessment prompt
   const allElements: string[] = [];
 
