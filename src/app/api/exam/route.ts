@@ -87,6 +87,9 @@ function logLlmUsage(
       metadata: {
         input_tokens: usage.input_tokens,
         output_tokens: usage.output_tokens,
+        // W5.2: prompt-cache savings visible per call in usage_logs
+        ...(usage.cache_creation_input_tokens !== undefined ? { cache_creation_input_tokens: usage.cache_creation_input_tokens } : {}),
+        ...(usage.cache_read_input_tokens !== undefined ? { cache_read_input_tokens: usage.cache_read_input_tokens } : {}),
         ...metadata,
       },
     })
@@ -612,7 +615,11 @@ export async function POST(request: NextRequest) {
       // Support streaming for start — no chunkedResponse here intentionally:
       // the opening examiner question has no student feedback to split into 3 chunks.
       if (stream) {
-        const { stream: readableStream, fullTextPromise: startTextPromise } = await generateExaminerTurnStreaming(task, [], undefined, undefined, undefined, undefined, undefined, undefined, undefined, personaSection, studentName);
+        const { stream: readableStream, fullTextPromise: startTextPromise } = await generateExaminerTurnStreaming(
+          task, [], undefined, undefined, undefined, undefined, undefined, undefined, undefined, personaSection, studentName,
+          undefined, undefined, undefined, undefined, undefined,
+          (u) => logLlmUsage(user.id, u, tier, sessionId, { action: 'start', call: 'generateExaminerTurnStreaming' })
+        );
 
         after(async () => {
           try {
@@ -790,7 +797,8 @@ export async function POST(request: NextRequest) {
         const onAssetSelected = (asset: SelectedAsset) => { selectedAssetData = asset; };
 
         const { stream: readableStream, fullTextPromise } = await generateExaminerTurnStreaming(
-          respondTask, updatedHistory, respondDifficulty, respondConfig?.aircraftClass, rag, assessmentPromise, undefined, respondRating, respondConfig?.studyMode, personaSection, studentName, chunkedResponse, timing, respondExaminerContract, assetContext, onAssetSelected
+          respondTask, updatedHistory, respondDifficulty, respondConfig?.aircraftClass, rag, assessmentPromise, undefined, respondRating, respondConfig?.studyMode, personaSection, studentName, chunkedResponse, timing, respondExaminerContract, assetContext, onAssetSelected,
+          (u) => logLlmUsage(user.id, u, tier, sessionId, { action: 'respond', call: 'generateExaminerTurnStreaming' })
         );
 
         // Use after() to ensure ALL DB writes complete even after stream closes.
