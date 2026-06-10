@@ -80,6 +80,7 @@ function adjacencyFromMeta(meta: Record<string, unknown>): AdjacencyNeighbors {
   return new Map(Object.entries(raw));
 }
 import { captureServerEvent } from '@/lib/posthog-server';
+import { captureToSentry } from '@/lib/sentry-capture';
 import { enforceOneActiveExam, getSessionTokenHash } from '@/lib/session-enforcement';
 import { createTimingContext, writeTimings } from '@/lib/timing';
 import {
@@ -655,6 +656,7 @@ export async function POST(request: NextRequest) {
             } })
             .eq('id', sessionId);
           if (metaErr) console.error('Planner state persist error:', metaErr.message);
+          captureToSentry(new Error('Planner state persist error'), { route: 'exam.next_task.persist', sessionId });
         }
 
         // Fire PostHog event for flow quality monitoring (Phase 9, non-blocking)
@@ -864,6 +866,7 @@ export async function POST(request: NextRequest) {
       if (!studentTranscriptId && sessionId) {
         const insertErr = 'error' in studentTranscriptResult ? (studentTranscriptResult as { error?: { message?: string } }).error?.message : 'unknown';
         console.error('Student transcript insert failed:', insertErr, '— assessment, element_attempts, and citations will NOT be persisted for this exchange');
+        captureToSentry(new Error('student transcript insert failed'), { route: 'exam.respond', detail: insertErr, sessionId });
       }
 
       timing.end('rag.total');
@@ -978,6 +981,7 @@ export async function POST(request: NextRequest) {
                 .update({ assessment })
                 .eq('id', studentTranscriptId);
               if (assessErr) console.error('Assessment update error:', assessErr.message);
+          captureToSentry(new Error('Assessment update error'), { route: 'exam.respond.assessment_update', sessionId });
 
               // 3. Element attempts
               if (sessionId) {
@@ -1106,6 +1110,7 @@ export async function POST(request: NextRequest) {
           .update({ assessment })
           .eq('id', studentTranscriptId);
         if (assessErr) console.error('Assessment update error:', assessErr.message);
+          captureToSentry(new Error('Assessment update error'), { route: 'exam.respond.assessment_update', sessionId });
 
         // 2. Element attempts
         if (sessionId) {
@@ -1195,6 +1200,7 @@ export async function POST(request: NextRequest) {
             })
             .eq('id', sessionId);
           if (metaErr) console.error('ExamPlan persist error:', metaErr.message);
+          captureToSentry(new Error('ExamPlan persist error'), { route: 'exam.respond.plan_persist', sessionId });
         }
       }
 
@@ -1385,6 +1391,7 @@ export async function POST(request: NextRequest) {
                       } })
                       .eq('id', sessionId);
                     if (metaErr) console.error('Scenario transition persist error:', metaErr.message);
+          captureToSentry(new Error('Scenario transition persist error'), { route: 'exam.next_task.scenario_persist', sessionId });
                   }
 
                   return NextResponse.json({
@@ -1573,6 +1580,7 @@ export async function POST(request: NextRequest) {
             } })
             .eq('id', sessionId);
           if (metaErr) console.error('Planner state persist error:', metaErr.message);
+          captureToSentry(new Error('Planner state persist error'), { route: 'exam.next_task.persist', sessionId });
         }
 
         return NextResponse.json({

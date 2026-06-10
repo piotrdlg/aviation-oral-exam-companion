@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { captureToSentry } from '@/lib/sentry-capture';
 import { getNudgeCandidates, getNudgeContent, nudgeTemplateId } from '@/lib/nudge-engine';
 import { sendMotivationNudge } from '@/lib/email';
 import { logEmailSent } from '@/lib/email-logging';
@@ -82,6 +83,7 @@ export async function GET(request: Request) {
     await flushPostHog();
     return NextResponse.json({ ok: true, stats });
   } catch (err) {
+    captureToSentry(err, { route: 'cron.nudges' });
     console.error('[cron:nudges] Fatal error:', err);
     await flushPostHog();
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });

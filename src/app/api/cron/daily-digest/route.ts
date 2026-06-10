@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { captureToSentry } from '@/lib/sentry-capture';
 import { createClient } from '@supabase/supabase-js';
 import { buildDailyDigest } from '@/lib/digest-builder';
 import { sendLearningDigest } from '@/lib/email';
@@ -106,6 +107,7 @@ export async function GET(request: Request) {
     await flushPostHog();
     return NextResponse.json({ ok: true, stats });
   } catch (err) {
+    captureToSentry(err, { route: 'cron.daily_digest' });
     console.error('[cron:digest] Fatal error:', err);
     await flushPostHog();
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
