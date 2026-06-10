@@ -585,3 +585,47 @@ describe('scenario engine transitions (W5.4)', () => {
     expect(h.events.some((e) => e.name === 'scenario_spine_generated')).toBe(true);
   });
 });
+
+describe('A/B arm assignment through the route (W5.6)', () => {
+  beforeEach(() => {
+    h.reset();
+    h.pendingAfters.length = 0;
+    h.events.length = 0;
+    h.tier = 'dpe_live';
+    h.config = { 'exam.scenario_engine': { mode: 'ab' } };
+  });
+
+  function expectedArm(userId: string): 'scenario' | 'linear' {
+    let hh = 2166136261;
+    for (let i = 0; i < userId.length; i++) { hh ^= userId.charCodeAt(i); hh = Math.imul(hh, 16777619); }
+    return (hh >>> 0) % 2 === 0 ? 'scenario' : 'linear';
+  }
+
+  it("mode 'ab': assigns the sticky hash arm, persists it, and emits exam_arm_assigned", async () => {
+    h.db.exam_sessions[0].metadata = {};
+    const res = await examPost(req({ action: 'start', sessionId: 'sess-1', sessionConfig: SESSION_CONFIG, stream: false }));
+    expect(res.status).toBe(200);
+    await flushAfters();
+
+    const arm = expectedArm('user-1');
+    const meta = h.db.exam_sessions[0].metadata as Record<string, unknown>;
+    expect(meta.scenarioArm).toBe(arm);
+    const ev = h.events.find((e) => e.name === 'exam_arm_assigned');
+    expect(ev?.props.arm).toBe(arm);
+    expect(ev?.props.mode).toBe('ab');
+    // Spine generated ONLY for the scenario arm
+    expect(!!meta.scenario).toBe(arm === 'scenario');
+  });
+
+  it("mode 'off': no arm, no event, no spine", async () => {
+    h.config = {};
+    h.db.exam_sessions[0].metadata = {};
+    const res = await examPost(req({ action: 'start', sessionId: 'sess-1', sessionConfig: SESSION_CONFIG, stream: false }));
+    expect(res.status).toBe(200);
+    await flushAfters();
+    const meta = h.db.exam_sessions[0].metadata as Record<string, unknown>;
+    expect(meta.scenarioArm).toBeUndefined();
+    expect(meta.scenario).toBeUndefined();
+    expect(h.events.find((e) => e.name === 'exam_arm_assigned')).toBeUndefined();
+  });
+});
