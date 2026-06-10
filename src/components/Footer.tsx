@@ -27,6 +27,7 @@ export default function Footer({ variant = 'public' }: FooterProps) {
             <Link href="/help" className="hover:text-c-text transition-colors">HELP</Link>
             <Link href="/privacy" className="hover:text-c-text transition-colors">PRIVACY</Link>
             <Link href="/terms" className="hover:text-c-text transition-colors">TERMS</Link>
+            <Link href="/accessibility" className="hover:text-c-text transition-colors">ACCESSIBILITY</Link>
           </div>
         </div>
         <p className="text-[10px] text-c-muted text-center leading-relaxed max-w-xl mx-auto font-mono">

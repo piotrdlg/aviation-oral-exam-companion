@@ -47,6 +47,15 @@ function loadConsent(): ConsentPreferences | null {
 
 function saveConsent(preferences: ConsentPreferences) {
   localStorage.setItem(CONSENT_KEY, JSON.stringify(preferences));
+  // W6.5: mirror the choice server-side for accountability when logged in.
+  // Fire-and-forget; a 401 (anonymous visitor) is expected and harmless.
+  try {
+    void fetch('/api/consent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kind: 'cookie', choices: preferences }),
+    });
+  } catch { /* never block the UI on telemetry */ }
 }
 
 export function CookieConsent() {
