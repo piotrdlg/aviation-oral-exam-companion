@@ -394,7 +394,9 @@ async function handleChargeRefunded(charge: Stripe.Charge, createdIso: string) {
     `Customer: ${customerId ?? '(none)'}`,
     `Amount: ${(charge.amount ?? 0) / 100} ${charge.currency?.toUpperCase()}`,
     `Refunded: ${(charge.amount_refunded ?? 0) / 100} (${fullRefund ? 'FULL' : 'partial'})`,
-    fullRefund ? 'Action: tier downgraded to checkride_prep.' : 'Action: none (partial) — review manually.',
+    fullRefund
+      ? 'Action: tier downgraded NOW — but if the subscription is still ACTIVE, the next subscription event will restore it. CANCEL the subscription in the Stripe dashboard to make it stick.'
+      : 'Action: none (partial refund) — review manually.',
   ]);
 
   if (fullRefund && customerId) {
@@ -426,7 +428,7 @@ async function handleDisputeCreated(dispute: Stripe.Dispute, createdIso: string)
     `Customer: ${customerId ?? '(unknown)'}`,
     `Amount: ${(dispute.amount ?? 0) / 100} ${dispute.currency?.toUpperCase()}`,
     `Reason: ${dispute.reason}`,
-    'Action: tier downgraded to checkride_prep — respond in the Stripe dashboard.',
+    'Action: tier downgraded NOW — respond to the dispute in the Stripe dashboard, and cancel the subscription if appropriate (a later subscription event can otherwise restore the tier).',
   ]);
 
   if (customerId) {
