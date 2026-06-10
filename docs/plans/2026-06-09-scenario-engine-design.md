@@ -1,5 +1,7 @@
 # Scenario Engine — Non-Linear Exam Generation Design
 
+> **Addendum 2026-06-10 (owner direction):** scenario-based orals are ONE study mode among several — the app keeps linear (ACS-order), weak-areas and drill modes at every difficulty level. The engine activates per the mode × flag matrix in `docs/design/exam-engine-design.html` §04: `on` → only explicit "Mock Checkride" (`studyMode: 'scenario'`) sessions; `ab` → 50/50 inside cross_acs sessions only (Gate 2 population); linear/weak/drill never engage it. Difficulty (set filter + depth contract + grading calibration) is shared code on every path.
+
 > Date: 2026-06-09 · Status: Approved design (owner decision D4: drop graph, build this)
 > Supersedes the knowledge-graph runtime path for non-linear exam generation.
 > Companion docs: `docs/reviews/2026-06-09-comprehensive-review/13-non-linear-exam-alternatives.md` (rationale),

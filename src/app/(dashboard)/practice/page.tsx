@@ -132,6 +132,7 @@ export default function PracticePage() {
   const [showWizard, setShowWizard] = useState(false);
   // Upgrade prompt states (Task 34 / W3.3)
   const [showQuotaModal, setShowQuotaModal] = useState(false);
+  const [scenarioModeAvailable, setScenarioModeAvailable] = useState(false);
   const [quotaReason, setQuotaReason] = useState<string | null>(null);
   const [quotaWarning, setQuotaWarning] = useState<string | null>(null);
   // Post-checkout success banner (Task 36)
@@ -298,6 +299,9 @@ export default function PracticePage() {
         if (data?.tts_sentence_stream) {
           setSentenceStreamEnabled(true);
           sentenceStreamRef.current = true;
+        }
+        if (data?.scenario_mode === 'on') {
+          setScenarioModeAvailable(true);
         }
       })
       .catch(() => {}); // Fail open: flag stays false
@@ -1844,6 +1848,7 @@ export default function PracticePage() {
               preferredVoiceEnabled={preferredVoiceEnabled}
               hasCompletedExams={hasCompletedExams}
               examinerProfileKey={examinerProfileKey}
+              scenarioModeAvailable={scenarioModeAvailable}
             />
 
             {/* Disclaimer — always visible but low visual weight */}

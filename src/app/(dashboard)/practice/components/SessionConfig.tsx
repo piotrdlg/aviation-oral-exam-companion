@@ -7,7 +7,7 @@ import { EXAMINER_PROFILES } from '@/lib/examiner-profile';
 
 export interface SessionConfigData {
   rating: Rating;
-  studyMode: 'linear' | 'cross_acs' | 'weak_areas' | 'quick_drill';
+  studyMode: 'linear' | 'cross_acs' | 'weak_areas' | 'quick_drill' | 'scenario';
   difficulty: 'easy' | 'medium' | 'hard' | 'mixed';
   aircraftClass: AircraftClass;
   selectedAreas: string[];
@@ -46,9 +46,11 @@ interface Props {
   preferredVoiceEnabled?: boolean;
   hasCompletedExams?: boolean;
   examinerProfileKey?: ExaminerProfileKey;
+  /** Show the 'Mock Checkride' scenario card (exam.scenario_engine = on). */
+  scenarioModeAvailable?: boolean;
 }
 
-export default function SessionConfig({ onStart, loading, preferredRating, preferredAircraftClass, prefsLoaded, preferredVoiceEnabled, hasCompletedExams, examinerProfileKey }: Props) {
+export default function SessionConfig({ onStart, loading, preferredRating, preferredAircraftClass, prefsLoaded, preferredVoiceEnabled, hasCompletedExams, examinerProfileKey, scenarioModeAvailable }: Props) {
   const rating = preferredRating || 'private';
   const aircraftClass = preferredAircraftClass || 'ASEL';
   const prefsLoading = prefsLoaded === undefined ? false : !prefsLoaded;
@@ -148,7 +150,7 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
   }
 
   // Summary computation
-  const summaryMode = studyMode === 'linear' ? 'Area by Area' : studyMode === 'cross_acs' ? 'Across ACS' : studyMode === 'weak_areas' ? 'Weak Areas' : 'Quick Drill';
+  const summaryMode = studyMode === 'linear' ? 'Area by Area' : studyMode === 'cross_acs' ? 'Across ACS' : studyMode === 'weak_areas' ? 'Weak Areas' : studyMode === 'scenario' ? 'Mock Checkride' : 'Quick Drill';
   const summaryScope = selectedTasks.length > 0
     ? `${selectedAreas.length} ${selectedAreas.length === 1 ? 'area' : 'areas'} \u00b7 ${selectedTasks.length} ${selectedTasks.length === 1 ? 'task' : 'tasks'}`
     : `All ${filteredTasks.length} tasks`;
@@ -182,6 +184,7 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
           <label className="block font-mono text-xs text-c-muted mb-2 tracking-wider uppercase">STUDY MODE</label>
           <div className="grid grid-cols-2 gap-2">
             {([
+              ...(scenarioModeAvailable ? [{ value: 'scenario' as const, label: 'MOCK CHECKRIDE', desc: 'Scenario-based oral \u2014 questions flow from an assigned flight', locked: false }] : []),
               { value: 'linear' as const, label: 'AREA BY AREA', desc: 'One area at a time', locked: false },
               { value: 'cross_acs' as const, label: 'ACROSS ACS', desc: 'Random across all areas', locked: false },
               { value: 'weak_areas' as const, label: 'WEAK AREAS', desc: 'Focus on your gaps', locked: false },

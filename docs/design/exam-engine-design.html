@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HeyDPE — Exam Engine Design</title>
+<style>
+  :root {
+    --bg: #080c12;
+    --panel: #0d1117;
+    --bezel: #161b22;
+    --elevated: #1a2028;
+    --border: #1c2333;
+    --border-hi: #2a3040;
+    --amber: #f5a623;
+    --amber-dim: #b08a22;
+    --amber-lo: #3d2e0a;
+    --cyan: #00d4ff;
+    --cyan-dim: #0a4a5c;
+    --green: #00ff41;
+    --green-dim: #0a5c1a;
+    --red: #ff3b30;
+    --text: #c9d1d9;
+    --muted: #8b949e;
+    --dim: #565e68;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.65 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  header {
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, var(--panel) 0%, var(--bg) 100%);
+    padding: 40px 24px 28px;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+  h1 {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    color: var(--amber); letter-spacing: .25em; text-transform: uppercase;
+    font-size: 22px; margin: 0 0 6px;
+    text-shadow: 0 0 10px rgba(245,166,35,.4), 0 0 30px rgba(245,166,35,.1);
+  }
+  header .sub { color: var(--muted); font-size: 14px; }
+  header .badge {
+    display: inline-block; font-family: ui-monospace, Menlo, monospace; font-size: 11px;
+    color: var(--cyan); background: #082a35; border: 1px solid rgba(0,212,255,.25);
+    border-radius: 4px; padding: 2px 8px; margin-right: 6px; letter-spacing: .08em;
+  }
+  nav.toc {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px 22px; margin: 28px auto;
+  }
+  nav.toc a { color: var(--cyan); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+  nav.toc ol { margin: 6px 0 0; padding-left: 22px; column-count: 2; column-gap: 40px; }
+  nav.toc li { margin: 3px 0; font-size: 14px; }
+  h2 {
+    font-family: ui-monospace, Menlo, monospace; color: var(--amber);
+    text-transform: uppercase; letter-spacing: .18em; font-size: 16px;
+    border-bottom: 1px solid var(--border); padding-bottom: 8px; margin: 56px 0 18px;
+    text-shadow: 0 0 10px rgba(245,166,35,.25);
+  }
+  h2 .num { color: var(--dim); margin-right: 10px; }
+  h3 {
+    font-family: ui-monospace, Menlo, monospace; color: var(--cyan);
+    font-size: 13px; letter-spacing: .14em; text-transform: uppercase; margin: 30px 0 10px;
+  }
+  p, li { color: var(--text); }
+  .muted { color: var(--muted); }
+  .panel {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px 22px; margin: 18px 0;
+  }
+  .callout {
+    border-left: 3px solid var(--amber); background: var(--bezel);
+    border-radius: 0 8px 8px 0; padding: 12px 18px; margin: 16px 0; font-size: 15px;
+  }
+  .callout.cyan { border-left-color: var(--cyan); }
+  .callout.green { border-left-color: var(--green); }
+  .callout .t { font-family: ui-monospace, Menlo, monospace; font-size: 11px; letter-spacing: .15em;
+    text-transform: uppercase; color: var(--amber); display: block; margin-bottom: 4px; }
+  .callout.cyan .t { color: var(--cyan); }
+  .callout.green .t { color: var(--green); }
+  code, .code {
+    font-family: ui-monospace, Menlo, monospace; font-size: .88em;
+    background: var(--bezel); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px;
+    color: var(--cyan);
+  }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 14px; }
+  th {
+    text-align: left; font-family: ui-monospace, Menlo, monospace; font-size: 11px;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+    border-bottom: 1px solid var(--border-hi); padding: 8px 12px;
+  }
+  td { border-bottom: 1px solid var(--border); padding: 9px 12px; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .ok { color: var(--green); font-weight: 600; }
+  .warn { color: var(--amber); font-weight: 600; }
+  .no { color: var(--red); font-weight: 600; }
+  figure { margin: 26px 0; }
+  figure svg { width: 100%; height: auto; display: block; background: var(--panel);
+    border: 1px solid var(--border); border-radius: 10px; }
+  figcaption {
+    font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; color: var(--muted);
+    letter-spacing: .1em; text-transform: uppercase; margin-top: 8px; text-align: center;
+  }
+  footer { border-top: 1px solid var(--border); margin-top: 70px; padding: 26px 0 60px;
+    color: var(--dim); font-size: 13px; }
+  .pill { display:inline-block; border-radius: 999px; padding: 1px 10px; font-size: 12px;
+    font-family: ui-monospace, Menlo, monospace; letter-spacing: .06em; }
+  .pill.a { background: var(--amber-lo); color: var(--amber); border: 1px solid rgba(245,166,35,.35); }
+  .pill.c { background: #082a35; color: var(--cyan); border: 1px solid rgba(0,212,255,.3); }
+  .pill.g { background: #0a2e10; color: var(--green); border: 1px solid rgba(0,255,65,.3); }
+  .pill.r { background: #2e0f0d; color: var(--red); border: 1px solid rgba(255,59,48,.35); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>HeyDPE · Exam Engine Design</h1>
+    <div class="sub">
+      <span class="badge">REV 2026-06-10</span>
+      <span class="badge">SOURCE OF TRUTH: CODE</span>
+      How a session is configured, how questions are chosen, how answers are graded, and what gets recorded —
+      including how the Scenario Engine coexists with linear, weak-areas and drill modes at every difficulty level.
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<nav class="toc">
+  <strong class="mono" style="color:var(--amber); font-size:12px; letter-spacing:.18em;">CONTENTS</strong>
+  <ol>
+    <li><a href="#principles">Principles</a></li>
+    <li><a href="#layers">The four layers</a></li>
+    <li><a href="#config">Session configuration</a></li>
+    <li><a href="#modes">Study modes &amp; the mode × flag matrix</a></li>
+    <li><a href="#difficulty">Difficulty: end-to-end guarantee</a></li>
+    <li><a href="#lifecycle">Session lifecycle</a></li>
+    <li><a href="#scenario">The Scenario Engine</a></li>
+    <li><a href="#grading">Grading policy</a></li>
+    <li><a href="#records">Progress records (what is written, when)</a></li>
+    <li><a href="#telemetry">Telemetry &amp; proof gates</a></li>
+  </ol>
+</nav>
+
+<!-- ============================================================ -->
+<h2 id="principles"><span class="num">01</span>Principles</h2>
+
+<p>The engine is built around one separation: <strong>the server decides <em>what</em> must be covered and <em>how it is graded</em>; the LLM decides only <em>how to ask</em> and — in scenario mode — <em>what order feels natural</em>.</strong> Every product promise (linear order, difficulty level, weak-area targeting, scenario realism) is enforced by deterministic server code, never by prompt hope.</p>
+
+<div class="callout">
+  <span class="t">Invariant</span>
+  Non-linearity changes the <em>sequence</em> of elements, never the <em>set</em>. The set — which ACS elements this session covers,
+  at which difficulty, with what question budget — is frozen into the exam plan at session start and is identical across all modes.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="layers"><span class="num">02</span>The four layers</h2>
+
+<figure>
+<svg viewBox="0 0 940 360" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+  <style>
+    .box { fill:#161b22; stroke:#2a3040; rx:8; }
+    .box-a { fill:#161b22; stroke:#f5a623; }
+    .t1 { font: 600 13px ui-monospace, Menlo, monospace; fill:#f5a623; letter-spacing:.1em; }
+    .t2 { font: 12px -apple-system, sans-serif; fill:#c9d1d9; }
+    .t3 { font: 11px -apple-system, sans-serif; fill:#8b949e; }
+    .lbl { font: 600 10px ui-monospace, Menlo, monospace; fill:#00d4ff; letter-spacing:.12em; }
+    .flow { stroke:#8b949e; stroke-width:1.4; fill:none; marker-end:url(#arr); }
+  </style>
+
+  <rect class="box" x="20"  y="40" width="200" height="120" rx="8"/>
+  <text class="lbl" x="36" y="62">LAYER 1 · USER CHOICE</text>
+  <text class="t1" x="36" y="86">SESSION CONFIG</text>
+  <text class="t2" x="36" y="108">mode · difficulty · rating</text>
+  <text class="t2" x="36" y="126">areas / tasks scope</text>
+  <text class="t3" x="36" y="146">chosen once at start</text>
+
+  <rect class="box" x="260" y="40" width="200" height="120" rx="8"/>
+  <text class="lbl" x="276" y="62">LAYER 2 · THE SET</text>
+  <text class="t1" x="276" y="86">PLAN + QUEUE</text>
+  <text class="t2" x="276" y="108">filter: scope → difficulty</text>
+  <text class="t2" x="276" y="126">→ K/R oral elements</text>
+  <text class="t3" x="276" y="146">order by study mode</text>
+
+  <rect class="box" x="500" y="40" width="200" height="120" rx="8"/>
+  <text class="lbl" x="516" y="62">LAYER 3 · PER ELEMENT</text>
+  <text class="t1" x="516" y="86">DIFFICULTY CONTRACT</text>
+  <text class="t2" x="516" y="108">depth of questioning</text>
+  <text class="t2" x="516" y="126">grading calibration</text>
+  <text class="t3" x="516" y="146">same code on every path</text>
+
+  <rect class="box-a" x="740" y="40" width="180" height="120" rx="8" stroke-dasharray="6 3"/>
+  <text class="lbl" x="756" y="62">LAYER 4 · OPTIONAL</text>
+  <text class="t1" x="756" y="86">SCENARIO ENGINE</text>
+  <text class="t2" x="756" y="108">re-sequences only</text>
+  <text class="t2" x="756" y="126">+ scenario flavor</text>
+  <text class="t3" x="756" y="146">scenario mode only</text>
+
+  <line class="flow" x1="220" y1="100" x2="258" y2="100"/>
+  <line class="flow" x1="460" y1="100" x2="498" y2="100"/>
+  <line class="flow" x1="700" y1="100" x2="738" y2="100"/>
+
+  <rect class="box" x="20" y="220" width="900" height="100" rx="8"/>
+  <text class="lbl" x="36" y="244">SHARED FOUNDATION — IDENTICAL FOR EVERY MODE AND DIFFICULTY</text>
+  <text class="t2" x="36" y="268">Coverage tracking · advancement rules · per-answer assessment · element_attempts · V2 plan-based grading · transcripts &amp; citations</text>
+  <text class="t3" x="36" y="290">Layer 4 cannot reach into this box: it picks the next element from the plan’s pending set and nothing else.</text>
+
+  <line class="flow" x1="120" y1="160" x2="120" y2="218"/>
+  <line class="flow" x1="360" y1="160" x2="360" y2="218"/>
+  <line class="flow" x1="600" y1="160" x2="600" y2="218"/>
+  <line class="flow" x1="830" y1="160" x2="830" y2="218"/>
+</svg>
+<figcaption>Fig 1 — Four layers. The scenario engine is a bolt-on re-sequencer; everything below it is mode-independent.</figcaption>
+</figure>
+
+<p>Concretely, in code:</p>
+<table>
+  <tr><th>Layer</th><th>Module</th><th>Owns</th></tr>
+  <tr><td>1 — Config</td><td class="mono">SessionConfig.tsx → exam_sessions.metadata.sessionConfig</td><td>The student's choices, persisted server-side at start (clients are never trusted afterwards)</td></tr>
+  <tr><td>2 — Plan/queue</td><td class="mono">exam-logic.buildElementQueue · exam-plan.buildExamPlan</td><td>The element <em>set</em>, the base <em>order</em>, the question budget</td></tr>
+  <tr><td>3 — Difficulty</td><td class="mono">difficulty-contract.buildDepthDifficultyContract</td><td>Examiner depth + grading calibration per element</td></tr>
+  <tr><td>4 — Scenario</td><td class="mono">scenario-engine.ts · scenario-templates.ts · element_adjacency</td><td>Transition <em>order</em> + scenario framing, behind a flag and a mode</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="config"><span class="num">03</span>Session configuration</h2>
+
+<p>At the start of every session the student picks:</p>
+<table>
+  <tr><th>Setting</th><th>Values</th><th>Effect</th></tr>
+  <tr><td><strong>Study mode</strong></td><td class="mono">linear · cross_acs · weak_areas · quick_drill · scenario</td><td>How the queue is ordered and how transitions behave (§04)</td></tr>
+  <tr><td><strong>Difficulty</strong></td><td class="mono">easy · medium · hard · mixed</td><td>Which elements qualify + how deep questioning and grading go (§05)</td></tr>
+  <tr><td><strong>Rating</strong></td><td class="mono">private · commercial · instrument</td><td>Which ACS document the exam draws from (PA/CA/IR)</td></tr>
+  <tr><td><strong>Scope</strong></td><td class="mono">areas / tasks (Focus section)</td><td>Narrows the set; the question budget scales proportionally</td></tr>
+</table>
+
+<p class="muted">The config is persisted into <code>exam_sessions.metadata</code> at start and the server treats it as authoritative for the whole session — a mid-session flag flip or client tampering cannot change a running exam's plan.</p>
+
+<!-- ============================================================ -->
+<h2 id="modes"><span class="num">04</span>Study modes &amp; the mode × flag matrix</h2>
+
+<p>Every mode shares the same plan/grading foundation and differs <em>only</em> in queue ordering and transition behavior:</p>
+
+<table>
+  <tr><th>Mode (UI label)</th><th>Queue order</th><th>Transitions</th><th>Scenario engine</th></tr>
+  <tr>
+    <td><span class="pill a">linear</span> “Area by Area”</td>
+    <td>Exact ACS document order (<code>order_index</code>)</td>
+    <td>Next element in order, with a brief verbal bridge</td>
+    <td class="no">never</td>
+  </tr>
+  <tr>
+    <td><span class="pill c">cross_acs</span> “Across ACS”</td>
+    <td>Connected walk over <code>element_adjacency</code> (semantic kinship), fingerprint fallback</td>
+    <td>Follows the walk</td>
+    <td class="warn">only during the A/B (arm-split)</td>
+  </tr>
+  <tr>
+    <td><span class="pill g">weak_areas</span> “Weak Areas”</td>
+    <td>Weakness-weighted shuffle (your historical unsatisfactory/partial elements first)</td>
+    <td>Follows the weighted order</td>
+    <td class="no">never</td>
+  </tr>
+  <tr>
+    <td><span class="pill g">quick_drill</span> “Quick Drill”</td>
+    <td>Weak elements only, short session</td>
+    <td>Follows the drill order</td>
+    <td class="no">never</td>
+  </tr>
+  <tr>
+    <td><span class="pill a">scenario</span> “Mock Checkride”</td>
+    <td>Adjacency walk as a fallback spine</td>
+    <td><strong>Scenario engine:</strong> server shortlist → examiner picks the most natural pivot</td>
+    <td class="ok">always (this is the mode)</td>
+  </tr>
+</table>
+
+<h3>Availability: the <code>exam.scenario_engine</code> flag</h3>
+<p>The flag controls <em>availability and experiment state</em>, never a running session:</p>
+
+<figure>
+<svg viewBox="0 0 940 330" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .cell { fill:#161b22; stroke:#1c2333; }
+    .cell-on { fill:#0a2e10; stroke:#00ff41; opacity:.92; }
+    .cell-ab { fill:#3d2e0a; stroke:#f5a623; opacity:.92; }
+    .cell-off { fill:#161b22; stroke:#2a3040; }
+    .h { font: 600 12px ui-monospace, Menlo, monospace; fill:#f5a623; letter-spacing:.1em; }
+    .hc { font: 600 12px ui-monospace, Menlo, monospace; fill:#00d4ff; letter-spacing:.1em; }
+    .v { font: 12px -apple-system, sans-serif; fill:#c9d1d9; }
+    .vm { font: 11px -apple-system, sans-serif; fill:#8b949e; }
+  </style>
+  <text class="hc" x="20" y="34">FLAG ↓ / MODE →</text>
+  <text class="h" x="250" y="34">LINEAR · WEAK · DRILL</text>
+  <text class="h" x="520" y="34">CROSS_ACS</text>
+  <text class="h" x="745" y="34">SCENARIO</text>
+
+  <text class="hc" x="20" y="92">"off"</text>
+  <rect class="cell-off" x="230" y="60" width="250" height="60" rx="6"/>
+  <text class="v" x="246" y="86">classic behavior</text>
+  <text class="vm" x="246" y="104">order per mode, no scenario</text>
+  <rect class="cell-off" x="500" y="60" width="205" height="60" rx="6"/>
+  <text class="v" x="516" y="86">adjacency walk</text>
+  <text class="vm" x="516" y="104">no scenario</text>
+  <rect class="cell-off" x="725" y="60" width="195" height="60" rx="6"/>
+  <text class="v" x="741" y="86">card hidden</text>
+  <text class="vm" x="741" y="104">server degrades → walk</text>
+
+  <text class="hc" x="20" y="182">"ab"</text>
+  <rect class="cell-off" x="230" y="150" width="250" height="60" rx="6"/>
+  <text class="v" x="246" y="176">classic behavior</text>
+  <text class="vm" x="246" y="194">never in the experiment</text>
+  <rect class="cell-ab" x="500" y="150" width="205" height="60" rx="6"/>
+  <text class="v" x="516" y="176">50/50 sticky arm split</text>
+  <text class="vm" x="516" y="194">scenario vs walk — Gate 2</text>
+  <rect class="cell-off" x="725" y="150" width="195" height="60" rx="6"/>
+  <text class="v" x="741" y="176">card hidden</text>
+  <text class="vm" x="741" y="194">requests join the A/B arms</text>
+
+  <text class="hc" x="20" y="272">"on"</text>
+  <rect class="cell-off" x="230" y="240" width="250" height="60" rx="6"/>
+  <text class="v" x="246" y="266">classic behavior</text>
+  <text class="vm" x="246" y="284">linear stays linear, always</text>
+  <rect class="cell-off" x="500" y="240" width="205" height="60" rx="6"/>
+  <text class="v" x="516" y="266">adjacency walk</text>
+  <text class="vm" x="516" y="284">no arm split anymore</text>
+  <rect class="cell-on" x="725" y="240" width="195" height="60" rx="6"/>
+  <text class="v" x="741" y="266">card visible · engine on</text>
+  <text class="vm" x="741" y="284">explicit student choice</text>
+</svg>
+<figcaption>Fig 2 — Mode × flag matrix. Linear, weak-areas and drill are in the “never scenario” column for every flag value.</figcaption>
+</figure>
+
+<div class="callout green">
+  <span class="t">Guarantee</span>
+  A student who picks “Area by Area” gets the exact ACS document order at their chosen difficulty regardless of any flag state —
+  this is asserted by automated tests that run the full API route with the flag forced <code>on</code> and verify byte-identical linear behavior.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="difficulty"><span class="num">05</span>Difficulty: the end-to-end guarantee</h2>
+
+<p>Difficulty is enforced at three independent points, and all three are upstream of (or shared with) the scenario layer — which is why no mode can break it:</p>
+
+<figure>
+<svg viewBox="0 0 940 250" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+  <style>
+    .b { fill:#161b22; stroke:#2a3040; }
+    .ttl { font: 600 12px ui-monospace, Menlo, monospace; fill:#00d4ff; letter-spacing:.1em; }
+    .bd { font: 12px -apple-system, sans-serif; fill:#c9d1d9; }
+    .sm { font: 11px -apple-system, sans-serif; fill:#8b949e; }
+    .fl { stroke:#8b949e; stroke-width:1.4; fill:none; marker-end:url(#arr2); }
+    .amber { font: 600 12px ui-monospace, Menlo, monospace; fill:#f5a623; letter-spacing:.08em; }
+  </style>
+  <rect class="b" x="20" y="50" width="270" height="120" rx="8"/>
+  <text class="ttl" x="36" y="76">1 · SET FILTER</text>
+  <text class="bd" x="36" y="100">easy/medium/hard → only elements</text>
+  <text class="bd" x="36" y="118">of that default difficulty enter</text>
+  <text class="bd" x="36" y="136">the queue. mixed → all enter.</text>
+  <text class="sm" x="36" y="158">buildElementQueue, before any ordering</text>
+
+  <rect class="b" x="335" y="50" width="270" height="120" rx="8"/>
+  <text class="ttl" x="351" y="76">2 · EXAMINER DEPTH</text>
+  <text class="bd" x="351" y="100">per element: depth contract sets</text>
+  <text class="bd" x="351" y="118">how probing the questions are,</text>
+  <text class="bd" x="351" y="136">edge cases, “what-if” chains.</text>
+  <text class="sm" x="351" y="158">buildDepthDifficultyContract → examiner prompt</text>
+
+  <rect class="b" x="650" y="50" width="270" height="120" rx="8"/>
+  <text class="ttl" x="666" y="76">3 · GRADING CALIBRATION</text>
+  <text class="bd" x="666" y="100">the same contract calibrates the</text>
+  <text class="bd" x="666" y="118">assessor: what “satisfactory”</text>
+  <text class="bd" x="666" y="136">means at this difficulty.</text>
+  <text class="sm" x="666" y="158">formatContractForAssessment → grader prompt</text>
+
+  <line class="fl" x1="290" y1="110" x2="333" y2="110"/>
+  <line class="fl" x1="605" y1="110" x2="648" y2="110"/>
+  <text class="amber" x="250" y="220">EVERY ADVANCEMENT PATH — linear advancePlanner AND scenario advanceToElement — RUNS THE SAME CODE.</text>
+</svg>
+<figcaption>Fig 3 — Three enforcement points. “Mixed” difficulty uses each element's own default level.</figcaption>
+</figure>
+
+<p>Under <code>mixed</code>, each element is served at its ACS-derived default (<code>difficulty_default</code>); under a fixed level, the set was already filtered, and the contract pins both questioning depth and grading strictness to that level. The scenario engine's <code>advanceToElement</code> calls the identical contract builder as the linear path — verified by shared-code construction and by tests.</p>
+
+<!-- ============================================================ -->
+<h2 id="lifecycle"><span class="num">06</span>Session lifecycle</h2>
+
+<figure>
+<svg viewBox="0 0 940 560" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+  <style>
+    .n  { fill:#161b22; stroke:#2a3040; }
+    .na { fill:#161b22; stroke:#f5a623; }
+    .ng { fill:#0a2e10; stroke:#00ff41; }
+    .h1x { font: 600 12px ui-monospace, Menlo, monospace; fill:#f5a623; letter-spacing:.08em; }
+    .h2x { font: 600 12px ui-monospace, Menlo, monospace; fill:#00d4ff; letter-spacing:.08em; }
+    .tx { font: 12px -apple-system, sans-serif; fill:#c9d1d9; }
+    .sx { font: 11px -apple-system, sans-serif; fill:#8b949e; }
+    .e { stroke:#8b949e; stroke-width:1.4; fill:none; marker-end:url(#arr3); }
+    .eg { stroke:#00ff41; stroke-width:1.4; fill:none; marker-end:url(#arr3); }
+    .ea { stroke:#f5a623; stroke-width:1.4; fill:none; marker-end:url(#arr3); stroke-dasharray:5 3; }
+  </style>
+
+  <rect class="n" x="20" y="20" width="260" height="78" rx="8"/>
+  <text class="h2x" x="36" y="44">START</text>
+  <text class="tx" x="36" y="64">build plan + queue → first question</text>
+  <text class="sx" x="36" y="82">persist config/plan/planner to metadata</text>
+
+  <rect class="na" x="320" y="20" width="290" height="78" rx="8" stroke-dasharray="6 3"/>
+  <text class="h1x" x="336" y="44">SCENARIO MODE ONLY · after()</text>
+  <text class="tx" x="336" y="64">spine generated off the critical path</text>
+  <text class="sx" x="336" y="82">templates if generation fails — never blocks</text>
+
+  <rect class="n" x="20" y="150" width="260" height="96" rx="8"/>
+  <text class="h2x" x="36" y="174">RESPOND (each answer)</text>
+  <text class="tx" x="36" y="194">assess answer ∥ stream examiner reply</text>
+  <text class="tx" x="36" y="212">write transcript + attempts + citations</text>
+  <text class="sx" x="36" y="232">advance decision: satisfactory or budget spent</text>
+
+  <rect class="n" x="320" y="150" width="290" height="96" rx="8"/>
+  <text class="h2x" x="336" y="174">NEXT-TASK (transition)</text>
+  <text class="tx" x="336" y="194">linear/walk/weak: next per queue order</text>
+  <text class="tx" x="336" y="212">scenario: shortlist → LLM pick → validate</text>
+  <text class="sx" x="336" y="232">advance planner · record question asked</text>
+
+  <rect class="n" x="660" y="150" width="260" height="96" rx="8"/>
+  <text class="h2x" x="676" y="174">RESUME / PAUSE</text>
+  <text class="tx" x="676" y="194">server metadata is the single truth</text>
+  <text class="tx" x="676" y="212">resume lands on the pending element</text>
+  <text class="sx" x="676" y="232">cross-device claim via active_sessions</text>
+
+  <rect class="ng" x="320" y="300" width="290" height="78" rx="8"/>
+  <text class="h2x" x="336" y="324">COMPLETE</text>
+  <text class="tx" x="336" y="344">plan exhausted or student ends</text>
+  <text class="sx" x="336" y="362">V2 grading computed + persisted</text>
+
+  <rect class="n" x="320" y="430" width="290" height="78" rx="8"/>
+  <text class="h2x" x="336" y="454">PROGRESS PAGE</text>
+  <text class="tx" x="336" y="474">aggregates element_attempts + results</text>
+  <text class="sx" x="336" y="492">weak areas feed future weak_areas modes</text>
+
+  <line class="e" x1="280" y1="59" x2="318" y2="59"/>
+  <line class="e" x1="150" y1="98" x2="150" y2="148"/>
+  <path class="e" d="M 280 198 L 318 198"/>
+  <path class="e" d="M 465 246 C 465 262 250 256 195 248" />
+  <line class="ea" x1="465" y1="98" x2="465" y2="148"/>
+  <line class="eg" x1="465" y1="246" x2="465" y2="298"/>
+  <line class="e" x1="465" y1="378" x2="465" y2="428"/>
+  <path class="e" d="M 660 198 L 648 198 L 612 198"/>
+</svg>
+<figcaption>Fig 4 — Lifecycle. The respond ⇄ next-task loop repeats until the plan is exhausted; the scenario spine attaches asynchronously and only in scenario mode.</figcaption>
+</figure>
+
+<h3>Advancement rule (identical in every mode)</h3>
+<ul>
+  <li><strong>satisfactory</strong> → advance to the next element.</li>
+  <li><strong>partial / unsatisfactory</strong> → one follow-up on the same element (budget: <code>follow_up_max_per_element = 1</code>), then advance regardless.</li>
+  <li><strong>ungraded</strong> (infrastructure failure, not a judgment) → stay; the element deserves a real attempt.</li>
+  <li><strong>unsatisfactory</strong> additionally arms a <em>bonus question</em> (max 2 per session) so a stumble doesn't shrink the exam.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="scenario"><span class="num">07</span>The Scenario Engine</h2>
+
+<p>Scenario mode replicates how a real DPE runs an oral: assign a flight, then let weather, performance, airspace and ADM questions emerge from the scenario's own logic. Three components:</p>
+
+<h3>1 · The spine (once per session)</h3>
+<p>One Claude call at exam start produces a structured scenario — aircraft, mission, conditions, pilot role, human pressures — plus <em>hooks</em> (scenario details that naturally open specific planned elements) and 1–2 <em>events</em> (mid-exam developments like “the alternator light flickers”). It is validated hard (hooks must reference planned elements; strays dropped), retried once, and falls back to one of nine hand-written scenarios per rating. Generation runs <em>after</em> the first question is already on its way — exam start never waits.</p>
+
+<h3>2 · The adjacency table (offline)</h3>
+<p><code>element_adjacency</code> holds the top-12 related elements for every K/R element (14,599 rows), blended from semantic similarity (0.60), FAA-source co-occurrence (0.25) and ACS structure (0.15) — every score carries its explainable breakdown for CFI audit.</p>
+
+<h3>3 · The transition policy (each transition)</h3>
+
+<figure>
+<svg viewBox="0 0 940 430" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+  <style>
+    .s { fill:#161b22; stroke:#2a3040; }
+    .sa { fill:#161b22; stroke:#f5a623; }
+    .sg { fill:#0a2e10; stroke:#00ff41; }
+    .ht { font: 600 12px ui-monospace, Menlo, monospace; fill:#00d4ff; letter-spacing:.08em; }
+    .ha { font: 600 12px ui-monospace, Menlo, monospace; fill:#f5a623; letter-spacing:.08em; }
+    .b1 { font: 12px -apple-system, sans-serif; fill:#c9d1d9; }
+    .b2 { font: 11px -apple-system, sans-serif; fill:#8b949e; }
+    .ln { stroke:#8b949e; stroke-width:1.4; fill:none; marker-end:url(#arr4); }
+    .lr { stroke:#ff3b30; stroke-width:1.4; fill:none; marker-end:url(#arr4); stroke-dasharray:4 3; }
+  </style>
+
+  <rect class="s" x="20" y="20" width="430" height="96" rx="8"/>
+  <text class="ht" x="36" y="44">SERVER · BUILD SHORTLIST (5 candidates)</text>
+  <text class="b1" x="36" y="66">score = 0.45·adjacency + 0.25·coverage urgency</text>
+  <text class="b1" x="36" y="84">      + 0.20·weak-area + 0.10·unused scenario hook</text>
+  <text class="b2" x="36" y="103">candidates come ONLY from the plan's pending set</text>
+
+  <rect class="sa" x="510" y="20" width="410" height="96" rx="8"/>
+  <text class="ha" x="526" y="44">EXAMINER LLM · ONE CALL</text>
+  <text class="b1" x="526" y="66">picks the most natural candidate, bridges in one</text>
+  <text class="b1" x="526" y="84">sentence, asks the first question</text>
+  <text class="b2" x="526" y="103">emits &lt;next_element&gt;CODE&lt;/next_element&gt; — stripped from speech</text>
+
+  <rect class="s" x="20" y="170" width="430" height="92" rx="8"/>
+  <text class="ht" x="36" y="194">SERVER · VALIDATE</text>
+  <text class="b1" x="36" y="216">tag ∈ shortlist → advance planner to the choice</text>
+  <text class="b1" x="36" y="234">missing / invalid → advance to top-ranked candidate</text>
+  <text class="b2" x="36" y="252">the exam NEVER stalls on a misbehaving model</text>
+
+  <rect class="sg" x="510" y="170" width="410" height="92" rx="8"/>
+  <text class="ht" x="526" y="194">UNCHANGED FOUNDATION</text>
+  <text class="b1" x="526" y="216">recordQuestionAsked · coverage · attempts ·</text>
+  <text class="b1" x="526" y="234">difficulty contract · grading — same code as linear</text>
+
+  <rect class="s" x="20" y="310" width="900" height="86" rx="8"/>
+  <text class="ht" x="36" y="334">BOOKKEEPING + TELEMETRY</text>
+  <text class="b1" x="36" y="356">hooks burn once (used hooks lose their bonus) · events fire once (after_area / after_exchange triggers)</text>
+  <text class="b2" x="36" y="376">scenario_transition event: {chosen, top_ranked, followed_llm} — feeds the Gate 2 A/B report</text>
+
+  <line class="ln" x1="450" y1="68" x2="508" y2="68"/>
+  <line class="ln" x1="715" y1="116" x2="715" y2="168"/>
+  <path class="ln" d="M 450 216 L 508 216"/>
+  <line class="ln" x1="235" y1="116" x2="235" y2="168"/>
+  <line class="ln" x1="235" y1="262" x2="235" y2="308"/>
+  <line class="ln" x1="715" y1="262" x2="715" y2="308"/>
+</svg>
+<figcaption>Fig 5 — One transition under the scenario engine. The LLM only ever picks from a server-built list.</figcaption>
+</figure>
+
+<div class="callout cyan">
+  <span class="t">Proof, not promises</span>
+  Gate 1 (offline, 40 blind-judged pairs): scenario beat linear 90.0% overall [76.9–96.0], 90.9% on cross-topic probing,
+  with accuracy and citation grounding non-inferior and all cost budgets met. Gate 2 (production A/B inside “Across ACS” sessions)
+  ships with its own report tooling and rollout runbook; the rollout decision is the owner's.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="grading"><span class="num">08</span>Grading policy</h2>
+
+<h3>Per answer</h3>
+<p>Every student answer gets a structured assessment from a dedicated grading call (separate from the examiner): a score, the primary ACS element addressed, other elements genuinely touched, misconceptions, and a source summary citing FAA references.</p>
+<table>
+  <tr><th>Score</th><th>Meaning</th><th>Points</th><th>Effect</th></tr>
+  <tr><td><span class="pill g">satisfactory</span></td><td>Meets the ACS standard at this difficulty</td><td class="mono">1.0</td><td>advance; mentioned elements may earn coverage credit</td></tr>
+  <tr><td><span class="pill a">partial</span></td><td>Core present, a material piece missing</td><td class="mono">0.7</td><td>one follow-up, then advance</td></tr>
+  <tr><td><span class="pill r">unsatisfactory</span></td><td>Core wrong, absent, or dangerously misapplied</td><td class="mono">0.0</td><td>follow-up + arms a bonus question (max 2)</td></tr>
+  <tr><td><span class="pill c">ungraded</span></td><td>Infrastructure failure — not a judgment</td><td class="mono">excluded</td><td>stay on the element; never counts against the student</td></tr>
+</table>
+
+<div class="callout">
+  <span class="t">Anti-gaming rule</span>
+  “Credited by mention” — elements you covered thoroughly while answering something else — is granted <em>only on satisfactory answers</em>,
+  and a hallucinated element code from the model can never poison the record: every attributed code is validated against the task's real element list.
+</div>
+
+<h3>Per exam (V2, plan-based)</h3>
+<p>The final grade is computed from the <em>plan</em>, mirroring the FAA's 70% oral standard:</p>
+<ul>
+  <li><strong>Score</strong> = points earned ÷ elements in the plan (partial = 0.7). <strong>Pass ≥ 70%.</strong></li>
+  <li><strong>Per-area gating:</strong> any area with ≥2 attempts must individually reach 60% — a strong overall score cannot hide a collapsed area.</li>
+  <li><strong>Critical areas</strong> (PA/CA: Area I; IR: Areas I &amp; III) are flagged if they contain <em>any</em> unsatisfactory answer.</li>
+  <li><strong>Incomplete</strong> only when the session genuinely ended early — a naturally finished exam always grades pass/fail.</li>
+</ul>
+<p class="muted">Identical inputs in every mode: scenario transitions change which question comes next, never how the answer is scored or counted.</p>
+
+<!-- ============================================================ -->
+<h2 id="records"><span class="num">09</span>Progress records — what is written, when</h2>
+
+<figure>
+<svg viewBox="0 0 940 380" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+  <style>
+    .tb { fill:#161b22; stroke:#2a3040; }
+    .tbh { font: 600 12px ui-monospace, Menlo, monospace; fill:#f5a623; letter-spacing:.06em; }
+    .r1 { font: 11.5px -apple-system, sans-serif; fill:#c9d1d9; }
+    .r2 { font: 10.5px -apple-system, sans-serif; fill:#8b949e; }
+    .ar { stroke:#8b949e; stroke-width:1.3; fill:none; marker-end:url(#arr5); }
+    .ttl5 { font: 600 12px ui-monospace, Menlo, monospace; fill:#00d4ff; letter-spacing:.1em; }
+  </style>
+
+  <text class="ttl5" x="20" y="30">WRITES PER EXCHANGE</text>
+
+  <rect class="tb" x="20" y="50" width="280" height="86" rx="8"/>
+  <text class="tbh" x="36" y="74">session_transcripts</text>
+  <text class="r1" x="36" y="94">every examiner + student turn,</text>
+  <text class="r1" x="36" y="110">with per-answer assessment attached</text>
+  <text class="r2" x="36" y="126">exchange_number = MAX+1, server-derived</text>
+
+  <rect class="tb" x="330" y="50" width="280" height="86" rx="8"/>
+  <text class="tbh" x="346" y="74">element_attempts</text>
+  <text class="r1" x="346" y="94">one row per scored element:</text>
+  <text class="r1" x="346" y="110">attempt (asked) or mention (credit)</text>
+  <text class="r2" x="346" y="126">the source of all progress analytics</text>
+
+  <rect class="tb" x="640" y="50" width="280" height="86" rx="8"/>
+  <text class="tbh" x="656" y="74">transcript_citations + latency_logs</text>
+  <text class="r1" x="656" y="94">which FAA chunks grounded the turn;</text>
+  <text class="r1" x="656" y="110">voice pipeline timing spans</text>
+  <text class="r2" x="656" y="126">citations power “source” links in the UI</text>
+
+  <text class="ttl5" x="20" y="190">PER SESSION</text>
+
+  <rect class="tb" x="20" y="210" width="430" height="100" rx="8"/>
+  <text class="tbh" x="36" y="234">exam_sessions (+ .metadata)</text>
+  <text class="r1" x="36" y="254">status · exchange_count · covered tasks · examResultV2</text>
+  <text class="r1" x="36" y="270">metadata: sessionConfig · plan · plannerState · scenario state</text>
+  <text class="r2" x="36" y="290">metadata is the server-authoritative session brain (resume, A/B arm, spine)</text>
+
+  <rect class="tb" x="490" y="210" width="430" height="100" rx="8"/>
+  <text class="tbh" x="506" y="234">usage_logs</text>
+  <text class="r1" x="506" y="254">every LLM / TTS / STT call: tokens, chars, seconds,</text>
+  <text class="r1" x="506" y="270">latency, prompt-cache reads — per user and session</text>
+  <text class="r2" x="506" y="290">drives quotas, cost dashboards, and the A/B latency metrics</text>
+
+  <line class="ar" x1="160" y1="136" x2="160" y2="208"/>
+  <line class="ar" x1="470" y1="136" x2="380" y2="208"/>
+  <line class="ar" x1="780" y1="136" x2="700" y2="208"/>
+
+  <text class="r2" x="20" y="345">Progress page = element_attempts aggregated by get_element_scores (per element, per area) + per-session examResultV2.</text>
+  <text class="r2" x="20" y="363">Weak-areas / quick-drill modes read the same aggregates back — your history literally steers your next session.</text>
+</svg>
+<figcaption>Fig 6 — The record model. Every write is identical across modes; scenario state lives only inside session metadata.</figcaption>
+</figure>
+
+<h3>Write-ordering invariant</h3>
+<p>Per exchange the chain is: student transcript → assessment attached → <code>element_attempts</code> → citations. The examiner's reply persists <em>independently</em>, so a grading-service failure can never lose conversation history, and an <code>ungraded</code> marker is recorded instead of a fake grade.</p>
+
+<!-- ============================================================ -->
+<h2 id="telemetry"><span class="num">10</span>Telemetry &amp; proof gates</h2>
+
+<table>
+  <tr><th>Event</th><th>Fired when</th><th>Used for</th></tr>
+  <tr><td class="mono">exam_arm_assigned</td><td>Session start under flag <code>ab</code> (cross-ACS population)</td><td>Gate 2 cohorting</td></tr>
+  <tr><td class="mono">scenario_spine_generated</td><td>Spine persisted (source: generated/template, latency)</td><td>Spine health</td></tr>
+  <tr><td class="mono">scenario_transition</td><td>Every scenario transition ({chosen, top_ranked, followed_llm})</td><td>Did the LLM follow the protocol; eval ground truth</td></tr>
+  <tr><td class="mono">examiner_assessment_mismatch</td><td>Examiner tone disagrees with the grade</td><td>Gate 2 guardrail</td></tr>
+  <tr><td class="mono">exam_exchange_cap_* / quota events</td><td>Usage limits approached or hit</td><td>Monetization soft-launch monitoring</td></tr>
+</table>
+
+<p>The Scenario Engine ships only through its two gates: <strong>Gate 1</strong> (offline blind-judged eval — PASSED 2026-06-10) and <strong>Gate 2</strong> (production A/B with engagement, guardrail and latency thresholds; weekly report via <code>npm run audit:scenario-ab</code>; rollout/rollback is a one-flag operation per <code>docs/runbooks/SCENARIO-ROLLOUT.md</code>).</p>
+
+<footer>
+  <div class="wrap" style="padding:0;">
+    HeyDPE · Exam Engine Design · rev 2026-06-10 · companion to
+    <span class="mono">docs/plans/2026-06-09-scenario-engine-design.md</span> ·
+    diagrams are inline SVG, no external assets · this document describes the code as shipped; when they disagree, the code wins and this file must be updated.
+  </div>
+</footer>
+
+</div>
+</body>
+</html>

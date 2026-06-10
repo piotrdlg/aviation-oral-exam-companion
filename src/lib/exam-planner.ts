@@ -235,7 +235,7 @@ export async function initPlanner(
   // rating's elements and order the cross_acs walk by it. Loaded only when
   // the flag is on; absent rows degrade to the fingerprint walk unchanged.
   let adjacencyNeighbors: AdjacencyNeighbors | undefined;
-  if (opts?.adjacencyOrdering && config.studyMode === 'cross_acs') {
+  if (opts?.adjacencyOrdering && (config.studyMode === 'cross_acs' || config.studyMode === 'scenario')) {
     try {
       adjacencyNeighbors = await loadAdjacencyNeighbors(
         filteredElements.map((el) => el.code)
