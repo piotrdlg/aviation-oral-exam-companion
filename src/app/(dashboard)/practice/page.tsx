@@ -1948,8 +1948,9 @@ export default function PracticePage() {
 
   return (
     <div className="max-w-2xl mx-auto flex flex-col h-[calc(100vh-8rem)]">
-      {/* Session header — persistent but low-weight */}
-      <div className="flex items-center justify-between mb-3 px-1">
+      {/* Session header — W6B.3: sticky frosted ACS task bar so orientation
+          and PAUSE/GRADE never scroll away mid-exam */}
+      <div className="sticky top-0 z-20 flex items-center justify-between mb-3 px-3 py-2 -mx-1 rounded-lg bg-c-bg/85 backdrop-blur border border-c-border">
         <div className="flex items-center gap-3 min-w-0">
           {taskData && (
             <p className="text-sm text-c-muted truncate font-mono">
@@ -2089,7 +2090,8 @@ export default function PracticePage() {
         </div>
       )}
 
-      <div className="flex-1 bezel rounded-lg border border-c-border p-4 overflow-y-auto mb-3 space-y-4 relative" ref={chatContainerRef} onScroll={handleChatScroll}>
+      <div className="flex-1 bezel rounded-lg border border-c-border p-4 overflow-y-auto mb-3 relative flex flex-col" ref={chatContainerRef} onScroll={handleChatScroll}>
+        <div className="w-full max-w-[68ch] mx-auto flex flex-col gap-4 mt-auto">
         {messages.map((msg, i) => (
           <div
             key={i}
@@ -2109,7 +2111,7 @@ export default function PracticePage() {
               </div>
             )}
             <div
-              className={`min-w-0 max-w-[calc(100%-4.5rem)] rounded-lg px-4 py-3 ${
+              className={`min-w-0 max-w-[60ch] rounded-lg px-4 py-3 ${
                 msg.role === 'examiner'
                   ? 'bg-c-bezel border-l-2 border-c-amber/50'
                   : 'bg-c-cyan-lo/40 border-r-2 border-c-cyan/50'
@@ -2162,35 +2164,36 @@ export default function PracticePage() {
                 <TextAssetCard textCards={msg.textCards} />
               )}
 
-              {/* Assessment badge */}
+              {/* Assessment — W6B.3: card-edge annunciator badge + readable feedback */}
               {msg.assessment && (
-                <div className="mt-2 pt-2 border-t border-c-border">
-                  <span className={`font-mono text-xs px-2 py-0.5 rounded border uppercase ${
+                <div className="mt-2.5 pt-2.5 border-t border-c-border">
+                  <span className={`inline-flex items-center gap-1.5 font-mono text-[11px] tracking-wider px-2.5 py-1 rounded border uppercase ${
                     msg.assessment.score === 'satisfactory'
-                      ? 'bg-c-green-lo/40 text-c-green border-c-green/20'
+                      ? 'bg-c-green-lo/40 text-c-green-readable border-c-green/30'
                       : msg.assessment.score === 'unsatisfactory'
-                      ? 'bg-c-red-dim/40 text-c-red border-c-red/20'
+                      ? 'bg-c-red-dim/40 text-c-red border-c-red/30'
                       : msg.assessment.score === 'ungraded'
                       ? 'bg-c-border/30 text-c-muted border-c-border'
-                      : 'bg-c-amber-lo text-c-amber border-c-amber/20'
+                      : 'bg-c-amber-lo text-c-amber border-c-amber/30'
                   }`}>
+                    <span className="w-1.5 h-1.5 rounded-full bg-current" />
                     {msg.assessment.score === 'ungraded' ? 'NOT ASSESSED' : msg.assessment.score.toUpperCase()}
                   </span>
                   {msg.assessment.feedback && (
-                    <p className="text-sm text-c-muted mt-1">{msg.assessment.feedback}</p>
+                    <p className="text-[15px] text-c-text leading-relaxed mt-2">{msg.assessment.feedback}</p>
                   )}
                 </div>
               )}
 
               {/* FAA source summary (LLM-synthesized) + deduplicated document references */}
               {(msg.assessment?.source_summary || (msg.sources && msg.sources.length > 0)) && (
-                <details className="mt-2 pt-2 border-t border-c-border">
-                  <summary className="text-sm text-c-cyan cursor-pointer hover:text-c-cyan/80 font-mono uppercase">
-                    FAA REFERENCES
+                <details open className="mt-2.5 pt-2.5 border-t border-c-border">
+                  <summary className="text-xs text-c-cyan-readable cursor-pointer hover:text-c-cyan font-mono uppercase tracking-wider">
+                    FAA References
                   </summary>
                   <div className="mt-1.5">
                     {msg.assessment?.source_summary && (
-                      <p className="text-sm text-c-text leading-relaxed mb-1.5">{msg.assessment.source_summary}</p>
+                      <p className="text-[15px] text-c-text leading-relaxed mb-2">{msg.assessment.source_summary}</p>
                     )}
                     {msg.sources && msg.sources.length > 0 && (() => {
                       // Deduplicate sources by abbreviation + heading
@@ -2218,7 +2221,7 @@ export default function PracticePage() {
                               + (src.page_start ? ` (p.${src.page_start})` : '');
                             return link ? (
                               <a key={j} href={link} target="_blank" rel="noopener noreferrer"
-                                className="text-xs font-mono bg-c-panel rounded px-1.5 py-0.5 text-c-cyan hover:text-c-cyan/80 hover:bg-c-elevated transition-colors border border-c-border">
+                                className="text-xs font-mono bg-c-cyan-lo/60 rounded px-2 py-1 text-c-cyan-readable hover:bg-c-cyan-lo transition-colors border border-c-cyan/20">
                                 {label} &#8599;
                               </a>
                             ) : (
@@ -2261,6 +2264,7 @@ export default function PracticePage() {
         )}
 
         <div ref={messagesEndRef} />
+        </div>{/* /transcript measure column (W6B.3) */}
 
         {/* Scroll-to-bottom FAB */}
         {showScrollFab && (
@@ -2276,8 +2280,31 @@ export default function PracticePage() {
         )}
       </div>
 
-      {/* Input area — pinned to bottom */}
-      <div className="flex gap-2">
+      {/* Examiner Station — W6B.3 signature: tri-state annunciator over a
+          unified console. Solves the hidden voice-state problem. */}
+      {voiceEnabled && (() => {
+        const speaking = voice.isSpeaking || sentenceTTS.isSpeaking;
+        const listening = voice.isListening;
+        const state = speaking ? 'speaking' : listening ? 'listening' : 'ready';
+        const cfg = {
+          speaking: { led: 'bg-c-amber', txt: 'text-c-amber', label: 'EXAMINER SPEAKING', pulse: true },
+          listening: { led: 'bg-c-cyan', txt: 'text-c-cyan-readable', label: 'LISTENING…', pulse: true },
+          ready: { led: 'bg-c-green', txt: 'text-c-green-readable', label: 'READY — YOUR TURN', pulse: false },
+        }[state];
+        return (
+          <div className="flex items-center gap-2.5 mb-2 px-1" data-testid="examiner-annunciator">
+            <span className={`w-2 h-2 rounded-full ${cfg.led} ${cfg.pulse ? 'annun-pulse' : ''}`}
+              style={{ boxShadow: `0 0 9px currentColor` }} />
+            <span className={`font-mono text-[11px] tracking-[0.12em] ${cfg.txt}`}>{cfg.label}</span>
+            {state !== 'listening' && (
+              <span className="font-mono text-[10px] tracking-wider text-c-dim">▸ TAP MIC OR TYPE TO ANSWER</span>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* Input area — pinned to bottom (unified examiner console) */}
+      <div className="flex gap-2 station rounded-xl border border-c-border-hi p-2.5">
         {voiceEnabled && (
           <button
             onClick={() => {
