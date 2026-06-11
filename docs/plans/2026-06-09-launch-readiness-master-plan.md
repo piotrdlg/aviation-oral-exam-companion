@@ -948,7 +948,16 @@ Three independent design-direction agents produce complete concepts grounded in 
 
 > **Status 2026-06-11: W6B.1 + W6B.2 ✅ COMPLETE (proposal delivered, live app unchanged).** Workflow over 20 real screenshots → 71 findings (6 blocker) → judged 3-way redesign competition. Winner: **FLIGHT DECK** (35.2/40). Deliverables: docs/design/2026-06-11-ui-ux-audit.md, 2026-06-11-redesign-spec.md, mockups/{live-exam,progress}.html. Blockers found: live-exam empty void, Progress zeros-next-to-real-activity (a real data bug to diagnose), cookie bar blocking footer legal links, WCAG contrast/focus cluster, lost in-exam voice state.
 
-### Task W6B.3: Implementation (gated on owner approval of W6B.2)
+### Task W6B.3: Implementation — FLIGHT DECK applied across the system
+
+> **Status 2026-06-11: ✅ COMPLETE & DEPLOYED.** Owner gave full design authority; Fable 5 made all redesign decisions. Three CI-green PRs (#32 #33 #34), live in production, 3 payers intact, 1,354 tests green.
+> - **PR1 (#32) tokens — system-wide:** the WCAG contrast cluster fixed at source (muted #8b949e→#aab4c0, borders lifted, harsh neon green→avionics #19e66b, red→#ff5a4d, +elevated-2/amber-bright/cyan-readable/green-readable, light-theme overrides); unified instrument depth recipe (.bezel/.iframe/.station); scanline committed; global :focus-visible 2px ring; prefers-reduced-motion stands down all decorative motion; **cookie bar reserves body padding → no longer covers footer legal links** (P0 legal/a11y blocker).
+> - **PR2 (#33) Live Exam "Examiner Station" — the #1 blocker:** the ~75% empty void eliminated by a bottom-anchored mt-auto transcript at 68ch; sticky frosted ACS header; 60ch bubble cap; graded card with card-edge annunciator badge + **FAA citation chips open by default** (readable cyan); SIGNATURE tri-state **Examiner Annunciator** (speaking/listening/ready) over a unified .station console with tap-to-interrupt.
+> - **PR3 (#34) Progress + landing:** instrument tabular-nums readouts (glow removed from values); honest hero trust line ("AI examiner grounded in the FAA ACS — a practice tool, not a substitute for your CFI or a real DPE").
+> - **Key diagnosis:** the audit's "0 readiness / 0% coverage next to 2 exams" was a DEMO-SEEDING ARTIFACT (element_attempts failed the transcript_id FK), **NOT a production bug** — get_element_scores verified correct against real prod data (7 attempted, 1,246 attempt rows). The audit's "red 1 Issue pill" was the Next.js dev-tools overlay, not an app element. Landing body copy was already sentence-case (caps confined to short labels — FLIGHT-DECK-compliant).
+> - Verified: void eliminated + annunciator + FAA chips render (staging); landing/pricing premium with new tokens; redesign confirmed LIVE on production.
+
+### Task W6B.3-archived: original proposal text (gated on owner approval of W6B.2)
 
 The redesign spec's P0 items implemented as incremental PRs after the owner approves the direction. Taste decisions belong to the owner — the spec is the proposal, not a fait accompli.
 
