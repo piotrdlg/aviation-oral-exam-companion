@@ -64,6 +64,17 @@ export function CookieConsent() {
   const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
   const [marketingEnabled, setMarketingEnabled] = useState(false);
 
+  // W6B.3: the fixed banner must never cover footer legal links — reserve
+  // equivalent space at the bottom of the document while visible.
+  useEffect(() => {
+    if (visible) {
+      document.body.style.paddingBottom = '120px';
+    } else {
+      document.body.style.paddingBottom = '';
+    }
+    return () => { document.body.style.paddingBottom = ''; };
+  }, [visible]);
+
   useEffect(() => {
     const existing = loadConsent();
     if (existing) {
