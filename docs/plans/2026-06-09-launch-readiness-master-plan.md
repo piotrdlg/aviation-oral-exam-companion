@@ -817,6 +817,15 @@ PR description: the rollout decision itself is the owner's, made from the report
 
 # PHASE 6 — Operations, Compliance, Launch Polish
 
+> **Status 2026-06-11: ✅ PHASE COMPLETE — executed hands-on by Fable 5, deployed to production. Migrations 20260611000001/02 applied. Tests 1,350 → 1,354.**
+> Also this session: the Scenario Engine was RELEASED to Gate 2 — `exam.scenario_engine` flipped to `{"mode":"ab"}` (runbook step 1); scenario added as a first-class study mode ("Mock Checkride") with linear/weak/drill + difficulty preserved by a route-level test matrix; engine design documented in `docs/design/exam-engine-design.html`.
+> - **W6.1 ops** (PR #27): @sentry/nextjs env-gated (instrumentation server/edge/client; no-op without DSN); captureToSentry at the exam write-chain + cron catch sites; `/api/health` enriched with DB + key checks → 503 per-check JSON (verified locally); `docs/runbooks/ALERTING.md` (Sentry + UptimeRobot + Stripe owner click-paths + weekly ritual).
+> - **W6.2 load test** (PR #31): k6 against preview + staging (migration parity) with LLM mocked (double-guarded vs prod). **50 concurrent users, ZERO server errors, p95 380ms**; first bottleneck = the per-user rate limiter shedding load with clean 429s, never a crash. Report `09-load-test-report.md`. Safe-concurrent-users: 50+ infra, real ceiling is Anthropic concurrency. Staging users torn down; prod relinked.
+> - **W6.3 GDPR** (PR #28): FK-hygiene migration (17 NO-ACTION FKs → CASCADE for ownership / SET NULL for actor cols — deletion was blocked); telemetry retention crons; `/api/user/export` (1/hr JSON) + `/api/user/delete` (Stripe-cancel-first → explicit non-FK deletes → auth.admin.deleteUser → cascades); settings "YOUR DATA" zone; `verify-deletion.ts`. **LIVE-VERIFIED in prod**: synthetic user across 6 tables → deleted → 0 residual rows across all 21 user-keyed tables.
+> - **W6.4 analytics+truth** (PR #29): the 11 deferred PostHog events shipped (exchange_completed, assessment_scored, session_resumed, weak_area_drill_started, instructor_invite_sent, voice_mode_toggled, quota_warning_shown, upgrade_clicked, onboarding_completed, settings_voice_changed, +paywall_shown); CLAUDE.md truth pass (test count, cross-browser STT, CI exists, KG archived); audit index HISTORICAL banner.
+> - **W6.5 compliance** (PR #30): first-exam FAA disclaimer modal (gates exam 1; server-recorded via consent_records + user_profiles.disclaimer_acknowledged_at); consent_records table (migration 20260611000002); CookieConsent mirrors to `/api/consent` for logged-in users; `/accessibility` page + footer link; refund-consistency check (no mismatch).
+
+
 ### Task W6.1: Error tracking + real alerting
 
 **Agent:** Opus 4.8 · **Files:** Sentry integration (instrumentation files, next.config), `/api/health` enrichment, alert wiring docs
