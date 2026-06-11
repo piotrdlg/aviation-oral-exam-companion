@@ -4,37 +4,43 @@
   --font-sans: 'IBM Plex Sans', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* COCKPIT Background Scale */
+  /* FLIGHT DECK Background Scale (W6B.3: borders lifted for visible
+     hairlines; new elevated-2 = the "lit instrument glass" surface) */
   --color-c-bg: #080c12;
   --color-c-panel: #0d1117;
   --color-c-bezel: #161b22;
   --color-c-elevated: #1a2028;
-  --color-c-border: #1c2333;
-  --color-c-border-hi: #2a3040;
+  --color-c-elevated-2: #1e2530;
+  --color-c-border: #283142;
+  --color-c-border-hi: #3a4456;
 
-  /* COCKPIT Amber */
+  /* FLIGHT DECK Amber — command/CTA/headline only */
   --color-c-amber: #f5a623;
+  --color-c-amber-bright: #ffb94a;
   --color-c-amber-dim: #b08a22;
   --color-c-amber-lo: #3d2e0a;
 
-  /* COCKPIT Green */
-  --color-c-green: #00ff41;
+  /* FLIGHT DECK Green — avionics green (the harsh neon #00ff41 retired) */
+  --color-c-green: #19e66b;
+  --color-c-green-readable: #4be88e;
   --color-c-green-dim: #0a5c1a;
   --color-c-green-lo: #0a2e10;
 
-  /* COCKPIT Cyan */
+  /* FLIGHT DECK Cyan — data accent; -readable variant for any cyan TEXT */
   --color-c-cyan: #00d4ff;
+  --color-c-cyan-readable: #4fd8ff;
   --color-c-cyan-dim: #0a4a5c;
   --color-c-cyan-lo: #082a35;
 
-  /* COCKPIT Red */
-  --color-c-red: #ff3b30;
+  /* FLIGHT DECK Red — lifted for AA on dark */
+  --color-c-red: #ff5a4d;
   --color-c-red-dim: #5c1a16;
 
-  /* COCKPIT Text */
-  --color-c-text: #c9d1d9;
-  --color-c-muted: #8b949e;
-  --color-c-dim: #7d8898;
+  /* FLIGHT DECK Text — muted lifted hard (#8b949e failed AA in context);
+     dim is the floor, never go below */
+  --color-c-text: #d7dee6;
+  --color-c-muted: #aab4c0;
+  --color-c-dim: #9aa4b2;
 }
 
 /* ============================================
@@ -56,8 +62,8 @@ body {
     0deg,
     transparent,
     transparent 2px,
-    var(--scanline-tint, rgba(0, 212, 255, 0.012)) 2px,
-    var(--scanline-tint, rgba(0, 212, 255, 0.012)) 4px
+    var(--scanline-tint, rgba(0, 212, 255, 0.022)) 2px,
+    var(--scanline-tint, rgba(0, 212, 255, 0.022)) 4px
   );
   pointer-events: none;
   z-index: 9999;
@@ -68,17 +74,23 @@ body {
 .glow-g { text-shadow: 0 0 10px color-mix(in srgb, var(--color-c-green) 40%, transparent), 0 0 30px color-mix(in srgb, var(--color-c-green) 10%, transparent); }
 .glow-c { text-shadow: 0 0 10px color-mix(in srgb, var(--color-c-cyan) 40%, transparent), 0 0 30px color-mix(in srgb, var(--color-c-cyan) 10%, transparent); }
 
-/* Bezel card */
+/* Bezel card — raised instrument glass (shared depth recipe) */
 .bezel {
   background: linear-gradient(135deg, var(--color-c-bezel) 0%, var(--color-c-panel) 50%, var(--color-c-bezel) 100%);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 4px 20px rgba(0,0,0,0.5);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), inset 0 0 12px rgba(0,0,0,0.25), 0 4px 20px rgba(0,0,0,0.5);
 }
 
-/* Instrument frame */
+/* Instrument frame — recessed glass (same recipe minus the outer drop) */
 .iframe {
   border: 1px solid var(--color-c-border);
-  box-shadow: inset 0 0 8px rgba(0,0,0,0.5), 0 2px 12px rgba(0,0,0,0.3);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), inset 0 0 12px rgba(0,0,0,0.45);
   background: linear-gradient(180deg, var(--color-c-panel) 0%, var(--color-c-bg) 100%);
+}
+
+/* The one "powered, in-focus" surface (active exam console, armed cards) */
+.station {
+  background: var(--color-c-elevated-2);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), inset 0 0 12px rgba(0,0,0,0.35), 0 4px 20px rgba(0,0,0,0.5);
 }
 
 /* Gauge ring */
@@ -108,10 +120,9 @@ body {
 /* Flicker animation */
 @keyframes flicker {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.97; }
-  75% { opacity: 0.99; }
+  50% { opacity: 0.985; }
 }
-.flicker { animation: flicker 4s infinite; }
+.flicker { animation: flicker 6s infinite; }
 
 /* Instrument pulse */
 @keyframes ipulse {
@@ -169,6 +180,9 @@ body {
 
 /* ========== THEME: Glass Cockpit ========== */
 [data-theme="glass"] {
+  --color-c-amber-bright: #60A5FA;
+  --color-c-cyan-readable: #8EEFFF;
+  --color-c-green-readable: #6EE7B7;
   --color-c-amber: #3B82F6;
   --color-c-amber-dim: #1E3A6E;
   --color-c-amber-lo: #0F1D3A;
@@ -184,6 +198,10 @@ body {
 
 /* ========== THEME: Sectional (light — VFR chart paper) ========== */
 [data-theme="sectional"] {
+  --color-c-elevated-2: #E0D8C9;
+  --color-c-amber-bright: #B85510;
+  --color-c-cyan-readable: #15506F;
+  --color-c-green-readable: #14592C;
   --color-c-bg: #F6F1E8;
   --color-c-panel: #F0EADF;
   --color-c-bezel: #EBE4D8;
@@ -215,6 +233,10 @@ body {
 
 /* ========== THEME: Briefing (light — pre-flight readout) ========== */
 [data-theme="briefing"] {
+  --color-c-elevated-2: #D6D8DE;
+  --color-c-amber-bright: #1F66BC;
+  --color-c-cyan-readable: #195570;
+  --color-c-green-readable: #105532;
   --color-c-bg: #F4F5F7;
   --color-c-panel: #ECEDF0;
   --color-c-bezel: #E4E5E9;
@@ -243,3 +265,35 @@ body {
 [data-theme="briefing"] .iframe {
   box-shadow: inset 0 0 4px rgba(0,0,0,0.03), 0 1px 4px rgba(0,0,0,0.04);
 }
+
+
+/* ============================================
+   FLIGHT DECK — accessibility baseline (W6B.3)
+   ============================================ */
+
+/* Visible 2px focus ring everywhere — never rely on glow for focus */
+:focus-visible {
+  outline: 2px solid var(--color-c-amber);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+[data-theme="sectional"] :focus-visible,
+[data-theme="briefing"] :focus-visible {
+  outline-color: var(--color-c-cyan);
+}
+
+/* Decorative motion stands down for prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .flicker, .ipulse, .blink, .mic-bar,
+  .s1, .s2, .s3, .s4, .s5, .s6 {
+    animation: none !important;
+  }
+  .scanline::after { display: none; }
+}
+
+/* Annunciator pulse — single soft cockpit pulse (1.6s), not a strobe */
+@keyframes annun-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+.annun-pulse { animation: annun-pulse 1.6s ease-in-out infinite; }
