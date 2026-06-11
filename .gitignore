@@ -68,3 +68,4 @@ mockups/
 scripts/.cache/
 scenario-ab-transcripts.local.md
 scripts/load/users.local.json
+.uxreview/
