@@ -350,7 +350,7 @@ export default function ProgressPage() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
             {/* Readiness Score */}
             <div className={`col-span-2 md:col-span-1 ${readinessBg} rounded-lg border border-c-border p-4 text-center`}>
-              <p className={`text-3xl font-mono font-bold ${readinessColor} ${readinessGlow}`}>{readinessScore}</p>
+              <p className={`text-3xl font-mono font-bold tabular-nums ${readinessColor}`}>{readinessScore}</p>
               <p className="font-mono text-xs text-c-muted uppercase tracking-wider mt-0.5">READINESS</p>
               <div className="mt-2 h-1.5 bg-c-border rounded-full overflow-hidden">
                 <div
@@ -360,21 +360,21 @@ export default function ProgressPage() {
               </div>
             </div>
             <div className="bezel rounded-lg border border-c-border p-3 text-center">
-              <p className="text-2xl font-mono font-semibold text-c-text">{totalSessions}</p>
+              <p className="text-2xl font-mono font-semibold tabular-nums text-c-text">{totalSessions}</p>
               <p className="font-mono text-xs text-c-muted uppercase tracking-wider mt-0.5">
                 EXAMS{completedSessions < totalSessions ? ` (${completedSessions} DONE)` : ''}
               </p>
             </div>
             <div className="bezel rounded-lg border border-c-border p-3 text-center">
-              <p className="text-2xl font-mono font-semibold text-c-text">{totalExchanges}</p>
+              <p className="text-2xl font-mono font-semibold tabular-nums text-c-text">{totalExchanges}</p>
               <p className="font-mono text-xs text-c-muted uppercase tracking-wider mt-0.5">EXCHANGES</p>
             </div>
             <div className="bezel rounded-lg border border-c-border p-3 text-center">
-              <p className="text-2xl font-mono font-semibold text-c-text">{coveragePct}%</p>
+              <p className="text-2xl font-mono font-semibold tabular-nums text-c-text">{coveragePct}%</p>
               <p className="font-mono text-xs text-c-muted uppercase tracking-wider mt-0.5">COVERAGE</p>
             </div>
             <div className="bezel rounded-lg border border-c-border p-3 text-center">
-              <p className="text-2xl font-mono font-semibold text-c-text">{attemptedElements}</p>
+              <p className="text-2xl font-mono font-semibold tabular-nums text-c-text">{attemptedElements}</p>
               <p className="font-mono text-xs text-c-muted uppercase tracking-wider mt-0.5">ELEMENTS</p>
             </div>
           </div>

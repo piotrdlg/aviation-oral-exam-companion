@@ -76,8 +76,12 @@ export default function Home() {
               VIEW PRICING
             </Link>
           </div>
-          <p className="s5 mt-4 text-xs text-c-muted font-mono">
-            NO CREDIT CARD REQUIRED. FREE SESSIONS INCLUDED.
+          <p className="s5 mt-4 text-xs text-c-muted font-mono uppercase tracking-wider">
+            No credit card required &middot; Free sessions included
+          </p>
+          <p className="s5 mt-3 text-sm text-c-muted max-w-xl mx-auto leading-relaxed">
+            An AI examiner grounded in the FAA Airman Certification Standards &mdash; a practice tool,
+            not a substitute for instruction from your CFI or an actual DPE checkride.
           </p>
         </div>
       </section>
