@@ -930,6 +930,28 @@ Repo: aviation-oral-exam-companion. Read docs/reviews/2026-06-09-comprehensive-r
 
 ---
 
+# PHASE 6B — Interface Excellence (UI / UX / Art Direction)
+
+> Added 2026-06-11 by owner direction: before the launch gate, subject the entire interface to an award-standard design review. Method: multi-agent WORKFLOWS over real screenshots of every screen (desktop + mobile), auditing across independent lenses, then a judged competition of redesign directions.
+
+### Task W6B.1: Full-surface UI/UX/art audit (workflow fan-out)
+
+**Agent:** Fable 5 orchestrating Workflow subagents · **Files:** screenshots (generated), `docs/design/2026-06-11-ui-ux-audit.md`
+
+Capture authenticated + public screens at desktop/mobile breakpoints from the REAL app (synthetic demo user, deleted afterwards). Fan out lens-agents — per-screen (landing, pricing, auth, session config, live exam, home, progress, settings) and cross-cutting (art direction/brand, typography/hierarchy, WCAG contrast/a11y, responsiveness, interaction/flow) — each returning structured findings with severity. Dedup + synthesize into the audit doc.
+
+### Task W6B.2: Redesign direction — judged competition (workflow)
+
+**Agent:** Fable 5 orchestrating Workflow subagents · **Files:** `docs/design/2026-06-11-redesign-spec.md`, HTML mockups under `docs/design/mockups/`
+
+Three independent design-direction agents produce complete concepts grounded in the audit (e.g. refined-cockpit, premium-aviation-modern, radical-clarity); a judge panel scores each on usability, brand fit, award-worthiness (clarity, craft, distinctiveness), and implementability; synthesis merges the winner with the strongest ideas from runners-up into a buildable spec: design tokens, per-screen changes (prioritized P0-P2), and HTML mockups of the two highest-impact screens in the HeyDPE-evolved identity.
+
+### Task W6B.3: Implementation (gated on owner approval of W6B.2)
+
+The redesign spec's P0 items implemented as incremental PRs after the owner approves the direction. Taste decisions belong to the owner — the spec is the proposal, not a fait accompli.
+
+---
+
 # PHASE 7 — Launch Gate
 
 ### Task W7.1: Build the real final gate
