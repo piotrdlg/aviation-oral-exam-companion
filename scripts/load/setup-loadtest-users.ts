@@ -21,24 +21,31 @@ const URL_ = process.env.LOADTEST_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABA
 const REF = URL_.split('//')[1].split('.')[0];
 const admin = createClient(URL_, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 const PASSWORD = 'LoadTest!2026-fixed';
-const N = 20;
+const N = 50;
 
 async function create() {
   const out: Array<{ email: string; cookieName: string; cookieValue: string }> = [];
+  // single upfront listing (a per-user listUsers call flaked at scale)
+  const { data: existingAll } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
   for (let i = 0; i < N; i++) {
     const email = `loadtest+${i}@heydpe-loadtest.example`;
-    // idempotent: delete an existing fixture user first
-    const { data: existing } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-    const old = existing?.users.find((u) => u.email === email);
-    if (old) await admin.auth.admin.deleteUser(old.id);
+    const old = existingAll?.users.find((u) => u.email === email);
+    if (old) await admin.auth.admin.deleteUser(old.id).catch(() => {});
     const { data: created, error } = await admin.auth.admin.createUser({ email, password: PASSWORD, email_confirm: true });
     if (error || !created.user) throw new Error(`create ${email}: ${error?.message}`);
     await admin.from('user_profiles').upsert({ user_id: created.user.id, tier: 'dpe_live' }, { onConflict: 'user_id' });
 
     // password-grant sign-in for a real session
     const anon = createClient(URL_, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
-    const { data: signIn, error: sErr } = await anon.auth.signInWithPassword({ email, password: PASSWORD });
-    if (sErr || !signIn.session) throw new Error(`signin ${email}: ${sErr?.message}`);
+    // auth endpoints rate-limit; back off and retry rather than abort the pool
+    let signIn: Awaited<ReturnType<typeof anon.auth.signInWithPassword>>['data'] | null = null;
+    for (let attempt = 0; attempt < 6; attempt++) {
+      const { data, error } = await anon.auth.signInWithPassword({ email, password: PASSWORD });
+      if (data?.session) { signIn = data; break; }
+      if (error && /rate limit/i.test(error.message)) { await new Promise((r) => setTimeout(r, 8000)); continue; }
+      throw new Error(`signin ${email}: ${error?.message}`);
+    }
+    if (!signIn?.session) throw new Error(`signin ${email}: exhausted retries`);
 
     // Let @supabase/ssr ITSELF serialize the cookie (codec + chunking parity
     // with the server parser) by capturing what setSession writes.
@@ -65,7 +72,9 @@ async function create() {
       .map((c) => `${c.name}=${c.value}`)
       .join('; ');
     out.push({ email, cookieName: 'COOKIE_HEADER', cookieValue: cookieHeader });
+    fs.writeFileSync('scripts/load/users.local.json', JSON.stringify(out, null, 1)); // incremental
     process.stdout.write(`  ${i + 1}/${N}\r`);
+    await new Promise((r) => setTimeout(r, 1200));
   }
   fs.writeFileSync('scripts/load/users.local.json', JSON.stringify(out, null, 1));
   console.log(`\n${N} users → scripts/load/users.local.json (gitignored)`);
