@@ -946,6 +946,8 @@ Capture authenticated + public screens at desktop/mobile breakpoints from the RE
 
 Three independent design-direction agents produce complete concepts grounded in the audit (e.g. refined-cockpit, premium-aviation-modern, radical-clarity); a judge panel scores each on usability, brand fit, award-worthiness (clarity, craft, distinctiveness), and implementability; synthesis merges the winner with the strongest ideas from runners-up into a buildable spec: design tokens, per-screen changes (prioritized P0-P2), and HTML mockups of the two highest-impact screens in the HeyDPE-evolved identity.
 
+> **Status 2026-06-11: W6B.1 + W6B.2 ✅ COMPLETE (proposal delivered, live app unchanged).** Workflow over 20 real screenshots → 71 findings (6 blocker) → judged 3-way redesign competition. Winner: **FLIGHT DECK** (35.2/40). Deliverables: docs/design/2026-06-11-ui-ux-audit.md, 2026-06-11-redesign-spec.md, mockups/{live-exam,progress}.html. Blockers found: live-exam empty void, Progress zeros-next-to-real-activity (a real data bug to diagnose), cookie bar blocking footer legal links, WCAG contrast/focus cluster, lost in-exam voice state.
+
 ### Task W6B.3: Implementation (gated on owner approval of W6B.2)
 
 The redesign spec's P0 items implemented as incremental PRs after the owner approves the direction. Taste decisions belong to the owner — the spec is the proposal, not a fait accompli.
