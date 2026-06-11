@@ -965,6 +965,14 @@ The redesign spec's P0 items implemented as incremental PRs after the owner appr
 
 # PHASE 7 — Launch Gate
 
+> **Status 2026-06-11: ✅ PHASE COMPLETE — executed hands-on by Fable 5. Web verdict: GO (with two non-blocking owner actions).**
+> PR #35 (W7.1), CI-green and squash-merged. W7.2 docs committed to main.
+> - **W7.1 final gate** (PR #35): `scripts/audit/public-launch-final-gate.ts` (`npm run audit:final-gate`) — 18 checks, static + auto-live modes, exit 0 only if every BLOCKER passes. Ports the 9 Phase-17 checks; adds live production probes (RPC cross-user auth via an ephemeral self-deleting probe user, anon instructor PII, quota SUM-not-count reality, flag sanity, ops-env presence) and critical-finding guards (IDOR 404, webhook ordering, planner advancement). Tests/typecheck run in a **CI-faithful env** (provider secrets stripped) so a green gate == a green ship. Manual `workflow_dispatch` CI job (`.github/workflows/final-gate.yml`) + `docs/runbooks/FINAL-GATE.md`. **First live run: 15/15 BLOCKERS PASS** → `10-final-gate-result.md`.
+> - **Bug the gate caught + fixed:** the 4 scenario-mode tests in `exam-flow-regression.test.ts` were non-hermetic — they passed only because `ANTHROPIC_API_KEY` was absent (scenario-engine calls the Anthropic SDK directly → no key = template fallback they assert; key present = a live ~5s call that times out). Mocked `@anthropic-ai/sdk` → deterministic; suite **1,354 green** with or without a key.
+> - **W7.2 decision pack** (`11-launch-decision-pack.md`): GO verdict; fixed-and-verified table (every critical/high finding → closing task → evidence); accepted-risks register; capacity (50+ concurrent, p95 380ms) + unit economics (Aura-2 voice $5.72/payer/mo, LLM-dominated COGS); 5 operational rituals. Obsidian session-log written.
+> - **Verdict GO-WITH-CONDITIONS** strictly because of one WARN: **`SENTRY_DSN` is not set in Vercel production** — Sentry (W6.1) is inert until the owner sets it. The other standing owner actions (flip `quota.*_hard_enforce` after the log-only week; enable `pg_cron`) are tracked in the decision pack's accepted-risks register.
+> - **Business signal restated for the owner:** the app is technically launch-ready; the zero-exams-in-3-weeks engagement/churn signal is the real revenue risk — scale marketing spend against proven retention, not ahead of it.
+
 ### Task W7.1: Build the real final gate
 
 **Agent:** Fable 5.0 · **Files:** Create `scripts/audit/public-launch-final-gate.ts`, npm script, CI hook
