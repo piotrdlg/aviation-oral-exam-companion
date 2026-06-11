@@ -1,0 +1,48 @@
+name: Final Launch Gate
+
+# Manual, on-demand launch gate (W7.1). Run before any marketing/traffic push.
+# Needs Supabase secrets for the LIVE production probes (#10/#11/#13/#16). If the
+# secrets are absent the gate still runs in STATIC mode (skips live blockers and
+# reports GO-WITH-CONDITIONS instead of GO).
+on:
+  workflow_dispatch:
+    inputs:
+      deep:
+        description: 'Re-run critical-finding guard tests in isolation (#12/#14/#15)'
+        type: boolean
+        default: false
+
+jobs:
+  final-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Run final launch gate
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # Optional: a non-admin test account enables the full cross-user RPC probe
+          GATE_TEST_EMAIL: ${{ secrets.GATE_TEST_EMAIL }}
+          GATE_TEST_PASSWORD: ${{ secrets.GATE_TEST_PASSWORD }}
+        run: |
+          if [ "${{ inputs.deep }}" = "true" ]; then
+            npm run audit:final-gate -- --deep
+          else
+            npm run audit:final-gate
+          fi
+
+      - name: Upload gate result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-gate-result
+          path: docs/reviews/2026-06-09-comprehensive-review/10-final-gate-result.md

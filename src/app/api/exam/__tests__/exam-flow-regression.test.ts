@@ -157,6 +157,16 @@ const h = vi.hoisted(() => {
 // Module mocks
 // ---------------------------------------------------------------------------
 vi.mock('server-only', () => ({}));
+// Hermetic scenario-spine generation: scenario-engine.ts calls the Anthropic
+// SDK directly (not via the mocked exam-engine). Without this mock the test's
+// behavior depends on whether ANTHROPIC_API_KEY happens to be in the env — key
+// absent → fail-fast → template fallback (what these tests assert); key present
+// → a real 5s+ API call → timeout. Force the offline/template path deterministically.
+vi.mock('@anthropic-ai/sdk', () => ({
+  default: class {
+    messages = { create: vi.fn(async () => { throw new Error('anthropic offline in tests'); }) };
+  },
+}));
 vi.mock('next/server', async (importOriginal) => {
   const orig = await importOriginal<typeof import('next/server')>();
   return { ...orig, after: vi.fn((fn: () => Promise<unknown>) => { h.pendingAfters.push(Promise.resolve().then(fn)); }) };

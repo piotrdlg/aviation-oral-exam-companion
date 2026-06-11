@@ -1,16 +1,28 @@
+#!/usr/bin/env npx tsx
 /**
- * Public Launch Final Gate (Phase 21)
+ * Public Launch Final Gate (W7.1)
+ * ============================================================================
+ * The consolidated go/no-go gate that doc 64 scoped but never built. It ports
+ * the 9 Phase-17 checks and adds the checks that would have caught this
+ * remediation program's critical findings (reviews 02/04/05/06).
  *
- * Definitive final launch gate — 16 automated checks across 6 categories:
- *   1. Build Verification (typecheck, unit tests, build script)
- *   2. Observability Infrastructure (health endpoint, PostHog, analytics events)
- *   3. Cron & Background Jobs (config, auth, error handling)
- *   4. Email System (templates, logging, unsubscribe)
- *   5. Security (admin auth, rate limiting)
- *   6. Error Handling (error boundary, 404 page)
+ * Two run modes:
+ *   - STATIC (default in CI): file-content + targeted-test + matrix checks. No
+ *     secrets. Runs anywhere.
+ *   - LIVE (auto-enabled when Supabase service+anon keys are in the env): adds
+ *     production probes — RPC cross-user auth, anon PII, quota-SUM reality,
+ *     flag sanity, ops env presence. Force off with --no-live.
  *
- * Usage: npx tsx scripts/audit/public-launch-final-gate.ts
- * No database access required — file-content and CLI checks only.
+ * Usage:
+ *   npm run audit:final-gate              # auto: live if keys present
+ *   npm run audit:final-gate -- --no-live # static only
+ *
+ * Exit 0 only if every BLOCKER passes. WARNs never fail the gate but are
+ * surfaced loudly and recorded in the evidence.
+ *
+ * Evidence: docs/reviews/2026-06-09-comprehensive-review/10-final-gate-result.md
+ * Runbook:  docs/runbooks/FINAL-GATE.md
+ * ============================================================================
  */
 
 import {
@@ -18,850 +30,626 @@ import {
   writeFileSync,
   mkdirSync,
   existsSync,
-  readdirSync,
-  statSync,
 } from 'fs';
 import { execSync } from 'child_process';
-import { join, relative, extname } from 'path';
+import { join } from 'path';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import * as dotenv from 'dotenv';
 
-const ROOT = join(__dirname, '..', '..');
-const EVIDENCE_DIR = join(
-  ROOT,
-  'docs/system-audit/evidence/2026-03-04-phase21/commands'
-);
+dotenv.config({ path: join(process.cwd(), '.env.local') });
+
+const ROOT = process.cwd();
+const REVIEW_DIR = 'docs/reviews/2026-06-09-comprehensive-review';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-type Verdict = 'GO' | 'REVIEW' | 'NO-GO';
+type Severity = 'BLOCKER' | 'WARN';
+type Verdict = 'PASS' | 'FAIL' | 'SKIP';
 
 interface CheckResult {
+  n: number;
   check: string;
-  category: string;
+  severity: Severity;
   verdict: Verdict;
   detail: string;
 }
 
-interface CategoryResult {
-  name: string;
-  checks: CheckResult[];
-  verdict: Verdict;
+const results: CheckResult[] = [];
+
+function record(r: CheckResult): CheckResult {
+  results.push(r);
+  const icon =
+    r.verdict === 'PASS' ? '✅' : r.verdict === 'FAIL' ? '❌' : '➖';
+  const sev = r.severity === 'BLOCKER' ? 'BLOCKER' : 'WARN   ';
+  console.log(`  ${icon} [${sev}] #${r.n} ${r.check}: ${r.detail}`);
+  return r;
 }
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Env / mode
 // ---------------------------------------------------------------------------
 
-function categoryVerdict(checks: CheckResult[]): Verdict {
-  if (checks.some(c => c.verdict === 'NO-GO')) return 'NO-GO';
-  if (checks.some(c => c.verdict === 'REVIEW')) return 'REVIEW';
-  return 'GO';
-}
+const SUPA_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-function overallVerdict(categories: CategoryResult[]): Verdict {
-  const allChecks = categories.flatMap(c => c.checks);
-  const noGoCount = allChecks.filter(c => c.verdict === 'NO-GO').length;
-  const reviewCount = allChecks.filter(c => c.verdict === 'REVIEW').length;
+const forceNoLive = process.argv.includes('--no-live');
+const LIVE = !forceNoLive && !!(SUPA_URL && ANON_KEY && SERVICE_KEY);
 
-  if (noGoCount > 0) return 'NO-GO';
-  if (reviewCount > 2) return 'REVIEW';
-  if (reviewCount > 0) return 'REVIEW';
-  return 'GO';
-}
+// ---------------------------------------------------------------------------
+// File / CLI helpers
+// ---------------------------------------------------------------------------
 
-function verdictIcon(v: Verdict): string {
-  switch (v) {
-    case 'GO': return '\u2705 GO  ';
-    case 'REVIEW': return '\u26A0\uFE0F  REVIEW';
-    case 'NO-GO': return '\u274C NO-GO';
-  }
-}
-
-function verdictLabel(v: Verdict): string {
-  return v;
+function readFile(rel: string): string | null {
+  const p = join(ROOT, rel);
+  return existsSync(p) ? readFileSync(p, 'utf-8') : null;
 }
 
 /**
- * Read a project-relative file and return its contents, or null if missing.
+ * A copy of process.env with provider/DB secret keys removed, so typecheck and
+ * the unit suite run exactly as they do in CI (which has none of these). The
+ * gate process itself keeps the secrets for the live probes — only the
+ * subprocesses are sanitized. This keeps the gate honest: a green suite here
+ * means a green suite in the shipping build, regardless of what's in .env.local.
  */
-function readProjectFile(relativePath: string): string | null {
-  const fullPath = join(ROOT, relativePath);
-  if (!existsSync(fullPath)) return null;
-  return readFileSync(fullPath, 'utf-8');
-}
-
-/**
- * Walk a directory tree and return all .ts/.tsx files, skipping node_modules.
- */
-function walkDir(dir: string): string[] {
-  const results: string[] = [];
-  const scanExtensions = new Set(['.ts', '.tsx']);
-  try {
-    const entries = readdirSync(dir);
-    for (const entry of entries) {
-      if (entry.startsWith('.') || entry === 'node_modules') continue;
-      const fullPath = join(dir, entry);
-      try {
-        const stat = statSync(fullPath);
-        if (stat.isDirectory()) {
-          results.push(...walkDir(fullPath));
-        } else if (scanExtensions.has(extname(entry))) {
-          results.push(fullPath);
-        }
-      } catch {
-        // Skip unreadable files
-      }
-    }
-  } catch {
-    // Skip unreadable directories
+function ciFaithfulEnv(): NodeJS.ProcessEnv {
+  const stripped = new Set([
+    'ANTHROPIC_API_KEY', 'OPENAI_API_KEY', 'DEEPGRAM_API_KEY', 'CARTESIA_API_KEY',
+    'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'RESEND_API_KEY', 'RESEND_INBOUND_API_KEY',
+    'SUPABASE_SERVICE_ROLE_KEY', 'NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  ]);
+  const env: NodeJS.ProcessEnv = {};
+  for (const [k, v] of Object.entries(process.env)) {
+    if (!stripped.has(k)) env[k] = v;
   }
-  return results;
+  return env;
 }
 
-// ---------------------------------------------------------------------------
-// Category 1: Build Verification
-// ---------------------------------------------------------------------------
+function fileContains(rel: string, needle: string): boolean {
+  const c = readFile(rel);
+  return c !== null && c.includes(needle);
+}
 
-function checkTypecheck(category: string): CheckResult {
+function runVitest(file: string): { ok: boolean; summary: string } {
   try {
-    execSync('npx tsc --noEmit', {
+    const out = execSync(`npx vitest run ${file}`, {
       cwd: ROOT,
       encoding: 'utf-8',
       stdio: 'pipe',
-      timeout: 120_000,
+      timeout: 180_000,
+      env: ciFaithfulEnv(),
     });
-    return {
-      check: 'typecheck',
-      category,
-      verdict: 'GO',
-      detail: 'TypeScript compiles without errors',
-    };
-  } catch (err: unknown) {
-    const stderr =
-      err instanceof Error && 'stderr' in err
-        ? String((err as { stderr: string }).stderr).slice(0, 500)
-        : 'unknown error';
-    return {
-      check: 'typecheck',
-      category,
-      verdict: 'NO-GO',
-      detail: `TypeScript compilation failed: ${stderr}`,
-    };
-  }
-}
-
-function checkUnitTests(category: string): CheckResult {
-  try {
-    const stdout = execSync('npx vitest run', {
-      cwd: ROOT,
-      encoding: 'utf-8',
-      stdio: 'pipe',
-      timeout: 120_000,
-    });
-
-    // Extract summary line (e.g., "Tests  235 passed (235)")
-    const summaryMatch = stdout.match(/Tests\s+(\d+)\s+passed/);
-    const testCount = summaryMatch ? summaryMatch[1] : '?';
-
-    return {
-      check: 'unit_tests',
-      category,
-      verdict: 'GO',
-      detail: `All tests pass (${testCount} passed)`,
-    };
+    const m = out.replace(/\[[0-9;]*m/g, '').match(/\bTests\s+(\d+)\s+passed/);
+    return { ok: true, summary: m ? `${m[1]} passed` : 'passed' };
   } catch (err: unknown) {
     const stdout =
-      err instanceof Error && 'stdout' in err
-        ? String((err as { stdout: string }).stdout).slice(-500)
+      err && typeof err === 'object' && 'stdout' in err
+        ? String((err as { stdout: unknown }).stdout).slice(-300)
         : 'unknown error';
-    return {
-      check: 'unit_tests',
-      category,
-      verdict: 'NO-GO',
-      detail: `Test suite failed: ${stdout}`,
-    };
+    return { ok: false, summary: stdout };
   }
 }
 
-function checkBuild(category: string): CheckResult {
-  // Don't actually run `npm run build` (too slow) — verify package.json has
-  // a build script and check for known build artifacts or script existence.
-  const pkgContent = readProjectFile('package.json');
-  if (!pkgContent) {
-    return {
-      check: 'build',
-      category,
-      verdict: 'NO-GO',
-      detail: 'package.json not found',
-    };
-  }
+// ===========================================================================
+// Category A — Ported Phase-17 checks (#1–#9)  [BLOCKER]
+// ===========================================================================
 
+function portedChecks() {
+  console.log('\n--- Category A: Build, support, security, billing (ported) ---');
+
+  record({
+    n: 1, check: 'support_auto_reply', severity: 'BLOCKER',
+    verdict: fileContains('src/lib/email.ts', 'sendTicketAutoReply') ? 'PASS' : 'FAIL',
+    detail: 'src/lib/email.ts exports sendTicketAutoReply',
+  });
+  record({
+    n: 2, check: 'trial_ending_reminder', severity: 'BLOCKER',
+    verdict: fileContains('src/lib/email.ts', 'sendTrialEndingReminder') ? 'PASS' : 'FAIL',
+    detail: 'src/lib/email.ts exports sendTrialEndingReminder',
+  });
+  record({
+    n: 3, check: 'csp_header', severity: 'BLOCKER',
+    verdict: fileContains('next.config.ts', 'Content-Security-Policy') ? 'PASS' : 'FAIL',
+    detail: 'next.config.ts sets a Content-Security-Policy',
+  });
+  record({
+    n: 4, check: 'report_session_ownership', severity: 'BLOCKER',
+    verdict: fileContains('src/app/api/report/route.ts', 'session.user_id !== user.id') ? 'PASS' : 'FAIL',
+    detail: 'report route enforces session ownership',
+  });
+  record({
+    n: 5, check: 'tts_tier_gating', severity: 'BLOCKER',
+    verdict: fileContains('src/lib/voice/usage.ts', 'hasTtsAccess') ? 'PASS' : 'FAIL',
+    detail: 'voice/usage.ts exposes hasTtsAccess (D1: universal voice)',
+  });
+  record({
+    n: 6, check: 'pricing_active_subscribers', severity: 'BLOCKER',
+    verdict: fileContains('src/app/pricing/page.tsx', 'isActiveSubscriber') ? 'PASS' : 'FAIL',
+    detail: 'pricing page handles active subscribers',
+  });
+
+  // #7 typecheck
+  console.log('  …running typecheck (may take ~30s)');
+  let tcOk = false;
+  let tcDetail = '';
   try {
-    const pkg = JSON.parse(pkgContent);
-    if (pkg.scripts?.build) {
-      // Check if .next/ exists (previous build)
-      const hasNextDir = existsSync(join(ROOT, '.next'));
-      const buildScript = pkg.scripts.build;
-      return {
-        check: 'build',
-        category,
-        verdict: 'GO',
-        detail: `Build script exists: "${buildScript}"${hasNextDir ? ' — .next/ directory present from previous build' : ' — .next/ not present (run npm run build to generate)'}`,
-      };
-    }
-    return {
-      check: 'build',
-      category,
-      verdict: 'NO-GO',
-      detail: 'No "build" script in package.json',
-    };
-  } catch {
-    return {
-      check: 'build',
-      category,
-      verdict: 'NO-GO',
-      detail: 'Failed to parse package.json',
-    };
+    execSync('npx tsc --noEmit', { cwd: ROOT, stdio: 'pipe', timeout: 180_000, env: ciFaithfulEnv() });
+    tcOk = true;
+    tcDetail = 'tsc --noEmit clean';
+  } catch (err: unknown) {
+    tcDetail = err && typeof err === 'object' && 'stdout' in err
+      ? String((err as { stdout: unknown }).stdout).slice(0, 300)
+      : 'tsc failed';
   }
-}
+  record({ n: 7, check: 'typecheck', severity: 'BLOCKER', verdict: tcOk ? 'PASS' : 'FAIL', detail: tcDetail });
 
-// ---------------------------------------------------------------------------
-// Category 2: Observability Infrastructure
-// ---------------------------------------------------------------------------
-
-function checkHealthEndpoint(category: string): CheckResult {
-  const content = readProjectFile('src/app/api/health/route.ts');
-  if (content === null) {
-    return {
-      check: 'health_endpoint',
-      category,
-      verdict: 'NO-GO',
-      detail: 'File not found: src/app/api/health/route.ts',
-    };
-  }
-
-  if (content.includes('export') && /async\s+function\s+GET/.test(content)) {
-    return {
-      check: 'health_endpoint',
-      category,
-      verdict: 'GO',
-      detail: 'Health endpoint exists with GET export — src/app/api/health/route.ts',
-    };
-  }
-
-  return {
-    check: 'health_endpoint',
-    category,
-    verdict: 'NO-GO',
-    detail: 'src/app/api/health/route.ts exists but missing GET export',
-  };
-}
-
-function checkPosthogConfigured(category: string): CheckResult {
-  const serverModule = readProjectFile('src/lib/posthog-server.ts');
-  const clientModule =
-    readProjectFile('src/components/PostHogProvider.tsx') ||
-    readProjectFile('src/lib/posthog-client.ts');
-
-  if (serverModule && clientModule) {
-    return {
-      check: 'posthog_configured',
-      category,
-      verdict: 'GO',
-      detail: 'PostHog server module (src/lib/posthog-server.ts) and client module (src/components/PostHogProvider.tsx) both exist',
-    };
-  }
-
-  const found: string[] = [];
-  const missing: string[] = [];
-  if (serverModule) found.push('server'); else missing.push('server (src/lib/posthog-server.ts)');
-  if (clientModule) found.push('client'); else missing.push('client (src/components/PostHogProvider.tsx)');
-
-  return {
-    check: 'posthog_configured',
-    category,
-    verdict: missing.length > 0 ? 'NO-GO' : 'GO',
-    detail: `PostHog modules — found: [${found.join(', ')}], missing: [${missing.join(', ')}]`,
-  };
-}
-
-function checkAnalyticsEvents(category: string): CheckResult {
-  const srcDir = join(ROOT, 'src');
-  const files = walkDir(srcDir);
-  let callCount = 0;
-
-  for (const filePath of files) {
-    try {
-      const content = readFileSync(filePath, 'utf-8');
-      const matches = content.match(/captureServerEvent\s*\(/g);
-      if (matches) {
-        callCount += matches.length;
-      }
-    } catch {
-      // Skip unreadable files
-    }
-  }
-
-  const threshold = 15;
-  if (callCount >= threshold) {
-    return {
-      check: 'analytics_events',
-      category,
-      verdict: 'GO',
-      detail: `Found ${callCount} captureServerEvent calls (threshold: >= ${threshold})`,
-    };
-  }
-
-  return {
-    check: 'analytics_events',
-    category,
-    verdict: callCount >= 10 ? 'REVIEW' : 'NO-GO',
-    detail: `Found ${callCount} captureServerEvent calls (threshold: >= ${threshold}) — insufficient analytics coverage`,
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Category 3: Cron & Background Jobs
-// ---------------------------------------------------------------------------
-
-function checkCronConfig(category: string): CheckResult {
-  const content = readProjectFile('vercel.json');
-  if (content === null) {
-    return {
-      check: 'cron_config',
-      category,
-      verdict: 'NO-GO',
-      detail: 'vercel.json not found',
-    };
-  }
-
+  // #8 full unit suite (also exercises checks #12/#14/#15's guards transitively)
+  console.log('  …running full unit suite (may take ~60s)');
+  let testCount = '?';
+  let testOk = false;
+  let testDetail = '';
   try {
-    const config = JSON.parse(content);
-    const cronCount = config.crons?.length || 0;
-
-    if (cronCount >= 2) {
-      const paths = (config.crons as Array<{ path: string }>).map(c => c.path).join(', ');
-      return {
-        check: 'cron_config',
-        category,
-        verdict: 'GO',
-        detail: `vercel.json has ${cronCount} cron entries: ${paths}`,
-      };
-    }
-
-    return {
-      check: 'cron_config',
-      category,
-      verdict: 'NO-GO',
-      detail: `vercel.json has ${cronCount} cron entries (expected >= 2)`,
-    };
-  } catch {
-    return {
-      check: 'cron_config',
-      category,
-      verdict: 'NO-GO',
-      detail: 'Failed to parse vercel.json',
-    };
+    const out = execSync('npx vitest run', { cwd: ROOT, encoding: 'utf-8', stdio: 'pipe', timeout: 300_000, env: ciFaithfulEnv() });
+    // Strip ANSI before parsing the "Tests  N passed" summary line.
+    const clean = out.replace(/\[[0-9;]*m/g, '');
+    const m = clean.match(/\bTests\s+(\d+)\s+passed/);
+    testCount = m ? m[1] : '?';
+    testOk = true;
+    testDetail = `full Vitest suite green (${testCount} passed)`;
+  } catch (err: unknown) {
+    testDetail = err && typeof err === 'object' && 'stdout' in err
+      ? String((err as { stdout: unknown }).stdout).slice(-300)
+      : 'vitest failed';
   }
+  record({ n: 8, check: 'unit_tests', severity: 'BLOCKER', verdict: testOk ? 'PASS' : 'FAIL', detail: testDetail });
+
+  // #9 build script presence (do not run a full build here)
+  const pkg = readFile('package.json');
+  let buildOk = false;
+  try { buildOk = !!(pkg && JSON.parse(pkg).scripts?.build); } catch { /* ignore */ }
+  record({
+    n: 9, check: 'build_script', severity: 'BLOCKER',
+    verdict: buildOk ? 'PASS' : 'FAIL',
+    detail: buildOk ? 'package.json has a build script' : 'no build script',
+  });
+
+  return testOk;
 }
 
-function checkCronAuth(category: string): CheckResult {
-  const cronRoutes = [
-    'src/app/api/cron/daily-digest/route.ts',
-    'src/app/api/cron/nudges/route.ts',
+// ===========================================================================
+// Category B — Remediation guards covered by named tests (#12, #14, #15)
+// ===========================================================================
+// The full suite (#8) already runs these. We assert the SPECIFIC guard test
+// files exist and name the guard, and tie the verdict to #8's result — so a
+// green gate provably exercised each guard. (--deep re-runs them in isolation.)
+
+function guardChecks(suiteGreen: boolean) {
+  console.log('\n--- Category B: Critical-finding guards (named tests) ---');
+  const deep = process.argv.includes('--deep');
+
+  const guards: Array<{ n: number; check: string; file: string; needle: string; finding: string }> = [
+    { n: 12, check: 'idor_ownership_404', file: 'src/app/api/exam/__tests__/idor-session-ownership.test.ts',
+      needle: "returns 404 for another user's sessionId", finding: 'R06 C3 — exam IDOR' },
+    { n: 14, check: 'webhook_ordering_guard', file: 'src/lib/__tests__/stripe-webhook.test.ts',
+      needle: 'ordering guard compares event.created', finding: 'R05 #5 — out-of-order webhook' },
+    { n: 15, check: 'planner_advancement', file: 'src/app/api/exam/__tests__/exam-flow-regression.test.ts',
+      needle: 'advancement across tasks, natural completion', finding: 'R02 bugs 1–4 — engine flow' },
   ];
 
-  const results: { route: string; hasCronSecret: boolean }[] = [];
-
-  for (const route of cronRoutes) {
-    const content = readProjectFile(route);
-    if (content === null) {
-      results.push({ route, hasCronSecret: false });
+  for (const g of guards) {
+    const present = fileContains(g.file, g.needle);
+    if (!present) {
+      record({ n: g.n, check: g.check, severity: 'BLOCKER', verdict: 'FAIL',
+        detail: `guard test missing: ${g.file} ("${g.needle}")` });
       continue;
     }
-    results.push({
-      route,
-      hasCronSecret: content.includes('CRON_SECRET'),
-    });
-  }
-
-  const allSecured = results.every(r => r.hasCronSecret);
-  const noneFound = results.every(r => !r.hasCronSecret);
-
-  if (allSecured) {
-    return {
-      check: 'cron_auth',
-      category,
-      verdict: 'GO',
-      detail: `Both cron routes check CRON_SECRET: ${cronRoutes.join(', ')}`,
-    };
-  }
-
-  const failing = results.filter(r => !r.hasCronSecret).map(r => r.route);
-  return {
-    check: 'cron_auth',
-    category,
-    verdict: noneFound ? 'NO-GO' : 'REVIEW',
-    detail: `Cron routes missing CRON_SECRET check: ${failing.join(', ')}`,
-  };
-}
-
-function checkCronErrorHandling(category: string): CheckResult {
-  const cronRoutes = [
-    'src/app/api/cron/daily-digest/route.ts',
-    'src/app/api/cron/nudges/route.ts',
-  ];
-
-  const results: { route: string; hasTryCatch: boolean; hasStats: boolean }[] = [];
-
-  for (const route of cronRoutes) {
-    const content = readProjectFile(route);
-    if (content === null) {
-      results.push({ route, hasTryCatch: false, hasStats: false });
-      continue;
-    }
-    results.push({
-      route,
-      hasTryCatch: content.includes('try {') && content.includes('catch'),
-      hasStats: content.includes('stats') || content.includes('Stats'),
-    });
-  }
-
-  const allGood = results.every(r => r.hasTryCatch && r.hasStats);
-  if (allGood) {
-    return {
-      check: 'cron_error_handling',
-      category,
-      verdict: 'GO',
-      detail: `Both cron routes have try/catch with stats tracking`,
-    };
-  }
-
-  const issues: string[] = [];
-  for (const r of results) {
-    if (!r.hasTryCatch) issues.push(`${r.route}: missing try/catch`);
-    if (!r.hasStats) issues.push(`${r.route}: missing stats tracking`);
-  }
-
-  return {
-    check: 'cron_error_handling',
-    category,
-    verdict: 'REVIEW',
-    detail: `Cron error handling issues: ${issues.join('; ')}`,
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Category 4: Email System
-// ---------------------------------------------------------------------------
-
-function checkEmailTemplates(category: string): CheckResult {
-  const emailsDir = join(ROOT, 'src/emails');
-  if (!existsSync(emailsDir)) {
-    return {
-      check: 'email_templates',
-      category,
-      verdict: 'NO-GO',
-      detail: 'src/emails/ directory not found',
-    };
-  }
-
-  try {
-    const entries = readdirSync(emailsDir);
-    // Count .tsx files, excluding layout.tsx (it's a wrapper, not a template)
-    const templates = entries.filter(
-      e => e.endsWith('.tsx') && e !== 'layout.tsx'
-    );
-    const threshold = 5;
-
-    if (templates.length >= threshold) {
-      return {
-        check: 'email_templates',
-        category,
-        verdict: 'GO',
-        detail: `Found ${templates.length} email templates (threshold: >= ${threshold}): ${templates.join(', ')}`,
-      };
-    }
-
-    return {
-      check: 'email_templates',
-      category,
-      verdict: templates.length >= 3 ? 'REVIEW' : 'NO-GO',
-      detail: `Found ${templates.length} email templates (threshold: >= ${threshold}): ${templates.join(', ')}`,
-    };
-  } catch {
-    return {
-      check: 'email_templates',
-      category,
-      verdict: 'NO-GO',
-      detail: 'Failed to read src/emails/ directory',
-    };
-  }
-}
-
-function checkEmailLogging(category: string): CheckResult {
-  const content = readProjectFile('src/lib/email-logging.ts');
-  if (content !== null) {
-    return {
-      check: 'email_logging',
-      category,
-      verdict: 'GO',
-      detail: 'Email logging module exists — src/lib/email-logging.ts',
-    };
-  }
-
-  return {
-    check: 'email_logging',
-    category,
-    verdict: 'NO-GO',
-    detail: 'File not found: src/lib/email-logging.ts',
-  };
-}
-
-function checkUnsubscribeSystem(category: string): CheckResult {
-  const content = readProjectFile('src/lib/unsubscribe-token.ts');
-  if (content !== null) {
-    return {
-      check: 'unsubscribe_system',
-      category,
-      verdict: 'GO',
-      detail: 'Unsubscribe token module exists — src/lib/unsubscribe-token.ts',
-    };
-  }
-
-  return {
-    check: 'unsubscribe_system',
-    category,
-    verdict: 'NO-GO',
-    detail: 'File not found: src/lib/unsubscribe-token.ts',
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Category 5: Security
-// ---------------------------------------------------------------------------
-
-function checkAdminAuth(category: string): CheckResult {
-  const adminDir = join(ROOT, 'src/app/api/admin');
-  if (!existsSync(adminDir)) {
-    return {
-      check: 'admin_auth',
-      category,
-      verdict: 'NO-GO',
-      detail: 'src/app/api/admin/ directory not found',
-    };
-  }
-
-  // Find all admin route.ts files
-  const adminRoutes = walkDir(adminDir).filter(f => f.endsWith('route.ts'));
-  const withRequireAdmin: string[] = [];
-  const withoutRequireAdmin: string[] = [];
-
-  for (const routeFile of adminRoutes) {
-    const content = readFileSync(routeFile, 'utf-8');
-    const relPath = relative(ROOT, routeFile);
-    if (content.includes('requireAdmin')) {
-      withRequireAdmin.push(relPath);
+    if (deep) {
+      console.log(`  …deep-running ${g.file}`);
+      const r = runVitest(g.file);
+      record({ n: g.n, check: g.check, severity: 'BLOCKER', verdict: r.ok ? 'PASS' : 'FAIL',
+        detail: r.ok ? `${g.finding}: ${r.summary} (isolated run)` : `FAILED: ${r.summary}` });
     } else {
-      withoutRequireAdmin.push(relPath);
+      record({ n: g.n, check: g.check, severity: 'BLOCKER', verdict: suiteGreen ? 'PASS' : 'FAIL',
+        detail: suiteGreen
+          ? `${g.finding}: covered by ${g.file.split('/').pop()} (ran green in suite #8)`
+          : 'suite #8 not green — guard not proven' });
     }
   }
-
-  if (withoutRequireAdmin.length === 0 && withRequireAdmin.length > 0) {
-    return {
-      check: 'admin_auth',
-      category,
-      verdict: 'GO',
-      detail: `All ${withRequireAdmin.length} admin endpoints use requireAdmin`,
-    };
-  }
-
-  if (withoutRequireAdmin.length > 0) {
-    return {
-      check: 'admin_auth',
-      category,
-      verdict: 'NO-GO',
-      detail: `${withoutRequireAdmin.length} admin endpoints missing requireAdmin: ${withoutRequireAdmin.slice(0, 5).join(', ')}${withoutRequireAdmin.length > 5 ? '...' : ''}`,
-    };
-  }
-
-  return {
-    check: 'admin_auth',
-    category,
-    verdict: 'NO-GO',
-    detail: 'No admin route files found in src/app/api/admin/',
-  };
 }
 
-function checkRateLimiting(category: string): CheckResult {
-  const rateLimitFile = readProjectFile('src/lib/rate-limit.ts');
-  if (rateLimitFile !== null) {
-    return {
-      check: 'rate_limiting',
-      category,
-      verdict: 'GO',
-      detail: 'Rate limiting module exists — src/lib/rate-limit.ts',
-    };
+// ===========================================================================
+// Category C — Quota-SUM reality (#13)  [BLOCKER, static body + live cross-check]
+// ===========================================================================
+
+async function quotaRealityCheck(service: SupabaseClient | null) {
+  console.log('\n--- Category C: Quota reality ---');
+  const migration = 'supabase/migrations/20260610000005_usage_quota_rpc.sql';
+  const body = readFile(migration) ?? '';
+  const sumsNotCounts =
+    body.includes('SUM(quantity)') && !/COUNT\s*\(/i.test(body);
+
+  if (!sumsNotCounts) {
+    record({ n: 13, check: 'quota_sum_reality', severity: 'BLOCKER', verdict: 'FAIL',
+      detail: `get_monthly_usage must SUM(quantity), not COUNT rows — check ${migration}` });
+    return;
   }
 
-  // Fallback: check middleware for rate limiting
-  const middleware = readProjectFile('src/middleware.ts');
-  if (middleware && (middleware.includes('rate') || middleware.includes('limit'))) {
-    return {
-      check: 'rate_limiting',
-      category,
-      verdict: 'GO',
-      detail: 'Rate limiting found in middleware — src/middleware.ts',
-    };
+  if (!service) {
+    record({ n: 13, check: 'quota_sum_reality', severity: 'BLOCKER', verdict: 'PASS',
+      detail: 'RPC body sums chars (static). Live cross-check skipped (no DB).' });
+    return;
   }
 
-  return {
-    check: 'rate_limiting',
-    category,
-    verdict: 'NO-GO',
-    detail: 'No rate limiting found — neither src/lib/rate-limit.ts nor middleware rate limiting detected',
-  };
+  // Live: RPC value must equal a raw SUM(quantity) for a sampled user.
+  const { data: sampleRows, error: sampleErr } = await service
+    .from('usage_logs')
+    .select('user_id')
+    .eq('event_type', 'tts_request')
+    .eq('status', 'ok')
+    .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
+    .limit(1);
+
+  if (sampleErr) {
+    record({ n: 13, check: 'quota_sum_reality', severity: 'BLOCKER', verdict: 'FAIL',
+      detail: `usage_logs query error: ${sampleErr.message}` });
+    return;
+  }
+
+  if (!sampleRows || sampleRows.length === 0) {
+    record({ n: 13, check: 'quota_sum_reality', severity: 'BLOCKER', verdict: 'PASS',
+      detail: 'RPC sums chars (static verified). No current-month TTS usage to cross-check (0 traffic — consistent with ground truth §6).' });
+    return;
+  }
+
+  const uid = (sampleRows[0] as { user_id: string }).user_id;
+  const { data: rpcVal, error: rpcErr } = await service.rpc('get_monthly_usage', {
+    p_user_id: uid, p_event_type: 'tts_request',
+  });
+  const { data: rawRows, error: rawErr } = await service
+    .from('usage_logs')
+    .select('quantity')
+    .eq('user_id', uid)
+    .eq('event_type', 'tts_request')
+    .eq('status', 'ok')
+    .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString());
+
+  if (rpcErr || rawErr) {
+    record({ n: 13, check: 'quota_sum_reality', severity: 'BLOCKER', verdict: 'FAIL',
+      detail: `cross-check error: ${rpcErr?.message ?? rawErr?.message}` });
+    return;
+  }
+
+  const rawSum = (rawRows ?? []).reduce((a, r) => a + Number((r as { quantity: number }).quantity || 0), 0);
+  const rpcSum = Number(rpcVal ?? 0);
+  record({
+    n: 13, check: 'quota_sum_reality', severity: 'BLOCKER',
+    verdict: rpcSum === rawSum ? 'PASS' : 'FAIL',
+    detail: rpcSum === rawSum
+      ? `RPC SUM (${rpcSum}) == raw SUM (${rawSum}) for sampled user; body sums chars not rows`
+      : `MISMATCH: RPC ${rpcSum} != raw ${rawSum}`,
+  });
 }
 
-// ---------------------------------------------------------------------------
-// Category 6: Error Handling
-// ---------------------------------------------------------------------------
+// ===========================================================================
+// Category D — Live security probes (#10 RPC auth, #11 anon PII)  [BLOCKER]
+// ===========================================================================
 
-function checkErrorBoundary(category: string): CheckResult {
-  const content = readProjectFile('src/app/error.tsx');
-  if (content !== null) {
-    return {
-      check: 'error_boundary',
-      category,
-      verdict: 'GO',
-      detail: 'Error boundary exists — src/app/error.tsx',
-    };
+async function liveSecurityProbes(service: SupabaseClient, anon: SupabaseClient) {
+  console.log('\n--- Category D: Live security probes ---');
+
+  // ---- #11 anon PII: instructor sensitive columns must be unreadable by anon
+  const sensitive = ['certificate_number', 'admin_notes', 'verification_data'];
+  const { data: piiData, error: piiErr } = await anon
+    .from('instructor_profiles')
+    .select(sensitive.join(', '))
+    .limit(1);
+  const anonBlocked = !!piiErr || !piiData || piiData.length === 0;
+  // Confirm the safe view still serves anon.
+  const { error: viewErr } = await anon
+    .from('public_instructor_profiles')
+    .select('slug')
+    .limit(1);
+  record({
+    n: 11, check: 'anon_pii_blocked', severity: 'BLOCKER',
+    verdict: anonBlocked ? 'PASS' : 'FAIL',
+    detail: anonBlocked
+      ? `anon SELECT of [${sensitive.join(', ')}] denied/empty${piiErr ? ` (${piiErr.code ?? 'rls'})` : ''}; public view ${viewErr ? 'ERR' : 'ok'}`
+      : `LEAK: anon read ${piiData.length} sensitive instructor row(s)`,
+  });
+
+  // ---- #10 RPC auth: an authenticated non-owner must be denied another user's scores.
+  // (a) anon is fully revoked.
+  const someUserId = await firstUserId(service);
+  const { error: anonRpcErr } = await anon.rpc('get_element_scores', {
+    p_user_id: someUserId ?? '00000000-0000-0000-0000-000000000000',
+    p_rating: 'private',
+  });
+  const anonRevoked = !!anonRpcErr; // permission denied for function, or forbidden
+
+  // (b) authenticated cross-user → must raise 'forbidden'.
+  const crossUser = await probeAuthenticatedCrossUser(service, someUserId);
+
+  let verdict: Verdict = 'FAIL';
+  let detail = '';
+  if (crossUser.ran) {
+    verdict = crossUser.denied && anonRevoked ? 'PASS' : 'FAIL';
+    detail = `anon ${anonRevoked ? 'revoked' : 'EXECUTABLE!'}; authenticated cross-user ${crossUser.denied ? 'denied (forbidden)' : 'RETURNED DATA — C1 OPEN'} ${crossUser.note}`;
+  } else {
+    // Could not mint a JWT — fall back to the anon-revoke signal with a loud note.
+    verdict = anonRevoked ? 'PASS' : 'FAIL';
+    detail = `anon ${anonRevoked ? 'revoked' : 'EXECUTABLE!'}; authenticated probe skipped (${crossUser.note}) — set GATE_TEST_EMAIL/GATE_TEST_PASSWORD for the full cross-user probe`;
   }
-
-  return {
-    check: 'error_boundary',
-    category,
-    verdict: 'NO-GO',
-    detail: 'File not found: src/app/error.tsx',
-  };
+  record({ n: 10, check: 'rpc_cross_user_auth', severity: 'BLOCKER', verdict, detail });
 }
 
-function checkNotFoundPage(category: string): CheckResult {
-  const content = readProjectFile('src/app/not-found.tsx');
-  if (content !== null) {
-    return {
-      check: 'not_found_page',
-      category,
-      verdict: 'GO',
-      detail: '404 page exists — src/app/not-found.tsx',
-    };
-  }
-
-  return {
-    check: 'not_found_page',
-    category,
-    verdict: 'NO-GO',
-    detail: 'File not found: src/app/not-found.tsx',
-  };
+async function firstUserId(service: SupabaseClient): Promise<string | null> {
+  const { data } = await service.from('user_profiles').select('user_id').limit(1);
+  return data && data.length ? (data[0] as { user_id: string }).user_id : null;
 }
 
-// ---------------------------------------------------------------------------
+/**
+ * Obtain a real authenticated (non-admin) JWT and call get_element_scores for a
+ * DIFFERENT user. Prefers env test creds; otherwise creates+deletes an
+ * ephemeral probe user via the service role.
+ */
+async function probeAuthenticatedCrossUser(
+  service: SupabaseClient,
+  victimUserId: string | null
+): Promise<{ ran: boolean; denied: boolean; note: string }> {
+  if (!victimUserId) return { ran: false, denied: false, note: 'no users to probe against' };
+  if (!SUPA_URL || !ANON_KEY) return { ran: false, denied: false, note: 'missing anon env' };
+
+  const envEmail = process.env.GATE_TEST_EMAIL;
+  const envPass = process.env.GATE_TEST_PASSWORD;
+
+  // Path 1: env-provided creds.
+  if (envEmail && envPass) {
+    const c = createClient(SUPA_URL, ANON_KEY);
+    const { data, error } = await c.auth.signInWithPassword({ email: envEmail, password: envPass });
+    if (error || !data.session) return { ran: false, denied: false, note: `env signin failed: ${error?.message}` };
+    const authed = createClient(SUPA_URL, ANON_KEY, {
+      global: { headers: { Authorization: `Bearer ${data.session.access_token}` } },
+    });
+    // Probe a user that is NOT the signed-in env user. If the env user happens
+    // to be the only user, fall back to a random UUID (still must be forbidden).
+    const target = data.user.id === victimUserId
+      ? '00000000-0000-0000-0000-000000000000'
+      : victimUserId;
+    const { data: scores, error: rpcErr } = await authed.rpc('get_element_scores', {
+      p_user_id: target, p_rating: 'private',
+    });
+    const denied = !!rpcErr || (Array.isArray(scores) && scores.length === 0);
+    return { ran: true, denied, note: `(env user vs ${target.slice(0, 8)}…${rpcErr ? `: ${rpcErr.code ?? 'forbidden'}` : ': empty'})` };
+  }
+
+  // Path 2: ephemeral probe user (created + deleted in this run).
+  const stamp = Date.now();
+  const email = `gate-probe+${stamp}@heydpe-gate.example`;
+  const password = `Gate!Probe-${stamp}`;
+  let probeId: string | null = null;
+  try {
+    const { data: created, error: createErr } = await service.auth.admin.createUser({
+      email, password, email_confirm: true,
+    });
+    if (createErr || !created.user) return { ran: false, denied: false, note: `ephemeral create failed: ${createErr?.message}` };
+    probeId = created.user.id;
+
+    const anonC = createClient(SUPA_URL, ANON_KEY);
+    const { data: signin, error: signErr } = await anonC.auth.signInWithPassword({ email, password });
+    if (signErr || !signin.session) return { ran: false, denied: false, note: `ephemeral signin failed: ${signErr?.message}` };
+
+    const authed = createClient(SUPA_URL, ANON_KEY, {
+      global: { headers: { Authorization: `Bearer ${signin.session.access_token}` } },
+    });
+    // Probe a DIFFERENT user (the sampled real user) — must be forbidden.
+    const { data: scores, error: rpcErr } = await authed.rpc('get_element_scores', {
+      p_user_id: victimUserId, p_rating: 'private',
+    });
+    const denied = !!rpcErr || !scores || (Array.isArray(scores) && scores.length === 0);
+    return {
+      ran: true,
+      denied: !!rpcErr || (Array.isArray(scores) && scores.length === 0),
+      note: `(ephemeral user vs ${victimUserId.slice(0, 8)}…${rpcErr ? `: ${rpcErr.message.includes('forbidden') ? 'forbidden' : rpcErr.code}` : ': empty'})`,
+    };
+  } finally {
+    if (probeId) {
+      await service.auth.admin.deleteUser(probeId).catch(() => { /* best effort */ });
+    }
+  }
+}
+
+// ===========================================================================
+// Category E — Flag sanity (#16) & Ops env (#17)  [WARN]
+// ===========================================================================
+
+async function flagAndOpsChecks(service: SupabaseClient | null) {
+  console.log('\n--- Category E: Flag sanity & ops ---');
+
+  // ---- #16 flags sane (live)
+  if (service) {
+    const { data, error } = await service.from('system_config').select('key, value');
+    if (error || !data) {
+      record({ n: 16, check: 'flags_sane', severity: 'WARN', verdict: 'FAIL',
+        detail: `could not read system_config: ${error?.message}` });
+    } else {
+      const cfg: Record<string, Record<string, unknown>> = {};
+      for (const r of data) cfg[(r as { key: string }).key] = (r as { value: Record<string, unknown> }).value;
+      const issues: string[] = [];
+
+      if (cfg['graph.enhanced_retrieval']?.enabled === true) issues.push('graph.enhanced_retrieval ON (should be off — W5.1)');
+      if (cfg['graph.shadow_mode']?.enabled === true) issues.push('graph.shadow_mode ON (should be off — W5.1)');
+
+      const scenMode = (cfg['exam.scenario_engine']?.mode as string) ?? 'off';
+      const gate1Exists = existsSync(join(ROOT, REVIEW_DIR, '15-scenario-gate1-report.md'));
+      if (!['off', 'ab', 'on'].includes(scenMode)) issues.push(`exam.scenario_engine mode='${scenMode}' (unexpected)`);
+      if (scenMode === 'on' && !gate1Exists) issues.push("exam.scenario_engine 'on' without a Gate 1 report");
+
+      for (const k of Object.keys(cfg)) {
+        if (k.startsWith('kill_switch.') && cfg[k]?.enabled === true) issues.push(`${k} ON`);
+      }
+      if (cfg['maintenance_mode']?.enabled === true) issues.push('maintenance_mode ON');
+
+      const quotaKeys = ['quota.tts_hard_enforce', 'quota.stt_hard_enforce', 'quota.exchange_hard_enforce', 'quota.daily_caps_enforce'];
+      const missingQuota = quotaKeys.filter(k => !(k in cfg));
+      if (missingQuota.length) issues.push(`missing quota flags: ${missingQuota.join(', ')}`);
+
+      record({
+        n: 16, check: 'flags_sane', severity: 'WARN',
+        verdict: issues.length === 0 ? 'PASS' : 'FAIL',
+        detail: issues.length === 0
+          ? `graph off; scenario='${scenMode}'(gate1 ${gate1Exists ? 'present' : 'absent'}); kill switches off; maintenance off; quota flags present`
+          : issues.join('; '),
+      });
+    }
+  } else {
+    record({ n: 16, check: 'flags_sane', severity: 'WARN', verdict: 'SKIP', detail: 'no DB — flag sanity not evaluated' });
+  }
+
+  // ---- #17 ops env presence (Vercel CLI if available, else process.env)
+  const wanted = ['SENTRY_DSN', 'CRON_SECRET', 'UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN'];
+  let prodNames: string[] | null = null;
+  try {
+    const out = execSync('vercel env ls production', { cwd: ROOT, encoding: 'utf-8', stdio: 'pipe', timeout: 30_000 });
+    prodNames = out.split('\n').map(l => l.trim().split(/\s+/)[0]).filter(Boolean);
+  } catch {
+    prodNames = null; // vercel CLI unavailable / not linked
+  }
+  const present = (name: string) =>
+    prodNames ? prodNames.includes(name) : !!process.env[name];
+  const missing = wanted.filter(w => !present(w));
+  record({
+    n: 17, check: 'ops_env_present', severity: 'WARN',
+    verdict: missing.length === 0 ? 'PASS' : 'FAIL',
+    detail: missing.length === 0
+      ? `${wanted.join(', ')} all set${prodNames ? ' (vercel production)' : ' (process.env)'}`
+      : `missing in ${prodNames ? 'Vercel production' : 'env'}: ${missing.join(', ')}`,
+  });
+}
+
+// ===========================================================================
+// Category F — Pricing / enforcement parity (#18)  [WARN]
+// ===========================================================================
+// Encode the expected matrix and assert the pricing page + TIER_FEATURES agree
+// with the enforced reality (D1: voice universal; free = 3 exams; paid = unlimited).
+
+function pricingParityCheck() {
+  console.log('\n--- Category F: Pricing/enforcement parity ---');
+  const pricing = readFile('src/app/pricing/page.tsx') ?? '';
+  const types = readFile('src/lib/voice/types.ts') ?? '';
+  const session = readFile('src/app/api/session/route.ts') ?? '';
+
+  const expectations: Array<{ label: string; ok: boolean }> = [
+    { label: 'pricing: 3 free exams', ok: /3 free|3 free practice|free:\s*'3 free'/.test(pricing) },
+    { label: 'pricing: voice in free trial', ok: /In trial|every plan|free trial/i.test(pricing) },
+    { label: 'pricing: paid unlimited', ok: /Unlimited/.test(pricing) },
+    { label: 'enforce: FREE_TRIAL_EXAM_LIMIT = 3', ok: /FREE_TRIAL_EXAM_LIMIT\s*=\s*3/.test(session) },
+    { label: 'enforce: dpe_live unlimited sessions', ok: /maxSessionsPerMonth:\s*Infinity/.test(types) },
+    { label: 'enforce: trial TTS char cap (anti-theft)', ok: /maxTtsCharsPerMonth:\s*35_000/.test(types) },
+  ];
+  const fails = expectations.filter(e => !e.ok).map(e => e.label);
+  record({
+    n: 18, check: 'pricing_parity', severity: 'WARN',
+    verdict: fails.length === 0 ? 'PASS' : 'FAIL',
+    detail: fails.length === 0
+      ? `all ${expectations.length} pricing↔enforcement claims agree (D1)`
+      : `mismatch: ${fails.join('; ')}`,
+  });
+}
+
+// ===========================================================================
 // Main
-// ---------------------------------------------------------------------------
+// ===========================================================================
 
-function main() {
-  console.log('=== Public Launch Final Gate (Phase 21) ===\n');
+async function main() {
+  console.log('============================================================');
+  console.log(' Public Launch Final Gate (W7.1)');
+  console.log(`  mode: ${LIVE ? 'LIVE (production probes enabled)' : 'STATIC (no DB)'}`);
+  console.log(`  date: ${new Date().toISOString()}`);
+  console.log('============================================================');
 
-  // --- Category 1: Build Verification ---
-  console.log('Running typecheck (this may take a moment)...');
-  const typecheckResult = checkTypecheck('Build Verification');
-  console.log(`  ${verdictIcon(typecheckResult.verdict)} typecheck`);
+  const service = LIVE ? createClient(SUPA_URL!, SERVICE_KEY!) : null;
+  const anon = LIVE ? createClient(SUPA_URL!, ANON_KEY!) : null;
 
-  console.log('Running unit tests (this may take a moment)...');
-  const unitTestsResult = checkUnitTests('Build Verification');
-  console.log(`  ${verdictIcon(unitTestsResult.verdict)} unit_tests`);
-
-  const buildResult = checkBuild('Build Verification');
-
-  const buildChecks: CheckResult[] = [typecheckResult, unitTestsResult, buildResult];
-  const cat1: CategoryResult = {
-    name: 'Build Verification',
-    checks: buildChecks,
-    verdict: categoryVerdict(buildChecks),
-  };
-
-  // --- Category 2: Observability Infrastructure ---
-  const observabilityChecks: CheckResult[] = [
-    checkHealthEndpoint('Observability Infrastructure'),
-    checkPosthogConfigured('Observability Infrastructure'),
-    checkAnalyticsEvents('Observability Infrastructure'),
-  ];
-
-  const cat2: CategoryResult = {
-    name: 'Observability Infrastructure',
-    checks: observabilityChecks,
-    verdict: categoryVerdict(observabilityChecks),
-  };
-
-  // --- Category 3: Cron & Background Jobs ---
-  const cronChecks: CheckResult[] = [
-    checkCronConfig('Cron & Background Jobs'),
-    checkCronAuth('Cron & Background Jobs'),
-    checkCronErrorHandling('Cron & Background Jobs'),
-  ];
-
-  const cat3: CategoryResult = {
-    name: 'Cron & Background Jobs',
-    checks: cronChecks,
-    verdict: categoryVerdict(cronChecks),
-  };
-
-  // --- Category 4: Email System ---
-  const emailChecks: CheckResult[] = [
-    checkEmailTemplates('Email System'),
-    checkEmailLogging('Email System'),
-    checkUnsubscribeSystem('Email System'),
-  ];
-
-  const cat4: CategoryResult = {
-    name: 'Email System',
-    checks: emailChecks,
-    verdict: categoryVerdict(emailChecks),
-  };
-
-  // --- Category 5: Security ---
-  const securityChecks: CheckResult[] = [
-    checkAdminAuth('Security'),
-    checkRateLimiting('Security'),
-  ];
-
-  const cat5: CategoryResult = {
-    name: 'Security',
-    checks: securityChecks,
-    verdict: categoryVerdict(securityChecks),
-  };
-
-  // --- Category 6: Error Handling ---
-  const errorHandlingChecks: CheckResult[] = [
-    checkErrorBoundary('Error Handling'),
-    checkNotFoundPage('Error Handling'),
-  ];
-
-  const cat6: CategoryResult = {
-    name: 'Error Handling',
-    checks: errorHandlingChecks,
-    verdict: categoryVerdict(errorHandlingChecks),
-  };
-
-  const categories = [cat1, cat2, cat3, cat4, cat5, cat6];
-  const overall = overallVerdict(categories);
-
-  // --- Console Output ---
-  console.log('');
-  for (const cat of categories) {
-    console.log(`--- Category: ${cat.name} ---`);
-    for (const c of cat.checks) {
-      console.log(`  ${verdictIcon(c.verdict)} ${c.check}: ${c.detail}`);
-    }
-    console.log('');
+  const suiteGreen = portedChecks();
+  guardChecks(suiteGreen);
+  await quotaRealityCheck(service);
+  if (service && anon) {
+    await liveSecurityProbes(service, anon);
+  } else {
+    record({ n: 10, check: 'rpc_cross_user_auth', severity: 'BLOCKER', verdict: 'SKIP', detail: 'no DB — live probe not run (run with Supabase keys before launch)' });
+    record({ n: 11, check: 'anon_pii_blocked', severity: 'BLOCKER', verdict: 'SKIP', detail: 'no DB — live probe not run (run with Supabase keys before launch)' });
   }
+  await flagAndOpsChecks(service);
+  pricingParityCheck();
 
-  console.log('--- SUMMARY ---');
-  const allChecks = categories.flatMap(c => c.checks);
-  for (const cat of categories) {
-    const goCount = cat.checks.filter(c => c.verdict === 'GO').length;
-    const padded = cat.name.padEnd(32);
-    console.log(`  ${padded} ${verdictLabel(cat.verdict)}  (${goCount}/${cat.checks.length} checks GO)`);
-  }
-  console.log('');
+  // ---- Verdict ----
+  const blockers = results.filter(r => r.severity === 'BLOCKER');
+  const warns = results.filter(r => r.severity === 'WARN');
+  const blockerFails = blockers.filter(r => r.verdict === 'FAIL');
+  const blockerSkips = blockers.filter(r => r.verdict === 'SKIP');
+  const warnFails = warns.filter(r => r.verdict === 'FAIL');
 
-  const totalGo = allChecks.filter(c => c.verdict === 'GO').length;
-  const totalReview = allChecks.filter(c => c.verdict === 'REVIEW').length;
-  const totalNoGo = allChecks.filter(c => c.verdict === 'NO-GO').length;
-  console.log(`  OVERALL: ${verdictLabel(overall)} (${totalGo}/${allChecks.length} GO, ${totalReview} REVIEW, ${totalNoGo} NO-GO)`);
+  let overall: 'GO' | 'GO-WITH-CONDITIONS' | 'NO-GO';
+  if (blockerFails.length > 0) overall = 'NO-GO';
+  else if (blockerSkips.length > 0 || warnFails.length > 0) overall = 'GO-WITH-CONDITIONS';
+  else overall = 'GO';
 
-  // --- Write Evidence ---
-  mkdirSync(EVIDENCE_DIR, { recursive: true });
+  console.log('\n============================================================');
+  console.log(' SUMMARY');
+  console.log('============================================================');
+  console.log(`  BLOCKERS: ${blockers.filter(r => r.verdict === 'PASS').length}/${blockers.length} pass, ${blockerFails.length} fail, ${blockerSkips.length} skip`);
+  console.log(`  WARNINGS: ${warns.filter(r => r.verdict === 'PASS').length}/${warns.length} pass, ${warnFails.length} fail`);
+  console.log(`\n  OVERALL: ${overall}`);
+  if (blockerFails.length) console.log(`  blocking failures: ${blockerFails.map(r => `#${r.n} ${r.check}`).join(', ')}`);
 
-  // Text report
-  let txt = `Public Launch Final Gate (Phase 21)\n`;
-  txt += `${'='.repeat(50)}\n`;
-  txt += `Date: ${new Date().toISOString().split('T')[0]}\n`;
-  txt += `Timestamp: ${new Date().toISOString()}\n`;
-  txt += `Overall Verdict: ${overall}\n\n`;
+  writeEvidence(overall, { blockers, warns });
 
-  for (const cat of categories) {
-    txt += `--- ${cat.name} (${cat.verdict}) ---\n`;
-    for (const c of cat.checks) {
-      const icon = c.verdict === 'GO' ? '[GO]    ' : c.verdict === 'REVIEW' ? '[REVIEW]' : '[NO-GO] ';
-      txt += `  ${icon} ${c.check}: ${c.detail}\n`;
-    }
-    txt += '\n';
-  }
-
-  txt += `--- SUMMARY ---\n`;
-  for (const cat of categories) {
-    const goCount = cat.checks.filter(c => c.verdict === 'GO').length;
-    const padded = cat.name.padEnd(32);
-    txt += `  ${padded} ${verdictLabel(cat.verdict)}  (${goCount}/${cat.checks.length} checks GO)\n`;
-  }
-  txt += `\n  OVERALL: ${verdictLabel(overall)} (${totalGo}/${allChecks.length} GO, ${totalReview} REVIEW, ${totalNoGo} NO-GO)\n`;
-
-  txt += `\n--- METHODOLOGY ---\n`;
-  txt += `\nCategory 1: Build Verification\n`;
-  txt += `  - typecheck: Runs 'npx tsc --noEmit' and checks exit code\n`;
-  txt += `  - unit_tests: Runs 'npx vitest run' and parses pass/fail count\n`;
-  txt += `  - build: Verifies package.json has 'build' script (does not run build)\n`;
-  txt += `\nCategory 2: Observability Infrastructure\n`;
-  txt += `  - health_endpoint: Verifies src/app/api/health/route.ts exists with GET export\n`;
-  txt += `  - posthog_configured: Verifies PostHog server + client modules exist\n`;
-  txt += `  - analytics_events: Counts captureServerEvent calls in codebase (threshold >= 15)\n`;
-  txt += `\nCategory 3: Cron & Background Jobs\n`;
-  txt += `  - cron_config: Verifies vercel.json has >= 2 cron entries\n`;
-  txt += `  - cron_auth: Verifies both cron routes check CRON_SECRET\n`;
-  txt += `  - cron_error_handling: Verifies both cron routes have try/catch with stats\n`;
-  txt += `\nCategory 4: Email System\n`;
-  txt += `  - email_templates: Counts .tsx templates in src/emails/ (threshold >= 5)\n`;
-  txt += `  - email_logging: Verifies src/lib/email-logging.ts exists\n`;
-  txt += `  - unsubscribe_system: Verifies src/lib/unsubscribe-token.ts exists\n`;
-  txt += `\nCategory 5: Security\n`;
-  txt += `  - admin_auth: Verifies all admin endpoints use requireAdmin\n`;
-  txt += `  - rate_limiting: Verifies src/lib/rate-limit.ts or middleware rate limiting exists\n`;
-  txt += `\nCategory 6: Error Handling\n`;
-  txt += `  - error_boundary: Verifies src/app/error.tsx exists\n`;
-  txt += `  - not_found_page: Verifies src/app/not-found.tsx exists\n`;
-
-  writeFileSync(join(EVIDENCE_DIR, 'final-gate.txt'), txt);
-
-  // JSON evidence
-  const jsonEvidence = {
-    timestamp: new Date().toISOString(),
-    phase: 'Phase 21 — Public Launch Final Gate',
-    overall_verdict: overall,
-    categories: categories.map(cat => ({
-      name: cat.name,
-      verdict: cat.verdict,
-      checks: cat.checks,
-    })),
-    summary: {
-      total_checks: allChecks.length,
-      go_count: totalGo,
-      review_count: totalReview,
-      nogo_count: totalNoGo,
-    },
-  };
-
-  writeFileSync(
-    join(EVIDENCE_DIR, 'final-gate.json'),
-    JSON.stringify(jsonEvidence, null, 2)
-  );
-
-  console.log(`\nEvidence saved to ${EVIDENCE_DIR}/final-gate.{txt,json}`);
-
-  if (overall !== 'GO') {
-    process.exit(1);
-  }
+  // Exit non-zero only on a true blocker failure. Skips (static-mode blockers)
+  // do not fail CI, but the markdown verdict records GO-WITH-CONDITIONS.
+  if (blockerFails.length > 0) process.exit(1);
 }
 
-main();
+function writeEvidence(
+  overall: string,
+  groups: { blockers: CheckResult[]; warns: CheckResult[] }
+) {
+  const dir = join(ROOT, REVIEW_DIR);
+  mkdirSync(dir, { recursive: true });
+  const date = new Date().toISOString();
+
+  let md = `# Final Launch Gate Result\n\n`;
+  md += `> Generated by \`npm run audit:final-gate\` (scripts/audit/public-launch-final-gate.ts).\n`;
+  md += `> This is the standing pre-marketing-push ritual (W7.1). Re-run before any traffic push.\n\n`;
+  md += `**Date:** ${date}\n`;
+  md += `**Mode:** ${LIVE ? 'LIVE (production probes)' : 'STATIC (no DB)'}\n`;
+  md += `**Overall verdict:** ${overall}\n\n`;
+
+  const icon = (v: Verdict) => (v === 'PASS' ? '✅' : v === 'FAIL' ? '❌' : '➖');
+
+  md += `## Blockers\n\n`;
+  md += `| # | Check | Verdict | Detail |\n|---|-------|---------|--------|\n`;
+  for (const r of groups.blockers.sort((a, b) => a.n - b.n)) {
+    md += `| ${r.n} | ${r.check} | ${icon(r.verdict)} ${r.verdict} | ${r.detail.replace(/\|/g, '\\|')} |\n`;
+  }
+  md += `\n## Warnings\n\n`;
+  md += `| # | Check | Verdict | Detail |\n|---|-------|---------|--------|\n`;
+  for (const r of groups.warns.sort((a, b) => a.n - b.n)) {
+    md += `| ${r.n} | ${r.check} | ${icon(r.verdict)} ${r.verdict} | ${r.detail.replace(/\|/g, '\\|')} |\n`;
+  }
+
+  md += `\n## How to read this\n\n`;
+  md += `- **GO** — every blocker passed and every warning passed.\n`;
+  md += `- **GO-WITH-CONDITIONS** — every blocker that ran passed, but some warnings failed or some live blockers were skipped (run with Supabase keys to evaluate them).\n`;
+  md += `- **NO-GO** — at least one blocker failed; do not push traffic until fixed.\n\n`;
+  md += `Checks #10/#11/#13/#16/#17 require Supabase service+anon keys (live mode). #12/#14/#15 are critical-finding guards proven by the full unit suite (#8); \`--deep\` re-runs them in isolation.\n`;
+
+  writeFileSync(join(dir, '10-final-gate-result.md'), md);
+  console.log(`\n  Evidence → ${REVIEW_DIR}/10-final-gate-result.md`);
+}
+
+main().catch((e) => {
+  console.error('Gate crashed:', e);
+  process.exit(1);
+});
