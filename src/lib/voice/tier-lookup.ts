@@ -1,5 +1,6 @@
 import type { VoiceTier } from './types';
 import { TtlCache } from '../ttl-cache';
+import { resolveVoiceModel } from '../examiner-profile';
 import {
   resolveInstructorEntitlements,
   hasPaidEquivalentOverride,
@@ -95,17 +96,24 @@ export async function getUserPreferredVoice(
 
   const { data, error } = await supabase
     .from('user_profiles')
-    .select('preferred_voice')
+    .select('preferred_voice, examiner_profile')
     .eq('user_id', userId)
     .single();
 
   if (error || !data) return null;
-  const voice = data.preferred_voice as string | null;
+  // Always resolve to a real Deepgram model, healing legacy persona_id rows
+  // and keeping the DEFAULT voice gender-consistent with the default examiner
+  // shown in the exam UI (Maria Torres → luna, not the old male orion default).
+  const voice = resolveVoiceModel({
+    preferredVoice: data.preferred_voice as string | null,
+    examinerProfile: data.examiner_profile as string | null,
+  });
   voiceCache.set(cacheKey, voice);
   return voice;
 }
 
-/** Invalidate tier cache for a user (call after tier changes). */
+/** Invalidate tier + voice caches for a user (call after tier/preference changes). */
 export function invalidateTierCache(userId: string): void {
   tierCache.delete(userId);
+  voiceCache.delete(`voice:${userId}`);
 }

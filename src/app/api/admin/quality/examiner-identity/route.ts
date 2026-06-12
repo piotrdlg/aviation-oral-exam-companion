@@ -74,7 +74,9 @@ export async function GET(request: NextRequest) {
       let voiceConsistent = true;
       if (hasProfile && p.examiner_profile in EXAMINER_PROFILES) {
         const prof = EXAMINER_PROFILES[p.examiner_profile as keyof typeof EXAMINER_PROFILES];
-        expectedVoice = prof.voiceId;
+        // preferred_voice must hold the profile's Deepgram MODEL — a persona_id
+        // here is the regression that sent every sentence to the OpenAI fallback.
+        expectedVoice = prof.voiceModel;
         if (hasVoice && p.preferred_voice !== expectedVoice) {
           mismatches++;
           voiceConsistent = false;

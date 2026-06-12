@@ -450,7 +450,7 @@ async function probeAuthenticatedCrossUser(
     const denied = !!rpcErr || !scores || (Array.isArray(scores) && scores.length === 0);
     return {
       ran: true,
-      denied: !!rpcErr || (Array.isArray(scores) && scores.length === 0),
+      denied,
       note: `(ephemeral user vs ${victimUserId.slice(0, 8)}…${rpcErr ? `: ${rpcErr.message.includes('forbidden') ? 'forbidden' : rpcErr.code}` : ': empty'})`,
     };
   } finally {
@@ -529,6 +529,64 @@ async function flagAndOpsChecks(service: SupabaseClient | null) {
 }
 
 // ===========================================================================
+// Category E2 — Persona ↔ voice coherence (#19)  [BLOCKER, live]
+// ===========================================================================
+// Added after the 2026-06-12 finding: the examiner shown in the UI (name,
+// photo, gender) must match the TTS voice actually synthesized. Asserts the
+// production voice.user_options roster covers every code-side examiner with a
+// gender-consistent model, and that no user row stores a non-model voice.
+
+async function personaVoiceCoherence(service: SupabaseClient | null) {
+  console.log('\n--- Category E2: Persona ↔ voice coherence ---');
+  if (!service) {
+    record({ n: 19, check: 'persona_voice_coherence', severity: 'BLOCKER', verdict: 'SKIP',
+      detail: 'no DB — run with Supabase keys before launch' });
+    return;
+  }
+
+  const { EXAMINER_PROFILES } = await import('../../src/lib/examiner-profile');
+  const issues: string[] = [];
+
+  const { data: row, error } = await service
+    .from('system_config').select('value').eq('key', 'voice.user_options').single();
+  if (error || !row) {
+    record({ n: 19, check: 'persona_voice_coherence', severity: 'BLOCKER', verdict: 'FAIL',
+      detail: `cannot read voice.user_options: ${error?.message}` });
+    return;
+  }
+  const options = (row.value as Array<{ persona_id?: string; model?: string; gender?: string; image?: string }>) ?? [];
+
+  for (const profile of Object.values(EXAMINER_PROFILES)) {
+    const opt = options.find((o) => o.persona_id === profile.voiceId);
+    if (!opt) { issues.push(`${profile.defaultDisplayName}: no voice.user_options entry`); continue; }
+    if (opt.model !== profile.voiceModel) issues.push(`${profile.defaultDisplayName}: config model ${opt.model} != code ${profile.voiceModel}`);
+    const expectedG = profile.voiceGender === 'male' ? 'M' : 'F';
+    if (opt.gender !== expectedG) issues.push(`${profile.defaultDisplayName}: gender ${opt.gender} != ${expectedG}`);
+    if (!opt.image) issues.push(`${profile.defaultDisplayName}: missing avatar image`);
+  }
+
+  // No user may hold a non-model preferred_voice (persona_ids silently fall
+  // back to the wrong provider/voice at synthesis time).
+  const validModels = new Set(Object.values(EXAMINER_PROFILES).map((p) => p.voiceModel));
+  const { data: voices, error: vErr } = await service
+    .from('user_profiles').select('preferred_voice').not('preferred_voice', 'is', null);
+  if (vErr) {
+    issues.push(`cannot read user voices: ${vErr.message}`);
+  } else {
+    const bad = (voices ?? []).filter((v) => !validModels.has((v as { preferred_voice: string }).preferred_voice));
+    if (bad.length) issues.push(`${bad.length} user row(s) hold a non-model preferred_voice`);
+  }
+
+  record({
+    n: 19, check: 'persona_voice_coherence', severity: 'BLOCKER',
+    verdict: issues.length === 0 ? 'PASS' : 'FAIL',
+    detail: issues.length === 0
+      ? `all ${Object.keys(EXAMINER_PROFILES).length} examiners have gender-consistent config voices; all user rows hold real models`
+      : issues.join('; '),
+  });
+}
+
+// ===========================================================================
 // Category F — Pricing / enforcement parity (#18)  [WARN]
 // ===========================================================================
 // Encode the expected matrix and assert the pricing page + TIER_FEATURES agree
@@ -582,6 +640,7 @@ async function main() {
     record({ n: 11, check: 'anon_pii_blocked', severity: 'BLOCKER', verdict: 'SKIP', detail: 'no DB — live probe not run (run with Supabase keys before launch)' });
   }
   await flagAndOpsChecks(service);
+  await personaVoiceCoherence(service);
   pricingParityCheck();
 
   // ---- Verdict ----

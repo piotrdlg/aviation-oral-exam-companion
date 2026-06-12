@@ -45,7 +45,7 @@ Without the Supabase secrets the CI run is STATIC and the live blockers report
 
 ---
 
-## The 18 checks
+## The 19 checks
 
 | # | Check | Sev | What it proves |
 |---|-------|-----|----------------|
@@ -67,6 +67,7 @@ Without the Supabase secrets the CI run is STATIC and the live blockers report
 | 16 | flags_sane | WARN | graph off, scenario `off`/`ab`, kill switches off, maintenance off, quota flags present |
 | 17 | ops_env_present | WARN | `SENTRY_DSN`, `CRON_SECRET`, `UPSTASH_*` set in Vercel production |
 | 18 | pricing_parity | WARN | pricing page ↔ TIER_FEATURES ↔ enforcement agree (D1) |
+| 19 | persona_voice_coherence | BLOCKER | every examiner in `voice.user_options` has a gender-consistent Aura-2 model + avatar; no user row stores a non-model `preferred_voice` (2026-06-12 finding) |
 
 **#12 / #14 / #15** are critical-finding guards: the named test files run inside
 the full suite (#8), so a green #8 proves them. `--deep` re-runs each in isolation.
