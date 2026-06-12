@@ -593,7 +593,7 @@ export default function SettingsPage() {
       setTierInfo((prev) => prev ? {
         ...prev,
         examinerProfile: profileKey,
-        preferredVoice: profile.voiceId,
+        preferredVoice: profile.voiceModel,
       } : null);
       setVoiceMessage({ text: `Examiner changed to ${profile.defaultDisplayName}`, type: 'success' });
     } catch (err) {
@@ -1416,7 +1416,7 @@ export default function SettingsPage() {
                 const isActive = tierInfo?.examinerProfile === profileKey
                   || (!tierInfo?.examinerProfile && profileKey === 'maria_methodical');
                 const voiceOption = tierInfo?.voiceOptions?.find((v: VoiceOption) => v.persona_id === profile.voiceId);
-                const isPreviewing = previewingVoice === (voiceOption?.model || profile.voiceId);
+                const isPreviewing = previewingVoice === (voiceOption?.model || profile.voiceModel);
                 return (
                   <div
                     key={profileKey}
@@ -1450,7 +1450,7 @@ export default function SettingsPage() {
                     <div className="flex items-center gap-2 mt-3">
                       <button
                         onClick={() => {
-                          const modelId = voiceOption?.model || profile.voiceId;
+                          const modelId = voiceOption?.model || profile.voiceModel;
                           isPreviewing
                             ? (() => { previewAudioRef.current?.pause(); previewAudioRef.current = null; setPreviewingVoice(null); })()
                             : previewVoice(modelId);

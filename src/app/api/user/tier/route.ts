@@ -4,6 +4,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { TIER_FEATURES } from '@/lib/voice/types';
 import type { VoiceTier } from '@/lib/voice/types';
 import { EXAMINER_PROFILES, type ExaminerProfileKey } from '@/lib/examiner-profile';
+import { invalidateTierCache } from '@/lib/voice/tier-lookup';
 
 const serviceSupabase = createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -211,10 +212,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid examiner profile' }, { status: 400 });
       }
       updateFields.examiner_profile = examinerProfile || null;
-      // Sync preferred_voice for backward compat with TTS route
+      // Sync preferred_voice with the profile's actual Deepgram MODEL. The
+      // first version stored profile.voiceId (a persona_id like
+      // 'karen_sullivan') — Deepgram rejected it as a model and every sentence
+      // silently fell back to the male OpenAI voice regardless of examiner gender.
       if (examinerProfile && examinerProfile in EXAMINER_PROFILES) {
         const profile = EXAMINER_PROFILES[examinerProfile as ExaminerProfileKey];
-        updateFields.preferred_voice = profile.voiceId;
+        updateFields.preferred_voice = profile.voiceModel;
       }
     }
 
@@ -226,6 +230,12 @@ export async function POST(request: NextRequest) {
     if (updateError) {
       console.error('Preference update error:', updateError);
       return NextResponse.json({ error: 'Failed to update preferences' }, { status: 500 });
+    }
+
+    // Voice/examiner changes must take effect on the next exam sentence, not
+    // after the 5-minute TTL (the voice cache previously was never invalidated).
+    if (preferredVoice !== undefined || examinerProfile !== undefined) {
+      invalidateTierCache(user.id);
     }
 
     return NextResponse.json({ ok: true });

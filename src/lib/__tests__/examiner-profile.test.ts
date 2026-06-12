@@ -6,6 +6,7 @@ import {
   PERSONA_TO_PROFILE_MAP,
   getExaminerProfile,
   resolveExaminerProfile,
+  resolveVoiceModel,
   formatProfilePersonaSection,
   resolveDisplayName,
   examinerProfileSummary,
@@ -66,8 +67,15 @@ describe('profile definitions', () => {
 // ---------------------------------------------------------------------------
 
 describe('lookup maps', () => {
-  it('VOICE_TO_PROFILE_MAP has 4 entries', () => {
-    expect(Object.keys(VOICE_TO_PROFILE_MAP)).toHaveLength(4);
+  it('VOICE_TO_PROFILE_MAP keys both persona_ids and models (8 entries)', () => {
+    expect(Object.keys(VOICE_TO_PROFILE_MAP)).toHaveLength(8);
+  });
+
+  it('legacy model strings resolve to the right profile (name shown matches voice heard)', () => {
+    expect(VOICE_TO_PROFILE_MAP['aura-2-zeus-en']).toBe('jim_strict');
+    expect(VOICE_TO_PROFILE_MAP['aura-2-athena-en']).toBe('karen_scenario');
+    expect(VOICE_TO_PROFILE_MAP['aura-2-luna-en']).toBe('maria_methodical');
+    expect(VOICE_TO_PROFILE_MAP['aura-2-mars-en']).toBe('bob_supportive');
   });
 
   it('PERSONA_TO_PROFILE_MAP has 4 entries', () => {
@@ -87,6 +95,90 @@ describe('lookup maps', () => {
       const profile = EXAMINER_PROFILES[key];
       expect(VOICE_TO_PROFILE_MAP[profile.voiceId]).toBe(key);
       expect(PERSONA_TO_PROFILE_MAP[profile.personaKey]).toBe(key);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 2b. Voice model ↔ gender coherence (the 2026-06-12 regression class)
+// ---------------------------------------------------------------------------
+
+// Ground truth for the Aura-2 voices this product uses. If a profile is ever
+// pointed at a different model, this table must be extended deliberately —
+// that is the point: voice gender changes must be conscious decisions.
+const AURA_MODEL_GENDER: Record<string, 'male' | 'female'> = {
+  'aura-2-zeus-en': 'male',
+  'aura-2-mars-en': 'male',
+  'aura-2-orion-en': 'male',
+  'aura-2-athena-en': 'female',
+  'aura-2-luna-en': 'female',
+};
+
+describe('voice model coherence', () => {
+  it('every profile has a known Aura-2 model whose gender matches voiceGender', () => {
+    for (const key of ALL_PROFILE_KEYS) {
+      const p = EXAMINER_PROFILES[key];
+      expect(AURA_MODEL_GENDER[p.voiceModel], `${key}: unknown model ${p.voiceModel}`).toBeDefined();
+      expect(AURA_MODEL_GENDER[p.voiceModel], `${key}: ${p.defaultDisplayName} (${p.voiceGender}) wired to a ${AURA_MODEL_GENDER[p.voiceModel]} voice`).toBe(p.voiceGender);
+    }
+  });
+
+  it('voiceModel is never a persona_id (models contain aura- prefix)', () => {
+    for (const key of ALL_PROFILE_KEYS) {
+      expect(EXAMINER_PROFILES[key].voiceModel).toMatch(/^aura-2-[a-z]+-en$/);
+    }
+  });
+
+  it('has 4 unique voice models (no two examiners share a voice)', () => {
+    const models = ALL_PROFILE_KEYS.map(k => EXAMINER_PROFILES[k].voiceModel);
+    expect(new Set(models).size).toBe(4);
+  });
+});
+
+describe('resolveVoiceModel', () => {
+  it('explicit examiner profile wins and returns its model', () => {
+    expect(resolveVoiceModel({ examinerProfile: 'karen_scenario' })).toBe('aura-2-athena-en');
+    expect(resolveVoiceModel({ examinerProfile: 'bob_supportive', preferredVoice: 'aura-2-zeus-en' })).toBe('aura-2-mars-en');
+  });
+
+  it('heals persona_id rows (the production regression shape)', () => {
+    expect(resolveVoiceModel({ preferredVoice: 'karen_sullivan' })).toBe('aura-2-athena-en');
+    expect(resolveVoiceModel({ preferredVoice: 'maria_torres' })).toBe('aura-2-luna-en');
+    expect(resolveVoiceModel({ preferredVoice: 'jim_hayes' })).toBe('aura-2-zeus-en');
+    expect(resolveVoiceModel({ preferredVoice: 'bob_mitchell' })).toBe('aura-2-mars-en');
+  });
+
+  it('passes legacy direct-model rows through unchanged', () => {
+    expect(resolveVoiceModel({ preferredVoice: 'aura-2-zeus-en' })).toBe('aura-2-zeus-en');
+    expect(resolveVoiceModel({ preferredVoice: 'aura-2-athena-en' })).toBe('aura-2-athena-en');
+  });
+
+  it('trusts unknown but model-shaped strings (admin-curated extras)', () => {
+    expect(resolveVoiceModel({ preferredVoice: 'aura-2-orpheus-en' })).toBe('aura-2-orpheus-en');
+  });
+
+  it('defaults to the DEFAULT examiner\'s voice (Maria → female luna, not male orion)', () => {
+    expect(resolveVoiceModel({})).toBe('aura-2-luna-en');
+    expect(resolveVoiceModel({ preferredVoice: null, examinerProfile: null })).toBe('aura-2-luna-en');
+    expect(resolveVoiceModel({ preferredVoice: 'garbage-value' })).toBe('aura-2-luna-en');
+  });
+
+  it('voice always matches the profile resolveExaminerProfile would show', () => {
+    // The invariant behind the whole fix: for every input shape, the voice
+    // model and the displayed examiner resolve to the same profile.
+    const inputs = [
+      { preferredVoice: 'karen_sullivan' },
+      { preferredVoice: 'aura-2-zeus-en' },
+      { examinerProfile: 'bob_supportive' },
+      {},
+    ];
+    for (const input of inputs) {
+      const model = resolveVoiceModel(input);
+      const { profile } = resolveExaminerProfile({
+        savedProfile: input.examinerProfile,
+        savedVoice: input.preferredVoice ?? undefined,
+      });
+      expect(model, JSON.stringify(input)).toBe(profile.voiceModel);
     }
   });
 });
