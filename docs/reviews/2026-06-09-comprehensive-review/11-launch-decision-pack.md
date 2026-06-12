@@ -11,13 +11,13 @@
 
 ## 1. Executive verdict
 
-### 🟢 GO — with two small owner actions, neither of which blocks turning on traffic.
+### 🟢 GO — clean. (Updated 2026-06-12: `SENTRY_DSN` now set in production → the gate's last WARN cleared; verdict is now an unconditional **GO**, 15/15 blockers + 3/3 warnings pass.)
 
 The 8-phase remediation program (Phases 0–6 + 6B) is complete and deployed. The
-final launch gate passes **15/15 blockers** against live production. Every
-critical and high finding from the comprehensive review (exam engine, voice,
-Stripe, security) has a closing task that shipped and is verified. The 3 paying
-users are intact throughout.
+final launch gate passes **15/15 blockers and 3/3 warnings** against live
+production. Every critical and high finding from the comprehensive review (exam
+engine, voice, Stripe, security) has a closing task that shipped and is verified.
+The 3 paying users are intact throughout.
 
 **The three strongest reasons it's a GO:**
 
@@ -37,10 +37,13 @@ users are intact throughout.
    Tax is wired behind a flag. The one canceling user (effective July 2) is a
    live test case the W3.1 logic handles correctly.
 
-**The two owner actions (do them this week; they don't gate traffic):**
+**Owner actions:**
 
-- **Set `SENTRY_DSN` in Vercel production.** Sentry is wired (W6.1) but a no-op
-  until the DSN is set — the gate's only WARN. Until then, errors aren't paged.
+- ~~Set `SENTRY_DSN` in Vercel production.~~ ✅ **DONE 2026-06-12** — `SENTRY_DSN`
+  + `NEXT_PUBLIC_SENTRY_DSN` set in production and a production redeploy applied;
+  Sentry is live (server + client). Gate WARN #17 now PASS.
+- **Flip `quota.*_hard_enforce` after the log-only week** and **enable `pg_cron`**
+  (both in the risk register below) — housekeeping, not launch blockers.
 - **Decide on the engagement problem (below).** This is a *business* signal, not
   a technical blocker, but it's the single most important number on this page.
 
@@ -122,7 +125,7 @@ Things deliberately deferred or left as-is, each with what would make us revisit
 | Risk | Why accepted | Revisit trigger |
 |---|---|---|
 | **Quota hard-enforcement seeded OFF** (`quota.*_hard_enforce`) | Soft launch: log-only one week to catch false positives before cutting anyone off (D1) | Flip to enforce after reviewing PostHog `*_logonly` events; before any large traffic push |
-| **`SENTRY_DSN` not set in prod** | Sentry code is wired and inert; owner must create the project/DSN | **Do before launch** — until then no error paging (gate #17 WARN) |
+| ~~`SENTRY_DSN` not set in prod~~ ✅ RESOLVED 2026-06-12 | DSN set (server + client) + production redeploy; Sentry live | Confirm alert rules fire (ALERTING.md); triage daily during ramp |
 | **`pg_cron` not enabled in prod** | Session-lifecycle + retention crons aren't running; trial expiry is covered by request-time `expires_at` enforcement | Enable Extensions → pg_cron and re-run schedule blocks (`runbooks/DATABASE.md`) |
 | **Scenario Engine at `ab`, not `on`** | Gate 1 passed (90.0%); Gate 2 is a live A/B with guardrails before full rollout | Enable `on` only after the W5.6 A/B clears its guardrails (`SCENARIO-ROLLOUT.md`) |
 | **Stay on Aura-2, not ElevenLabs** (D2) | EL adds $4.35–$7.62/payer/mo (26–34% of revenue) with unproven conversion lift | A/B shows ≥2pp conversion uplift, OR enterprise rate ≤$0.040/1K, OR mobile launch within ~2 quarters |
@@ -191,7 +194,8 @@ are the only unit-economics risk.
 
 ### Bottom line
 
-**Technically: GO.** Set `SENTRY_DSN`, flip quota enforcement after the log-only
-week, and the web app is cleared for commercial marketing at the load levels
+**Technically: GO — clean.** `SENTRY_DSN` is set and live; the only remaining
+housekeeping is flipping quota enforcement after the log-only week and enabling
+`pg_cron`. The web app is cleared for commercial marketing at the load levels
 measured. **Commercially: scale spend against proven retention, not ahead of it** —
 the zero-exam-in-3-weeks signal is the thing to watch, not the code.
