@@ -450,7 +450,7 @@ async function probeAuthenticatedCrossUser(
     const denied = !!rpcErr || !scores || (Array.isArray(scores) && scores.length === 0);
     return {
       ran: true,
-      denied: !!rpcErr || (Array.isArray(scores) && scores.length === 0),
+      denied,
       note: `(ephemeral user vs ${victimUserId.slice(0, 8)}…${rpcErr ? `: ${rpcErr.message.includes('forbidden') ? 'forbidden' : rpcErr.code}` : ': empty'})`,
     };
   } finally {
