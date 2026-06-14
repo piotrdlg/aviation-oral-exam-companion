@@ -73,17 +73,19 @@ describe('satisfactoryRate', () => {
 });
 
 describe('areaCoverage', () => {
+  // `area` carries the full NAME in real data (not the Roman numeral), so the
+  // numeral must be derived from task_id.
   const scores = [
-    es({ element_code: 'IR.VI.D.K1', task_id: 'IR.VI.D', total_attempts: 2, satisfactory_count: 2, latest_score: 'satisfactory' }), // strong
-    es({ element_code: 'IR.VI.D.R2', task_id: 'IR.VI.D', total_attempts: 1, latest_score: 'partial' }),                              // moderate
-    es({ element_code: 'IR.I.A.K1', task_id: 'IR.I.A', total_attempts: 1, latest_score: 'unsatisfactory' }),                         // critical
-    es({ element_code: 'IR.I.A.K2', task_id: 'IR.I.A', total_attempts: 0 }),                                                          // untouched
-    es({ element_code: 'IR.III.B.K1', task_id: 'IR.III.B', total_attempts: 0 }),                                                      // untouched
+    es({ element_code: 'IR.VI.D.K1', task_id: 'IR.VI.D', area: 'Instrument Approach Procedures', total_attempts: 2, satisfactory_count: 2, latest_score: 'satisfactory' }), // strong
+    es({ element_code: 'IR.VI.D.R2', task_id: 'IR.VI.D', area: 'Instrument Approach Procedures', total_attempts: 1, latest_score: 'partial' }),                              // moderate
+    es({ element_code: 'IR.I.A.K1', task_id: 'IR.I.A', area: 'Preflight Preparation', total_attempts: 1, latest_score: 'unsatisfactory' }),                                  // critical
+    es({ element_code: 'IR.I.A.K2', task_id: 'IR.I.A', area: 'Preflight Preparation', total_attempts: 0 }),                                                                  // untouched
+    es({ element_code: 'IR.III.B.K1', task_id: 'IR.III.B', area: 'ATC Clearances and Procedures', total_attempts: 0 }),                                                      // untouched
   ];
 
-  it('groups by area and counts by status', () => {
+  it('groups by area, derives the Roman numeral from task_id, counts by status', () => {
     const cov = areaCoverage(scores);
-    const vi = cov.find((a) => a.areaNum === 'VI')!;
+    const vi = cov.find((a) => a.areaNum === 'VI')!; // numeral from task_id, not score.area
     expect(vi.areaName).toBe('Instrument Approach Procedures');
     expect(vi).toMatchObject({ total: 2, attempted: 2, strong: 1, moderate: 1, critical: 0, untouched: 0 });
     const i = cov.find((a) => a.areaNum === 'I')!;

@@ -86,7 +86,9 @@ export function areaCoverage(scores: ElementScore[]): AreaCoverage[] {
     if (!area) {
       area = {
         areaId,
-        areaNum: score.area,
+        // The Roman numeral comes from the task id ('IR.VI.D' → 'VI'); `score.area`
+        // is the full area NAME in the data, not the numeral.
+        areaNum: score.task_id.split('.')[1] ?? '',
         areaName: areaNameFromTaskId(score.task_id),
         total: 0, attempted: 0, critical: 0, moderate: 0, strong: 0, untouched: 0,
         elements: [],
