@@ -451,14 +451,18 @@ export default function PracticePage() {
     totalTasks: number;
     areaNames: Record<string, string>;
   } | null>(null);
+  // Lifetime "real attempts" count for the EXAMS badge — completed + open,
+  // excluding abandoned/expired; accurate per rating (not the 20-row window).
+  const [examAttempts, setExamAttempts] = useState<number | null>(null);
 
   useEffect(() => {
     if (!prefsLoaded) return;
     Promise.all([
       fetch('/api/session').then((r) => r.json()),
       fetch(`/api/exam?action=list-tasks&rating=${preferredRating}`).then((r) => r.json()),
+      fetch(`/api/session?action=stats&rating=${preferredRating}`).then((r) => r.json()).catch(() => ({ stats: null })),
     ])
-      .then(([sessionData, taskData]) => {
+      .then(([sessionData, taskData, statsData]) => {
         const tasks: TaskMeta[] = taskData.tasks || [];
         const areaNames: Record<string, string> = {};
         for (const t of tasks) {
@@ -470,6 +474,7 @@ export default function PracticePage() {
           totalTasks: tasks.length,
           areaNames,
         });
+        setExamAttempts(statsData?.stats?.totalSessions ?? null);
       })
       .catch(() => {});
   }, [prefsLoaded, preferredRating]);
@@ -2035,8 +2040,8 @@ export default function PracticePage() {
                       &#9670; {streak}d
                     </span>
                   )}
-                  {ratingSessions.length > 0 && (
-                    <span className="text-xs text-c-muted font-mono uppercase">{ratingSessions.length} EXAMS</span>
+                  {examAttempts !== null && examAttempts > 0 && (
+                    <span className="text-xs text-c-muted font-mono uppercase">{examAttempts} EXAMS</span>
                   )}
                 </div>
               )}
@@ -2145,7 +2150,7 @@ export default function PracticePage() {
                   onClick={() => setShowOpenExamsModal(true)}
                   className="w-full text-center py-1.5 text-xs text-c-muted hover:text-c-cyan transition-colors"
                 >
-                  + {allResumableSessions.length - 1} more open {allResumableSessions.length - 1 === 1 ? 'exam' : 'exams'}
+                  View all {allResumableSessions.length} open exams
                 </button>
               )}
               </div>
