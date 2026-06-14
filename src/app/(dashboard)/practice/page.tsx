@@ -206,11 +206,21 @@ export default function PracticePage() {
   const advanceInFlightRef = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const answerInputRef = useRef<HTMLTextAreaElement>(null);
   const voiceEnabledRef = useRef(false);
   // Text waiting to be revealed when TTS audio actually starts playing
   const pendingFullTextRef = useRef<string | null>(null);
   // When true, user is manually editing the textarea — don't overwrite with STT transcript
   const userEditingRef = useRef(false);
+
+  // Auto-grow the answer textarea to fit its content (no clipped/partial lines),
+  // capped at ~6 lines after which it scrolls. Runs for both typing and STT.
+  useEffect(() => {
+    const el = answerInputRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, 168)}px`;
+  }, [input]);
   // TTS paragraph queue for per-paragraph playback during streaming
   const ttsQueueRef = useRef<string[]>([]);
   const ttsQueueActiveRef = useRef(false);
@@ -2303,44 +2313,13 @@ export default function PracticePage() {
         );
       })()}
 
-      {/* Input area — pinned to bottom (unified examiner console) */}
-      <div className="flex gap-2 station rounded-xl border border-c-border-hi p-2.5">
-        {voiceEnabled && (
-          <button
-            onClick={() => {
-              if (voice.isListening) {
-                voice.stopListening();
-              } else {
-                // Barge-in: if TTS is playing, stop it immediately
-                if (voice.isSpeaking) {
-                  cancelTTSQueue();
-                  voice.stopSpeaking();
-                  flushReveal();
-                }
-                voice.startListening();
-              }
-            }}
-            disabled={loading}
-            className={`px-4 py-3 rounded-lg transition-all ${
-              voice.isListening
-                ? 'bg-c-red hover:bg-c-red/90 text-c-bg ring-2 ring-c-red/50 ring-offset-2 ring-offset-c-bg animate-pulse'
-                : (voice.isSpeaking || sentenceTTS.isSpeaking)
-                ? 'bg-c-bezel hover:bg-c-border text-c-text border border-dashed border-c-muted'
-                : 'bg-c-bezel hover:bg-c-border text-c-text'
-            } disabled:opacity-50`}
-            title={voice.isListening ? 'Stop recording' : (voice.isSpeaking || sentenceTTS.isSpeaking) ? 'Interrupt & start speaking' : 'Start recording'}
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              {voice.isListening ? (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 7.5A2.25 2.25 0 0 1 7.5 5.25h9a2.25 2.25 0 0 1 2.25 2.25v9a2.25 2.25 0 0 1-2.25 2.25h-9a2.25 2.25 0 0 1-2.25-2.25v-9Z" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 0 1 6 0v8.25a3 3 0 0 1-3 3Z" />
-              )}
-            </svg>
-          </button>
-        )}
-        <div className="flex-1 flex flex-col gap-1.5">
+      {/* Input area — pinned to bottom (unified examiner console). Textarea
+          auto-grows; mic + send are grouped on the RIGHT so the hand never has
+          to cross the box. */}
+      <div className="station rounded-xl border border-c-border-hi p-2.5">
+        <div className="flex items-end gap-2">
           <textarea
+            ref={answerInputRef}
             data-testid="answer-input"
             rows={2}
             value={input}
@@ -2365,25 +2344,60 @@ export default function PracticePage() {
             }}
             placeholder={voice.isListening ? 'Listening…' : 'Type your answer… (Enter to send)'}
             disabled={loading}
-            className="w-full px-4 py-3 bg-c-panel border border-c-border rounded-lg text-c-text text-sm placeholder-c-dim focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber disabled:opacity-50 resize-none transition-colors"
+            className="flex-1 min-w-0 px-4 py-3 bg-c-panel border border-c-border rounded-lg text-c-text text-sm placeholder-c-dim focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber disabled:opacity-50 resize-none overflow-y-auto min-h-[60px] max-h-[168px] transition-colors"
           />
+          {voiceEnabled && (
+            <button
+              onClick={() => {
+                if (voice.isListening) {
+                  voice.stopListening();
+                } else {
+                  // Barge-in: if TTS is playing, stop it immediately
+                  if (voice.isSpeaking) {
+                    cancelTTSQueue();
+                    voice.stopSpeaking();
+                    flushReveal();
+                  }
+                  voice.startListening();
+                }
+              }}
+              disabled={loading}
+              className={`shrink-0 px-4 py-3 rounded-lg transition-all ${
+                voice.isListening
+                  ? 'bg-c-red hover:bg-c-red/90 text-c-bg ring-2 ring-c-red/50 ring-offset-2 ring-offset-c-bg animate-pulse'
+                  : (voice.isSpeaking || sentenceTTS.isSpeaking)
+                  ? 'bg-c-bezel hover:bg-c-border text-c-text border border-dashed border-c-muted'
+                  : 'bg-c-bezel hover:bg-c-border text-c-text'
+              } disabled:opacity-50`}
+              title={voice.isListening ? 'Stop recording' : (voice.isSpeaking || sentenceTTS.isSpeaking) ? 'Interrupt & start speaking' : 'Start recording'}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                {voice.isListening ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 7.5A2.25 2.25 0 0 1 7.5 5.25h9a2.25 2.25 0 0 1 2.25 2.25v9a2.25 2.25 0 0 1-2.25 2.25h-9a2.25 2.25 0 0 1-2.25-2.25v-9Z" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 0 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+                )}
+              </svg>
+            </button>
+          )}
           <button
-            onClick={() => sendAnswer("I don't know the answer to this question.")}
-            disabled={loading}
-            className="self-start text-xs font-semibold text-c-muted hover:text-c-text transition-colors disabled:opacity-50 px-1"
+            data-testid="send-answer-button"
+            onClick={() => sendAnswer()}
+            disabled={loading || !input.trim()}
+            className="shrink-0 px-5 py-3 bg-c-amber hover:bg-c-amber-bright disabled:opacity-50 disabled:hover:bg-c-amber text-c-bg rounded-lg transition-colors"
+            title="Send answer (Enter)"
           >
-            I don&apos;t know
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+            </svg>
           </button>
         </div>
         <button
-          data-testid="send-answer-button"
-          onClick={() => sendAnswer()}
-          disabled={loading || !input.trim()}
-          className="px-5 py-3 bg-c-amber hover:bg-c-amber-bright disabled:opacity-50 disabled:hover:bg-c-amber text-c-bg rounded-lg transition-colors self-start"
+          onClick={() => sendAnswer("I don't know the answer to this question.")}
+          disabled={loading}
+          className="mt-1.5 ml-1 text-xs font-semibold text-c-muted hover:text-c-text transition-colors disabled:opacity-50"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
-          </svg>
+          I don&apos;t know
         </button>
       </div>
 
