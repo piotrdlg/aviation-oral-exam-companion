@@ -85,6 +85,28 @@ export function joinAreas(names: string[], max = 3): string {
   return `${names.slice(0, max).join(', ')} +${names.length - max}`;
 }
 
+/** Rating → ACS task-id prefix (the rating segment of every task/area id). */
+const RATING_PREFIX: Record<string, string> = {
+  private: 'PA',
+  commercial: 'CA',
+  instrument: 'IR',
+  atp: 'AT',
+};
+
+/**
+ * Human area name for a stored scope entry. `selected_areas` stores BARE Roman
+ * numerals ('VIII') without the rating segment, so a bare numeral needs the
+ * session rating to form the full prefix ('IR.VIII.'). Already-qualified ids
+ * ('IR.VIII.', 'IR.VIII.A') resolve directly. Falls back to the raw value.
+ */
+export function scopeAreaName(rawArea: string, rating?: string | null): string {
+  if (!rawArea) return rawArea;
+  if (rawArea.includes('.')) return areaNameFromTaskId(rawArea);
+  const prefix = (rating && RATING_PREFIX[rating]) || '';
+  if (prefix) return ACS_AREA_NAMES[`${prefix}.${rawArea}.`] ?? rawArea;
+  return rawArea;
+}
+
 export interface CoveredTask {
   task_id: string;
   status: string;
@@ -99,6 +121,7 @@ export interface CoveredArea {
 /** Minimal shape of a resumable session this module needs (decoupled from the
  *  page's full state type). */
 export interface ExamSummaryInput {
+  rating?: string | null;
   exchange_count?: number | null;
   selected_areas?: string[] | null;
   selected_tasks?: string[] | null;
@@ -134,7 +157,7 @@ export function summarizeExam(session: ExamSummaryInput): ExamSummary {
 
   const selected = (session.selected_areas ?? []).filter(Boolean);
   const scopeAreaNames = selected.length > 0
-    ? selected.map((a) => areaNameFromTaskId(a))
+    ? selected.map((a) => scopeAreaName(a, session.rating))
     : ['All areas'];
 
   return { coveredAreas: [...byArea.values()], scopeAreaNames };
