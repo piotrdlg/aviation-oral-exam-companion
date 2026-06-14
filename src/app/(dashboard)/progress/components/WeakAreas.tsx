@@ -83,7 +83,7 @@ export default function WeakAreas({ scores }: Props) {
   return (
     <div className="bezel rounded-lg border border-c-border p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-mono text-base font-semibold text-c-amber uppercase tracking-wider">WEAK AREAS</h3>
+        <h3 className="font-semibold text-lg text-c-text tracking-tight">Weak areas</h3>
         <div className="flex gap-3 font-mono text-xs">
           {critical > 0 && (
             <span className="text-c-red">{critical} CRITICAL</span>

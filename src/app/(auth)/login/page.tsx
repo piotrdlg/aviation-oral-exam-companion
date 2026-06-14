@@ -8,6 +8,7 @@ import type { Provider } from '@supabase/supabase-js';
 import { getStoredUTMParams } from '@/lib/utm';
 import { trackSignup } from '@/lib/analytics';
 import Footer from '@/components/Footer';
+import { Logo } from '@/components/Brand';
 
 type AuthStep = 'initial' | 'otp-sent' | 'verifying';
 
@@ -276,17 +277,17 @@ function LoginForm() {
     <div className="min-h-screen flex flex-col bg-c-bg">
       <div className="flex-1 flex flex-col items-center justify-center px-4">
       {/* Brand link */}
-      <Link href="/" className="font-mono font-bold text-c-amber glow-a text-xl tracking-widest mb-8 hover:text-c-amber/80 transition-colors">
-        HEYDPE
-      </Link>
+      <div className="mb-8">
+        <Logo size="lg" href="/" glow />
+      </div>
 
       <div className="w-full max-w-md">
         {/* Auth card */}
-        <div className="p-8 bezel rounded-lg border border-c-border">
+        <div className="p-8 bezel rounded-xl border border-c-border">
           <div className="text-center mb-8">
-            <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase mb-3">// AUTHENTICATION</p>
-            <h1 className="font-mono font-bold text-c-amber glow-a text-sm tracking-wider uppercase mb-1">SIGN IN TO HEYDPE</h1>
-            <p className="text-sm text-c-muted font-light">Practice your checkride oral exam</p>
+            <p className="font-mono text-xs text-c-cyan tracking-[0.3em] uppercase mb-3">// Authentication</p>
+            <h1 className="font-bold text-c-text text-2xl tracking-tight mb-1.5">Sign in to HeyDPE</h1>
+            <p className="text-sm text-c-muted">Practice your checkride oral exam</p>
           </div>
 
           {/* Error banner */}
@@ -304,10 +305,10 @@ function LoginForm() {
                 key={provider}
                 onClick={() => handleOAuthLogin(provider)}
                 disabled={loadingOAuth !== null}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-c-bezel hover:bg-c-border border border-c-border hover:border-c-border-hi rounded-lg text-c-text font-mono text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-c-bezel hover:bg-c-border border border-c-border hover:border-c-border-hi rounded-lg text-c-text text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loadingOAuth === provider ? <Spinner /> : icon}
-                <span className="uppercase tracking-wide">{loadingOAuth === provider ? 'Redirecting...' : label}</span>
+                <span>{loadingOAuth === provider ? 'Redirecting…' : label}</span>
               </button>
             ))}
           </div>
@@ -318,7 +319,7 @@ function LoginForm() {
               <div className="w-full border-t border-c-border" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-c-bezel px-3 text-c-dim font-mono uppercase tracking-wide">or</span>
+              <span className="bg-c-bezel px-3 text-c-dim">or</span>
             </div>
           </div>
 
@@ -326,8 +327,8 @@ function LoginForm() {
           {step === 'initial' && (
             <form onSubmit={handleSendOtp} className="space-y-3">
               <div>
-                <label htmlFor="email" className="block font-mono text-[10px] text-c-muted uppercase tracking-wider mb-1.5">
-                  EMAIL ADDRESS
+                <label htmlFor="email" className="block text-xs font-medium text-c-muted mb-1.5">
+                  Email address
                 </label>
                 <input
                   id="email"
@@ -337,22 +338,22 @@ function LoginForm() {
                   required
                   autoComplete="email"
                   placeholder="you@example.com"
-                  className="w-full px-3 py-2.5 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-xs focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
+                  className="w-full px-3.5 py-2.5 bg-c-panel border border-c-border rounded-lg text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loadingOtp}
-                className="w-full py-3 bg-c-amber hover:bg-c-amber/90 disabled:bg-c-amber/50 disabled:cursor-not-allowed text-c-bg rounded-lg font-mono font-semibold text-xs tracking-wider uppercase transition-colors flex items-center justify-center gap-2"
+                className="w-full py-3 bg-c-amber hover:bg-c-amber-bright disabled:bg-c-amber/50 disabled:cursor-not-allowed text-c-bg rounded-lg font-semibold text-[15px] transition-colors flex items-center justify-center gap-2"
               >
                 {loadingOtp ? (
                   <>
                     <Spinner />
-                    SENDING CODE...
+                    Sending code…
                   </>
                 ) : (
-                  'SEND LOGIN CODE'
+                  'Send login code'
                 )}
               </button>
             </form>
@@ -364,13 +365,13 @@ function LoginForm() {
               {codeSentMessage && (
                 <div className="flex items-center gap-2 justify-center">
                   <span className="text-c-green text-sm shrink-0">&#10003;</span>
-                  <p className="text-c-green text-sm font-mono">{codeSentMessage}</p>
+                  <p className="text-c-green-readable text-sm">{codeSentMessage}</p>
                 </div>
               )}
 
               <div>
-                <label className="block font-mono text-[10px] text-c-muted uppercase tracking-wider mb-3 text-center">
-                  ENTER THE 6-DIGIT CODE
+                <label className="block text-xs font-medium text-c-muted mb-3 text-center">
+                  Enter the 6-digit code
                 </label>
                 <div className="flex justify-center gap-2" onPaste={handleOtpPaste}>
                   {otpDigits.map((digit, index) => (
@@ -384,27 +385,27 @@ function LoginForm() {
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(index, e)}
                       disabled={step === 'verifying'}
-                      className="w-11 h-12 text-center text-lg font-mono bg-c-panel border border-c-border rounded-lg text-c-amber focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber disabled:opacity-50 transition-colors"
+                      className="w-11 h-12 text-center text-lg font-mono bg-c-panel border border-c-border rounded-lg text-c-amber focus:outline-none focus:ring-2 focus:ring-c-amber focus:border-c-amber disabled:opacity-50 transition-colors"
                       aria-label={`Digit ${index + 1}`}
                     />
                   ))}
                 </div>
               </div>
 
-              <p className="text-c-dim text-xs text-center font-mono">Code expires in 60 minutes</p>
+              <p className="text-c-dim text-xs text-center">Code expires in 60 minutes</p>
 
               {/* OTP error */}
               {error && (
                 <div className="flex items-center gap-2 justify-center">
                   <span className="text-c-red text-sm shrink-0">&#9888;</span>
-                  <p className="text-c-red text-sm font-mono">{error}</p>
+                  <p className="text-c-red text-sm">{error}</p>
                 </div>
               )}
 
               {step === 'verifying' && (
-                <div className="flex items-center justify-center gap-2 text-c-muted text-sm font-mono">
+                <div className="flex items-center justify-center gap-2 text-c-muted text-sm">
                   <Spinner />
-                  VERIFYING...
+                  Verifying…
                 </div>
               )}
 
@@ -412,16 +413,16 @@ function LoginForm() {
                 <button
                   onClick={() => handleVerifyOtp()}
                   disabled={otpDigits.join('').length !== 6}
-                  className="w-full py-3 bg-c-amber hover:bg-c-amber/90 disabled:bg-c-amber/50 disabled:cursor-not-allowed text-c-bg rounded-lg font-mono font-semibold text-xs tracking-wider uppercase transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-c-amber hover:bg-c-amber-bright disabled:bg-c-amber/50 disabled:cursor-not-allowed text-c-bg rounded-lg font-semibold text-[15px] transition-colors flex items-center justify-center gap-2"
                 >
-                  VERIFY CODE
+                  Verify code
                 </button>
               )}
 
               <button
                 onClick={handleResendCode}
                 disabled={step === 'verifying'}
-                className="w-full text-sm text-c-muted hover:text-c-amber font-mono transition-colors disabled:opacity-50"
+                className="w-full text-sm text-c-muted hover:text-c-text transition-colors disabled:opacity-50"
               >
                 Use a different email or resend code
               </button>
@@ -431,21 +432,21 @@ function LoginForm() {
 
         {/* "Why no password?" explainer */}
         <details className="mt-4 group">
-          <summary className="text-xs text-c-dim hover:text-c-muted cursor-pointer transition-colors flex items-center justify-center gap-1 font-mono">
-            <span className="text-sm">?</span>
-            WHY NO PASSWORD?
+          <summary className="text-sm text-c-dim hover:text-c-muted cursor-pointer transition-colors flex items-center justify-center gap-1.5">
+            <span>?</span>
+            Why no password?
           </summary>
-          <div className="mt-2 p-3 bezel rounded-lg border border-c-border text-xs text-c-muted leading-relaxed">
+          <div className="mt-2 p-3.5 bezel rounded-lg border border-c-border text-sm text-c-muted leading-relaxed">
             Passwordless login is more secure — no passwords to leak, reuse, or forget. Sign in with your Google, Apple, or Microsoft account for one-tap access, or use a one-time email code. Your account is tied to your email, not a password you have to remember.
           </div>
         </details>
 
         {/* Trust + legal */}
-        <p className="mt-6 text-xs text-c-dim text-center leading-relaxed max-w-sm mx-auto font-mono">
+        <p className="mt-6 text-xs text-c-dim text-center leading-relaxed max-w-sm mx-auto">
           By continuing, you agree to our{' '}
-          <Link href="/terms" className="text-c-amber hover:text-c-amber/80 underline underline-offset-2 transition-colors">Terms of Service</Link>
+          <Link href="/terms" className="text-c-amber hover:text-c-amber-bright underline underline-offset-2 transition-colors">Terms of Service</Link>
           {' '}and{' '}
-          <Link href="/privacy" className="text-c-amber hover:text-c-amber/80 underline underline-offset-2 transition-colors">Privacy Policy</Link>.
+          <Link href="/privacy" className="text-c-amber hover:text-c-amber-bright underline underline-offset-2 transition-colors">Privacy Policy</Link>.
         </p>
       </div>
       </div>

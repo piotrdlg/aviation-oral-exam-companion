@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Footer from '@/components/Footer';
+import { Logo } from '@/components/Brand';
 
 interface InstructorInfo {
   instructorName: string;
@@ -80,12 +81,8 @@ export default function ReferralPage() {
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           {/* Header */}
-          <div className="text-center mb-8">
-            <Link href="/" className="inline-block">
-              <span className="font-mono font-bold text-c-amber glow-a text-xl tracking-widest">
-                HEYDPE
-              </span>
-            </Link>
+          <div className="text-center mb-8 flex justify-center">
+            <Logo size="md" href="/" glow />
           </div>
 
           <div className="bezel rounded-lg border border-c-border p-8">
@@ -98,10 +95,10 @@ export default function ReferralPage() {
               </div>
             ) : error && !instructor ? (
               <div className="text-center space-y-4">
-                <p className="font-mono text-xs text-c-red">{error}</p>
+                <p className="text-c-red text-sm">{error}</p>
                 <Link
                   href="/"
-                  className="inline-block text-c-amber hover:text-c-amber/80 text-xs font-mono uppercase tracking-wider transition-colors"
+                  className="inline-block text-c-amber hover:text-c-amber-bright text-sm font-semibold transition-colors"
                 >
                   Go to HeyDPE
                 </Link>
@@ -111,7 +108,7 @@ export default function ReferralPage() {
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-c-green/10 border border-c-green/30 mb-2">
                   <span className="text-c-green text-xl">&#10003;</span>
                 </div>
-                <h2 className="text-lg font-bold text-c-text font-mono">Connected!</h2>
+                <h2 className="text-lg font-bold text-c-text tracking-tight">Connected!</h2>
                 <p className="text-c-muted text-sm leading-relaxed">
                   You are now connected with{' '}
                   <span className="text-c-text font-medium">{connectedName}</span>.
@@ -119,45 +116,45 @@ export default function ReferralPage() {
                 </p>
                 <Link
                   href="/practice"
-                  className="inline-block w-full text-center py-3 rounded-lg bg-c-amber hover:bg-c-amber/90 text-c-bg font-bold text-xs font-mono uppercase tracking-wider transition-colors mt-4"
+                  className="inline-flex items-center justify-center w-full min-h-11 py-3 rounded-lg bg-c-amber hover:bg-c-amber-bright text-c-bg font-semibold text-[15px] transition-colors mt-4 shadow-lg shadow-c-amber/20"
                 >
-                  Start Practicing
+                  Start practicing
                 </Link>
               </div>
             ) : (
               <div className="text-center space-y-5">
-                <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase">
-                  // Instructor Referral
+                <p className="font-mono text-xs text-c-cyan tracking-[0.3em] uppercase">
+                  // Instructor referral
                 </p>
-                <h2 className="text-xl font-bold text-c-text font-mono">
+                <h2 className="text-xl font-bold text-c-text tracking-tight">
                   {instructor?.instructorName}
                 </h2>
                 {instructor?.certType && (
-                  <span className="inline-block font-mono text-[10px] px-2 py-0.5 rounded border border-c-amber/30 bg-c-amber/10 text-c-amber uppercase">
+                  <span className="inline-block font-mono text-[11px] px-2 py-0.5 rounded border border-c-amber/30 bg-c-amber/10 text-c-amber uppercase tracking-wider">
                     {instructor.certType}
                   </span>
                 )}
                 {instructor?.bio && (
                   <p className="text-c-muted text-sm leading-relaxed">{instructor.bio}</p>
                 )}
-                <p className="text-c-dim text-sm leading-relaxed">
+                <p className="text-c-muted text-sm leading-relaxed">
                   has invited you to connect on HeyDPE. Once connected, they can
                   monitor your checkride preparation progress and provide guidance.
                 </p>
 
                 {error && (
-                  <p className="text-c-red text-xs font-mono">{error}</p>
+                  <p className="text-c-red text-sm">{error}</p>
                 )}
 
                 <button
                   onClick={handleClaim}
                   disabled={claiming}
-                  className="w-full py-3 rounded-lg bg-c-amber hover:bg-c-amber/90 text-c-bg font-bold text-xs font-mono uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full min-h-11 py-3 rounded-lg bg-c-amber hover:bg-c-amber-bright text-c-bg font-semibold text-[15px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-c-amber/20"
                 >
-                  {claiming ? 'Connecting...' : 'Connect with Instructor'}
+                  {claiming ? 'Connecting…' : 'Connect with instructor'}
                 </button>
 
-                <p className="text-c-dim text-[10px] font-mono">
+                <p className="text-c-muted text-xs">
                   You&apos;ll need to sign in or create an account to connect.
                 </p>
               </div>

@@ -85,7 +85,7 @@ export default function StudyRecommendations({ scores }: Props) {
 
   return (
     <div className="bezel rounded-lg border border-c-border p-4">
-      <h3 className="font-mono text-base font-semibold text-c-amber uppercase tracking-wider mb-3">STUDY RECOMMENDATIONS</h3>
+      <h3 className="font-semibold text-lg text-c-text tracking-tight mb-3">Study recommendations</h3>
       <div className="space-y-3 max-h-80 overflow-y-auto">
         {recs.slice(0, 8).map((rec) => (
           <div
@@ -97,7 +97,7 @@ export default function StudyRecommendations({ scores }: Props) {
             }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <p className="font-mono text-sm font-semibold text-c-text uppercase">{rec.area}</p>
+              <p className="text-sm font-semibold text-c-text">{rec.area}</p>
               <span className={`font-mono text-xs px-2 py-0.5 rounded border ${
                 rec.severity === 'critical'
                   ? 'bg-c-red-dim/40 text-c-red border-c-red/20'

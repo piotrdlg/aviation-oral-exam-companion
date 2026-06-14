@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Footer from '@/components/Footer';
+import { Logo } from '@/components/Brand';
 
 interface InstructorPublic {
   instructorName: string;
@@ -77,21 +78,19 @@ export default function InstructorProfilePage() {
       {/* Nav */}
       <nav className="border-b border-c-border bg-c-bg/80 backdrop-blur-lg">
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
-          <Link href="/" className="font-mono font-bold text-c-amber glow-a text-sm tracking-widest">
-            HEYDPE
-          </Link>
+          <Logo size="md" href="/" glow />
           <div className="flex items-center gap-4">
             <Link
               href="/login"
-              className="font-mono text-xs text-c-muted hover:text-c-text transition-colors tracking-wide"
+              className="text-sm font-semibold text-c-muted hover:text-c-text transition-colors"
             >
-              SIGN IN
+              Sign in
             </Link>
             <Link
               href="/signup"
-              className="font-mono text-xs px-4 py-1.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded font-semibold tracking-wide transition-colors"
+              className="text-sm font-semibold min-h-11 inline-flex items-center px-4 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded-lg transition-colors"
             >
-              GET STARTED
+              Get started
             </Link>
           </div>
         </div>
@@ -109,13 +108,13 @@ export default function InstructorProfilePage() {
             </div>
           ) : error && !instructor ? (
             <div className="bezel rounded-lg border border-c-border p-8 text-center space-y-4">
-              <h2 className="text-lg font-bold text-c-text font-mono">Instructor Not Found</h2>
+              <h2 className="text-lg font-bold text-c-text tracking-tight">Instructor not found</h2>
               <p className="text-c-muted text-sm">
                 This instructor profile doesn&apos;t exist or is no longer active.
               </p>
               <Link
                 href="/"
-                className="inline-block text-c-amber hover:text-c-amber/80 text-xs font-mono uppercase tracking-wider transition-colors"
+                className="inline-block text-c-amber hover:text-c-amber-bright text-sm font-semibold transition-colors"
               >
                 Go to HeyDPE
               </Link>
@@ -125,7 +124,7 @@ export default function InstructorProfilePage() {
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-c-green/10 border border-c-green/30 mb-2">
                 <span className="text-c-green text-xl">&#10003;</span>
               </div>
-              <h2 className="text-lg font-bold text-c-text font-mono">Connected!</h2>
+              <h2 className="text-lg font-bold text-c-text tracking-tight">Connected!</h2>
               <p className="text-c-muted text-sm leading-relaxed">
                 You are now connected with{' '}
                 <span className="text-c-text font-medium">{connectedName}</span>.
@@ -133,17 +132,17 @@ export default function InstructorProfilePage() {
               </p>
               <Link
                 href="/practice"
-                className="inline-block w-full text-center py-3 rounded-lg bg-c-amber hover:bg-c-amber/90 text-c-bg font-bold text-xs font-mono uppercase tracking-wider transition-colors mt-4"
+                className="inline-flex items-center justify-center w-full min-h-11 py-3 rounded-lg bg-c-amber hover:bg-c-amber-bright text-c-bg font-semibold text-[15px] transition-colors mt-4 shadow-lg shadow-c-amber/20"
               >
-                Start Practicing
+                Start practicing
               </Link>
             </div>
           ) : (
             <div className="bezel rounded-lg border border-c-border p-8">
               {/* Instructor Profile Card */}
               <div className="text-center space-y-4 mb-8">
-                <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase">
-                  // Certified Flight Instructor
+                <p className="font-mono text-xs text-c-cyan tracking-[0.3em] uppercase">
+                  // Certified flight instructor
                 </p>
 
                 {/* Avatar placeholder */}
@@ -153,12 +152,12 @@ export default function InstructorProfilePage() {
                   </span>
                 </div>
 
-                <h1 className="text-2xl font-bold text-c-text font-mono">
+                <h1 className="text-2xl font-bold text-c-text tracking-tight">
                   {instructor?.instructorName}
                 </h1>
 
                 {instructor?.certType && (
-                  <span className="inline-block font-mono text-[10px] px-3 py-1 rounded border border-c-amber/30 bg-c-amber/10 text-c-amber uppercase tracking-wider">
+                  <span className="inline-block font-mono text-[11px] px-3 py-1 rounded border border-c-amber/30 bg-c-amber/10 text-c-amber uppercase tracking-wider">
                     {instructor.certType}
                   </span>
                 )}
@@ -172,7 +171,7 @@ export default function InstructorProfilePage() {
 
               {/* What happens when you connect */}
               <div className="border-t border-c-border pt-6 mb-6">
-                <h3 className="font-mono text-[10px] text-c-dim uppercase tracking-wider mb-3 text-center">
+                <h3 className="font-semibold text-base text-c-text tracking-tight mb-3 text-center">
                   When you connect
                 </h3>
                 <ul className="space-y-2 text-sm text-c-muted">
@@ -192,18 +191,18 @@ export default function InstructorProfilePage() {
               </div>
 
               {error && (
-                <p className="text-c-red text-xs font-mono text-center mb-4">{error}</p>
+                <p className="text-c-red text-sm text-center mb-4">{error}</p>
               )}
 
               <button
                 onClick={handleConnect}
                 disabled={claiming}
-                className="w-full py-3 rounded-lg bg-c-amber hover:bg-c-amber/90 text-c-bg font-bold text-xs font-mono uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full min-h-11 py-3 rounded-lg bg-c-amber hover:bg-c-amber-bright text-c-bg font-semibold text-[15px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-c-amber/20"
               >
-                {claiming ? 'Connecting...' : 'Connect with this Instructor'}
+                {claiming ? 'Connecting…' : 'Connect with this instructor'}
               </button>
 
-              <p className="text-c-dim text-[10px] font-mono text-center mt-3">
+              <p className="text-c-muted text-xs text-center mt-3">
                 You&apos;ll need to sign in or create an account to connect.
               </p>
             </div>

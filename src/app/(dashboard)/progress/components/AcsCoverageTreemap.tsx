@@ -168,7 +168,7 @@ export default function AcsCoverageTreemap({ scores, onElementClick }: Props) {
   return (
     <div className="bezel rounded-lg border border-c-border p-6">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-mono text-base font-semibold text-c-amber uppercase tracking-wider">ACS COVERAGE MAP</h3>
+        <h3 className="font-semibold text-lg text-c-text tracking-tight">ACS coverage map</h3>
         <div className="flex gap-3 font-mono text-xs">
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-sm bg-c-green" /> <span className="text-c-muted">{satisfactory}</span>

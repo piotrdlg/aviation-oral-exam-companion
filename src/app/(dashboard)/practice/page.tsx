@@ -92,17 +92,17 @@ interface TaskData {
 function quotaModalCopy(reason: string | null): { heading: string; body: string } {
   switch (reason) {
     case 'exchanges_per_session':
-      return { heading: 'EXAM QUESTION LIMIT', body: "You've reached this exam's question limit. Subscribe for longer mock orals and unlimited exams." };
+      return { heading: 'Exam question limit', body: "You've reached this exam's question limit. Subscribe for longer mock orals and unlimited exams." };
     case 'trial_expired':
     case 'session_expired':
-      return { heading: 'TRIAL ENDED', body: 'Your free trial has ended. Subscribe to keep practicing for your checkride.' };
+      return { heading: 'Trial ended', body: 'Your free trial has ended. Subscribe to keep practicing for your checkride.' };
     case 'tts_chars_per_month':
     case 'stt_seconds_per_month':
     case 'daily_tts_chars':
     case 'daily_llm_tokens':
-      return { heading: 'VOICE LIMIT REACHED', body: "You've used your free voice allowance. Subscribe for unlimited voice practice." };
+      return { heading: 'Voice limit reached', body: "You've used your free voice allowance. Subscribe for unlimited voice practice." };
     default:
-      return { heading: 'UPGRADE TO CONTINUE', body: "You've used your free practice. Subscribe for unlimited exams and voice." };
+      return { heading: 'Upgrade to continue', body: "You've used your free practice. Subscribe for unlimited exams and voice." };
   }
 }
 
@@ -1666,8 +1666,8 @@ export default function PracticePage() {
               <div>
                 <p className="text-c-red">{error}</p>
                 {error.includes('Upgrade') && (
-                  <Link href="/pricing" className="text-c-amber underline mt-2 inline-block font-mono text-sm uppercase">
-                    View Plans
+                  <Link href="/pricing" className="text-c-amber underline mt-2 inline-block text-sm font-semibold">
+                    View plans
                   </Link>
                 )}
               </div>
@@ -1730,7 +1730,7 @@ export default function PracticePage() {
           <>
             {/* Header with progress indicators */}
             <div className="flex items-center justify-between mb-5">
-              <h1 className="font-mono font-bold text-2xl text-c-amber glow-a tracking-wider uppercase">PRACTICE</h1>
+              <h1 className="font-bold text-2xl text-c-text tracking-tight">Practice</h1>
               {practiceStats && (
                 <div className="flex items-center gap-3">
                   {coveragePct > 0 && (
@@ -1761,13 +1761,13 @@ export default function PracticePage() {
                 <button
                   onClick={startQuickSession}
                   disabled={loading}
-                  className="px-4 py-2.5 bg-c-bezel hover:bg-c-border border border-c-border hover:border-c-amber/30 text-c-text rounded-lg font-mono text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2 uppercase"
+                  className="px-4 py-2.5 min-h-11 bg-c-bezel hover:bg-c-border border border-c-border hover:border-c-amber/30 text-c-text rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 flex items-center gap-2"
                 >
                   <span className="text-c-amber">&#9889;</span>
-                  QUICK 5 &mdash; WEAK AREAS
+                  Quick 5 — weak areas
                 </button>
                 {suggestedFocus && (
-                  <p className="text-xs text-c-muted font-mono">
+                  <p className="text-xs text-c-muted">
                     Suggested: <span className="text-c-text">{suggestedFocus}</span>
                   </p>
                 )}
@@ -1782,15 +1782,15 @@ export default function PracticePage() {
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <div className="w-1.5 h-1.5 rounded-full bg-c-cyan blink"></div>
-                      <h3 className="font-mono text-sm font-semibold text-c-cyan glow-c uppercase">CONTINUE PREVIOUS EXAM</h3>
+                      <h3 className="text-base font-semibold text-c-text tracking-tight">Continue previous exam</h3>
                     </div>
-                    <p className="text-xs text-c-text font-mono mt-1">
+                    <p className="text-xs text-c-text mt-1">
                       {resumableSession.rating === 'commercial' ? 'Commercial' : resumableSession.rating === 'instrument' ? 'Instrument' : resumableSession.rating === 'atp' ? 'ATP' : 'Private'}
                       {resumableSession.aircraft_class ? ` ${resumableSession.aircraft_class}` : ''}
                       , {resumableSession.difficulty_preference === 'easy' ? 'Easy' : resumableSession.difficulty_preference === 'medium' ? 'Medium' : resumableSession.difficulty_preference === 'hard' ? 'Hard' : 'Mixed'}
                       {' '}&mdash; {resumableSession.exchange_count || 0} exchanges
                     </p>
-                    <p className="text-xs text-c-muted font-mono mt-0.5">
+                    <p className="text-xs text-c-muted mt-0.5">
                       {new Date(resumableSession.started_at).toLocaleDateString('en-US', {
                         month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
                       })}
@@ -1802,26 +1802,26 @@ export default function PracticePage() {
                       <button
                         onClick={() => resumeSession(resumableSession)}
                         disabled={loading || gradingInProgress}
-                        className="px-4 py-2 bg-c-cyan hover:bg-c-cyan/90 text-c-bg rounded-lg font-mono text-sm font-semibold transition-colors disabled:opacity-50 uppercase"
+                        className="px-4 py-2.5 min-h-11 bg-c-cyan hover:bg-c-cyan-readable text-c-bg rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
                       >
-                        CONTINUE EXAM
+                        Continue exam
                       </button>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={gradeResumableSession}
                         disabled={gradingInProgress}
-                        className="px-3 py-1.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded font-mono text-xs font-semibold transition-colors disabled:opacity-50 uppercase"
+                        className="px-3 py-1.5 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded text-xs font-semibold transition-colors disabled:opacity-50"
                       >
-                        {gradingInProgress ? 'GRADING...' : 'GRADE'}
+                        {gradingInProgress ? 'Grading…' : 'Grade'}
                       </button>
                       <button
                         onClick={() => {
                           const sid = resumableSession.id;
                           setConfirmDialog({
-                            title: 'DISCARD EXAM',
+                            title: 'Discard exam',
                             message: 'Discard this exam? It will be marked as abandoned and won\u2019t count toward your progress.',
-                            confirmLabel: 'DISCARD',
+                            confirmLabel: 'Discard',
                             confirmClass: 'bg-red-500/80 hover:bg-red-500 text-white',
                             onConfirm: async () => {
                               await fetch('/api/session', {
@@ -1833,9 +1833,9 @@ export default function PracticePage() {
                             },
                           });
                         }}
-                        className="px-3 py-1.5 text-c-muted hover:text-red-400 font-mono text-xs transition-colors uppercase"
+                        className="px-3 py-1.5 text-c-muted hover:text-red-400 text-xs font-semibold transition-colors"
                       >
-                        DISCARD
+                        Discard
                       </button>
                     </div>
                   </div>
@@ -1844,7 +1844,7 @@ export default function PracticePage() {
               {allResumableSessions.length > 1 && (
                 <button
                   onClick={() => setShowOpenExamsModal(true)}
-                  className="w-full text-center py-1.5 text-xs font-mono text-c-muted hover:text-c-cyan transition-colors"
+                  className="w-full text-center py-1.5 text-xs text-c-muted hover:text-c-cyan transition-colors"
                 >
                   + {allResumableSessions.length - 1} more open {allResumableSessions.length - 1 === 1 ? 'exam' : 'exams'}
                 </button>
@@ -1866,9 +1866,9 @@ export default function PracticePage() {
             />
 
             {/* Disclaimer — always visible but low visual weight */}
-            <p className="text-c-amber/50 text-xs font-mono leading-relaxed mt-4 text-center uppercase">
-              FOR STUDY PURPOSES ONLY. NOT A SUBSTITUTE FOR CFI INSTRUCTION OR AN ACTUAL DPE CHECKRIDE.
-              ALWAYS VERIFY INFORMATION AGAINST CURRENT FAA PUBLICATIONS.
+            <p className="text-c-amber/60 text-xs leading-relaxed mt-4 text-center">
+              For study purposes only. Not a substitute for CFI instruction or an actual DPE checkride.
+              Always verify information against current FAA publications.
             </p>
           </>
         )}
@@ -1877,7 +1877,7 @@ export default function PracticePage() {
         {showDisclaimerModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
             <div className="bezel rounded-lg border border-c-amber/40 p-6 max-w-lg mx-4 shadow-2xl">
-              <h2 className="font-mono font-bold text-xl text-c-amber glow-a mb-3 tracking-wider uppercase">Before your first exam</h2>
+              <h2 className="font-bold text-xl text-c-text mb-3 tracking-tight">Before your first exam</h2>
               <ul className="text-sm text-c-text/85 leading-relaxed space-y-2 mb-5 list-disc pl-5">
                 <li>HeyDPE is a <strong>study aid</strong> — not an FAA-approved testing device, and not affiliated with the FAA.</li>
                 <li>The AI examiner <strong>can make mistakes</strong>. Always verify answers against the current FARs, AIM, and ACS.</li>
@@ -1904,15 +1904,15 @@ export default function PracticePage() {
                     }
                   }}
                   disabled={disclaimerSaving}
-                  className="flex-1 py-2.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg rounded-lg font-mono font-semibold text-base text-center transition-colors uppercase tracking-wider"
+                  className="flex-1 py-2.5 min-h-11 bg-c-amber hover:bg-c-amber-bright disabled:opacity-50 text-c-bg rounded-lg font-semibold text-[15px] text-center transition-colors"
                 >
-                  {disclaimerSaving ? 'SAVING…' : 'I UNDERSTAND — BEGIN'}
+                  {disclaimerSaving ? 'Saving…' : 'I understand — begin'}
                 </button>
                 <button
                   onClick={() => { setShowDisclaimerModal(false); setPendingStartConfig(null); }}
-                  className="px-4 py-2.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-mono text-base transition-colors border border-c-border uppercase"
+                  className="px-4 py-2.5 min-h-11 bg-c-bezel hover:bg-c-border text-c-text rounded-lg text-[15px] font-semibold transition-colors border border-c-border"
                 >
-                  NOT NOW
+                  Not now
                 </button>
               </div>
             </div>
@@ -1922,21 +1922,21 @@ export default function PracticePage() {
         {showQuotaModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
             <div className="bezel rounded-lg border border-c-border p-6 max-w-md mx-4 shadow-2xl">
-              <h2 className="font-mono font-bold text-2xl text-c-amber glow-a mb-2 tracking-wider uppercase">{quotaModalCopy(quotaReason).heading}</h2>
+              <h2 className="font-bold text-2xl text-c-text mb-2 tracking-tight">{quotaModalCopy(quotaReason).heading}</h2>
               <p className="text-c-muted text-base mb-6">{quotaModalCopy(quotaReason).body}</p>
               <div className="flex gap-3">
                 <a
                   onClick={() => captureVoiceEvent('upgrade_clicked', { source: 'quota_modal' })}
                   href="/pricing"
-                  className="flex-1 py-2.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-base text-center transition-colors uppercase tracking-wider"
+                  className="flex-1 py-2.5 min-h-11 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded-lg font-semibold text-[15px] text-center transition-colors"
                 >
-                  VIEW PLANS
+                  View plans
                 </a>
                 <button
                   onClick={() => setShowQuotaModal(false)}
-                  className="px-4 py-2.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-mono text-base transition-colors border border-c-border uppercase"
+                  className="px-4 py-2.5 min-h-11 bg-c-bezel hover:bg-c-border text-c-text rounded-lg text-[15px] font-semibold transition-colors border border-c-border"
                 >
-                  DISMISS
+                  Dismiss
                 </button>
               </div>
             </div>
@@ -1974,19 +1974,19 @@ export default function PracticePage() {
           <button
             onClick={pauseSession}
             disabled={gradingInProgress}
-            className="px-2.5 py-1 text-xs font-mono text-c-muted hover:text-c-text transition-colors border border-c-border rounded hover:border-c-border-hi uppercase disabled:opacity-50"
+            className="px-2.5 py-1 text-xs font-semibold text-c-muted hover:text-c-text transition-colors border border-c-border rounded hover:border-c-border-hi disabled:opacity-50"
           >
-            PAUSE
+            Pause
           </button>
           <button
             data-testid="end-exam-button"
             onClick={() => {
               if (exchangeCount > 0) {
                 setConfirmDialog({
-                  title: 'GRADE EXAM',
+                  title: 'Grade exam',
                   message: 'Grade and end this exam? Your answers will be scored and you\u2019ll see your results.',
-                  confirmLabel: 'GRADE',
-                  confirmClass: 'bg-c-amber hover:bg-c-amber/90 text-c-bg',
+                  confirmLabel: 'Grade',
+                  confirmClass: 'bg-c-amber hover:bg-c-amber-bright text-c-bg',
                   onConfirm: () => gradeSession(),
                 });
               } else {
@@ -1994,9 +1994,9 @@ export default function PracticePage() {
               }
             }}
             disabled={gradingInProgress}
-            className="px-2.5 py-1 text-xs font-mono bg-c-amber hover:bg-c-amber/90 text-c-bg rounded font-semibold transition-colors uppercase disabled:opacity-50"
+            className="px-2.5 py-1 text-xs bg-c-amber hover:bg-c-amber-bright text-c-bg rounded font-semibold transition-colors disabled:opacity-50"
           >
-            {gradingInProgress ? 'GRADING...' : 'GRADE EXAM'}
+            {gradingInProgress ? 'Grading\u2026' : 'Grade exam'}
           </button>
         </div>
       </div>
@@ -2009,7 +2009,7 @@ export default function PracticePage() {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
-            <p className="text-c-amber text-sm font-mono">Retrying voice connection...</p>
+            <p className="text-c-amber text-sm">Retrying voice connection…</p>
           </div>
         </div>
       )}
@@ -2031,9 +2031,9 @@ export default function PracticePage() {
                       captureVoiceEvent('voice_retry_clicked', { session_id: sessionId });
                       voice.startListening();
                     }}
-                    className="px-3 py-1.5 text-sm bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors font-mono uppercase"
+                    className="px-3 py-1.5 text-sm font-semibold bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors"
                   >
-                    RETRY VOICE
+                    Retry voice
                   </button>
                   <button
                     onClick={() => {
@@ -2041,9 +2041,9 @@ export default function PracticePage() {
                       setVoiceEnabled(false);
                       voiceEnabledRef.current = false;
                     }}
-                    className="px-3 py-1.5 text-sm bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors font-mono uppercase"
+                    className="px-3 py-1.5 text-sm font-semibold bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors"
                   >
-                    TEXT-ONLY MODE
+                    Text-only mode
                   </button>
                 </div>
               )}
@@ -2055,9 +2055,9 @@ export default function PracticePage() {
                 <div className="flex gap-2 mt-2">
                   <button
                     onClick={retryLastAnswer}
-                    className="px-3 py-1.5 text-sm bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors font-mono uppercase"
+                    className="px-3 py-1.5 text-sm font-semibold bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors"
                   >
-                    RETRY
+                    Retry
                   </button>
                   <button
                     onClick={() => {
@@ -2066,15 +2066,15 @@ export default function PracticePage() {
                       setShowErrorRecovery(false);
                       setError(null);
                     }}
-                    className="px-3 py-1.5 text-sm bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors font-mono uppercase"
+                    className="px-3 py-1.5 text-sm font-semibold bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors"
                   >
-                    TEXT-ONLY
+                    Text-only
                   </button>
                   <button
                     onClick={() => { endSession(); setShowErrorRecovery(false); setError(null); }}
-                    className="px-3 py-1.5 text-sm bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors font-mono uppercase"
+                    className="px-3 py-1.5 text-sm font-semibold bg-c-bezel hover:bg-c-border text-c-text rounded-lg transition-colors"
                   >
-                    END EXAM
+                    End exam
                   </button>
                 </div>
               )}
@@ -2297,7 +2297,7 @@ export default function PracticePage() {
               style={{ boxShadow: `0 0 9px currentColor` }} />
             <span className={`font-mono text-[11px] tracking-[0.12em] ${cfg.txt}`}>{cfg.label}</span>
             {state !== 'listening' && (
-              <span className="font-mono text-[10px] tracking-wider text-c-dim">▸ TAP MIC OR TYPE TO ANSWER</span>
+              <span className="font-mono text-[11px] tracking-wider text-c-dim">▸ TAP MIC OR TYPE TO ANSWER</span>
             )}
           </div>
         );
@@ -2321,7 +2321,7 @@ export default function PracticePage() {
               }
             }}
             disabled={loading}
-            className={`px-4 py-3 rounded-lg font-mono font-medium transition-all uppercase ${
+            className={`px-4 py-3 rounded-lg transition-all ${
               voice.isListening
                 ? 'bg-c-red hover:bg-c-red/90 text-c-bg ring-2 ring-c-red/50 ring-offset-2 ring-offset-c-bg animate-pulse'
                 : (voice.isSpeaking || sentenceTTS.isSpeaking)
@@ -2363,23 +2363,23 @@ export default function PracticePage() {
                 sendAnswer();
               }
             }}
-            placeholder={voice.isListening ? 'Listening...' : 'Type your answer... (Enter to send)'}
+            placeholder={voice.isListening ? 'Listening…' : 'Type your answer… (Enter to send)'}
             disabled={loading}
-            className="w-full px-4 py-3 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm placeholder-c-dim focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber disabled:opacity-50 resize-none transition-colors"
+            className="w-full px-4 py-3 bg-c-panel border border-c-border rounded-lg text-c-text text-sm placeholder-c-dim focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber disabled:opacity-50 resize-none transition-colors"
           />
           <button
             onClick={() => sendAnswer("I don't know the answer to this question.")}
             disabled={loading}
-            className="self-start text-xs text-c-muted hover:text-c-text transition-colors disabled:opacity-50 px-1 font-mono uppercase"
+            className="self-start text-xs font-semibold text-c-muted hover:text-c-text transition-colors disabled:opacity-50 px-1"
           >
-            I DON&apos;T KNOW
+            I don&apos;t know
           </button>
         </div>
         <button
           data-testid="send-answer-button"
           onClick={() => sendAnswer()}
           disabled={loading || !input.trim()}
-          className="px-5 py-3 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 disabled:hover:bg-c-amber text-c-bg rounded-lg font-mono font-medium transition-colors self-start uppercase"
+          className="px-5 py-3 bg-c-amber hover:bg-c-amber-bright disabled:opacity-50 disabled:hover:bg-c-amber text-c-bg rounded-lg transition-colors self-start"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
@@ -2391,21 +2391,21 @@ export default function PracticePage() {
       {showQuotaModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
           <div className="bezel rounded-lg border border-c-border p-6 max-w-md mx-4 shadow-2xl">
-            <h2 className="font-mono font-bold text-2xl text-c-amber glow-a mb-2 tracking-wider uppercase">{quotaModalCopy(quotaReason).heading}</h2>
+            <h2 className="font-bold text-2xl text-c-text mb-2 tracking-tight">{quotaModalCopy(quotaReason).heading}</h2>
               <p className="text-c-muted text-base mb-6">{quotaModalCopy(quotaReason).body}</p>
             <div className="flex gap-3">
               <a
                 onClick={() => captureVoiceEvent('upgrade_clicked', { source: 'quota_modal' })}
                 href="/pricing"
-                className="flex-1 py-2.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-base text-center transition-colors uppercase tracking-wider"
+                className="flex-1 py-2.5 min-h-11 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded-lg font-semibold text-[15px] text-center transition-colors"
               >
-                VIEW PLANS
+                View plans
               </a>
               <button
                 onClick={() => setShowQuotaModal(false)}
-                className="px-4 py-2.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-mono text-base transition-colors border border-c-border uppercase"
+                className="px-4 py-2.5 min-h-11 bg-c-bezel hover:bg-c-border text-c-text rounded-lg text-[15px] font-semibold transition-colors border border-c-border"
               >
-                DISMISS
+                Dismiss
               </button>
             </div>
           </div>
@@ -2429,36 +2429,36 @@ export default function PracticePage() {
       {reportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
           <div className="bezel rounded-lg border border-c-border p-6 max-w-md mx-4 shadow-2xl">
-            <h3 className="font-mono font-bold text-xl text-c-amber glow-a mb-1 tracking-wider uppercase">REPORT INACCURATE ANSWER</h3>
-            <p className="text-xs text-c-muted font-mono mb-4 uppercase">EXCHANGE #{Math.ceil((reportModal.exchangeIndex + 1) / 2)}</p>
+            <h3 className="font-bold text-xl text-c-text mb-1 tracking-tight">Report inaccurate answer</h3>
+            <p className="font-mono text-[11px] uppercase tracking-wider text-c-muted mb-4">Exchange #{Math.ceil((reportModal.exchangeIndex + 1) / 2)}</p>
 
             <div className="mb-4">
-              <label className="block font-mono text-xs text-c-muted mb-2 tracking-wider uppercase">ERROR TYPE</label>
+              <label className="block font-mono text-[11px] text-c-muted mb-2 tracking-wider uppercase">Error type</label>
               <div className="flex gap-2">
                 {(['factual', 'scoring', 'safety'] as const).map((type) => (
                   <button
                     key={type}
                     onClick={() => setReportErrorType(type)}
-                    className={`px-3 py-1.5 font-mono text-sm rounded-lg border transition-colors uppercase ${
+                    className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
                       reportErrorType === type
                         ? 'border-c-amber/50 bg-c-amber-lo/50 text-c-amber font-semibold'
-                        : 'border-c-border bg-c-bezel text-c-muted hover:border-c-border-hi'
+                        : 'border-c-border bg-c-bezel text-c-muted hover:border-c-border-hi font-medium'
                     }`}
                   >
-                    {type === 'factual' ? 'FACTUAL ERROR' : type === 'scoring' ? 'SCORING ERROR' : 'SAFETY CONCERN'}
+                    {type === 'factual' ? 'Factual error' : type === 'scoring' ? 'Scoring error' : 'Safety concern'}
                   </button>
                 ))}
               </div>
             </div>
 
             <div className="mb-4">
-              <label className="block font-mono text-xs text-c-muted mb-1.5 tracking-wider uppercase">WHAT WAS INCORRECT?</label>
+              <label className="block font-mono text-[11px] text-c-muted mb-1.5 tracking-wider uppercase">What was incorrect?</label>
               <textarea
                 value={reportComment}
                 onChange={(e) => setReportComment(e.target.value)}
-                placeholder="Describe the issue..."
+                placeholder="Describe the issue…"
                 rows={3}
-                className="w-full px-3 py-2.5 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm placeholder-c-dim focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber resize-none transition-colors"
+                className="w-full px-3 py-2.5 bg-c-panel border border-c-border rounded-lg text-c-text text-sm placeholder-c-dim focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber resize-none transition-colors"
               />
             </div>
 
@@ -2466,9 +2466,9 @@ export default function PracticePage() {
               <button
                 onClick={() => setReportModal(null)}
                 disabled={reportSubmitting}
-                className="px-4 py-2 font-mono text-sm text-c-muted hover:text-c-text transition-colors uppercase"
+                className="px-4 py-2 text-sm font-semibold text-c-muted hover:text-c-text transition-colors"
               >
-                CANCEL
+                Cancel
               </button>
               <button
                 onClick={async () => {
@@ -2501,9 +2501,9 @@ export default function PracticePage() {
                   }
                 }}
                 disabled={reportSubmitting || !reportComment.trim()}
-                className="px-4 py-2 font-mono text-sm bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg rounded-lg font-semibold transition-colors uppercase tracking-wider"
+                className="px-4 py-2 text-sm bg-c-amber hover:bg-c-amber-bright disabled:opacity-50 text-c-bg rounded-lg font-semibold transition-colors"
               >
-                {reportSubmitting ? 'SUBMITTING...' : 'SUBMIT REPORT'}
+                {reportSubmitting ? 'Submitting…' : 'Submit report'}
               </button>
             </div>
           </div>
@@ -2516,7 +2516,7 @@ export default function PracticePage() {
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowOpenExamsModal(false)} />
             <div className="relative bg-c-bezel border border-c-border rounded-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-mono text-sm font-semibold text-c-cyan uppercase">OPEN EXAMS</h2>
+                <h2 className="text-base font-semibold text-c-text tracking-tight">Open exams</h2>
                 <button
                   onClick={() => setShowOpenExamsModal(false)}
                   className="text-c-muted hover:text-c-text text-lg leading-none"
@@ -2527,13 +2527,13 @@ export default function PracticePage() {
                   <div key={session.id} className="iframe rounded-lg p-3 border border-c-border">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-xs text-c-text font-mono">
+                        <p className="text-xs text-c-text">
                           {session.rating === 'commercial' ? 'Commercial' : session.rating === 'instrument' ? 'Instrument' : session.rating === 'atp' ? 'ATP' : 'Private'}
                           {session.aircraft_class ? ` ${session.aircraft_class}` : ''}
                           , {session.difficulty_preference === 'easy' ? 'Easy' : session.difficulty_preference === 'medium' ? 'Medium' : session.difficulty_preference === 'hard' ? 'Hard' : 'Mixed'}
                           {' '}&mdash; {session.exchange_count || 0} exchanges
                         </p>
-                        <p className="text-xs text-c-muted font-mono mt-0.5">
+                        <p className="text-xs text-c-muted mt-0.5">
                           {new Date(session.started_at).toLocaleDateString('en-US', {
                             month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
                           })}
@@ -2547,9 +2547,9 @@ export default function PracticePage() {
                             resumeSession(session);
                           }}
                           disabled={loading || gradingInProgress}
-                          className="px-2.5 py-1 bg-c-cyan hover:bg-c-cyan/90 text-c-bg rounded font-mono text-xs font-semibold transition-colors disabled:opacity-50 uppercase"
+                          className="px-2.5 py-1 bg-c-cyan hover:bg-c-cyan-readable text-c-bg rounded text-xs font-semibold transition-colors disabled:opacity-50"
                         >
-                          CONTINUE
+                          Continue
                         </button>
                         <button
                           onClick={async () => {
@@ -2570,17 +2570,17 @@ export default function PracticePage() {
                             setGradingInProgress(false);
                           }}
                           disabled={gradingInProgress}
-                          className="px-2.5 py-1 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded font-mono text-xs font-semibold transition-colors disabled:opacity-50 uppercase"
+                          className="px-2.5 py-1 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded text-xs font-semibold transition-colors disabled:opacity-50"
                         >
-                          {gradingInProgress ? '...' : 'GRADE'}
+                          {gradingInProgress ? '\u2026' : 'Grade'}
                         </button>
                         <button
                           onClick={() => {
                             const sid = session.id;
                             setConfirmDialog({
-                              title: 'DISCARD EXAM',
+                              title: 'Discard exam',
                               message: 'Discard this exam? It will be marked as abandoned and won\u2019t count toward your progress.',
-                              confirmLabel: 'DISCARD',
+                              confirmLabel: 'Discard',
                               confirmClass: 'bg-red-500/80 hover:bg-red-500 text-white',
                               onConfirm: async () => {
                                 await fetch('/api/session', {
@@ -2592,9 +2592,9 @@ export default function PracticePage() {
                               },
                             });
                           }}
-                          className="px-2.5 py-1 text-c-muted hover:text-red-400 font-mono text-xs transition-colors uppercase"
+                          className="px-2.5 py-1 text-c-muted hover:text-red-400 text-xs font-semibold transition-colors"
                         >
-                          DISCARD
+                          Discard
                         </button>
                       </div>
                     </div>
@@ -2602,7 +2602,7 @@ export default function PracticePage() {
                 ))}
               </div>
               {allResumableSessions.length === 0 && (
-                <p className="text-xs text-c-muted font-mono text-center py-4">No open exams</p>
+                <p className="text-xs text-c-muted text-center py-4">No open exams</p>
               )}
             </div>
           </div>
@@ -2612,14 +2612,14 @@ export default function PracticePage() {
       {confirmDialog && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
           <div className="bezel rounded-lg border border-c-border p-6 max-w-sm mx-4 shadow-2xl w-full">
-            <h2 className="font-mono font-bold text-lg text-c-text tracking-wider uppercase mb-3">{confirmDialog.title}</h2>
-            <p className="text-sm text-c-muted font-mono leading-relaxed mb-5">{confirmDialog.message}</p>
+            <h2 className="font-bold text-lg text-c-text tracking-tight mb-3">{confirmDialog.title}</h2>
+            <p className="text-sm text-c-muted leading-relaxed mb-5">{confirmDialog.message}</p>
             <div className="flex gap-3">
               <button
                 onClick={() => setConfirmDialog(null)}
-                className="flex-1 py-2 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-mono font-semibold text-sm transition-colors border border-c-border uppercase tracking-wider"
+                className="flex-1 py-2 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-semibold text-sm transition-colors border border-c-border"
               >
-                CANCEL
+                Cancel
               </button>
               <button
                 onClick={async () => {
@@ -2627,7 +2627,7 @@ export default function PracticePage() {
                   setConfirmDialog(null);
                   await action();
                 }}
-                className={`flex-1 py-2 rounded-lg font-mono font-semibold text-sm transition-colors uppercase tracking-wider ${confirmDialog.confirmClass}`}
+                className={`flex-1 py-2 rounded-lg font-semibold text-sm transition-colors ${confirmDialog.confirmClass}`}
               >
                 {confirmDialog.confirmLabel}
               </button>
@@ -2640,7 +2640,7 @@ export default function PracticePage() {
       {examResult && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm overflow-y-auto py-8">
           <div className="bezel rounded-lg border border-c-border p-6 max-w-lg mx-4 shadow-2xl w-full my-auto">
-            <h2 className="font-mono font-bold text-xl text-c-text tracking-wider uppercase mb-4 text-center">EXAM RESULTS</h2>
+            <h2 className="font-bold text-xl text-c-text tracking-tight mb-4 text-center">Exam results</h2>
 
             {/* Grade badge + score */}
             <div className={`rounded-lg border p-4 mb-4 text-center ${
@@ -2665,23 +2665,23 @@ export default function PracticePage() {
                 {Math.round(examResult.score_percentage * 100)}%
               </span>
               {examResultV2 && (
-                <p className="text-xs font-mono text-c-muted mt-1">Plan-based scoring (V2)</p>
+                <p className="text-xs text-c-muted mt-1">Plan-based scoring (V2)</p>
               )}
             </div>
 
             {/* Element breakdown */}
             <div className="space-y-1 mb-4">
-              <p className="text-sm font-mono text-c-text">
+              <p className="text-sm text-c-text">
                 {examResult.elements_asked} of {examResult.total_elements_in_set} elements covered
               </p>
-              <p className="text-xs font-mono text-c-muted">
+              <p className="text-xs text-c-muted">
                 {examResult.elements_satisfactory} satisfactory
                 {' '}&middot; {examResult.elements_partial} partial
                 {' '}&middot; {examResult.elements_unsatisfactory} unsatisfactory
                 {examResult.elements_not_asked > 0 && <> &middot; {examResult.elements_not_asked} not asked</>}
               </p>
               {examResultV2 && typeof examResultV2.elements_credited === 'number' && examResultV2.elements_credited > 0 && (
-                <p className="text-xs font-mono text-c-muted">
+                <p className="text-xs text-c-muted">
                   {examResultV2.elements_credited} credited by mention
                 </p>
               )}
@@ -2690,7 +2690,7 @@ export default function PracticePage() {
             {/* V2 Per-area breakdown with gating */}
             {examResultV2 && Array.isArray(examResultV2.areas) && examResultV2.areas.length > 0 ? (
               <div className="mb-5">
-                <h3 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-2">SCORE BY AREA</h3>
+                <h3 className="text-xs font-semibold text-c-muted tracking-wide mb-2">Score by area</h3>
                 <div className="space-y-1.5">
                   {(examResultV2.areas as Array<{ area: string; asked: number; satisfactory: number; score: number; status: string }>)
                     .sort((a, b) => a.area.localeCompare(b.area))
@@ -2727,7 +2727,7 @@ export default function PracticePage() {
             ) : Object.keys(examResult.score_by_area).length > 0 ? (
               /* V1 fallback: per-area breakdown without gating */
               <div className="mb-5">
-                <h3 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-2">SCORE BY AREA</h3>
+                <h3 className="text-xs font-semibold text-c-muted tracking-wide mb-2">Score by area</h3>
                 <div className="space-y-1.5">
                   {Object.entries(examResult.score_by_area)
                     .sort(([a], [b]) => a.localeCompare(b))
@@ -2753,8 +2753,8 @@ export default function PracticePage() {
             {/* V2 Weak elements section */}
             {examResultV2 && Array.isArray(examResultV2.weak_elements) && examResultV2.weak_elements.length > 0 && (
               <div className="mb-5">
-                <h3 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-2">
-                  WEAK ELEMENTS ({(examResultV2.weak_elements as Array<{ element_code: string; severity: string }>).length})
+                <h3 className="text-xs font-semibold text-c-muted tracking-wide mb-2">
+                  Weak elements ({(examResultV2.weak_elements as Array<{ element_code: string; severity: string }>).length})
                 </h3>
                 <div className="space-y-1 max-h-32 overflow-y-auto">
                   {(examResultV2.weak_elements as Array<{ element_code: string; severity: string; area: string }>)
@@ -2762,7 +2762,7 @@ export default function PracticePage() {
                     .map((el) => (
                       <div key={el.element_code} className="flex items-center gap-2 text-xs font-mono">
                         <span className="text-c-text">{el.element_code}</span>
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] uppercase ${
+                        <span className={`px-1.5 py-0.5 rounded text-[11px] uppercase ${
                           el.severity === 'unsatisfactory' ? 'bg-red-500/20 text-red-400'
                             : el.severity === 'partial' ? 'bg-c-amber-lo text-c-amber'
                             : 'bg-c-bezel text-c-muted'
@@ -2783,7 +2783,7 @@ export default function PracticePage() {
             {/* Weak area citations from summary report */}
             {weakAreaReport && Array.isArray((weakAreaReport as Record<string, unknown>).elements) && (
               <div className="mb-5">
-                <h3 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-2">STUDY RESOURCES</h3>
+                <h3 className="text-xs font-semibold text-c-muted tracking-wide mb-2">Study resources</h3>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {((weakAreaReport as Record<string, unknown>).elements as Array<{
                     element_code: string;
@@ -2808,7 +2808,7 @@ export default function PracticePage() {
                   {!((weakAreaReport as Record<string, unknown>).elements as unknown[]).some(
                     (el: unknown) => (el as { citations: unknown[] }).citations?.length > 0
                   ) && (
-                    <p className="text-xs font-mono text-c-muted italic">
+                    <p className="text-xs text-c-muted italic">
                       Insufficient FAA sources available for citation
                     </p>
                   )}
@@ -2816,22 +2816,22 @@ export default function PracticePage() {
               </div>
             )}
             {summaryLoading && (
-              <p className="text-xs font-mono text-c-muted mb-4 animate-pulse">Loading study resources...</p>
+              <p className="text-xs text-c-muted mb-4 animate-pulse">Loading study resources…</p>
             )}
 
             {/* Actions */}
             <div className="flex gap-3">
               <Link
                 href="/progress"
-                className="flex-1 py-2.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-mono font-semibold text-sm text-center transition-colors border border-c-border uppercase tracking-wider"
+                className="flex-1 py-2.5 min-h-11 flex items-center justify-center bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-semibold text-[15px] text-center transition-colors border border-c-border"
               >
-                VIEW PROGRESS
+                View progress
               </Link>
               <button
                 onClick={() => { setExamResult(null); setExamResultV2(null); setWeakAreaReport(null); }}
-                className="flex-1 py-2.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm transition-colors uppercase tracking-wider"
+                className="flex-1 py-2.5 min-h-11 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded-lg font-semibold text-[15px] transition-colors"
               >
-                NEW EXAM
+                New exam
               </button>
             </div>
           </div>

@@ -251,7 +251,7 @@ export default function ProgressPage() {
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="mb-2">
-        <h1 className="font-mono font-bold text-2xl text-c-amber glow-a tracking-wider uppercase">PROGRESS</h1>
+        <h1 className="font-bold text-3xl text-c-text tracking-tight">Progress</h1>
         <p className="text-base text-c-muted mt-1">
           {RATING_LABELS[selectedRating]}{selectedRating !== 'instrument' ? ` (${selectedClass})` : ' — Airplane'} checkride preparation
         </p>

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import JsonLd from '@/components/JsonLd';
 import UTMCapture from '@/components/UTMCapture';
 import Footer from '@/components/Footer';
+import { Logo } from '@/components/Brand';
 
 export default function Home() {
   return (
@@ -24,25 +25,25 @@ export default function Home() {
       {/* Nav */}
       <nav className="fixed top-0 inset-x-0 z-50 border-b border-c-border bg-c-bg/80 backdrop-blur-lg">
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
-          <span className="font-mono font-bold text-c-amber glow-a text-sm tracking-widest">HEYDPE</span>
-          <div className="flex items-center gap-4">
+          <Logo size="md" href="/" glow />
+          <div className="flex items-center gap-2 sm:gap-5">
             <Link
               href="/pricing"
-              className="font-mono text-xs text-c-muted hover:text-c-amber transition-colors tracking-wide"
+              className="text-sm text-c-muted hover:text-c-text transition-colors px-2"
             >
-              PRICING
+              Pricing
             </Link>
             <Link
               href="/login"
-              className="font-mono text-xs text-c-muted hover:text-c-text transition-colors tracking-wide"
+              className="text-sm text-c-muted hover:text-c-text transition-colors px-2"
             >
-              SIGN IN
+              Sign in
             </Link>
             <Link
               href="/signup"
-              className="font-mono text-xs px-4 py-1.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded font-semibold tracking-wide transition-colors"
+              className="text-sm px-4 py-1.5 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded-lg font-semibold transition-colors"
             >
-              GET STARTED
+              Get started
             </Link>
           </div>
         </div>
@@ -65,18 +66,18 @@ export default function Home() {
           <div className="s4 mt-10 flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/signup"
-              className="px-8 py-3.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm tracking-wide transition-colors shadow-lg shadow-c-amber/20"
+              className="px-8 py-3.5 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded-lg font-semibold text-[15px] transition-colors shadow-lg shadow-c-amber/20"
             >
-              START PRACTICING FREE
+              Start practicing free
             </Link>
             <Link
               href="/pricing"
-              className="px-8 py-3.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-mono font-medium text-sm border border-c-border tracking-wide transition-colors"
+              className="px-8 py-3.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-medium text-[15px] border border-c-border transition-colors"
             >
-              VIEW PRICING
+              View pricing
             </Link>
           </div>
-          <p className="s5 mt-4 text-xs text-c-muted font-mono uppercase tracking-wider">
+          <p className="s5 mt-4 text-xs text-c-muted tracking-wide">
             No credit card required &middot; Free sessions included
           </p>
           <p className="s5 mt-3 text-sm text-c-muted max-w-xl mx-auto leading-relaxed">
@@ -152,40 +153,40 @@ export default function Home() {
       {/* How It Works */}
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto">
-          <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase text-center mb-2">
-            // PROCEDURE
+          <p className="font-mono text-xs text-c-cyan tracking-[0.3em] uppercase text-center mb-3">
+            // Procedure
           </p>
-          <h2 className="font-mono font-bold text-2xl text-c-amber glow-a text-center mb-4 uppercase">
-            THREE STEPS TO CHECKRIDE CONFIDENCE
+          <h2 className="font-bold text-3xl sm:text-4xl text-c-text text-center mb-4 tracking-tight">
+            Three steps to checkride confidence
           </h2>
-          <p className="text-c-muted text-center mb-14 max-w-lg mx-auto text-sm">
+          <p className="text-c-muted text-center mb-14 max-w-lg mx-auto text-base">
             Set up once, then practice as often as you need.
           </p>
           <div className="grid sm:grid-cols-3 gap-6">
-            <div className="bezel rounded-lg p-6 text-center border border-c-border ipulse">
+            <div className="bezel rounded-xl p-6 text-center border border-c-border">
               <div className="w-12 h-12 mx-auto mb-4 rounded-full border-2 border-c-amber/50 flex items-center justify-center">
                 <span className="font-mono font-bold text-c-amber glow-a">01</span>
               </div>
-              <h3 className="font-mono font-semibold text-c-amber text-sm mb-2 uppercase">SET YOUR RATING</h3>
-              <p className="text-c-muted text-xs leading-relaxed">
+              <h3 className="font-semibold text-c-text text-base mb-2">Set your rating</h3>
+              <p className="text-c-muted text-sm leading-relaxed">
                 Choose Private, Commercial, or Instrument and your aircraft class. Saved in Settings.
               </p>
             </div>
-            <div className="bezel rounded-lg p-6 text-center border border-c-border ipulse">
+            <div className="bezel rounded-xl p-6 text-center border border-c-border">
               <div className="w-12 h-12 mx-auto mb-4 rounded-full border-2 border-c-green/50 flex items-center justify-center">
                 <span className="font-mono font-bold text-c-green glow-g">02</span>
               </div>
-              <h3 className="font-mono font-semibold text-c-green text-sm mb-2 uppercase">PRACTICE WITH AI DPE</h3>
-              <p className="text-c-muted text-xs leading-relaxed">
+              <h3 className="font-semibold text-c-text text-base mb-2">Practice with an AI DPE</h3>
+              <p className="text-c-muted text-sm leading-relaxed">
                 Answer questions by voice or text. The examiner assesses each response naturally.
               </p>
             </div>
-            <div className="bezel rounded-lg p-6 text-center border border-c-border ipulse">
+            <div className="bezel rounded-xl p-6 text-center border border-c-border">
               <div className="w-12 h-12 mx-auto mb-4 rounded-full border-2 border-c-cyan/50 flex items-center justify-center">
                 <span className="font-mono font-bold text-c-cyan glow-c">03</span>
               </div>
-              <h3 className="font-mono font-semibold text-c-cyan text-sm mb-2 uppercase">TRACK PROGRESS</h3>
-              <p className="text-c-muted text-xs leading-relaxed">
+              <h3 className="font-semibold text-c-text text-base mb-2">Track progress</h3>
+              <p className="text-c-muted text-sm leading-relaxed">
                 See which ACS areas are strong, which need work, and get study recommendations.
               </p>
             </div>
@@ -196,13 +197,13 @@ export default function Home() {
       {/* Demo Chat */}
       <section className="py-16 px-4 bg-c-panel/30 border-y border-c-border">
         <div className="max-w-2xl mx-auto">
-          <p className="font-mono text-xs text-c-green glow-g tracking-[0.3em] uppercase text-center mb-2">
-            // LIVE FEED
+          <p className="font-mono text-xs text-c-green tracking-[0.3em] uppercase text-center mb-3">
+            // Live feed
           </p>
-          <h2 className="font-mono font-bold text-xl text-c-amber glow-a text-center mb-2 uppercase">
-            SEE IT IN ACTION
+          <h2 className="font-bold text-3xl sm:text-4xl text-c-text text-center mb-4 tracking-tight">
+            See it in action
           </h2>
-          <p className="text-c-muted text-center mb-8 text-xs">
+          <p className="text-c-muted text-center mb-8 text-base">
             A practice session looks and feels like the real thing.
           </p>
           <div className="bezel rounded-lg border border-c-border overflow-hidden">
@@ -220,7 +221,7 @@ export default function Home() {
               {/* Examiner message */}
               <div className="flex justify-start">
                 <div className="max-w-[80%] bg-c-bezel rounded-lg px-4 py-3 border-l-2 border-c-amber/50">
-                  <p className="text-[10px] font-mono text-c-amber mb-1">DPE EXAMINER</p>
+                  <p className="text-[11px] font-mono text-c-amber tracking-wide mb-1.5">DPE EXAMINER</p>
                   <p className="text-sm text-c-text leading-relaxed">
                     You&apos;re planning a cross-country flight from Jacksonville to Savannah tomorrow morning.
                     Walk me through how you would obtain and interpret the weather information for this flight.
@@ -231,13 +232,13 @@ export default function Home() {
               {/* Applicant message */}
               <div className="flex justify-end">
                 <div className="max-w-[80%] bg-c-cyan-lo/40 rounded-lg px-4 py-3 border-r-2 border-c-cyan/50">
-                  <p className="text-[10px] font-mono text-c-cyan mb-1">APPLICANT</p>
+                  <p className="text-[11px] font-mono text-c-cyan tracking-wide mb-1.5">APPLICANT</p>
                   <p className="text-sm text-c-text leading-relaxed">
                     I&apos;d start by checking the METARs and TAFs for both airports and any fields along my route.
                     I&apos;d also pull up the area forecast and look at the prog charts...
                   </p>
                   <div className="mt-2 pt-2 border-t border-c-border">
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-c-green-lo/40 text-c-green border border-c-green/20">
+                    <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-c-green-lo/40 text-c-green border border-c-green/20">
                       SATISFACTORY
                     </span>
                   </div>
@@ -247,7 +248,7 @@ export default function Home() {
               {/* Examiner follow-up */}
               <div className="flex justify-start">
                 <div className="max-w-[80%] bg-c-bezel rounded-lg px-4 py-3 border-l-2 border-c-amber/50">
-                  <p className="text-[10px] font-mono text-c-amber mb-1">DPE EXAMINER</p>
+                  <p className="text-[11px] font-mono text-c-amber tracking-wide mb-1.5">DPE EXAMINER</p>
                   <p className="text-sm text-c-text leading-relaxed">
                     Good start. Now, the TAF shows &quot;TEMPO 1215/1218 1SM +TSRA.&quot;
                     What does that tell you, and how would it affect your go/no-go decision?
@@ -258,11 +259,11 @@ export default function Home() {
 
             {/* Input bar (visual only) */}
             <div className="px-4 py-3 border-t border-c-border flex gap-2">
-              <div className="flex-1 px-4 py-2.5 bg-c-bezel border border-c-border rounded-lg text-c-muted font-mono text-xs">
-                Type your answer...
+              <div className="flex-1 px-4 py-2.5 bg-c-bezel border border-c-border rounded-lg text-c-muted text-sm">
+                Type your answer…
               </div>
-              <div className="px-5 py-2.5 bg-c-amber rounded-lg text-c-bg font-mono text-xs font-semibold cursor-pointer hover:bg-c-amber/90 transition-colors">
-                SEND
+              <div className="px-5 py-2.5 bg-c-amber rounded-lg text-c-bg text-sm font-semibold cursor-pointer hover:bg-c-amber-bright transition-colors">
+                Send
               </div>
             </div>
           </div>
@@ -272,13 +273,13 @@ export default function Home() {
       {/* Feature Cards */}
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto">
-          <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase text-center mb-2">
-            // SYSTEMS
+          <p className="font-mono text-xs text-c-cyan tracking-[0.3em] uppercase text-center mb-3">
+            // Systems
           </p>
-          <h2 className="font-mono font-bold text-2xl text-c-amber glow-a text-center mb-4 uppercase">
-            BUILT FOR SERIOUS CHECKRIDE PREP
+          <h2 className="font-bold text-3xl sm:text-4xl text-c-text text-center mb-4 tracking-tight">
+            Built for serious checkride prep
           </h2>
-          <p className="text-c-muted text-center mb-14 max-w-lg mx-auto text-sm">
+          <p className="text-c-muted text-center mb-14 max-w-lg mx-auto text-base">
             Every feature designed to simulate the real oral exam experience.
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -286,8 +287,8 @@ export default function Home() {
               <div className="w-8 h-8 rounded bg-c-amber-lo border border-c-amber/20 flex items-center justify-center mb-3">
                 <span className="text-c-amber text-sm">&#10003;</span>
               </div>
-              <h3 className="font-mono font-semibold text-c-amber text-xs mb-1.5 uppercase">ACS-ALIGNED QUESTIONS</h3>
-              <p className="text-c-muted text-xs leading-relaxed">
+              <h3 className="font-semibold text-c-text text-base mb-1.5">ACS-aligned questions</h3>
+              <p className="text-c-muted text-sm leading-relaxed">
                 Every question maps to a specific ACS task and element code.
               </p>
             </div>
@@ -295,8 +296,8 @@ export default function Home() {
               <div className="w-8 h-8 rounded bg-c-green-lo border border-c-green/20 flex items-center justify-center mb-3">
                 <span className="text-c-green text-sm">&#9678;</span>
               </div>
-              <h3 className="font-mono font-semibold text-c-green text-xs mb-1.5 uppercase">VOICE-FIRST EXPERIENCE</h3>
-              <p className="text-c-muted text-xs leading-relaxed">
+              <h3 className="font-semibold text-c-text text-base mb-1.5">Voice-first experience</h3>
+              <p className="text-c-muted text-sm leading-relaxed">
                 Speak your answers like a real oral exam. Type when you prefer.
               </p>
             </div>
@@ -304,8 +305,8 @@ export default function Home() {
               <div className="w-8 h-8 rounded bg-c-cyan-lo border border-c-cyan/20 flex items-center justify-center mb-3">
                 <span className="text-c-cyan text-sm">&#9636;</span>
               </div>
-              <h3 className="font-mono font-semibold text-c-cyan text-xs mb-1.5 uppercase">PROGRESS TRACKING</h3>
-              <p className="text-c-muted text-xs leading-relaxed">
+              <h3 className="font-semibold text-c-text text-base mb-1.5">Progress tracking</h3>
+              <p className="text-c-muted text-sm leading-relaxed">
                 Visual ACS coverage map, weak-area analysis, and study recs.
               </p>
             </div>
@@ -313,8 +314,8 @@ export default function Home() {
               <div className="w-8 h-8 rounded bg-c-amber-lo border border-c-amber/20 flex items-center justify-center mb-3">
                 <span className="text-c-amber text-sm">&#9776;</span>
               </div>
-              <h3 className="font-mono font-semibold text-c-amber text-xs mb-1.5 uppercase">FAA SOURCE REFERENCES</h3>
-              <p className="text-c-muted text-xs leading-relaxed">
+              <h3 className="font-semibold text-c-text text-base mb-1.5">FAA source references</h3>
+              <p className="text-c-muted text-sm leading-relaxed">
                 Every assessment cites PHAK, AFH, AIM, and CFR sources.
               </p>
             </div>
@@ -322,8 +323,8 @@ export default function Home() {
               <div className="w-8 h-8 rounded bg-c-green-lo border border-c-green/20 flex items-center justify-center mb-3">
                 <span className="text-c-green text-sm">&#9881;</span>
               </div>
-              <h3 className="font-mono font-semibold text-c-green text-xs mb-1.5 uppercase">PERSONALIZED DEFAULTS</h3>
-              <p className="text-c-muted text-xs leading-relaxed">
+              <h3 className="font-semibold text-c-text text-base mb-1.5">Personalized defaults</h3>
+              <p className="text-c-muted text-sm leading-relaxed">
                 Save your rating and aircraft class. Start instantly.
               </p>
             </div>
@@ -331,8 +332,8 @@ export default function Home() {
               <div className="w-8 h-8 rounded bg-c-cyan-lo border border-c-cyan/20 flex items-center justify-center mb-3">
                 <span className="text-c-cyan text-sm">&#8634;</span>
               </div>
-              <h3 className="font-mono font-semibold text-c-cyan text-xs mb-1.5 uppercase">SESSION RESUME</h3>
-              <p className="text-c-muted text-xs leading-relaxed">
+              <h3 className="font-semibold text-c-text text-base mb-1.5">Session resume</h3>
+              <p className="text-c-muted text-sm leading-relaxed">
                 Pause mid-exam and pick up later. Progress never lost.
               </p>
             </div>
@@ -343,24 +344,24 @@ export default function Home() {
       {/* Secondary CTA */}
       <section className="py-20 px-4 bg-c-panel/30 border-t border-c-border relative noise">
         <div className="max-w-2xl mx-auto text-center relative z-10">
-          <h2 className="font-mono font-bold text-2xl text-c-amber glow-a mb-4 uppercase">
-            READY TO ACE YOUR ORAL EXAM?
+          <h2 className="font-bold text-3xl sm:text-4xl text-c-text mb-4 tracking-tight">
+            Ready to ace your oral exam?
           </h2>
-          <p className="text-c-muted mb-8 max-w-lg mx-auto text-sm">
+          <p className="text-c-muted mb-8 max-w-lg mx-auto text-base">
             Join pilots using HeyDPE to prepare for their checkrides.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/signup"
-              className="px-8 py-3.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm tracking-wide transition-colors shadow-lg shadow-c-amber/20"
+              className="px-8 py-3.5 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded-lg font-semibold text-[15px] transition-colors shadow-lg shadow-c-amber/20"
             >
-              GET STARTED FREE
+              Get started free
             </Link>
             <Link
               href="/login"
-              className="px-8 py-3.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-mono font-medium text-sm border border-c-border tracking-wide transition-colors"
+              className="px-8 py-3.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-medium text-[15px] border border-c-border transition-colors"
             >
-              SIGN IN
+              Sign in
             </Link>
           </div>
         </div>

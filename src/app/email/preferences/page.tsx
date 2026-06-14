@@ -2,6 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Logo } from '@/components/Brand';
 
 // ---------------------------------------------------------------------------
 // Types & constants
@@ -179,16 +180,16 @@ function EmailPreferencesInner() {
   // -----------------------------------------------------------------------
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-c-bg flex items-center justify-center px-4">
         <div className="max-w-lg mx-auto text-center">
-          <div className="font-mono font-bold text-amber-500 text-sm tracking-widest uppercase mb-8">
-            HEYDPE
+          <div className="flex justify-center mb-8">
+            <Logo size="md" href="/" />
           </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-8">
-            <div className="text-red-400 font-mono text-sm mb-2 uppercase tracking-wider">
+          <div className="bezel border border-c-border rounded-xl p-8">
+            <p className="font-mono text-xs text-c-red tracking-[0.3em] uppercase mb-2">
               Error
-            </div>
-            <p className="text-gray-400 font-mono text-sm">{error}</p>
+            </p>
+            <p className="text-sm text-c-muted leading-relaxed">{error}</p>
           </div>
           <Footer />
         </div>
@@ -201,15 +202,15 @@ function EmailPreferencesInner() {
   // -----------------------------------------------------------------------
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-c-bg flex items-center justify-center px-4">
         <div className="max-w-lg mx-auto text-center">
-          <div className="font-mono font-bold text-amber-500 text-sm tracking-widest uppercase mb-8">
-            HEYDPE
+          <div className="flex justify-center mb-8">
+            <Logo size="md" href="/" />
           </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-8">
-            <div className="text-gray-400 font-mono text-sm animate-pulse">
-              Loading preferences...
-            </div>
+          <div className="bezel border border-c-border rounded-xl p-8">
+            <p className="text-sm text-c-muted animate-pulse">
+              Loading preferences…
+            </p>
           </div>
         </div>
       </div>
@@ -220,19 +221,17 @@ function EmailPreferencesInner() {
   // Main UI
   // -----------------------------------------------------------------------
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col items-center px-4 py-12">
+    <div className="min-h-screen bg-c-bg flex flex-col items-center px-4 py-12">
       <div className="max-w-lg mx-auto w-full">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="font-mono font-bold text-amber-500 text-sm tracking-widest uppercase">
-            HEYDPE
-          </div>
+        <div className="flex justify-center mb-8">
+          <Logo size="md" href="/" />
         </div>
 
         {/* Unsubscribe confirmation banner */}
         {unsubscribed && cat && (
-          <div className="bg-green-950/50 border border-green-800/50 rounded-lg p-4 mb-6">
-            <p className="text-green-400 font-mono text-sm text-center">
+          <div className="bg-c-green-lo border border-c-green-dim rounded-lg p-4 mb-6">
+            <p className="text-sm text-c-green-readable text-center">
               You&apos;ve been unsubscribed from{' '}
               <span className="font-semibold">{CATEGORY_LABELS[cat]}</span>.
             </p>
@@ -240,19 +239,19 @@ function EmailPreferencesInner() {
         )}
 
         {/* Preferences card */}
-        <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
+        <div className="bezel border border-c-border rounded-xl overflow-hidden">
           {/* Header */}
-          <div className="px-6 py-5 border-b border-gray-800">
-            <h1 className="font-mono font-bold text-gray-100 text-base tracking-wider uppercase">
-              Email Preferences
+          <div className="px-6 py-5 border-b border-c-border">
+            <h1 className="text-base font-bold tracking-tight text-c-text">
+              Email preferences
             </h1>
-            <p className="font-mono text-gray-400 text-xs mt-1">
+            <p className="text-sm text-c-muted mt-1">
               Choose which emails you&apos;d like to receive from HeyDPE.
             </p>
           </div>
 
           {/* Optional categories */}
-          <div className="divide-y divide-gray-800">
+          <div className="divide-y divide-c-border">
             {OPTIONAL_CATEGORIES.map((category) => {
               const enabled = isEnabled(category);
               const isSaving = saving === category;
@@ -262,23 +261,23 @@ function EmailPreferencesInner() {
               return (
                 <div
                   key={category}
-                  className={`px-6 py-4 flex items-center justify-between ${
-                    isLinked ? 'bg-amber-500/5' : ''
+                  className={`px-6 py-3 flex items-center justify-between ${
+                    isLinked ? 'bg-c-amber-lo/40' : ''
                   }`}
                 >
                   <div className="flex-1 min-w-0 mr-4">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-gray-100 text-sm">
+                      <span className="text-sm text-c-text">
                         {CATEGORY_LABELS[category]}
                       </span>
                       {isLinked && (
-                        <span className="font-mono text-amber-500 text-[10px] tracking-wider uppercase">
-                          linked
+                        <span className="font-mono text-c-amber text-xs tracking-wider uppercase">
+                          Linked
                         </span>
                       )}
                       {justSaved && (
-                        <span className="font-mono text-green-400 text-[10px] tracking-wider uppercase">
-                          saved
+                        <span className="font-mono text-c-green-readable text-xs tracking-wider uppercase">
+                          Saved
                         </span>
                       )}
                     </div>
@@ -290,15 +289,21 @@ function EmailPreferencesInner() {
                     aria-label={`Toggle ${CATEGORY_LABELS[category]}`}
                     disabled={isSaving}
                     onClick={() => togglePref(category, !enabled)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
-                      enabled ? 'bg-amber-500' : 'bg-gray-700'
-                    } ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
+                    className={`relative inline-flex h-11 w-11 flex-shrink-0 items-center justify-center cursor-pointer rounded-md ${
+                      isSaving ? 'cursor-wait' : ''
+                    }`}
                   >
                     <span
-                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        enabled ? 'translate-x-5' : 'translate-x-0'
-                      }`}
-                    />
+                      className={`relative inline-flex h-6 w-11 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                        enabled ? 'bg-c-amber' : 'bg-c-bezel border-c-border'
+                      } ${isSaving ? 'opacity-50' : ''}`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                          enabled ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </span>
                   </button>
                 </div>
               );
@@ -306,26 +311,26 @@ function EmailPreferencesInner() {
           </div>
 
           {/* Required categories */}
-          <div className="border-t border-gray-800">
+          <div className="border-t border-c-border">
             <div className="px-6 py-3">
-              <p className="font-mono text-gray-500 text-[10px] tracking-wider uppercase">
-                Required — cannot be disabled
+              <p className="font-mono text-c-dim text-xs tracking-[0.2em] uppercase">
+                // Required — cannot be disabled
               </p>
             </div>
-            <div className="divide-y divide-gray-800/50">
+            <div className="divide-y divide-c-border/50">
               {REQUIRED_CATEGORIES.map((category) => (
                 <div
                   key={category}
-                  className="px-6 py-4 flex items-center justify-between opacity-50"
+                  className="px-6 py-3 flex items-center justify-between opacity-60"
                 >
-                  <span className="font-mono text-gray-400 text-sm">
+                  <span className="text-sm text-c-muted">
                     {CATEGORY_LABELS[category]}
                   </span>
                   <div
-                    className="relative inline-flex h-6 w-11 flex-shrink-0 rounded-full bg-gray-600 cursor-not-allowed"
+                    className="relative inline-flex h-6 w-11 flex-shrink-0 rounded-full bg-c-border cursor-not-allowed"
                     title="This email category is required and cannot be disabled"
                   >
-                    <span className="pointer-events-none inline-block h-5 w-5 translate-x-5 transform rounded-full bg-gray-400 shadow ring-0 mt-0.5 ml-0.5" />
+                    <span className="pointer-events-none inline-block h-5 w-5 translate-x-5 transform rounded-full bg-c-dim shadow ring-0 mt-0.5 ml-0.5" />
                   </div>
                 </div>
               ))}
@@ -346,8 +351,8 @@ function EmailPreferencesInner() {
 function Footer() {
   return (
     <div className="mt-8 text-center">
-      <p className="font-mono text-gray-600 text-[10px] tracking-wider">
-        IMAGINE FLYING LLC &middot; JACKSONVILLE, FL
+      <p className="text-xs text-c-dim">
+        Imagine Flying LLC &middot; Jacksonville, FL
       </p>
     </div>
   );
@@ -361,15 +366,15 @@ export default function EmailPreferencesPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
+        <div className="min-h-screen bg-c-bg flex items-center justify-center px-4">
           <div className="max-w-lg mx-auto text-center">
-            <div className="font-mono font-bold text-amber-500 text-sm tracking-widest uppercase mb-8">
-              HEYDPE
+            <div className="flex justify-center mb-8">
+              <Logo size="md" href="/" />
             </div>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-8">
-              <div className="text-gray-400 font-mono text-sm animate-pulse">
-                Loading...
-              </div>
+            <div className="bezel border border-c-border rounded-xl p-8">
+              <p className="text-sm text-c-muted animate-pulse">
+                Loading…
+              </p>
             </div>
           </div>
         </div>

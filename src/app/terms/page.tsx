@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Footer from '@/components/Footer';
+import { Logo } from '@/components/Brand';
 
 export const metadata: Metadata = {
   title: 'Terms of Service — HeyDPE',
@@ -18,27 +19,25 @@ export default function TermsOfServicePage() {
       {/* Nav */}
       <nav className="fixed top-0 inset-x-0 z-50 border-b border-c-border bg-c-bg/80 backdrop-blur-lg">
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
-          <Link href="/" className="font-mono font-bold text-c-amber glow-a text-sm tracking-widest">
-            HEYDPE
-          </Link>
-          <div className="flex items-center gap-4">
+          <Logo size="md" href="/" glow />
+          <div className="flex items-center gap-2 sm:gap-5">
             <Link
               href="/pricing"
-              className="font-mono text-xs text-c-muted hover:text-c-amber transition-colors tracking-wide"
+              className="text-sm text-c-muted hover:text-c-text transition-colors px-2"
             >
-              PRICING
+              Pricing
             </Link>
             <Link
               href="/login"
-              className="font-mono text-xs text-c-muted hover:text-c-text transition-colors tracking-wide"
+              className="text-sm text-c-muted hover:text-c-text transition-colors px-2"
             >
-              SIGN IN
+              Sign in
             </Link>
             <Link
               href="/signup"
-              className="font-mono text-xs px-4 py-1.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded font-semibold tracking-wide transition-colors"
+              className="text-sm px-4 py-1.5 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded-lg font-semibold transition-colors"
             >
-              GET STARTED
+              Get started
             </Link>
           </div>
         </div>
@@ -47,18 +46,18 @@ export default function TermsOfServicePage() {
       {/* Content */}
       <main className="pt-24 pb-20 px-4">
         <div className="max-w-3xl mx-auto">
-          <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase mb-4">
-            // LEGAL
+          <p className="font-mono text-xs text-c-cyan tracking-[0.3em] uppercase mb-4">
+            // Legal
           </p>
-          <h1 className="font-mono font-bold text-3xl sm:text-4xl text-c-amber glow-a leading-tight tracking-tight uppercase mb-4">
-            TERMS OF SERVICE
+          <h1 className="font-bold text-4xl sm:text-5xl text-c-text leading-tight tracking-tight mb-4">
+            Terms of service
           </h1>
-          <p className="text-sm text-c-muted font-mono mb-2">
-            Effective Date: February 18, 2026 &nbsp;|&nbsp; Last Updated: February 18, 2026
+          <p className="text-sm text-c-muted mb-2">
+            Effective date: February 18, 2026 &nbsp;|&nbsp; Last updated: February 18, 2026
           </p>
           <p className="text-sm text-c-muted mb-12">
             Also see our{' '}
-            <Link href="/privacy" className="text-c-cyan hover:text-c-amber transition-colors underline underline-offset-2">
+            <Link href="/privacy" className="text-c-cyan-readable hover:text-c-cyan transition-colors underline underline-offset-2">
               Privacy Policy
             </Link>
             .
@@ -66,16 +65,16 @@ export default function TermsOfServicePage() {
 
           {/* 1. Acceptance of Terms */}
           <section className="mb-12">
-            <h2 className="font-mono font-bold text-lg text-c-amber uppercase mb-4">
-              1. Acceptance of Terms
+            <h2 className="font-bold text-xl sm:text-2xl text-c-text tracking-tight mb-4">
+              1. Acceptance of terms
             </h2>
-            <p className="text-sm text-c-text/80 leading-relaxed mb-3">
+            <p className="text-sm text-c-muted leading-relaxed mb-3">
               By creating an account on HeyDPE (&quot;the Service&quot;), operated by Imagine Flying LLC
               (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;), you agree to be bound by these Terms of Service
               (&quot;Terms&quot;). If you do not agree to these Terms, do not create an account or use the
               Service.
             </p>
-            <p className="text-sm text-c-text/80 leading-relaxed">
+            <p className="text-sm text-c-muted leading-relaxed">
               You must be at least 13 years of age to use HeyDPE. By using the Service, you represent
               and warrant that you are at least 13 years old.
             </p>
@@ -83,19 +82,19 @@ export default function TermsOfServicePage() {
 
           {/* 2. Service Description */}
           <section className="mb-12">
-            <h2 className="font-mono font-bold text-lg text-c-amber uppercase mb-4">
-              2. Service Description
+            <h2 className="font-bold text-xl sm:text-2xl text-c-text tracking-tight mb-4">
+              2. Service description
             </h2>
-            <p className="text-sm text-c-text/80 leading-relaxed mb-3">
+            <p className="text-sm text-c-muted leading-relaxed mb-3">
               HeyDPE is an AI-powered practice tool that simulates FAA Designated Pilot Examiner (DPE)
               oral examinations for checkride preparation. The Service supports Private Pilot
               (FAA-S-ACS-6C), Commercial Pilot (FAA-S-ACS-7B), and Instrument Rating (FAA-S-ACS-8C).
             </p>
             <div className="bezel rounded-lg p-5 border border-c-border">
-              <p className="font-mono text-xs text-c-amber glow-a uppercase mb-2 tracking-wide">
-                Important Disclaimers
+              <p className="text-sm font-semibold text-c-text mb-2">
+                Important disclaimers
               </p>
-              <ul className="list-disc list-outside ml-5 space-y-2 text-sm text-c-text/80 leading-relaxed">
+              <ul className="list-disc list-outside ml-5 space-y-2 text-sm text-c-muted leading-relaxed">
                 <li>
                   HeyDPE is <strong className="text-c-text">NOT a substitute</strong> for instruction
                   from a Certificated Flight Instructor (CFI).
@@ -118,10 +117,10 @@ export default function TermsOfServicePage() {
 
           {/* 3. Account Terms */}
           <section className="mb-12">
-            <h2 className="font-mono font-bold text-lg text-c-amber uppercase mb-4">
-              3. Account Terms
+            <h2 className="font-bold text-xl sm:text-2xl text-c-text tracking-tight mb-4">
+              3. Account terms
             </h2>
-            <ul className="list-disc list-outside ml-5 space-y-2 text-sm text-c-text/80 leading-relaxed">
+            <ul className="list-disc list-outside ml-5 space-y-2 text-sm text-c-muted leading-relaxed">
               <li>
                 <strong className="text-c-text">One account per person.</strong> Each account is for a
                 single individual. You may not share your account credentials with others.
@@ -140,10 +139,10 @@ export default function TermsOfServicePage() {
 
           {/* 4. Free Trial & Subscription */}
           <section className="mb-12">
-            <h2 className="font-mono font-bold text-lg text-c-amber uppercase mb-4">
-              4. Free Trial &amp; Subscription
+            <h2 className="font-bold text-xl sm:text-2xl text-c-text tracking-tight mb-4">
+              4. Free trial &amp; subscription
             </h2>
-            <p className="text-sm text-c-text/80 leading-relaxed mb-4">
+            <p className="text-sm text-c-muted leading-relaxed mb-4">
               HeyDPE offers free limited sessions for new users. For full access, the following
               subscription plans are available:
             </p>
@@ -151,12 +150,12 @@ export default function TermsOfServicePage() {
               <table className="w-full text-sm border border-c-border rounded-lg overflow-hidden">
                 <thead>
                   <tr className="bg-c-panel border-b border-c-border">
-                    <th className="text-left px-4 py-2.5 font-mono text-xs text-c-amber uppercase tracking-wide">Plan</th>
-                    <th className="text-left px-4 py-2.5 font-mono text-xs text-c-amber uppercase tracking-wide">Price</th>
-                    <th className="text-left px-4 py-2.5 font-mono text-xs text-c-amber uppercase tracking-wide">Billing</th>
+                    <th className="text-left px-4 py-2.5 text-sm font-semibold text-c-text">Plan</th>
+                    <th className="text-left px-4 py-2.5 text-sm font-semibold text-c-text">Price</th>
+                    <th className="text-left px-4 py-2.5 text-sm font-semibold text-c-text">Billing</th>
                   </tr>
                 </thead>
-                <tbody className="text-c-text/80">
+                <tbody className="text-c-muted">
                   <tr className="border-b border-c-border/50">
                     <td className="px-4 py-2.5 font-medium text-c-text">Monthly</td>
                     <td className="px-4 py-2.5">$39/month</td>
@@ -170,7 +169,7 @@ export default function TermsOfServicePage() {
                 </tbody>
               </table>
             </div>
-            <ul className="list-disc list-outside ml-5 space-y-2 text-sm text-c-text/80 leading-relaxed">
+            <ul className="list-disc list-outside ml-5 space-y-2 text-sm text-c-muted leading-relaxed">
               <li>All payments are processed securely through <strong className="text-c-text">Stripe</strong>.</li>
               <li>Subscriptions <strong className="text-c-text">auto-renew</strong> at the end of each billing period.</li>
               <li>You may <strong className="text-c-text">cancel at any time</strong> from your account settings.</li>
@@ -180,14 +179,14 @@ export default function TermsOfServicePage() {
 
           {/* 5. Refund Policy */}
           <section className="mb-12">
-            <h2 className="font-mono font-bold text-lg text-c-amber uppercase mb-4">
-              5. Refund Policy
+            <h2 className="font-bold text-xl sm:text-2xl text-c-text tracking-tight mb-4">
+              5. Refund policy
             </h2>
             <div className="bezel rounded-lg p-5 border border-c-border">
-              <p className="text-sm text-c-text/80 leading-relaxed">
+              <p className="text-sm text-c-muted leading-relaxed">
                 We offer a <strong className="text-c-green">full refund within 7 days</strong> of your
                 first payment, no questions asked. To request a refund, contact us at{' '}
-                <a href="mailto:pd@imagineflying.com" className="text-c-cyan hover:text-c-amber transition-colors underline underline-offset-2">
+                <a href="mailto:pd@imagineflying.com" className="text-c-cyan-readable hover:text-c-cyan transition-colors underline underline-offset-2">
                   pd@imagineflying.com
                 </a>{' '}
                 with your account email and we will process your refund promptly.
@@ -197,14 +196,14 @@ export default function TermsOfServicePage() {
 
           {/* 6. Acceptable Use */}
           <section className="mb-12">
-            <h2 className="font-mono font-bold text-lg text-c-amber uppercase mb-4">
-              6. Acceptable Use
+            <h2 className="font-bold text-xl sm:text-2xl text-c-text tracking-tight mb-4">
+              6. Acceptable use
             </h2>
-            <p className="text-sm text-c-text/80 leading-relaxed mb-3">
+            <p className="text-sm text-c-muted leading-relaxed mb-3">
               You agree to use HeyDPE only for its intended purpose: personal checkride preparation.
               You may not:
             </p>
-            <ul className="list-disc list-outside ml-5 space-y-2 text-sm text-c-text/80 leading-relaxed">
+            <ul className="list-disc list-outside ml-5 space-y-2 text-sm text-c-muted leading-relaxed">
               <li><strong className="text-c-text">Share your account</strong> or credentials with others.</li>
               <li><strong className="text-c-text">Reverse engineer</strong>, decompile, disassemble, or otherwise attempt to derive the source code of the Service.</li>
               <li><strong className="text-c-text">Use the Service for commercial purposes</strong> (e.g., reselling, training materials for sale) without a separate license from us.</li>
@@ -216,10 +215,10 @@ export default function TermsOfServicePage() {
 
           {/* 7. Intellectual Property */}
           <section className="mb-12">
-            <h2 className="font-mono font-bold text-lg text-c-amber uppercase mb-4">
-              7. Intellectual Property
+            <h2 className="font-bold text-xl sm:text-2xl text-c-text tracking-tight mb-4">
+              7. Intellectual property
             </h2>
-            <ul className="list-disc list-outside ml-5 space-y-2 text-sm text-c-text/80 leading-relaxed">
+            <ul className="list-disc list-outside ml-5 space-y-2 text-sm text-c-muted leading-relaxed">
               <li>
                 <strong className="text-c-text">HeyDPE owns the Service.</strong> The Service, including
                 its design, software, AI prompts, branding, and all related intellectual property, is
@@ -244,17 +243,17 @@ export default function TermsOfServicePage() {
 
           {/* 8. Disclaimer of Warranties */}
           <section className="mb-12">
-            <h2 className="font-mono font-bold text-lg text-c-amber uppercase mb-4">
-              8. Disclaimer of Warranties
+            <h2 className="font-bold text-xl sm:text-2xl text-c-text tracking-tight mb-4">
+              8. Disclaimer of warranties
             </h2>
             <div className="bezel rounded-lg p-5 border border-c-border">
-              <p className="text-sm text-c-text/80 leading-relaxed mb-3">
+              <p className="text-sm text-c-muted leading-relaxed mb-3">
                 THE SERVICE IS PROVIDED <strong className="text-c-amber">&quot;AS IS&quot;</strong> AND{' '}
                 <strong className="text-c-amber">&quot;AS AVAILABLE&quot;</strong> WITHOUT WARRANTIES OF ANY KIND,
                 EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY,
                 FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
               </p>
-              <ul className="list-disc list-outside ml-5 space-y-2 text-sm text-c-text/80 leading-relaxed">
+              <ul className="list-disc list-outside ml-5 space-y-2 text-sm text-c-muted leading-relaxed">
                 <li>
                   We make <strong className="text-c-text">no warranty regarding the accuracy</strong> of
                   AI-generated content. AI responses may contain errors or outdated information.
@@ -274,13 +273,13 @@ export default function TermsOfServicePage() {
 
           {/* 9. Limitation of Liability */}
           <section className="mb-12">
-            <h2 className="font-mono font-bold text-lg text-c-amber uppercase mb-4">
-              9. Limitation of Liability
+            <h2 className="font-bold text-xl sm:text-2xl text-c-text tracking-tight mb-4">
+              9. Limitation of liability
             </h2>
-            <p className="text-sm text-c-text/80 leading-relaxed mb-3">
+            <p className="text-sm text-c-muted leading-relaxed mb-3">
               TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW:
             </p>
-            <ul className="list-disc list-outside ml-5 space-y-2 text-sm text-c-text/80 leading-relaxed">
+            <ul className="list-disc list-outside ml-5 space-y-2 text-sm text-c-muted leading-relaxed">
               <li>
                 Our total liability to you for all claims arising from or related to the Service shall
                 not exceed the <strong className="text-c-text">total fees paid by you in the 12 months
@@ -301,10 +300,10 @@ export default function TermsOfServicePage() {
 
           {/* 10. Indemnification */}
           <section className="mb-12">
-            <h2 className="font-mono font-bold text-lg text-c-amber uppercase mb-4">
+            <h2 className="font-bold text-xl sm:text-2xl text-c-text tracking-tight mb-4">
               10. Indemnification
             </h2>
-            <p className="text-sm text-c-text/80 leading-relaxed">
+            <p className="text-sm text-c-muted leading-relaxed">
               You agree to indemnify and hold harmless Imagine Flying LLC, its officers, directors,
               employees, and agents from any claims, damages, losses, liabilities, and expenses
               (including reasonable attorney&apos;s fees) arising out of or related to: (a) your use of the
@@ -315,10 +314,10 @@ export default function TermsOfServicePage() {
 
           {/* 11. Governing Law */}
           <section className="mb-12">
-            <h2 className="font-mono font-bold text-lg text-c-amber uppercase mb-4">
-              11. Governing Law
+            <h2 className="font-bold text-xl sm:text-2xl text-c-text tracking-tight mb-4">
+              11. Governing law
             </h2>
-            <p className="text-sm text-c-text/80 leading-relaxed">
+            <p className="text-sm text-c-muted leading-relaxed">
               These Terms shall be governed by and construed in accordance with the laws of the{' '}
               <strong className="text-c-text">State of Florida</strong>, without regard to its conflict
               of law provisions. Any legal action or proceeding arising under these Terms shall be
@@ -330,10 +329,10 @@ export default function TermsOfServicePage() {
 
           {/* 12. Changes to Terms */}
           <section className="mb-12">
-            <h2 className="font-mono font-bold text-lg text-c-amber uppercase mb-4">
-              12. Changes to Terms
+            <h2 className="font-bold text-xl sm:text-2xl text-c-text tracking-tight mb-4">
+              12. Changes to terms
             </h2>
-            <p className="text-sm text-c-text/80 leading-relaxed">
+            <p className="text-sm text-c-muted leading-relaxed">
               We reserve the right to modify these Terms at any time. We will provide at least{' '}
               <strong className="text-c-text">30 days&apos; notice</strong> before any material changes take
               effect by sending an email to the address associated with your account. Your continued
@@ -344,10 +343,10 @@ export default function TermsOfServicePage() {
 
           {/* 13. Contact */}
           <section className="mb-4">
-            <h2 className="font-mono font-bold text-lg text-c-amber uppercase mb-4">
+            <h2 className="font-bold text-xl sm:text-2xl text-c-text tracking-tight mb-4">
               13. Contact
             </h2>
-            <p className="text-sm text-c-text/80 leading-relaxed mb-3">
+            <p className="text-sm text-c-muted leading-relaxed mb-3">
               If you have questions about these Terms, please contact us:
             </p>
             <div className="bezel rounded-lg p-5 border border-c-border">
@@ -357,7 +356,7 @@ export default function TermsOfServicePage() {
                 Jacksonville, FL
                 <br />
                 Email:{' '}
-                <a href="mailto:pd@imagineflying.com" className="text-c-cyan hover:text-c-amber transition-colors underline underline-offset-2">
+                <a href="mailto:pd@imagineflying.com" className="text-c-cyan-readable hover:text-c-cyan transition-colors underline underline-offset-2">
                   pd@imagineflying.com
                 </a>
               </p>
