@@ -2362,7 +2362,7 @@ export default function PracticePage() {
                 }
               }}
               disabled={loading}
-              className={`shrink-0 px-4 py-3 rounded-lg transition-all ${
+              className={`shrink-0 px-3 py-3 rounded-lg transition-all ${
                 voice.isListening
                   ? 'bg-c-red hover:bg-c-red/90 text-c-bg ring-2 ring-c-red/50 ring-offset-2 ring-offset-c-bg animate-pulse'
                   : (voice.isSpeaking || sentenceTTS.isSpeaking)
@@ -2384,7 +2384,7 @@ export default function PracticePage() {
             data-testid="send-answer-button"
             onClick={() => sendAnswer()}
             disabled={loading || !input.trim()}
-            className="shrink-0 px-5 py-3 bg-c-amber hover:bg-c-amber-bright disabled:opacity-50 disabled:hover:bg-c-amber text-c-bg rounded-lg transition-colors"
+            className="shrink-0 px-3 py-3 bg-c-amber hover:bg-c-amber-bright disabled:opacity-50 disabled:hover:bg-c-amber text-c-bg rounded-lg transition-colors"
             title="Send answer (Enter)"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
