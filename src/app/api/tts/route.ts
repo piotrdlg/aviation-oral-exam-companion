@@ -133,6 +133,17 @@ export async function POST(request: NextRequest) {
       const validModels = voiceOptions.map((o) => o.model);
       if (validModels.includes(voiceOverride)) {
         activeVoice = voiceOverride;
+      } else if (/^aura-2-[a-z]+-en$/.test(voiceOverride)) {
+        // Admin voice-lab preview: admins may audition ANY well-formed Aura-2
+        // catalog voice, even ones not yet curated into voice.user_options.
+        // The strict regex bounds what reaches Deepgram. One extra query, and
+        // only on the rare non-curated-override path.
+        const { data: adminRow } = await serviceSupabase
+          .from('admin_users')
+          .select('user_id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (adminRow) activeVoice = voiceOverride;
       }
     }
     // Strip encoding from system_config to prevent overriding the provider's

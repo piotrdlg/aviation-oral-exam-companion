@@ -141,44 +141,27 @@ describe('resolveVoiceModel', () => {
     expect(resolveVoiceModel({ examinerProfile: 'bob_supportive', preferredVoice: 'aura-2-zeus-en' })).toBe('aura-2-mars-en');
   });
 
-  it('heals persona_id rows (the production regression shape)', () => {
-    expect(resolveVoiceModel({ preferredVoice: 'karen_sullivan' })).toBe('aura-2-athena-en');
-    expect(resolveVoiceModel({ preferredVoice: 'maria_torres' })).toBe('aura-2-luna-en');
-    expect(resolveVoiceModel({ preferredVoice: 'jim_hayes' })).toBe('aura-2-zeus-en');
-    expect(resolveVoiceModel({ preferredVoice: 'bob_mitchell' })).toBe('aura-2-mars-en');
+  it('ignores a stale preferred_voice when examiner_profile is null (owner regression: "Maria" shown, Zeus heard)', () => {
+    // The exam/Settings UI shows the examiner from examiner_profile, defaulting
+    // to Maria when null — it never reads preferred_voice. The voice must obey
+    // the same rule, so a leftover preferred_voice can never make "Maria Torres"
+    // speak in a male voice. This is the gap #37 left for null-profile rows.
+    expect(resolveVoiceModel({ examinerProfile: null, preferredVoice: 'aura-2-zeus-en' })).toBe('aura-2-luna-en');
+    expect(resolveVoiceModel({ preferredVoice: 'jim_hayes' })).toBe('aura-2-luna-en');
+    expect(resolveVoiceModel({ preferredVoice: 'karen_sullivan' })).toBe('aura-2-luna-en');
+    expect(resolveVoiceModel({ preferredVoice: 'aura-2-orpheus-en' })).toBe('aura-2-luna-en');
   });
 
-  it('passes legacy direct-model rows through unchanged', () => {
-    expect(resolveVoiceModel({ preferredVoice: 'aura-2-zeus-en' })).toBe('aura-2-zeus-en');
-    expect(resolveVoiceModel({ preferredVoice: 'aura-2-athena-en' })).toBe('aura-2-athena-en');
-  });
-
-  it('trusts unknown but model-shaped strings (admin-curated extras)', () => {
-    expect(resolveVoiceModel({ preferredVoice: 'aura-2-orpheus-en' })).toBe('aura-2-orpheus-en');
-  });
-
-  it('defaults to the DEFAULT examiner\'s voice (Maria → female luna, not male orion)', () => {
+  it('defaults to the DEFAULT examiner\'s voice (Maria → female luna, never male orion)', () => {
     expect(resolveVoiceModel({})).toBe('aura-2-luna-en');
     expect(resolveVoiceModel({ preferredVoice: null, examinerProfile: null })).toBe('aura-2-luna-en');
     expect(resolveVoiceModel({ preferredVoice: 'garbage-value' })).toBe('aura-2-luna-en');
   });
 
-  it('voice always matches the profile resolveExaminerProfile would show', () => {
-    // The invariant behind the whole fix: for every input shape, the voice
-    // model and the displayed examiner resolve to the same profile.
-    const inputs = [
-      { preferredVoice: 'karen_sullivan' },
-      { preferredVoice: 'aura-2-zeus-en' },
-      { examinerProfile: 'bob_supportive' },
-      {},
-    ];
-    for (const input of inputs) {
-      const model = resolveVoiceModel(input);
-      const { profile } = resolveExaminerProfile({
-        savedProfile: input.examinerProfile,
-        savedVoice: input.preferredVoice ?? undefined,
-      });
-      expect(model, JSON.stringify(input)).toBe(profile.voiceModel);
+  it('every examiner selection yields that profile\'s gender-correct model', () => {
+    // The voice the user hears is fully determined by the examiner they select.
+    for (const key of ALL_PROFILE_KEYS) {
+      expect(resolveVoiceModel({ examinerProfile: key })).toBe(EXAMINER_PROFILES[key].voiceModel);
     }
   });
 });

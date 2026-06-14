@@ -183,39 +183,35 @@ export function resolveExaminerProfile(input: {
  * Resolve the actual TTS voice MODEL for a user — the single function that
  * guarantees the voice heard matches the examiner identity shown in the UI.
  *
- * Accepts every historical shape of user_profiles.preferred_voice:
- *   - a Deepgram model ('aura-2-zeus-en', pre-profile era) → passthrough
- *   - a persona_id ('jim_hayes', early profile-selector era) → that profile's model
- *   - null → the user's examiner_profile's model, else the DEFAULT examiner's
- *     model (maria_methodical → female luna; the old global default was the
- *     MALE orion while the UI showed Maria — the gender-mismatch bug).
+ * SOURCE OF TRUTH = examiner_profile. The exam/Settings UI shows the examiner
+ * from user_profiles.examiner_profile, defaulting to Maria when it is null
+ * (settings/page.tsx: `!examinerProfile && profileKey === 'maria_methodical'`).
+ * The voice MUST follow that same rule, or the name and voice diverge — which
+ * is exactly the persona↔voice mismatch bug (e.g. a legacy row with
+ * examiner_profile=null and a stale preferred_voice='aura-2-zeus-en' rendered
+ * "Maria Torres" in a MALE Zeus voice).
  *
- * Priority mirrors resolveExaminerProfile: explicit profile > stored voice > default.
+ * A legacy `preferred_voice` is therefore NOT consulted here — it is not a
+ * reliable signal of the displayed examiner. Selecting an examiner keeps
+ * preferred_voice in sync with the profile's model (api/user/tier) for any
+ * consumer that still reads that column; resolution itself is profile-driven.
+ *
+ * @param input.examinerProfile  user_profiles.examiner_profile (the authority)
+ * @param input.preferredVoice   legacy column — accepted for signature/back-compat, intentionally ignored
  */
 export function resolveVoiceModel(input: {
   preferredVoice?: string | null;
   examinerProfile?: string | null;
 }): string {
-  const { preferredVoice, examinerProfile } = input;
+  const { examinerProfile } = input;
 
-  // 1. Explicit examiner profile wins — it is what the exam UI displays.
+  // Explicit examiner profile → its model (this is what the exam UI displays).
   if (examinerProfile && examinerProfile in EXAMINER_PROFILES) {
     return EXAMINER_PROFILES[examinerProfile as ExaminerProfileKey].voiceModel;
   }
 
-  if (preferredVoice) {
-    // 2a. Known model string (legacy direct-voice rows) → passthrough.
-    const isKnownModel = Object.values(EXAMINER_PROFILES).some((p) => p.voiceModel === preferredVoice);
-    if (isKnownModel) return preferredVoice;
-    // 2b. persona_id → that profile's model (heals 'karen_sullivan'-shaped rows).
-    if (preferredVoice in VOICE_TO_PROFILE_MAP) {
-      return EXAMINER_PROFILES[VOICE_TO_PROFILE_MAP[preferredVoice]].voiceModel;
-    }
-    // 2c. Unknown but model-shaped (admin-curated extras) → trust the admin list.
-    if (preferredVoice.startsWith('aura-')) return preferredVoice;
-  }
-
-  // 3. Default examiner (matches resolveExaminerProfile's default).
+  // Default examiner — matches the UI's null-state default (Maria → female luna,
+  // never the old male orion). Keeps the voice consistent with the shown name.
   return EXAMINER_PROFILES.maria_methodical.voiceModel;
 }
 
