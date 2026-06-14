@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import UTMCapture from '@/components/UTMCapture';
 import Footer from '@/components/Footer';
+import { Logo } from '@/components/Brand';
 import { createClient } from '@/lib/supabase/client';
 
 const plans = [
@@ -160,19 +161,19 @@ export default function PricingPage() {
       {/* ─── Sticky nav ─── */}
       <nav className="fixed top-0 inset-x-0 z-50 border-b border-c-border bg-c-bg/80 backdrop-blur-lg">
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
-          <Link href="/" className="font-mono font-bold text-c-amber glow-a text-sm tracking-widest">HEYDPE</Link>
-          <div className="flex items-center gap-4">
-            <Link href="/" className="font-mono text-xs text-c-muted hover:text-c-amber transition-colors tracking-wide uppercase">
-              HOME
+          <Logo size="md" href="/" glow />
+          <div className="flex items-center gap-2 sm:gap-5">
+            <Link href="/" className="text-sm text-c-muted hover:text-c-text transition-colors px-2">
+              Home
             </Link>
-            <Link href="/login" className="font-mono text-xs text-c-muted hover:text-c-text transition-colors tracking-wide uppercase">
-              SIGN IN
+            <Link href="/login" className="text-sm text-c-muted hover:text-c-text transition-colors px-2">
+              Sign in
             </Link>
             <Link
               href="/signup"
-              className="font-mono text-xs px-4 py-1.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded font-semibold tracking-wide transition-colors"
+              className="text-sm px-4 py-1.5 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded-lg font-semibold transition-colors"
             >
-              GET STARTED
+              Get started
             </Link>
           </div>
         </div>
@@ -181,22 +182,22 @@ export default function PricingPage() {
       <div className="max-w-4xl mx-auto px-4 pt-28 pb-16">
         {/* ─── 1. Headline ─── */}
         <div className="text-center mb-4">
-          <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase text-center mb-4">// PRICING</p>
-          <h1 className="font-mono font-bold text-4xl sm:text-5xl text-c-amber glow-a tracking-tight uppercase mb-4">
-            SIMPLE PRICING FOR SERIOUS<br className="hidden sm:block" /> CHECKRIDE PREP
+          <p className="font-mono text-xs text-c-cyan tracking-[0.3em] uppercase text-center mb-4">// Pricing</p>
+          <h1 className="font-bold text-4xl sm:text-5xl text-c-text tracking-tight mb-5">
+            Simple pricing for serious<br className="hidden sm:block" /> checkride prep
           </h1>
-          <p className="text-sm text-c-muted max-w-xl mx-auto leading-relaxed">
+          <p className="text-base text-c-muted max-w-xl mx-auto leading-relaxed">
             Unlimited AI-powered oral exam practice. Start with a 7-day free trial — no charge until you decide.
           </p>
         </div>
 
         {/* Value anchor */}
-        <p className="text-center font-mono text-xs text-c-cyan glow-c mb-12">
+        <p className="text-center text-sm text-c-cyan-readable mb-12">
           Less than the cost of one CFI hour — practice as many times as you need.
         </p>
 
         {error && (
-          <div className="max-w-md mx-auto mb-8 bg-c-red-dim/30 border border-c-red/40 rounded-lg p-3 text-c-red font-mono text-xs text-center uppercase">
+          <div className="max-w-md mx-auto mb-8 bg-c-red-dim/30 border border-c-red/40 rounded-lg p-3 text-c-red text-sm text-center">
             {error}
           </div>
         )}
@@ -214,31 +215,31 @@ export default function PricingPage() {
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="font-mono text-[10px] bg-c-amber text-c-bg font-semibold px-3 py-1 rounded-full uppercase tracking-wide">
-                    BEST VALUE
+                  <span className="font-mono text-[11px] bg-c-amber text-c-bg font-semibold px-3 py-1 rounded-full uppercase tracking-wide">
+                    Best value
                   </span>
                 </div>
               )}
 
               <div className="mb-4">
-                <h2 className="font-mono font-bold text-sm text-c-amber uppercase tracking-wider">{plan.name}</h2>
-                <p className="text-xs text-c-muted mt-1">{plan.description}</p>
+                <h2 className="font-semibold text-lg text-c-text">{plan.name}</h2>
+                <p className="text-sm text-c-muted mt-1">{plan.description}</p>
               </div>
 
               <div className="mb-1">
-                <span className="font-mono font-bold text-4xl text-c-amber glow-a">{plan.price}</span>
-                <span className="font-mono text-c-muted ml-1">{plan.period}</span>
+                <span className="font-mono font-bold text-5xl text-c-amber glow-a tabular-nums">{plan.price}</span>
+                <span className="text-c-muted ml-1.5">{plan.period}</span>
               </div>
               {plan.savings && (
-                <p className="font-mono text-xs text-c-green glow-g mb-5">That&apos;s {plan.savings} — billed annually</p>
+                <p className="text-sm text-c-green-readable mb-5">That&apos;s {plan.savings} — billed annually</p>
               )}
               {!plan.savings && <div className="mb-5" />}
 
               <ul className="space-y-3 mb-8 flex-1">
                 {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm">
+                  <li key={i} className="flex items-start gap-2.5 text-sm">
                     <span className="text-c-green mt-0.5 shrink-0">&#10003;</span>
-                    <span className="text-c-text">{feature}</span>
+                    <span className="text-c-text leading-relaxed">{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -246,17 +247,17 @@ export default function PricingPage() {
               <button
                 onClick={() => isActiveSubscriber ? window.location.href = '/settings' : handleCheckout(plan.id)}
                 disabled={loadingPlan !== null}
-                className={`w-full py-3 rounded-lg font-mono font-semibold transition-colors text-sm uppercase tracking-wide ${
+                className={`w-full py-3 rounded-lg font-semibold transition-colors text-[15px] ${
                   plan.popular
-                    ? 'bg-c-amber hover:bg-c-amber/90 text-c-bg shadow-lg shadow-c-amber/20'
+                    ? 'bg-c-amber hover:bg-c-amber-bright text-c-bg shadow-lg shadow-c-amber/20'
                     : 'bg-c-bezel hover:bg-c-border text-c-text border border-c-border'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {loadingPlan === plan.id
-                  ? 'REDIRECTING TO CHECKOUT...'
+                  ? 'Redirecting to checkout…'
                   : isActiveSubscriber
-                    ? 'MANAGE SUBSCRIPTION'
-                    : plan.cta.toUpperCase()}
+                    ? 'Manage subscription'
+                    : plan.cta}
               </button>
             </div>
           ))}
@@ -264,33 +265,33 @@ export default function PricingPage() {
 
         {/* Trial + guarantee messaging */}
         <div className="max-w-3xl mx-auto text-center mb-16">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 font-mono text-xs text-c-dim uppercase">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-x-6 gap-y-2 text-sm text-c-muted">
             <span className="flex items-center gap-1.5">
               <span className="text-c-green">&#10003;</span>
-              7-DAY FREE TRIAL ON ALL PLANS
+              7-day free trial on all plans
             </span>
             <span className="flex items-center gap-1.5">
               <span className="text-c-green">&#10003;</span>
-              CANCEL ANYTIME, NO QUESTIONS ASKED
+              Cancel anytime, no questions asked
             </span>
             <span className="flex items-center gap-1.5">
               <span className="text-c-green">&#10003;</span>
-              SECURE PAYMENT VIA STRIPE
+              Secure payment via Stripe
             </span>
           </div>
         </div>
 
         {/* ─── 3. Feature comparison ─── */}
         <div className="max-w-2xl mx-auto mb-20" id="compare">
-          <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase text-center mb-2">// COMPARISON</p>
-          <h2 className="font-mono font-bold text-2xl text-c-amber glow-a text-center mb-2 uppercase">COMPARE PLANS</h2>
-          <p className="text-c-muted text-center text-sm mb-8">Free tier included for everyone. Upgrade when you&apos;re ready.</p>
+          <p className="font-mono text-xs text-c-cyan tracking-[0.3em] uppercase text-center mb-3">// Comparison</p>
+          <h2 className="font-bold text-3xl text-c-text text-center mb-3 tracking-tight">Compare plans</h2>
+          <p className="text-c-muted text-center text-base mb-8">Free tier included for everyone. Upgrade when you&apos;re ready.</p>
 
-          <div className="bezel rounded-lg border border-c-border overflow-hidden">
-            <div className="grid grid-cols-3 px-5 py-3 border-b border-c-border font-mono text-[10px] font-semibold uppercase tracking-wider">
-              <span className="text-c-dim">FEATURE</span>
-              <span className="text-c-dim text-center">FREE</span>
-              <span className="text-c-amber text-center">PAID</span>
+          <div className="bezel rounded-xl border border-c-border overflow-hidden">
+            <div className="grid grid-cols-3 px-5 py-3 border-b border-c-border font-mono text-[11px] font-semibold uppercase tracking-wider">
+              <span className="text-c-dim">Feature</span>
+              <span className="text-c-dim text-center">Free</span>
+              <span className="text-c-amber text-center">Paid</span>
             </div>
             {featureComparison.map((row, i) => (
               <div key={i} className={`grid grid-cols-3 px-5 py-3 text-sm ${i < featureComparison.length - 1 ? 'border-b border-c-border/50' : ''}`}>
@@ -320,17 +321,17 @@ export default function PricingPage() {
 
         {/* ─── 4. Value comparison: HeyDPE vs CFI Mock Oral ─── */}
         <div className="max-w-2xl mx-auto mb-20">
-          <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase text-center mb-2">// VALUE</p>
-          <h2 className="font-mono font-bold text-2xl text-c-amber glow-a text-center mb-2 uppercase">HEYDPE VS. CFI MOCK ORAL</h2>
-          <p className="text-c-muted text-center text-sm mb-8">
+          <p className="font-mono text-xs text-c-cyan tracking-[0.3em] uppercase text-center mb-3">// Value</p>
+          <h2 className="font-bold text-3xl text-c-text text-center mb-3 tracking-tight">HeyDPE vs. a CFI mock oral</h2>
+          <p className="text-c-muted text-center text-base mb-8">
             HeyDPE doesn&apos;t replace your CFI — it supplements your training so you walk into the checkride prepared.
           </p>
 
-          <div className="bezel rounded-lg border border-c-border overflow-hidden">
-            <div className="grid grid-cols-3 px-5 py-3 border-b border-c-border font-mono text-[10px] font-semibold uppercase tracking-wider">
+          <div className="bezel rounded-xl border border-c-border overflow-hidden">
+            <div className="grid grid-cols-3 px-5 py-3 border-b border-c-border font-mono text-[11px] font-semibold uppercase tracking-wider">
               <span className="text-c-dim"></span>
-              <span className="text-c-amber text-center">HEYDPE</span>
-              <span className="text-c-dim text-center">CFI MOCK ORAL</span>
+              <span className="text-c-amber text-center">HeyDPE</span>
+              <span className="text-c-dim text-center">CFI mock oral</span>
             </div>
             {valueComparison.map((row, i) => (
               <div key={i} className={`grid grid-cols-3 px-5 py-3 text-sm ${i < valueComparison.length - 1 ? 'border-b border-c-border/50' : ''}`}>
@@ -341,21 +342,21 @@ export default function PricingPage() {
             ))}
           </div>
 
-          <p className="text-[10px] text-c-dim font-mono text-center mt-4 max-w-lg mx-auto leading-relaxed">
+          <p className="text-xs text-c-dim text-center mt-4 max-w-lg mx-auto leading-relaxed">
             Average CFI rates based on national estimates. HeyDPE cost calculated at ~30 sessions/month on the monthly plan. Your CFI remains essential for flight training — HeyDPE handles the oral exam repetition.
           </p>
         </div>
 
         {/* ─── 5. FAQ ─── */}
         <div className="max-w-2xl mx-auto mb-20">
-          <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase text-center mb-2">// FAQ</p>
-          <h2 className="font-mono font-bold text-2xl text-c-amber glow-a text-center mb-8 uppercase">FREQUENTLY ASKED QUESTIONS</h2>
+          <p className="font-mono text-xs text-c-cyan tracking-[0.3em] uppercase text-center mb-3">// FAQ</p>
+          <h2 className="font-bold text-3xl text-c-text text-center mb-8 tracking-tight">Frequently asked questions</h2>
           <div className="space-y-3">
             {faqs.map((faq, i) => (
-              <details key={i} className="group bezel rounded-lg border border-c-border">
-                <summary className="px-5 py-4 cursor-pointer font-mono text-sm font-semibold text-c-text uppercase flex items-center justify-between list-none">
-                  {faq.q.toUpperCase()}
-                  <span className="text-c-muted transition-transform group-open:rotate-180 shrink-0 ml-4 text-xs">&#9660;</span>
+              <details key={i} className="group bezel rounded-xl border border-c-border open:border-c-border-hi transition-colors">
+                <summary className="px-5 py-4 cursor-pointer text-[15px] font-semibold text-c-text flex items-center justify-between list-none gap-4">
+                  {faq.q}
+                  <span className="text-c-muted transition-transform group-open:rotate-180 shrink-0 text-xs">&#9660;</span>
                 </summary>
                 <div className="px-5 pb-4 text-sm text-c-muted leading-relaxed">
                   {faq.a}
@@ -367,43 +368,43 @@ export default function PricingPage() {
 
         {/* ─── 6. Final CTA ─── */}
         <div className="max-w-2xl mx-auto text-center py-16 border-t border-c-border">
-          <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase text-center mb-4">// GET STARTED</p>
-          <h2 className="font-mono font-bold text-3xl text-c-amber glow-a mb-4 uppercase">
-            START PRACTICING TODAY
+          <p className="font-mono text-xs text-c-cyan tracking-[0.3em] uppercase text-center mb-4">// Get started</p>
+          <h2 className="font-bold text-3xl sm:text-4xl text-c-text mb-4 tracking-tight">
+            Start practicing today
           </h2>
-          <p className="text-c-muted mb-8 max-w-md mx-auto text-sm">
+          <p className="text-c-muted mb-8 max-w-md mx-auto text-base">
             7 days free. Cancel anytime. Walk into your checkride knowing you&apos;ve covered every ACS area.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {isActiveSubscriber ? (
               <button
                 onClick={() => window.location.href = '/settings'}
-                className="px-8 py-3.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm transition-colors shadow-lg shadow-c-amber/20 uppercase tracking-wide"
+                className="px-8 py-3.5 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded-lg font-semibold text-[15px] transition-colors shadow-lg shadow-c-amber/20"
               >
-                MANAGE YOUR SUBSCRIPTION
+                Manage your subscription
               </button>
             ) : (
               <>
                 <button
                   onClick={() => handleCheckout('annual')}
                   disabled={loadingPlan !== null}
-                  className="px-8 py-3.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm transition-colors shadow-lg shadow-c-amber/20 uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-8 py-3.5 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded-lg font-semibold text-[15px] transition-colors shadow-lg shadow-c-amber/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loadingPlan === 'annual' ? 'REDIRECTING...' : 'START FREE TRIAL — ANNUAL (BEST VALUE)'}
+                  {loadingPlan === 'annual' ? 'Redirecting…' : 'Start free trial — Annual (best value)'}
                 </button>
                 <button
                   onClick={() => handleCheckout('monthly')}
                   disabled={loadingPlan !== null}
-                  className="px-8 py-3.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-mono font-medium text-sm border border-c-border transition-colors uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-8 py-3.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-medium text-[15px] border border-c-border transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loadingPlan === 'monthly' ? 'REDIRECTING...' : 'START FREE TRIAL — MONTHLY'}
+                  {loadingPlan === 'monthly' ? 'Redirecting…' : 'Start free trial — Monthly'}
                 </button>
               </>
             )}
           </div>
           {!isActiveSubscriber && (
-            <p className="mt-6 font-mono text-xs text-c-dim">
-              Not ready to commit? <Link href="/signup" className="text-c-cyan hover:text-c-cyan/80 transition-colors">CREATE A FREE ACCOUNT</Link> and try limited sessions first.
+            <p className="mt-6 text-sm text-c-dim">
+              Not ready to commit? <Link href="/signup" className="text-c-cyan-readable hover:text-c-cyan transition-colors">Create a free account</Link> and try limited sessions first.
             </p>
           )}
         </div>
