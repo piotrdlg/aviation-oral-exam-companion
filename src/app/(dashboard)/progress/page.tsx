@@ -5,8 +5,11 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import WeakAreas from './components/WeakAreas';
 import StudyRecommendations from './components/StudyRecommendations';
+import ReadinessGauge from './components/ReadinessGauge';
+import StatCard from './components/StatCard';
+import AcsCoverageBars from './components/AcsCoverageBars';
 import type { ElementScore, AircraftClass, Rating } from '@/types/database';
-import { PARTIAL_CREDIT } from '@/lib/exam-logic';
+import { readiness, satisfactoryRate } from '@/lib/progress-metrics';
 
 const RATING_OPTIONS: { value: Rating; label: string }[] = [
   { value: 'private', label: 'PPL' },
@@ -203,28 +206,18 @@ export default function ProgressPage() {
   const totalSessions = lifetimeStats?.totalSessions ?? filteredSessions.length;
   const completedSessions = lifetimeStats?.completedSessions ?? filteredSessions.filter((s) => s.status === 'completed').length;
   const totalExchanges = lifetimeStats?.totalExchanges ?? filteredSessions.reduce((sum, s) => sum + (s.exchange_count || 0), 0);
-  const uniqueTasksCovered = lifetimeStats?.uniqueTasksCovered ?? new Set(filteredSessions.flatMap((s) => s.acs_tasks_covered || []).map((t) => t.task_id)).size;
   const attemptedElements = filteredScores.filter(s => s.total_attempts > 0).length;
   const totalElements = filteredScores.length;
 
-  // Checkride readiness score (0-100)
-  const readinessScore = useMemo(() => {
-    if (attemptedElements === 0 || totalElements === 0) return 0;
-    const satisfactory = filteredScores.filter(s => s.latest_score === 'satisfactory').length;
-    const partial = filteredScores.filter(s => s.latest_score === 'partial').length;
-    const coverageWeight = attemptedElements / totalElements;
-    const qualityWeight = totalElements > 0
-      ? (satisfactory + partial * PARTIAL_CREDIT) / totalElements // W2.3: shared grading weight
-      : 0;
-    return Math.round(coverageWeight * 40 + qualityWeight * 60);
-  }, [filteredScores, attemptedElements, totalElements]);
+  // Checkride readiness (0-100) + tier — shared formula (progress-metrics).
+  const { score: readinessScore, tier: readinessTier } = useMemo(() => readiness(filteredScores), [filteredScores]);
+  const satisfactoryPct = useMemo(() => satisfactoryRate(filteredScores), [filteredScores]);
 
-  // Readiness tier
-  const readinessTier = readinessScore >= 80 ? 'ready' : readinessScore >= 50 ? 'progressing' : readinessScore >= 20 ? 'building' : 'starting';
-  const readinessColor = readinessTier === 'ready' ? 'text-c-green' : readinessTier === 'progressing' ? 'text-c-cyan' : readinessTier === 'building' ? 'text-c-amber' : 'text-c-muted';
-  const readinessBg = readinessTier === 'ready' ? 'bg-c-green-lo' : readinessTier === 'progressing' ? 'bg-c-cyan-lo' : readinessTier === 'building' ? 'bg-c-amber-lo' : 'bg-c-bezel';
-  const readinessGlow = readinessTier === 'ready' ? 'glow-g' : readinessTier === 'progressing' ? 'glow-c' : readinessTier === 'building' ? 'glow-a' : '';
-  const readinessProgClass = readinessTier === 'ready' ? 'prog-g' : readinessTier === 'progressing' ? 'prog-c' : readinessTier === 'building' ? 'prog-a' : 'prog-a';
+  // Recent exams exclude discarded/expired sessions (align with the EXAMS count).
+  const recentSessions = useMemo(
+    () => filteredSessions.filter((s) => s.status !== 'abandoned' && s.status !== 'expired'),
+    [filteredSessions]
+  );
 
   // Weak elements count (for achievements)
   const weakCount = useMemo(() => {
@@ -346,36 +339,19 @@ export default function ProgressPage() {
         </div>
       ) : (
         <>
-          {/* Readiness Score + Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
-            {/* Readiness Score */}
-            <div className={`col-span-2 md:col-span-1 ${readinessBg} rounded-lg border border-c-border p-4 text-center`}>
-              <p className={`text-3xl font-mono font-bold tabular-nums ${readinessColor}`}>{readinessScore}</p>
-              <p className="font-mono text-xs text-c-muted uppercase tracking-wider mt-0.5">READINESS</p>
-              <div className="mt-2 h-1.5 bg-c-border rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all duration-500 ${readinessProgClass}`}
-                  style={{ width: `${readinessScore}%` }}
-                />
-              </div>
-            </div>
-            <div className="bezel rounded-lg border border-c-border p-3 text-center">
-              <p className="text-2xl font-mono font-semibold tabular-nums text-c-text">{totalSessions}</p>
-              <p className="font-mono text-xs text-c-muted uppercase tracking-wider mt-0.5">
-                EXAMS{completedSessions < totalSessions ? ` (${completedSessions} DONE)` : ''}
-              </p>
-            </div>
-            <div className="bezel rounded-lg border border-c-border p-3 text-center">
-              <p className="text-2xl font-mono font-semibold tabular-nums text-c-text">{totalExchanges}</p>
-              <p className="font-mono text-xs text-c-muted uppercase tracking-wider mt-0.5">EXCHANGES</p>
-            </div>
-            <div className="bezel rounded-lg border border-c-border p-3 text-center">
-              <p className="text-2xl font-mono font-semibold tabular-nums text-c-text">{coveragePct}%</p>
-              <p className="font-mono text-xs text-c-muted uppercase tracking-wider mt-0.5">COVERAGE</p>
-            </div>
-            <div className="bezel rounded-lg border border-c-border p-3 text-center">
-              <p className="text-2xl font-mono font-semibold tabular-nums text-c-text">{attemptedElements}</p>
-              <p className="font-mono text-xs text-c-muted uppercase tracking-wider mt-0.5">ELEMENTS</p>
+          {/* Readiness gauge + explained stat readouts */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+            <ReadinessGauge score={readinessScore} tier={readinessTier} hasData={attemptedElements > 0} />
+            <div className="col-span-2 grid grid-cols-2 gap-3">
+              <StatCard
+                label="Exams"
+                value={totalSessions}
+                accent="cyan"
+                meta={completedSessions === totalSessions ? 'all completed' : `${completedSessions} completed · ${totalSessions - completedSessions} in progress`}
+              />
+              <StatCard label="Exchanges" value={totalExchanges} meta="Questions answered" />
+              <StatCard label="ACS coverage" value={`${coveragePct}%`} accent="amber" meta={`${attemptedElements} of ${totalElements} elements`} />
+              <StatCard label="Satisfactory" value={satisfactoryPct === null ? '—' : `${satisfactoryPct}%`} accent="green" meta="of graded answers" />
             </div>
           </div>
 
@@ -453,7 +429,16 @@ export default function ProgressPage() {
                   <span className="font-mono text-xs text-c-dim">LOADING...</span>
                 )}
               </div>
-              <AcsCoverageTreemap scores={treemapScores} />
+              <AcsCoverageBars scores={treemapScores} />
+              <details className="bezel rounded-lg border border-c-border group">
+                <summary className="cursor-pointer list-none font-mono text-xs text-c-muted uppercase tracking-wider px-4 py-3 hover:text-c-text select-none flex items-center gap-2">
+                  <span className="text-c-dim group-open:rotate-90 transition-transform inline-block">▸</span>
+                  Show full element treemap
+                </summary>
+                <div className="px-2 pb-2">
+                  <AcsCoverageTreemap scores={treemapScores} />
+                </div>
+              </details>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <WeakAreas scores={treemapScores} />
                 <StudyRecommendations scores={treemapScores} />
@@ -465,12 +450,12 @@ export default function ProgressPage() {
               <div>
                 <h2 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-3">RECENT EXAMS</h2>
                 <div className="space-y-2">
-                  {filteredSessions.length === 0 ? (
+                  {recentSessions.length === 0 ? (
                     <div className="bezel rounded-lg border border-c-border p-4 text-center">
                       <p className="text-base text-c-dim font-mono">No {RATING_LABELS[selectedRating]} exams yet</p>
                     </div>
                   ) : (
-                    filteredSessions.slice(0, 10).map((session) => {
+                    recentSessions.slice(0, 10).map((session) => {
                       const grade = session.result?.grade;
                       const gradeLabel = grade === 'satisfactory' ? 'SATISFACTORY'
                         : grade === 'unsatisfactory' ? 'UNSATISFACTORY'
