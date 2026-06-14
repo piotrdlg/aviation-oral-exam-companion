@@ -69,3 +69,8 @@ scripts/.cache/
 scenario-ab-transcripts.local.md
 scripts/load/users.local.json
 .uxreview/
+
+# redesign working screenshots (W6B)
+baseline/
+after/
+.playwright-mcp/

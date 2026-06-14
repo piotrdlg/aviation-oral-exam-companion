@@ -2,6 +2,7 @@ import Link from 'next/link';
 import JsonLd from '@/components/JsonLd';
 import UTMCapture from '@/components/UTMCapture';
 import Footer from '@/components/Footer';
+import { Logo } from '@/components/Brand';
 
 export default function Home() {
   return (
@@ -24,25 +25,25 @@ export default function Home() {
       {/* Nav */}
       <nav className="fixed top-0 inset-x-0 z-50 border-b border-c-border bg-c-bg/80 backdrop-blur-lg">
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
-          <span className="font-mono font-bold text-c-amber glow-a text-sm tracking-widest">HEYDPE</span>
-          <div className="flex items-center gap-4">
+          <Logo size="md" href="/" glow />
+          <div className="flex items-center gap-2 sm:gap-5">
             <Link
               href="/pricing"
-              className="font-mono text-xs text-c-muted hover:text-c-amber transition-colors tracking-wide"
+              className="text-sm text-c-muted hover:text-c-text transition-colors px-2"
             >
-              PRICING
+              Pricing
             </Link>
             <Link
               href="/login"
-              className="font-mono text-xs text-c-muted hover:text-c-text transition-colors tracking-wide"
+              className="text-sm text-c-muted hover:text-c-text transition-colors px-2"
             >
-              SIGN IN
+              Sign in
             </Link>
             <Link
               href="/signup"
-              className="font-mono text-xs px-4 py-1.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded font-semibold tracking-wide transition-colors"
+              className="text-sm px-4 py-1.5 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded-lg font-semibold transition-colors"
             >
-              GET STARTED
+              Get started
             </Link>
           </div>
         </div>

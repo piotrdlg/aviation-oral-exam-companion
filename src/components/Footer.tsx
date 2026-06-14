@@ -1,40 +1,42 @@
 import Link from 'next/link';
+import { Logo } from '@/components/Brand';
 
 interface FooterProps {
   /**
-   * "public" — full footer with nav links (PRICING, SIGN IN, GET STARTED)
-   * "compact" — minimal footer with just PRIVACY + TERMS links
+   * "public" — full footer with nav links (Pricing, Sign in, Get started)
+   * "compact" — minimal footer with just Privacy + Terms links
    */
   variant?: 'public' | 'compact';
 }
+
+const linkClass =
+  'text-c-muted hover:text-c-text transition-colors';
 
 export default function Footer({ variant = 'public' }: FooterProps) {
   return (
     <footer className="py-10 px-4 border-t border-c-border">
       <div className="max-w-4xl mx-auto">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-          <Link href="/" className="font-mono font-bold text-c-amber glow-a text-sm tracking-widest">
-            HEYDPE
-          </Link>
-          <div className="flex items-center gap-6 text-xs font-mono text-c-muted">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-5 mb-6">
+          <Logo size="sm" href="/" />
+          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[13px]">
             {variant === 'public' && (
               <>
-                <Link href="/pricing" className="hover:text-c-amber transition-colors">PRICING</Link>
-                <Link href="/login" className="hover:text-c-text transition-colors">SIGN IN</Link>
-                <Link href="/signup" className="hover:text-c-text transition-colors">GET STARTED</Link>
+                <Link href="/pricing" className={linkClass}>Pricing</Link>
+                <Link href="/login" className={linkClass}>Sign in</Link>
+                <Link href="/signup" className="text-c-amber hover:text-c-amber-bright transition-colors">Get started</Link>
               </>
             )}
-            <Link href="/help" className="hover:text-c-text transition-colors">HELP</Link>
-            <Link href="/privacy" className="hover:text-c-text transition-colors">PRIVACY</Link>
-            <Link href="/terms" className="hover:text-c-text transition-colors">TERMS</Link>
-            <Link href="/accessibility" className="hover:text-c-text transition-colors">ACCESSIBILITY</Link>
-          </div>
+            <Link href="/help" className={linkClass}>Help</Link>
+            <Link href="/privacy" className={linkClass}>Privacy</Link>
+            <Link href="/terms" className={linkClass}>Terms</Link>
+            <Link href="/accessibility" className={linkClass}>Accessibility</Link>
+          </nav>
         </div>
-        <p className="text-[10px] text-c-muted text-center leading-relaxed max-w-xl mx-auto font-mono">
-          FOR STUDY PURPOSES ONLY. NOT A SUBSTITUTE FOR INSTRUCTION FROM A CERTIFICATED
-          FLIGHT INSTRUCTOR (CFI) OR AN ACTUAL DPE CHECKRIDE. ALWAYS VERIFY INFORMATION
-          AGAINST CURRENT FAA PUBLICATIONS. HEYDPE IS A PRODUCT OF IMAGINE FLYING LLC,
-          JACKSONVILLE, FL.
+        <p className="text-xs text-c-dim text-center leading-relaxed max-w-xl mx-auto">
+          For study purposes only. Not a substitute for instruction from a certificated
+          flight instructor (CFI) or an actual DPE checkride. Always verify information
+          against current FAA publications. HeyDPE is a product of Imagine Flying LLC,
+          Jacksonville, FL.
         </p>
       </div>
     </footer>
