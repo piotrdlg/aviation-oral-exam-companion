@@ -25,7 +25,10 @@ export function EmailLayout({ children, preview }: EmailLayoutProps) {
         <Container style={container}>
           {/* Header */}
           <Section style={header}>
-            <Text style={logo}>HEYDPE</Text>
+            <Text style={logo}>
+              <span style={{ color: '#d7dee6' }}>Hey</span>
+              <span style={{ color: '#f5a623' }}>DPE</span>
+            </Text>
           </Section>
 
           {/* Content */}
@@ -75,11 +78,10 @@ const header: React.CSSProperties = {
 };
 
 const logo: React.CSSProperties = {
-  color: '#f59e0b',
-  fontSize: '20px',
+  color: '#f5a623',
+  fontSize: '22px',
   fontWeight: 700,
-  letterSpacing: '0.1em',
-  textTransform: 'uppercase' as const,
+  letterSpacing: '0.01em',
   margin: 0,
 };
 

@@ -17,7 +17,7 @@ export default function TryPage() {
       {/* Minimal Header — Logo only, no nav links */}
       <header className="fixed top-0 inset-x-0 z-50 border-b border-c-border bg-c-bg/80 backdrop-blur-lg">
         <div className="max-w-5xl mx-auto px-4 flex items-center h-14">
-          <Logo size="md" href="/" glow />
+          <Logo size="md" href={null} glow />
         </div>
       </header>
 

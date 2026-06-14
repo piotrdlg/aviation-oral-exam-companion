@@ -22,7 +22,7 @@ export class TryPage {
   constructor(page: Page) {
     this.page = page;
     this.heading = page.getByRole('heading', { level: 1 });
-    this.headerLogo = page.locator('header').getByText('HEYDPE');
+    this.headerLogo = page.locator('header').getByText('HeyDPE');
     this.ctaLinks = page.getByRole('link', { name: /start free/i });
     this.footerPrivacyLink = page.locator('footer').getByRole('link', { name: /privacy/i });
     this.footerTermsLink = page.locator('footer').getByRole('link', { name: /terms/i });
