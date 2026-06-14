@@ -57,27 +57,27 @@ export default function HomePage() {
 
   const proTips = [
     {
-      title: 'USE VOICE MODE',
+      title: 'Use voice mode',
       content: 'Real checkrides are oral exams — the examiner asks, you speak. Enable voice mode to practice articulating your answers out loud. This builds the verbal fluency and confidence you\'ll need when sitting across from your DPE.',
       icon: '\u{1F3A4}',
     },
     {
-      title: 'LET THE EXAM RUN DEEP',
+      title: 'Let the exam run deep',
       content: 'Longer sessions cover more ACS elements, giving the system better data about your strengths and weaknesses. Aim for at least 10-15 exchanges per session. The examiner naturally transitions between topics like a real DPE would.',
       icon: '\u{1F4CA}',
     },
     {
-      title: 'REVIEW YOUR PROGRESS REGULARLY',
+      title: 'Review your progress regularly',
       content: 'After every few sessions, visit the Progress page. The ACS coverage treemap shows exactly which areas are strong (green) and which need work (red). Use this data to plan your next session.',
       icon: '\u{1F4C8}',
     },
     {
-      title: 'DRILL SPECIFIC TASKS',
+      title: 'Drill specific tasks',
       content: 'Know your weak area? When configuring a new exam, expand the task picker to select only the tasks you want to focus on. Perfect for targeted practice on topics like weather, airspace, or regulations.',
       icon: '\u{1F3AF}',
     },
     {
-      title: 'TRACK MULTIPLE RATINGS',
+      title: 'Track multiple ratings',
       content: 'Preparing for both your PPL and Instrument checkrides? Each rating has its own ACS task set and progress tracking. Switch ratings in Settings and run separate exams — your progress is tracked independently.',
       icon: '\u{2708}\u{FE0F}',
     },
@@ -87,11 +87,15 @@ export default function HomePage() {
     <div className="max-w-4xl mx-auto">
       {/* ====== Section 1: Welcome + Quick Start ====== */}
       <div className="s1 mb-8">
-        <h1 className="font-mono font-bold text-2xl text-c-amber glow-a tracking-wider uppercase">
-          {loading ? 'HOME' : greeting.toUpperCase()}
-        </h1>
+        {loading ? (
+          <div className="h-9 w-64 bg-c-panel rounded animate-pulse" />
+        ) : (
+          <h1 className="font-bold text-3xl text-c-text tracking-tight">
+            {greeting}
+          </h1>
+        )}
         {!loading && stats && (
-          <p className="text-base text-c-muted mt-1">
+          <p className="text-base text-c-muted mt-1.5">
             {isNewUser
               ? 'Your AI examiner is standing by. Let\u2019s get you checkride-ready.'
               : `${RATING_LABELS[stats.rating]} preparation \u2014 ${stats.completedSessions} exam${stats.completedSessions !== 1 ? 's' : ''} completed, ${stats.totalExchanges} exchanges`
@@ -106,37 +110,59 @@ export default function HomePage() {
           {hasResumable && (
             <Link
               href="/practice"
-              className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-c-cyan hover:bg-c-cyan/90 text-c-bg rounded-lg font-mono font-semibold text-sm tracking-wide transition-colors shadow-lg shadow-c-cyan/20 uppercase"
+              className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-c-cyan hover:bg-c-cyan-readable text-c-bg rounded-lg font-semibold text-[15px] transition-colors shadow-lg shadow-c-cyan/20"
             >
-              <span>&#9654;</span> CONTINUE EXAM
+              <span aria-hidden>&#9654;</span> Continue exam
             </Link>
           )}
           <Link
             href="/practice"
-            className={`flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-lg font-mono font-semibold text-sm tracking-wide transition-colors uppercase ${
+            className={`flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-lg font-semibold text-[15px] transition-colors ${
               hasResumable
                 ? 'bg-c-bezel hover:bg-c-border text-c-text border border-c-border'
-                : 'bg-c-amber hover:bg-c-amber/90 text-c-bg shadow-lg shadow-c-amber/20'
+                : 'bg-c-amber hover:bg-c-amber-bright text-c-bg shadow-lg shadow-c-amber/20'
             }`}
           >
-            {isNewUser ? 'START YOUR FIRST EXAM' : 'NEW EXAM'}
+            {isNewUser ? 'Start your first exam' : 'New exam'}
           </Link>
           <Link
             href="/progress"
-            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-c-bezel hover:bg-c-border text-c-text rounded-lg border border-c-border font-mono font-semibold text-sm tracking-wide transition-colors uppercase"
+            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-c-bezel hover:bg-c-border text-c-text rounded-lg border border-c-border font-semibold text-[15px] transition-colors"
           >
-            VIEW PROGRESS
+            View progress
           </Link>
+        </div>
+      )}
+
+      {/* New-user onboarding strip (audit HIGH: empty-state direction) */}
+      {!loading && isNewUser && (
+        <div className="s2 station rounded-xl p-5 mb-10 ring-1 ring-c-amber/20">
+          <p className="font-mono text-xs text-c-amber tracking-[0.3em] uppercase mb-4">// Preflight checklist</p>
+          <ol className="grid sm:grid-cols-3 gap-4">
+            {[
+              { n: '01', t: 'Configure your exam', d: 'Pick your rating, study mode, and difficulty \u2014 or just start with the defaults.' },
+              { n: '02', t: 'Answer the examiner', d: 'Speak or type your answers. The AI DPE assesses each one against the ACS.' },
+              { n: '03', t: 'Review your readiness', d: 'See your score, weak areas, and ACS coverage on the Progress page.' },
+            ].map((s) => (
+              <li key={s.n} className="flex gap-3">
+                <span className="font-mono font-bold text-c-amber glow-a text-sm shrink-0">{s.n}</span>
+                <span>
+                  <span className="block font-semibold text-c-text text-sm">{s.t}</span>
+                  <span className="block text-c-muted text-sm leading-relaxed mt-0.5">{s.d}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
         </div>
       )}
 
       {/* ====== Section 2: How Your AI Examiner Works ====== */}
       <div className="s3 mb-10">
-        <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase mb-2">
-          // SYSTEM OVERVIEW
+        <p className="font-mono text-xs text-c-cyan tracking-[0.3em] uppercase mb-2">
+          // System overview
         </p>
-        <h2 className="font-mono font-bold text-xl text-c-amber glow-a uppercase mb-6">
-          HOW YOUR AI EXAMINER WORKS
+        <h2 className="font-bold text-2xl text-c-text tracking-tight mb-6">
+          How your AI examiner works
         </h2>
 
         <div className="grid sm:grid-cols-3 gap-4">
@@ -145,10 +171,10 @@ export default function HomePage() {
             <div className="w-8 h-8 rounded bg-c-amber-lo border border-c-amber/20 flex items-center justify-center mb-3">
               <span className="text-c-amber text-sm font-mono font-bold">ACS</span>
             </div>
-            <h3 className="font-mono font-semibold text-c-amber text-xs mb-2 uppercase">
-              ACS-BASED QUESTIONING
+            <h3 className="font-semibold text-c-text text-base mb-2">
+              ACS-based questioning
             </h3>
-            <p className="text-c-muted text-xs leading-relaxed">
+            <p className="text-c-muted text-sm leading-relaxed">
               Your examiner follows the exact same Airman Certification Standards that real DPEs use.
               Each question targets specific knowledge (K), risk management (R), and skill (S) elements
               from the FAA ACS document for your rating.
@@ -160,10 +186,10 @@ export default function HomePage() {
             <div className="w-8 h-8 rounded bg-c-green-lo border border-c-green/20 flex items-center justify-center mb-3">
               <span className="text-c-green text-sm">&#10003;</span>
             </div>
-            <h3 className="font-mono font-semibold text-c-green text-xs mb-2 uppercase">
-              ADAPTIVE ASSESSMENT
+            <h3 className="font-semibold text-c-text text-base mb-2">
+              Adaptive assessment
             </h3>
-            <p className="text-c-muted text-xs leading-relaxed">
+            <p className="text-c-muted text-sm leading-relaxed">
               Every answer is scored as satisfactory, partial, or unsatisfactory with specific feedback.
               Your exam grade uses a 70% threshold matching FAA practical test standards.
               The examiner adjusts follow-ups based on your performance.
@@ -175,10 +201,10 @@ export default function HomePage() {
             <div className="w-8 h-8 rounded bg-c-cyan-lo border border-c-cyan/20 flex items-center justify-center mb-3">
               <span className="text-c-cyan text-sm">&#9776;</span>
             </div>
-            <h3 className="font-mono font-semibold text-c-cyan text-xs mb-2 uppercase">
-              FAA SOURCE REFERENCES
+            <h3 className="font-semibold text-c-text text-base mb-2">
+              FAA source references
             </h3>
-            <p className="text-c-muted text-xs leading-relaxed">
+            <p className="text-c-muted text-sm leading-relaxed">
               Assessments cross-reference official FAA publications — PHAK, AFH, AIM, and FAR/AIM.
               You see exact citations with page numbers so you can study the source material directly
               and verify the correct answers.
@@ -189,11 +215,11 @@ export default function HomePage() {
 
       {/* ====== Section 3: Study Strategies ====== */}
       <div className="s4 mb-10">
-        <p className="font-mono text-xs text-c-green glow-g tracking-[0.3em] uppercase mb-2">
-          // STUDY STRATEGIES
+        <p className="font-mono text-xs text-c-green tracking-[0.3em] uppercase mb-2">
+          // Study strategies
         </p>
-        <h2 className="font-mono font-bold text-xl text-c-amber glow-a uppercase mb-2">
-          THREE PATHS TO CHECKRIDE READINESS
+        <h2 className="font-bold text-2xl text-c-text tracking-tight mb-2">
+          Three paths to checkride readiness
         </h2>
         <p className="text-c-muted text-sm mb-6">
           Each study mode serves a different phase of your preparation. Use them in sequence for best results.
@@ -208,29 +234,29 @@ export default function HomePage() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-3 mb-1">
-                  <h3 className="font-mono font-semibold text-c-amber text-sm uppercase">
-                    FIRST PASS: AREA BY AREA
+                  <h3 className="font-semibold text-c-text text-base">
+                    First pass: area by area
                   </h3>
-                  <span className="px-2 py-0.5 rounded bg-c-amber-lo text-c-amber border border-c-amber/20 font-mono text-[10px] uppercase">
+                  <span className="px-2 py-0.5 rounded bg-c-amber-lo text-c-amber border border-c-amber/20 font-mono text-[11px] uppercase">
                     LINEAR MODE
                   </span>
                 </div>
-                <p className="text-c-muted text-xs leading-relaxed mb-3">
+                <p className="text-c-muted text-sm leading-relaxed mb-3">
                   Works through ACS areas in order (I through XII), ensuring you cover every topic systematically.
                   The examiner completes one area before moving to the next, just like a structured study plan.
                 </p>
                 <div className="iframe rounded-lg p-3">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider">BEST FOR</p>
+                      <p className="font-mono text-[11px] text-c-muted uppercase tracking-wider">BEST FOR</p>
                       <p className="text-xs text-c-text mt-0.5">Starting prep, 4+ weeks before checkride</p>
                     </div>
                     <div>
-                      <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider">DIFFICULTY</p>
+                      <p className="font-mono text-[11px] text-c-muted uppercase tracking-wider">DIFFICULTY</p>
                       <p className="text-xs text-c-text mt-0.5">Use Easy or Mixed</p>
                     </div>
                     <div>
-                      <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider">STRATEGY</p>
+                      <p className="font-mono text-[11px] text-c-muted uppercase tracking-wider">STRATEGY</p>
                       <p className="text-xs text-c-text mt-0.5">Focus on exposure, not perfection</p>
                     </div>
                   </div>
@@ -247,29 +273,29 @@ export default function HomePage() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-3 mb-1">
-                  <h3 className="font-mono font-semibold text-c-green text-sm uppercase">
-                    DEEP DIVE: RANDOM CHALLENGES
+                  <h3 className="font-semibold text-c-text text-base">
+                    Deep dive: random challenges
                   </h3>
-                  <span className="px-2 py-0.5 rounded bg-c-green-lo text-c-green border border-c-green/20 font-mono text-[10px] uppercase">
+                  <span className="px-2 py-0.5 rounded bg-c-green-lo text-c-green border border-c-green/20 font-mono text-[11px] uppercase">
                     ACROSS ACS MODE
                   </span>
                 </div>
-                <p className="text-c-muted text-xs leading-relaxed mb-3">
+                <p className="text-c-muted text-sm leading-relaxed mb-3">
                   Questions from any area at random, simulating a real oral exam where the DPE jumps between
                   topics. Builds your ability to recall knowledge under pressure without knowing what&apos;s coming next.
                 </p>
                 <div className="iframe rounded-lg p-3">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider">BEST FOR</p>
+                      <p className="font-mono text-[11px] text-c-muted uppercase tracking-wider">BEST FOR</p>
                       <p className="text-xs text-c-text mt-0.5">Test readiness, 2-3 weeks out</p>
                     </div>
                     <div>
-                      <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider">DIFFICULTY</p>
+                      <p className="font-mono text-[11px] text-c-muted uppercase tracking-wider">DIFFICULTY</p>
                       <p className="text-xs text-c-text mt-0.5">Use Medium or Hard</p>
                     </div>
                     <div>
-                      <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider">STRATEGY</p>
+                      <p className="font-mono text-[11px] text-c-muted uppercase tracking-wider">STRATEGY</p>
                       <p className="text-xs text-c-text mt-0.5">Build recall under pressure</p>
                     </div>
                   </div>
@@ -286,14 +312,14 @@ export default function HomePage() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-3 mb-1">
-                  <h3 className="font-mono font-semibold text-c-cyan text-sm uppercase">
-                    FINAL PREP: TARGET WEAK SPOTS
+                  <h3 className="font-semibold text-c-text text-base">
+                    Final prep: target weak spots
                   </h3>
-                  <span className="px-2 py-0.5 rounded bg-c-cyan-lo text-c-cyan border border-c-cyan/20 font-mono text-[10px] uppercase">
+                  <span className="px-2 py-0.5 rounded bg-c-cyan-lo text-c-cyan border border-c-cyan/20 font-mono text-[11px] uppercase">
                     WEAK AREAS MODE
                   </span>
                 </div>
-                <p className="text-c-muted text-xs leading-relaxed mb-3">
+                <p className="text-c-muted text-sm leading-relaxed mb-3">
                   Analyzes your past performance and focuses on areas where you scored lowest.
                   Questions are weighted toward unsatisfactory and partial elements to turn
                   your weaknesses into strengths before the real checkride.
@@ -301,15 +327,15 @@ export default function HomePage() {
                 <div className="iframe rounded-lg p-3">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider">BEST FOR</p>
+                      <p className="font-mono text-[11px] text-c-muted uppercase tracking-wider">BEST FOR</p>
                       <p className="text-xs text-c-text mt-0.5">Final review, 1 week before</p>
                     </div>
                     <div>
-                      <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider">DIFFICULTY</p>
+                      <p className="font-mono text-[11px] text-c-muted uppercase tracking-wider">DIFFICULTY</p>
                       <p className="text-xs text-c-text mt-0.5">Use Mixed</p>
                     </div>
                     <div>
-                      <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider">STRATEGY</p>
+                      <p className="font-mono text-[11px] text-c-muted uppercase tracking-wider">STRATEGY</p>
                       <p className="text-xs text-c-text mt-0.5">Repeat until all areas are green</p>
                     </div>
                   </div>
@@ -322,50 +348,50 @@ export default function HomePage() {
 
       {/* ====== Section 4: Difficulty Levels ====== */}
       <div className="s5 mb-10">
-        <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase mb-2">
-          // DIFFICULTY SETTINGS
+        <p className="font-mono text-xs text-c-cyan tracking-[0.3em] uppercase mb-2">
+          // Difficulty settings
         </p>
-        <h2 className="font-mono font-bold text-xl text-c-amber glow-a uppercase mb-6">
-          CHOOSE YOUR CHALLENGE LEVEL
+        <h2 className="font-bold text-2xl text-c-text tracking-tight mb-6">
+          Choose your challenge level
         </h2>
 
         <div className="bezel rounded-lg border border-c-border overflow-hidden">
           <table className="w-full">
             <thead>
               <tr className="border-b border-c-border">
-                <th className="px-4 py-3 font-mono text-[10px] text-c-muted uppercase tracking-wider font-normal text-left">Level</th>
-                <th className="px-4 py-3 font-mono text-[10px] text-c-muted uppercase tracking-wider font-normal text-left">What to Expect</th>
-                <th className="px-4 py-3 font-mono text-[10px] text-c-muted uppercase tracking-wider font-normal text-left hidden sm:table-cell">Best For</th>
+                <th className="px-4 py-3 font-mono text-[11px] text-c-muted uppercase tracking-wider font-normal text-left">Level</th>
+                <th className="px-4 py-3 font-mono text-[11px] text-c-muted uppercase tracking-wider font-normal text-left">What to Expect</th>
+                <th className="px-4 py-3 font-mono text-[11px] text-c-muted uppercase tracking-wider font-normal text-left hidden sm:table-cell">Best For</th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-b border-c-border/50">
                 <td className="px-4 py-3">
-                  <span className="font-mono text-xs text-c-green font-semibold">EASY</span>
+                  <span className="font-mono text-xs text-c-green font-semibold">Easy</span>
                 </td>
-                <td className="px-4 py-3 text-xs text-c-text">Straightforward recall questions about core concepts</td>
-                <td className="px-4 py-3 text-xs text-c-muted hidden sm:table-cell">First-time studying a topic</td>
+                <td className="px-4 py-3 text-sm text-c-text">Straightforward recall questions about core concepts</td>
+                <td className="px-4 py-3 text-sm text-c-muted hidden sm:table-cell">First-time studying a topic</td>
               </tr>
               <tr className="border-b border-c-border/50">
                 <td className="px-4 py-3">
-                  <span className="font-mono text-xs text-c-cyan font-semibold">MEDIUM</span>
+                  <span className="font-mono text-xs text-c-cyan font-semibold">Medium</span>
                 </td>
-                <td className="px-4 py-3 text-xs text-c-text">Application and scenario-based questions</td>
-                <td className="px-4 py-3 text-xs text-c-muted hidden sm:table-cell">Building deeper understanding</td>
+                <td className="px-4 py-3 text-sm text-c-text">Application and scenario-based questions</td>
+                <td className="px-4 py-3 text-sm text-c-muted hidden sm:table-cell">Building deeper understanding</td>
               </tr>
               <tr className="border-b border-c-border/50">
                 <td className="px-4 py-3">
-                  <span className="font-mono text-xs text-c-red font-semibold">HARD</span>
+                  <span className="font-mono text-xs text-c-red font-semibold">Hard</span>
                 </td>
-                <td className="px-4 py-3 text-xs text-c-text">Complex scenarios, edge cases, &ldquo;stump the student&rdquo;</td>
-                <td className="px-4 py-3 text-xs text-c-muted hidden sm:table-cell">Pre-checkride stress testing</td>
+                <td className="px-4 py-3 text-sm text-c-text">Complex scenarios, edge cases, &ldquo;stump the student&rdquo;</td>
+                <td className="px-4 py-3 text-sm text-c-muted hidden sm:table-cell">Pre-checkride stress testing</td>
               </tr>
               <tr>
                 <td className="px-4 py-3">
-                  <span className="font-mono text-xs text-c-amber font-semibold">MIXED</span>
+                  <span className="font-mono text-xs text-c-amber font-semibold">Mixed</span>
                 </td>
-                <td className="px-4 py-3 text-xs text-c-text">Random mix of all levels &mdash; most realistic</td>
-                <td className="px-4 py-3 text-xs text-c-muted hidden sm:table-cell">General practice sessions</td>
+                <td className="px-4 py-3 text-sm text-c-text">Random mix of all levels &mdash; most realistic</td>
+                <td className="px-4 py-3 text-sm text-c-muted hidden sm:table-cell">General practice sessions</td>
               </tr>
             </tbody>
           </table>
@@ -374,12 +400,10 @@ export default function HomePage() {
 
       {/* ====== Section 5: Pro Tips ====== */}
       <div className="s6 mb-6">
-        <p className="font-mono text-xs text-c-green glow-g tracking-[0.3em] uppercase mb-2">
-          // BEST PRACTICES
+        <p className="font-mono text-xs text-c-green tracking-[0.3em] uppercase mb-2">
+          // Best practices
         </p>
-        <h2 className="font-mono font-bold text-xl text-c-amber glow-a uppercase mb-6">
-          PRO TIPS
-        </h2>
+        <h2 className="font-bold text-2xl text-c-text tracking-tight mb-6">Pro tips</h2>
 
         <div className="space-y-2">
           {proTips.map((tip, i) => (
@@ -390,7 +414,7 @@ export default function HomePage() {
               >
                 <div className="flex items-center gap-3">
                   <span className="text-base">{tip.icon}</span>
-                  <span className="font-mono text-xs font-semibold text-c-text uppercase">{tip.title}</span>
+                  <span className="text-sm font-semibold text-c-text">{tip.title}</span>
                 </div>
                 <svg
                   className={`w-4 h-4 text-c-muted transition-transform ${expandedTip === i ? 'rotate-180' : ''}`}
@@ -404,7 +428,7 @@ export default function HomePage() {
               {expandedTip === i && (
                 <div className="px-4 pb-4 pt-0">
                   <div className="pl-9">
-                    <p className="text-xs text-c-muted leading-relaxed">{tip.content}</p>
+                    <p className="text-sm text-c-muted leading-relaxed">{tip.content}</p>
                   </div>
                 </div>
               )}
@@ -418,10 +442,10 @@ export default function HomePage() {
         <div className="text-center py-6 border-t border-c-border">
           <Link
             href="/practice"
-            className="inline-flex items-center gap-2 px-8 py-3.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded-lg font-mono font-semibold text-sm tracking-wide transition-colors shadow-lg shadow-c-amber/20 uppercase"
+            className="inline-flex items-center gap-2 px-8 py-3.5 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded-lg font-semibold text-[15px] transition-colors shadow-lg shadow-c-amber/20"
           >
-            {isNewUser ? 'START YOUR FIRST EXAM' : 'START PRACTICING'}
-            <span>&#9654;</span>
+            {isNewUser ? 'Start your first exam' : 'Start practicing'}
+            <span aria-hidden>&#9654;</span>
           </Link>
         </div>
       )}
