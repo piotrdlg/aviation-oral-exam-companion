@@ -1876,6 +1876,16 @@ export default function PracticePage() {
             )}
 
             {/* Actions */}
+            {/* When grading was reached from the open-exams list (pre-exam view) and
+                exams remain, offer a way back to the list — not just View progress / New exam. */}
+            {!sessionActive && allResumableSessions.length > 0 && (
+              <button
+                onClick={() => { setExamResult(null); setExamResultV2(null); setWeakAreaReport(null); setShowOpenExamsModal(true); }}
+                className="w-full mb-3 py-2.5 min-h-11 bg-c-cyan hover:bg-c-cyan-readable text-c-bg rounded-lg font-semibold text-[15px] transition-colors"
+              >
+                &larr; Back to open exams ({allResumableSessions.length})
+              </button>
+            )}
             <div className="flex gap-3">
               <Link
                 href="/progress"
