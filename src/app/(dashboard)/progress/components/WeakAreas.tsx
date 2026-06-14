@@ -1,6 +1,7 @@
 'use client';
 
 import type { ElementScore } from '@/types/database';
+import { weaknessSeverity } from '@/lib/weak-areas';
 
 interface Props {
   scores: ElementScore[];
@@ -19,20 +20,9 @@ interface WeakElement {
 }
 
 function classifyWeakness(score: ElementScore): WeakElement | null {
-  if (score.total_attempts === 0) return null;
-
-  const unsatRate = score.unsatisfactory_count / score.total_attempts;
-  const partialRate = score.partial_count / score.total_attempts;
-
-  let severity: 'critical' | 'moderate' | 'minor';
-
-  if (score.latest_score === 'unsatisfactory' || unsatRate >= 0.5) {
-    severity = 'critical';
-  } else if (score.latest_score === 'partial' || partialRate >= 0.5) {
-    severity = 'moderate';
-  } else {
-    return null; // Not weak
-  }
+  // Canonical classifier shared with the practice Focus pre-fill (weak-areas.ts).
+  const severity = weaknessSeverity(score);
+  if (severity === null) return null;
 
   return {
     element_code: score.element_code,

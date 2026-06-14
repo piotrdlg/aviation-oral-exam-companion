@@ -243,3 +243,42 @@ describe('Focus section wiring — area-level selection', () => {
     });
   });
 });
+
+// Integration: the per-mode Focus PRE-FILL (weak-areas.ts) supplies selectedTasks,
+// and the engine scopes to them. Verifies the weak/quick modes end-to-end.
+describe('Focus pre-fill ↔ engine scope (weak / quick modes)', () => {
+  // PA.I.A has a weak element (K1) and a satisfactory one (K2); PA.I.B and
+  // PA.II.A are never-practiced (untouched).
+  const elements = [
+    makeElement('PA.I.A.K1', { order_index: 1 }),
+    makeElement('PA.I.A.K2', { order_index: 2 }),
+    makeElement('PA.I.B.K1', { order_index: 3 }),
+    makeElement('PA.II.A.K1', { order_index: 4 }),
+    makeElement('PA.III.A.K1', { order_index: 5 }), // out of scope
+  ];
+  const weakStats = [
+    { element_code: 'PA.I.A.K1', task_id: 'PA.I.A', area: 'I', element_type: 'knowledge' as const, difficulty_default: 'medium' as const, description: '', total_attempts: 2, satisfactory_count: 0, partial_count: 0, unsatisfactory_count: 2, latest_score: 'unsatisfactory' as const, latest_attempt_at: '2026-01-01T00:00:00Z' },
+    { element_code: 'PA.I.A.K2', task_id: 'PA.I.A', area: 'I', element_type: 'knowledge' as const, difficulty_default: 'medium' as const, description: '', total_attempts: 2, satisfactory_count: 2, partial_count: 0, unsatisfactory_count: 0, latest_score: 'satisfactory' as const, latest_attempt_at: '2026-01-01T00:00:00Z' },
+  ];
+
+  it('weak_areas: Focus scoped to the weak task keeps that task (incl. its elements), drops others', () => {
+    const queue = buildElementQueue(
+      elements,
+      { ...BASE_CONFIG, studyMode: 'weak_areas', selectedTasks: ['PA.I.A'] },
+      weakStats
+    );
+    expect(new Set(queue)).toEqual(new Set(['PA.I.A.K1', 'PA.I.A.K2']));
+  });
+
+  it('quick_drill: Focus = weak ∪ untouched tasks → drills only weak+untouched ELEMENTS (drops the satisfactory one)', () => {
+    const queue = buildElementQueue(
+      elements,
+      { ...BASE_CONFIG, studyMode: 'quick_drill', selectedTasks: ['PA.I.A', 'PA.I.B', 'PA.II.A'] },
+      weakStats
+    );
+    // weak (PA.I.A.K1) + untouched (PA.I.B.K1, PA.II.A.K1); satisfactory PA.I.A.K2 excluded.
+    expect(new Set(queue)).toEqual(new Set(['PA.I.A.K1', 'PA.I.B.K1', 'PA.II.A.K1']));
+    expect(queue).not.toContain('PA.I.A.K2');
+    expect(queue).not.toContain('PA.III.A.K1'); // out of Focus scope
+  });
+});

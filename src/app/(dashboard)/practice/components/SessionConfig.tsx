@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
-import type { AircraftClass, Rating, ExaminerProfileKey } from '@/types/database';
+import type { AircraftClass, Rating, ExaminerProfileKey, ElementScore } from '@/types/database';
 import { EXAMINER_PROFILES } from '@/lib/examiner-profile';
+import { focusTasksForMode, isOralTaskId, oralTaskIds, type StudyMode } from '@/lib/weak-areas';
 
 export interface SessionConfigData {
   rating: Rating;
@@ -48,13 +49,17 @@ interface Props {
   examinerProfileKey?: ExaminerProfileKey;
   /** Show the 'Mock Checkride' scenario card (exam.scenario_engine = on). */
   scenarioModeAvailable?: boolean;
+  /** Preselect a study mode (e.g. from a /practice?mode=weak_areas deep link). */
+  initialStudyMode?: SessionConfigData['studyMode'];
+  /** Preselect specific Focus tasks (e.g. from a /practice?tasks=PA.I.B deep link). */
+  initialSelectedTasks?: string[];
 }
 
-export default function SessionConfig({ onStart, loading, preferredRating, preferredAircraftClass, prefsLoaded, preferredVoiceEnabled, hasCompletedExams, examinerProfileKey, scenarioModeAvailable }: Props) {
+export default function SessionConfig({ onStart, loading, preferredRating, preferredAircraftClass, prefsLoaded, preferredVoiceEnabled, hasCompletedExams, examinerProfileKey, scenarioModeAvailable, initialStudyMode, initialSelectedTasks }: Props) {
   const rating = preferredRating || 'private';
   const aircraftClass = preferredAircraftClass || 'ASEL';
   const prefsLoading = prefsLoaded === undefined ? false : !prefsLoaded;
-  const [studyMode, setStudyMode] = useState<SessionConfigData['studyMode']>('linear');
+  const [studyMode, setStudyMode] = useState<SessionConfigData['studyMode']>(initialStudyMode || 'linear');
   const [difficulty, setDifficulty] = useState<SessionConfigData['difficulty']>('mixed');
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [voiceEnabled, setVoiceEnabled] = useState(preferredVoiceEnabled ?? true);
@@ -63,6 +68,10 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
   const [showSecondary, setShowSecondary] = useState(true);
   const [allTasks, setAllTasks] = useState<AcsTaskItem[]>([]);
   const [tasksLoading, setTasksLoading] = useState(false);
+  // Per-element scores → drive the per-mode Focus pre-fill (weak/untouched tasks).
+  const [elementScores, setElementScores] = useState<ElementScore[]>([]);
+  const [scoresLoaded, setScoresLoaded] = useState(false);
+  const didInitFocusRef = useRef(false);
 
   // Sync voice preference when it loads from the API
   useEffect(() => {
@@ -83,11 +92,26 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
       .finally(() => setTasksLoading(false));
   }, [rating, prefsLoading]);
 
-  // Filter tasks by aircraft class
+  // Fetch the user's element scores (same source as the Progress Weak Areas
+  // panel) so each study-mode macro can pre-fill the Focus with its tasks.
+  useEffect(() => {
+    if (prefsLoading) return;
+    setScoresLoaded(false);
+    fetch(`/api/session?action=element-scores&rating=${rating}`)
+      .then((res) => (res.ok ? res.json() : { scores: [] }))
+      .then((data) => setElementScores(data.scores || []))
+      .catch(() => setElementScores([]))
+      .finally(() => setScoresLoaded(true));
+  }, [rating, prefsLoading]);
+
+  // Filter tasks to the aircraft class AND oral-exam areas only. The oral filter
+  // is critical: an explicit Focus skips the engine's flight-area exclusion, so
+  // the picker must never offer flight-only areas (IV/V/X…) for "all pre-checked".
   const filteredTasks = useMemo(
-    () => allTasks.filter((t) => t.applicable_classes?.includes(aircraftClass)),
-    [allTasks, aircraftClass]
+    () => allTasks.filter((t) => t.applicable_classes?.includes(aircraftClass) && isOralTaskId(t.id, rating)),
+    [allTasks, aircraftClass, rating]
   );
+  const allOralTaskIds = useMemo(() => filteredTasks.map((t) => t.id), [filteredTasks]);
 
   // Group tasks by area
   const areaGroups = useMemo(() => {
@@ -139,6 +163,30 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [areaGroups.length]);
+
+  // Pre-fill the Focus from the selected study-mode macro. Runs when the mode
+  // changes or once tasks + scores are ready. Weak Areas → struggled tasks;
+  // Quick Drill → struggled ∪ never-practiced; other modes → all oral tasks.
+  // Manual edits persist until the mode is changed (which re-derives).
+  const focusReady = allOralTaskIds.length > 0 && scoresLoaded && !tasksLoading;
+  useEffect(() => {
+    if (!focusReady) return;
+    let next: string[];
+    if (!didInitFocusRef.current && initialSelectedTasks && initialSelectedTasks.length > 0) {
+      // First load from a deep link carrying explicit tasks (e.g. Progress "drill these").
+      next = oralTaskIds(initialSelectedTasks, rating).filter((id) => allOralTaskIds.includes(id));
+      if (next.length === 0) next = focusTasksForMode(studyMode as StudyMode, allOralTaskIds, elementScores);
+    } else {
+      next = focusTasksForMode(studyMode as StudyMode, allOralTaskIds, elementScores);
+    }
+    didInitFocusRef.current = true;
+    setSelectedTasks(next);
+    // For the weak macros, reveal the pre-checked tasks by expanding their areas.
+    if (studyMode === 'weak_areas' || studyMode === 'quick_drill') {
+      setExpandedAreas(new Set(next.map((id) => id.split('.')[1])));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studyMode, focusReady]);
 
   function toggleExpandArea(areaId: string) {
     setExpandedAreas((prev) => {
@@ -219,7 +267,18 @@ export default function SessionConfig({ onStart, loading, preferredRating, prefe
 
         {/* Focus Section */}
         <div>
-          <label className="block font-mono text-xs text-c-muted mb-2 tracking-wider uppercase">FOCUS</label>
+          <label className="block font-mono text-xs text-c-muted mb-1 tracking-wider uppercase">FOCUS</label>
+          {(studyMode === 'weak_areas' || studyMode === 'quick_drill') && focusReady && selectedTasks.length === 0 ? (
+            <p className="text-xs text-c-amber/90 mb-2">No weak areas yet — pick tasks below, or the exam will cover everything.</p>
+          ) : (
+            <p className="text-xs text-c-dim mb-2">
+              {studyMode === 'weak_areas'
+                ? 'Pre-filled with your weak areas — add or uncheck tasks to adjust.'
+                : studyMode === 'quick_drill'
+                ? 'Pre-filled with weak and not-yet-practiced tasks — add or uncheck to adjust.'
+                : 'All areas in scope — uncheck any you want to skip.'}
+            </p>
+          )}
           <div className="border border-c-border rounded-lg bg-c-panel overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-c-border">
