@@ -1667,6 +1667,236 @@ export default function PracticePage() {
     });
   }
 
+
+  // Shared overlays — referenced from both the pre-exam and in-exam returns.
+  const examResultEl = examResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm overflow-y-auto py-8">
+          <div className="bezel rounded-lg border border-c-border p-6 max-w-lg mx-4 shadow-2xl w-full my-auto">
+            <h2 className="font-bold text-xl text-c-text tracking-tight mb-4 text-center">Exam results</h2>
+
+            {/* Grade badge + score */}
+            <div className={`rounded-lg border p-4 mb-4 text-center ${
+              examResult.grade === 'satisfactory'
+                ? 'bg-c-green-lo border-c-green/20'
+                : examResult.grade === 'unsatisfactory'
+                ? 'bg-red-500/10 border-red-400/20'
+                : 'bg-c-amber-lo border-c-amber/20'
+            }`}>
+              <span className={`font-mono font-bold text-2xl tracking-wider ${
+                examResult.grade === 'satisfactory' ? 'text-c-green'
+                  : examResult.grade === 'unsatisfactory' ? 'text-red-400'
+                  : 'text-c-amber'
+              }`}>
+                {examResult.grade === 'satisfactory' ? 'SATISFACTORY' : examResult.grade === 'unsatisfactory' ? 'UNSATISFACTORY' : 'INCOMPLETE'}
+              </span>
+              <span className={`ml-3 font-mono text-2xl font-bold ${
+                examResult.grade === 'satisfactory' ? 'text-c-green'
+                  : examResult.grade === 'unsatisfactory' ? 'text-red-400'
+                  : 'text-c-amber'
+              }`}>
+                {Math.round(examResult.score_percentage * 100)}%
+              </span>
+              {examResultV2 && (
+                <p className="text-xs text-c-muted mt-1">Plan-based scoring (V2)</p>
+              )}
+            </div>
+
+            {/* Element breakdown */}
+            <div className="space-y-1 mb-4">
+              <p className="text-sm text-c-text">
+                {examResult.elements_asked} of {examResult.total_elements_in_set} elements covered
+              </p>
+              <p className="text-xs text-c-muted">
+                {examResult.elements_satisfactory} satisfactory
+                {' '}&middot; {examResult.elements_partial} partial
+                {' '}&middot; {examResult.elements_unsatisfactory} unsatisfactory
+                {examResult.elements_not_asked > 0 && <> &middot; {examResult.elements_not_asked} not asked</>}
+              </p>
+              {examResultV2 && typeof examResultV2.elements_credited === 'number' && examResultV2.elements_credited > 0 && (
+                <p className="text-xs text-c-muted">
+                  {examResultV2.elements_credited} credited by mention
+                </p>
+              )}
+            </div>
+
+            {/* V2 Per-area breakdown with gating */}
+            {examResultV2 && Array.isArray(examResultV2.areas) && examResultV2.areas.length > 0 ? (
+              <div className="mb-5">
+                <h3 className="text-xs font-semibold text-c-muted tracking-wide mb-2">Score by area</h3>
+                <div className="space-y-1.5">
+                  {(examResultV2.areas as Array<{ area: string; asked: number; satisfactory: number; score: number; status: string }>)
+                    .sort((a, b) => a.area.localeCompare(b.area))
+                    .map((areaData) => {
+                      const pct = Math.round(areaData.score * 100);
+                      const failed = areaData.status === 'fail';
+                      return (
+                        <div key={areaData.area} className="flex items-center gap-2 text-xs font-mono">
+                          <span className={`w-10 shrink-0 ${failed ? 'text-red-400' : 'text-c-muted'}`}>
+                            Area {areaData.area}
+                          </span>
+                          <div className="flex-1 h-2 bg-c-bezel rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${
+                                failed ? 'bg-red-400' : pct >= 70 ? 'bg-c-green' : pct > 0 ? 'bg-c-amber' : 'bg-c-dim'
+                              }`}
+                              style={{ width: `${Math.max(pct, 2)}%` }}
+                            />
+                          </div>
+                          <span className={`w-20 text-right ${failed ? 'text-red-400' : 'text-c-text'}`}>
+                            {areaData.satisfactory}/{areaData.asked} ({pct}%)
+                            {failed && ' FAIL'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                </div>
+                {Array.isArray(examResultV2.failed_areas) && examResultV2.failed_areas.length > 0 && (
+                  <p className="text-xs font-mono text-red-400 mt-2">
+                    Area{examResultV2.failed_areas.length > 1 ? 's' : ''} {(examResultV2.failed_areas as string[]).join(', ')} below minimum threshold
+                  </p>
+                )}
+              </div>
+            ) : Object.keys(examResult.score_by_area).length > 0 ? (
+              /* V1 fallback: per-area breakdown without gating */
+              <div className="mb-5">
+                <h3 className="text-xs font-semibold text-c-muted tracking-wide mb-2">Score by area</h3>
+                <div className="space-y-1.5">
+                  {Object.entries(examResult.score_by_area)
+                    .sort(([a], [b]) => a.localeCompare(b))
+                    .map(([area, stats]) => {
+                      const pct = stats.asked > 0 ? Math.round((stats.satisfactory / stats.asked) * 100) : 0;
+                      return (
+                        <div key={area} className="flex items-center gap-2 text-xs font-mono">
+                          <span className="text-c-muted w-10 shrink-0">Area {area}</span>
+                          <div className="flex-1 h-2 bg-c-bezel rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${pct >= 70 ? 'bg-c-green' : pct > 0 ? 'bg-c-amber' : 'bg-c-dim'}`}
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className="text-c-text w-16 text-right">{stats.satisfactory}/{stats.asked} ({pct}%)</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            ) : null}
+
+            {/* V2 Weak elements section */}
+            {examResultV2 && Array.isArray(examResultV2.weak_elements) && examResultV2.weak_elements.length > 0 && (
+              <div className="mb-5">
+                <h3 className="text-xs font-semibold text-c-muted tracking-wide mb-2">
+                  Weak elements ({(examResultV2.weak_elements as Array<{ element_code: string; severity: string }>).length})
+                </h3>
+                <div className="space-y-1 max-h-32 overflow-y-auto">
+                  {(examResultV2.weak_elements as Array<{ element_code: string; severity: string; area: string }>)
+                    .slice(0, 10)
+                    .map((el) => (
+                      <div key={el.element_code} className="flex items-center gap-2 text-xs font-mono">
+                        <span className="text-c-text">{el.element_code}</span>
+                        <span className={`px-1.5 py-0.5 rounded text-[11px] uppercase ${
+                          el.severity === 'unsatisfactory' ? 'bg-red-500/20 text-red-400'
+                            : el.severity === 'partial' ? 'bg-c-amber-lo text-c-amber'
+                            : 'bg-c-bezel text-c-muted'
+                        }`}>
+                          {el.severity === 'not_asked' ? 'not asked' : el.severity}
+                        </span>
+                      </div>
+                    ))}
+                  {(examResultV2.weak_elements as unknown[]).length > 10 && (
+                    <p className="text-xs font-mono text-c-muted">
+                      + {(examResultV2.weak_elements as unknown[]).length - 10} more
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Weak area citations from summary report */}
+            {weakAreaReport && Array.isArray((weakAreaReport as Record<string, unknown>).elements) && (
+              <div className="mb-5">
+                <h3 className="text-xs font-semibold text-c-muted tracking-wide mb-2">Study resources</h3>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {((weakAreaReport as Record<string, unknown>).elements as Array<{
+                    element_code: string;
+                    grounded: boolean;
+                    citations: Array<{ doc_abbreviation: string; page_ref: string | null; heading: string | null }>;
+                  }>)
+                    .filter(el => el.citations && el.citations.length > 0)
+                    .slice(0, 5)
+                    .map((el) => (
+                      <div key={el.element_code} className="text-xs font-mono">
+                        <span className="text-c-text">{el.element_code}</span>
+                        <span className="text-c-muted ml-2">
+                          {el.citations.slice(0, 2).map((c, i) => (
+                            <span key={i}>
+                              {i > 0 && ', '}
+                              {c.doc_abbreviation}{c.page_ref ? ` ${c.page_ref}` : ''}{c.heading ? ` — ${c.heading.slice(0, 40)}` : ''}
+                            </span>
+                          ))}
+                        </span>
+                      </div>
+                    ))}
+                  {!((weakAreaReport as Record<string, unknown>).elements as unknown[]).some(
+                    (el: unknown) => (el as { citations: unknown[] }).citations?.length > 0
+                  ) && (
+                    <p className="text-xs text-c-muted italic">
+                      Insufficient FAA sources available for citation
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+            {summaryLoading && (
+              <p className="text-xs text-c-muted mb-4 animate-pulse">Loading study resources…</p>
+            )}
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              <Link
+                href="/progress"
+                className="flex-1 py-2.5 min-h-11 flex items-center justify-center bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-semibold text-[15px] text-center transition-colors border border-c-border"
+              >
+                View progress
+              </Link>
+              <button
+                onClick={() => { setExamResult(null); setExamResultV2(null); setWeakAreaReport(null); }}
+                className="flex-1 py-2.5 min-h-11 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded-lg font-semibold text-[15px] transition-colors"
+              >
+                New exam
+              </button>
+            </div>
+          </div>
+        </div>
+  );
+
+  const confirmDialogEl = confirmDialog && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
+          <div className="bezel rounded-lg border border-c-border p-6 max-w-sm mx-4 shadow-2xl w-full">
+            <h2 className="font-bold text-lg text-c-text tracking-tight mb-3">{confirmDialog.title}</h2>
+            <p className="text-sm text-c-muted leading-relaxed mb-5">{confirmDialog.message}</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDialog(null)}
+                className="flex-1 py-2 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-semibold text-sm transition-colors border border-c-border"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  const action = confirmDialog.onConfirm;
+                  setConfirmDialog(null);
+                  await action();
+                }}
+                className={`flex-1 py-2 rounded-lg font-semibold text-sm transition-colors ${confirmDialog.confirmClass}`}
+              >
+                {confirmDialog.confirmLabel}
+              </button>
+            </div>
+          </div>
+        </div>
+  );
+
   if (!sessionActive) {
     return (
       <div className="max-w-2xl mx-auto">
@@ -1967,6 +2197,109 @@ export default function PracticePage() {
             </div>
           </div>
         )}
+
+        {showOpenExamsModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowOpenExamsModal(false)} />
+            <div className="relative bg-c-bezel border border-c-border rounded-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-semibold text-c-text tracking-tight">Open exams</h2>
+                <button
+                  onClick={() => setShowOpenExamsModal(false)}
+                  className="text-c-muted hover:text-c-text text-lg leading-none"
+                >&times;</button>
+              </div>
+              <div className="space-y-3">
+                {allResumableSessions.map((session) => (
+                  <div key={session.id} className="iframe rounded-lg p-3 border border-c-border">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-xs text-c-text">
+                          {session.rating === 'commercial' ? 'Commercial' : session.rating === 'instrument' ? 'Instrument' : session.rating === 'atp' ? 'ATP' : 'Private'}
+                          {session.aircraft_class ? ` ${session.aircraft_class}` : ''}
+                          , {session.difficulty_preference === 'easy' ? 'Easy' : session.difficulty_preference === 'medium' ? 'Medium' : session.difficulty_preference === 'hard' ? 'Hard' : 'Mixed'}
+                          {' '}&mdash; {session.exchange_count || 0} exchanges
+                        </p>
+                        <p className="text-xs text-c-muted mt-0.5">
+                          {new Date(session.started_at).toLocaleDateString('en-US', {
+                            month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+                          })}
+                          {' '}&middot; {session.study_mode === 'linear' ? 'Area by Area' : session.study_mode === 'cross_acs' ? 'Across ACS' : 'Weak Areas'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          onClick={() => {
+                            setShowOpenExamsModal(false);
+                            resumeSession(session);
+                          }}
+                          disabled={loading || gradingInProgress}
+                          className="px-2.5 py-1 bg-c-cyan hover:bg-c-cyan-readable text-c-bg rounded text-xs font-semibold transition-colors disabled:opacity-50"
+                        >
+                          Continue
+                        </button>
+                        <button
+                          onClick={async () => {
+                            setGradingInProgress(true);
+                            try {
+                              const res = await fetch('/api/session', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ action: 'update', sessionId: session.id, status: 'completed' }),
+                              });
+                              const data = await res.json();
+                              removeFromResumable(session.id);
+                              if (data.result) {
+                                setShowOpenExamsModal(false);
+                                setExamResult(data.result as ExamResult);
+                              }
+                            } catch { /* ignore */ }
+                            setGradingInProgress(false);
+                          }}
+                          disabled={gradingInProgress}
+                          className="px-2.5 py-1 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded text-xs font-semibold transition-colors disabled:opacity-50"
+                        >
+                          {gradingInProgress ? '\u2026' : 'Grade'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            const sid = session.id;
+                            setConfirmDialog({
+                              title: 'Discard exam',
+                              message: 'Discard this exam? It will be marked as abandoned and won\u2019t count toward your progress.',
+                              confirmLabel: 'Discard',
+                              confirmClass: 'bg-red-500/80 hover:bg-red-500 text-white',
+                              onConfirm: async () => {
+                                await fetch('/api/session', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ action: 'discard', sessionId: sid }),
+                                });
+                                removeFromResumable(sid);
+                              },
+                            });
+                          }}
+                          className="px-2.5 py-1 text-c-muted hover:text-red-400 text-xs font-semibold transition-colors"
+                        >
+                          Discard
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {allResumableSessions.length === 0 && (
+                <p className="text-xs text-c-muted text-center py-4">No open exams</p>
+              )}
+            </div>
+          </div>
+        )}
+
+      {/* Shared overlays — also reachable from the pre-exam resume/open-exams actions */}
+      {confirmDialogEl}
+
+      {examResultEl}
+
       </div>
     );
   }
@@ -2540,332 +2873,12 @@ export default function PracticePage() {
       )}
 
       {/* Open exams modal */}
-        {showOpenExamsModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowOpenExamsModal(false)} />
-            <div className="relative bg-c-bezel border border-c-border rounded-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-semibold text-c-text tracking-tight">Open exams</h2>
-                <button
-                  onClick={() => setShowOpenExamsModal(false)}
-                  className="text-c-muted hover:text-c-text text-lg leading-none"
-                >&times;</button>
-              </div>
-              <div className="space-y-3">
-                {allResumableSessions.map((session) => (
-                  <div key={session.id} className="iframe rounded-lg p-3 border border-c-border">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-xs text-c-text">
-                          {session.rating === 'commercial' ? 'Commercial' : session.rating === 'instrument' ? 'Instrument' : session.rating === 'atp' ? 'ATP' : 'Private'}
-                          {session.aircraft_class ? ` ${session.aircraft_class}` : ''}
-                          , {session.difficulty_preference === 'easy' ? 'Easy' : session.difficulty_preference === 'medium' ? 'Medium' : session.difficulty_preference === 'hard' ? 'Hard' : 'Mixed'}
-                          {' '}&mdash; {session.exchange_count || 0} exchanges
-                        </p>
-                        <p className="text-xs text-c-muted mt-0.5">
-                          {new Date(session.started_at).toLocaleDateString('en-US', {
-                            month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
-                          })}
-                          {' '}&middot; {session.study_mode === 'linear' ? 'Area by Area' : session.study_mode === 'cross_acs' ? 'Across ACS' : 'Weak Areas'}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <button
-                          onClick={() => {
-                            setShowOpenExamsModal(false);
-                            resumeSession(session);
-                          }}
-                          disabled={loading || gradingInProgress}
-                          className="px-2.5 py-1 bg-c-cyan hover:bg-c-cyan-readable text-c-bg rounded text-xs font-semibold transition-colors disabled:opacity-50"
-                        >
-                          Continue
-                        </button>
-                        <button
-                          onClick={async () => {
-                            setGradingInProgress(true);
-                            try {
-                              const res = await fetch('/api/session', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ action: 'update', sessionId: session.id, status: 'completed' }),
-                              });
-                              const data = await res.json();
-                              removeFromResumable(session.id);
-                              if (data.result) {
-                                setShowOpenExamsModal(false);
-                                setExamResult(data.result as ExamResult);
-                              }
-                            } catch { /* ignore */ }
-                            setGradingInProgress(false);
-                          }}
-                          disabled={gradingInProgress}
-                          className="px-2.5 py-1 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded text-xs font-semibold transition-colors disabled:opacity-50"
-                        >
-                          {gradingInProgress ? '\u2026' : 'Grade'}
-                        </button>
-                        <button
-                          onClick={() => {
-                            const sid = session.id;
-                            setConfirmDialog({
-                              title: 'Discard exam',
-                              message: 'Discard this exam? It will be marked as abandoned and won\u2019t count toward your progress.',
-                              confirmLabel: 'Discard',
-                              confirmClass: 'bg-red-500/80 hover:bg-red-500 text-white',
-                              onConfirm: async () => {
-                                await fetch('/api/session', {
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ action: 'discard', sessionId: sid }),
-                                });
-                                removeFromResumable(sid);
-                              },
-                            });
-                          }}
-                          className="px-2.5 py-1 text-c-muted hover:text-red-400 text-xs font-semibold transition-colors"
-                        >
-                          Discard
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {allResumableSessions.length === 0 && (
-                <p className="text-xs text-c-muted text-center py-4">No open exams</p>
-              )}
-            </div>
-          </div>
-        )}
 
       {/* Confirmation dialog (replaces browser confirm()) */}
-      {confirmDialog && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
-          <div className="bezel rounded-lg border border-c-border p-6 max-w-sm mx-4 shadow-2xl w-full">
-            <h2 className="font-bold text-lg text-c-text tracking-tight mb-3">{confirmDialog.title}</h2>
-            <p className="text-sm text-c-muted leading-relaxed mb-5">{confirmDialog.message}</p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setConfirmDialog(null)}
-                className="flex-1 py-2 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-semibold text-sm transition-colors border border-c-border"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={async () => {
-                  const action = confirmDialog.onConfirm;
-                  setConfirmDialog(null);
-                  await action();
-                }}
-                className={`flex-1 py-2 rounded-lg font-semibold text-sm transition-colors ${confirmDialog.confirmClass}`}
-              >
-                {confirmDialog.confirmLabel}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {confirmDialogEl}
 
       {/* Exam results modal */}
-      {examResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm overflow-y-auto py-8">
-          <div className="bezel rounded-lg border border-c-border p-6 max-w-lg mx-4 shadow-2xl w-full my-auto">
-            <h2 className="font-bold text-xl text-c-text tracking-tight mb-4 text-center">Exam results</h2>
-
-            {/* Grade badge + score */}
-            <div className={`rounded-lg border p-4 mb-4 text-center ${
-              examResult.grade === 'satisfactory'
-                ? 'bg-c-green-lo border-c-green/20'
-                : examResult.grade === 'unsatisfactory'
-                ? 'bg-red-500/10 border-red-400/20'
-                : 'bg-c-amber-lo border-c-amber/20'
-            }`}>
-              <span className={`font-mono font-bold text-2xl tracking-wider ${
-                examResult.grade === 'satisfactory' ? 'text-c-green'
-                  : examResult.grade === 'unsatisfactory' ? 'text-red-400'
-                  : 'text-c-amber'
-              }`}>
-                {examResult.grade === 'satisfactory' ? 'SATISFACTORY' : examResult.grade === 'unsatisfactory' ? 'UNSATISFACTORY' : 'INCOMPLETE'}
-              </span>
-              <span className={`ml-3 font-mono text-2xl font-bold ${
-                examResult.grade === 'satisfactory' ? 'text-c-green'
-                  : examResult.grade === 'unsatisfactory' ? 'text-red-400'
-                  : 'text-c-amber'
-              }`}>
-                {Math.round(examResult.score_percentage * 100)}%
-              </span>
-              {examResultV2 && (
-                <p className="text-xs text-c-muted mt-1">Plan-based scoring (V2)</p>
-              )}
-            </div>
-
-            {/* Element breakdown */}
-            <div className="space-y-1 mb-4">
-              <p className="text-sm text-c-text">
-                {examResult.elements_asked} of {examResult.total_elements_in_set} elements covered
-              </p>
-              <p className="text-xs text-c-muted">
-                {examResult.elements_satisfactory} satisfactory
-                {' '}&middot; {examResult.elements_partial} partial
-                {' '}&middot; {examResult.elements_unsatisfactory} unsatisfactory
-                {examResult.elements_not_asked > 0 && <> &middot; {examResult.elements_not_asked} not asked</>}
-              </p>
-              {examResultV2 && typeof examResultV2.elements_credited === 'number' && examResultV2.elements_credited > 0 && (
-                <p className="text-xs text-c-muted">
-                  {examResultV2.elements_credited} credited by mention
-                </p>
-              )}
-            </div>
-
-            {/* V2 Per-area breakdown with gating */}
-            {examResultV2 && Array.isArray(examResultV2.areas) && examResultV2.areas.length > 0 ? (
-              <div className="mb-5">
-                <h3 className="text-xs font-semibold text-c-muted tracking-wide mb-2">Score by area</h3>
-                <div className="space-y-1.5">
-                  {(examResultV2.areas as Array<{ area: string; asked: number; satisfactory: number; score: number; status: string }>)
-                    .sort((a, b) => a.area.localeCompare(b.area))
-                    .map((areaData) => {
-                      const pct = Math.round(areaData.score * 100);
-                      const failed = areaData.status === 'fail';
-                      return (
-                        <div key={areaData.area} className="flex items-center gap-2 text-xs font-mono">
-                          <span className={`w-10 shrink-0 ${failed ? 'text-red-400' : 'text-c-muted'}`}>
-                            Area {areaData.area}
-                          </span>
-                          <div className="flex-1 h-2 bg-c-bezel rounded-full overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all ${
-                                failed ? 'bg-red-400' : pct >= 70 ? 'bg-c-green' : pct > 0 ? 'bg-c-amber' : 'bg-c-dim'
-                              }`}
-                              style={{ width: `${Math.max(pct, 2)}%` }}
-                            />
-                          </div>
-                          <span className={`w-20 text-right ${failed ? 'text-red-400' : 'text-c-text'}`}>
-                            {areaData.satisfactory}/{areaData.asked} ({pct}%)
-                            {failed && ' FAIL'}
-                          </span>
-                        </div>
-                      );
-                    })}
-                </div>
-                {Array.isArray(examResultV2.failed_areas) && examResultV2.failed_areas.length > 0 && (
-                  <p className="text-xs font-mono text-red-400 mt-2">
-                    Area{examResultV2.failed_areas.length > 1 ? 's' : ''} {(examResultV2.failed_areas as string[]).join(', ')} below minimum threshold
-                  </p>
-                )}
-              </div>
-            ) : Object.keys(examResult.score_by_area).length > 0 ? (
-              /* V1 fallback: per-area breakdown without gating */
-              <div className="mb-5">
-                <h3 className="text-xs font-semibold text-c-muted tracking-wide mb-2">Score by area</h3>
-                <div className="space-y-1.5">
-                  {Object.entries(examResult.score_by_area)
-                    .sort(([a], [b]) => a.localeCompare(b))
-                    .map(([area, stats]) => {
-                      const pct = stats.asked > 0 ? Math.round((stats.satisfactory / stats.asked) * 100) : 0;
-                      return (
-                        <div key={area} className="flex items-center gap-2 text-xs font-mono">
-                          <span className="text-c-muted w-10 shrink-0">Area {area}</span>
-                          <div className="flex-1 h-2 bg-c-bezel rounded-full overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all ${pct >= 70 ? 'bg-c-green' : pct > 0 ? 'bg-c-amber' : 'bg-c-dim'}`}
-                              style={{ width: `${pct}%` }}
-                            />
-                          </div>
-                          <span className="text-c-text w-16 text-right">{stats.satisfactory}/{stats.asked} ({pct}%)</span>
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-            ) : null}
-
-            {/* V2 Weak elements section */}
-            {examResultV2 && Array.isArray(examResultV2.weak_elements) && examResultV2.weak_elements.length > 0 && (
-              <div className="mb-5">
-                <h3 className="text-xs font-semibold text-c-muted tracking-wide mb-2">
-                  Weak elements ({(examResultV2.weak_elements as Array<{ element_code: string; severity: string }>).length})
-                </h3>
-                <div className="space-y-1 max-h-32 overflow-y-auto">
-                  {(examResultV2.weak_elements as Array<{ element_code: string; severity: string; area: string }>)
-                    .slice(0, 10)
-                    .map((el) => (
-                      <div key={el.element_code} className="flex items-center gap-2 text-xs font-mono">
-                        <span className="text-c-text">{el.element_code}</span>
-                        <span className={`px-1.5 py-0.5 rounded text-[11px] uppercase ${
-                          el.severity === 'unsatisfactory' ? 'bg-red-500/20 text-red-400'
-                            : el.severity === 'partial' ? 'bg-c-amber-lo text-c-amber'
-                            : 'bg-c-bezel text-c-muted'
-                        }`}>
-                          {el.severity === 'not_asked' ? 'not asked' : el.severity}
-                        </span>
-                      </div>
-                    ))}
-                  {(examResultV2.weak_elements as unknown[]).length > 10 && (
-                    <p className="text-xs font-mono text-c-muted">
-                      + {(examResultV2.weak_elements as unknown[]).length - 10} more
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Weak area citations from summary report */}
-            {weakAreaReport && Array.isArray((weakAreaReport as Record<string, unknown>).elements) && (
-              <div className="mb-5">
-                <h3 className="text-xs font-semibold text-c-muted tracking-wide mb-2">Study resources</h3>
-                <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {((weakAreaReport as Record<string, unknown>).elements as Array<{
-                    element_code: string;
-                    grounded: boolean;
-                    citations: Array<{ doc_abbreviation: string; page_ref: string | null; heading: string | null }>;
-                  }>)
-                    .filter(el => el.citations && el.citations.length > 0)
-                    .slice(0, 5)
-                    .map((el) => (
-                      <div key={el.element_code} className="text-xs font-mono">
-                        <span className="text-c-text">{el.element_code}</span>
-                        <span className="text-c-muted ml-2">
-                          {el.citations.slice(0, 2).map((c, i) => (
-                            <span key={i}>
-                              {i > 0 && ', '}
-                              {c.doc_abbreviation}{c.page_ref ? ` ${c.page_ref}` : ''}{c.heading ? ` — ${c.heading.slice(0, 40)}` : ''}
-                            </span>
-                          ))}
-                        </span>
-                      </div>
-                    ))}
-                  {!((weakAreaReport as Record<string, unknown>).elements as unknown[]).some(
-                    (el: unknown) => (el as { citations: unknown[] }).citations?.length > 0
-                  ) && (
-                    <p className="text-xs text-c-muted italic">
-                      Insufficient FAA sources available for citation
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-            {summaryLoading && (
-              <p className="text-xs text-c-muted mb-4 animate-pulse">Loading study resources…</p>
-            )}
-
-            {/* Actions */}
-            <div className="flex gap-3">
-              <Link
-                href="/progress"
-                className="flex-1 py-2.5 min-h-11 flex items-center justify-center bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-semibold text-[15px] text-center transition-colors border border-c-border"
-              >
-                View progress
-              </Link>
-              <button
-                onClick={() => { setExamResult(null); setExamResultV2(null); setWeakAreaReport(null); }}
-                className="flex-1 py-2.5 min-h-11 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded-lg font-semibold text-[15px] transition-colors"
-              >
-                New exam
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {examResultEl}
     </div>
   );
 }
