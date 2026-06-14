@@ -1,124 +1,112 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import type { ElementScore } from '@/types/database';
-import { weaknessSeverity } from '@/lib/weak-areas';
+import { elementStatus, weaknessReason, type ElementStatus } from '@/lib/progress-metrics';
+import { areaNameFromTaskId } from '@/lib/exam-summary';
 
 interface Props {
   scores: ElementScore[];
 }
 
-interface WeakElement {
-  element_code: string;
-  area: string;
-  task_id: string;
-  element_type: string;
-  latest_score: string;
-  total_attempts: number;
-  unsatisfactory_count: number;
-  partial_count: number;
-  severity: 'critical' | 'moderate' | 'minor';
-}
+type Tab = 'weak' | 'strong';
 
-function classifyWeakness(score: ElementScore): WeakElement | null {
-  // Canonical classifier shared with the practice Focus pre-fill (weak-areas.ts).
-  const severity = weaknessSeverity(score);
-  if (severity === null) return null;
+const STATUS_VAR: Record<ElementStatus, string> = {
+  critical: 'var(--color-c-red)',
+  moderate: 'var(--color-c-amber)',
+  strong: 'var(--color-c-green)',
+  untouched: 'var(--color-c-border-hi)',
+};
 
-  return {
-    element_code: score.element_code,
-    area: score.area,
-    task_id: score.task_id,
-    element_type: score.element_type,
-    latest_score: score.latest_score || 'unknown',
-    total_attempts: score.total_attempts,
-    unsatisfactory_count: score.unsatisfactory_count,
-    partial_count: score.partial_count,
-    severity,
-  };
+const SEVERITY_ORDER: Record<ElementStatus, number> = { critical: 0, moderate: 1, strong: 2, untouched: 3 };
+
+/** Group scores by ACS area name, preserving first-seen order, sorting each
+ *  group's elements by severity (critical first). */
+function groupByArea(scores: ElementScore[]): { area: string; elements: ElementScore[] }[] {
+  const byArea = new Map<string, ElementScore[]>();
+  for (const s of scores) {
+    const area = areaNameFromTaskId(s.task_id);
+    if (!byArea.has(area)) byArea.set(area, []);
+    byArea.get(area)!.push(s);
+  }
+  return [...byArea.entries()].map(([area, elements]) => ({
+    area,
+    elements: elements.sort((a, b) => SEVERITY_ORDER[elementStatus(a)] - SEVERITY_ORDER[elementStatus(b)]),
+  }));
 }
 
 export default function WeakAreas({ scores }: Props) {
-  const weakElements = scores
-    .map(classifyWeakness)
-    .filter((w): w is WeakElement => w !== null)
-    .sort((a, b) => {
-      const severityOrder = { critical: 0, moderate: 1, minor: 2 };
-      return severityOrder[a.severity] - severityOrder[b.severity];
-    });
+  const [tab, setTab] = useState<Tab>('weak');
 
-  if (weakElements.length === 0) {
-    return (
-      <div className="bezel rounded-lg border border-c-border p-6 text-center">
-        <p className="text-c-dim font-mono text-sm">
-          {scores.some(s => s.total_attempts > 0)
-            ? 'No weak areas identified. Great job!'
-            : 'Complete a practice session to identify areas to improve.'}
-        </p>
-      </div>
-    );
-  }
-
-  // Group by area
-  const grouped = new Map<string, WeakElement[]>();
-  for (const weak of weakElements) {
-    if (!grouped.has(weak.area)) {
-      grouped.set(weak.area, []);
+  const { weak, strong } = useMemo(() => {
+    const weak: ElementScore[] = [];
+    const strong: ElementScore[] = [];
+    for (const s of scores) {
+      const st = elementStatus(s);
+      if (st === 'critical' || st === 'moderate') weak.push(s);
+      else if (st === 'strong') strong.push(s);
     }
-    grouped.get(weak.area)!.push(weak);
-  }
+    return { weak, strong };
+  }, [scores]);
 
-  const critical = weakElements.filter(w => w.severity === 'critical').length;
-  const moderate = weakElements.filter(w => w.severity === 'moderate').length;
+  const anyAttempted = scores.some((s) => s.total_attempts > 0);
+  const active = tab === 'weak' ? weak : strong;
+  const groups = useMemo(() => groupByArea(active), [active]);
 
   return (
     <div className="bezel rounded-lg border border-c-border p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-lg text-c-text tracking-tight">Weak areas</h3>
-        <div className="flex gap-3 font-mono text-xs">
-          {critical > 0 && (
-            <span className="text-c-red">{critical} CRITICAL</span>
-          )}
-          {moderate > 0 && (
-            <span className="text-c-amber">{moderate} MODERATE</span>
-          )}
-        </div>
+      {/* Tabs */}
+      <div className="flex gap-0.5 bg-c-panel rounded-lg p-0.5 mb-3 w-fit">
+        <button
+          onClick={() => setTab('weak')}
+          className={`px-3 py-1 text-xs rounded-md font-mono transition-colors ${tab === 'weak' ? 'bg-c-elevated text-c-text font-semibold' : 'text-c-muted hover:text-c-text'}`}
+        >
+          Needs work {weak.length}
+        </button>
+        <button
+          onClick={() => setTab('strong')}
+          className={`px-3 py-1 text-xs rounded-md font-mono transition-colors ${tab === 'strong' ? 'bg-c-elevated text-c-text font-semibold' : 'text-c-muted hover:text-c-text'}`}
+        >
+          Strong {strong.length}
+        </button>
       </div>
 
-      <div className="space-y-3 max-h-96 overflow-y-auto">
-        {Array.from(grouped.entries()).map(([area, elements]) => (
-          <div key={area}>
-            <p className="font-mono text-xs text-c-muted uppercase tracking-wider mb-1.5">{area}</p>
-            <div className="space-y-1">
-              {elements.map((el) => (
-                <div
-                  key={el.element_code}
-                  className={`flex items-center justify-between px-3 py-2 rounded-lg text-base ${
-                    el.severity === 'critical'
-                      ? 'bg-c-red-dim/40 border border-c-red/20'
-                      : 'bg-c-amber-lo border border-c-amber/20'
-                  }`}
-                >
-                  <div className="flex-1">
-                    <span className="font-mono text-xs text-c-dim mr-2">{el.element_code}</span>
-                    <span className={`font-mono text-sm uppercase ${el.severity === 'critical' ? 'text-c-red' : 'text-c-amber'}`}>
-                      {el.latest_score}
-                    </span>
-                  </div>
-                  <span className="font-mono text-xs text-c-dim">
-                    {el.unsatisfactory_count}U / {el.partial_count}P / {el.total_attempts} total
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-3 pt-3 border-t border-c-border">
-        <p className="font-mono text-xs text-c-dim">
-          Study recommendation: Focus on elements with critical status. Review the relevant FAA source material for each weak area.
+      {groups.length === 0 ? (
+        <p className="text-c-dim font-mono text-sm text-center py-6">
+          {!anyAttempted
+            ? 'Complete a practice session to see where you stand.'
+            : tab === 'weak'
+            ? 'No weak elements — nice work. Keep widening your coverage.'
+            : 'No mastered elements yet. Strong answers will show up here.'}
         </p>
-      </div>
+      ) : (
+        <div className="space-y-3 max-h-96 overflow-y-auto">
+          {groups.map(({ area, elements }) => (
+            <div key={area}>
+              <p className="font-mono text-[11px] text-c-muted uppercase tracking-wider mb-1">{area}</p>
+              <div className="space-y-1">
+                {elements.map((el) => {
+                  const st = elementStatus(el);
+                  return (
+                    <div key={el.element_code} className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-c-panel/60 border border-c-border">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: STATUS_VAR[st] }} />
+                        <span className="font-mono text-xs text-c-dim shrink-0">{el.element_code}</span>
+                        <span className="text-sm text-c-muted truncate">
+                          {st === 'strong' ? 'satisfactory' : weaknessReason(el)}
+                        </span>
+                      </div>
+                      <span className="font-mono text-xs text-c-dim shrink-0 tabular-nums">
+                        {el.unsatisfactory_count}U / {el.partial_count}P / {el.total_attempts}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
