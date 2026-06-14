@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import SessionConfig, { type SessionConfigData } from './components/SessionConfig';
 import OnboardingWizard from './components/OnboardingWizard';
+import OpenExamRow from './components/OpenExamRow';
 import type { PlannerState, SessionConfig as SessionConfigType, Rating, AircraftClass, ExamResult, ExaminerProfileKey } from '@/types/database';
 import type { VoiceTier } from '@/lib/voice/types';
 import { useVoiceProvider } from '@/hooks/useVoiceProvider';
@@ -17,6 +18,21 @@ import { ReferralWelcomeBanner } from '@/components/ui/ReferralWelcomeBanner';
 import { captureVoiceEvent } from '@/lib/voice-telemetry';
 import { warmUpAudio } from '@/lib/audio-unlock';
 import { EXAMINER_PROFILES } from '@/lib/examiner-profile';
+import { summarizeExam, joinAreas, studyModeLabel } from '@/lib/exam-summary';
+
+/**
+ * Discard confirmation copy — shared by both discard entry points (resume card
+ * + open-exams modal). Discard intentionally does NOT count toward progress; the
+ * copy makes that explicit and points users to Grade if they want to keep the
+ * answers. Spread with a per-call `onConfirm`.
+ */
+const DISCARD_CONFIRM = {
+  title: 'Discard exam',
+  message:
+    'Discard this exam? It’ll be removed from your open list and marked abandoned — answers you’ve already given won’t count toward Progress or Weak Areas. Want to keep them? Use Grade instead to score and save this exam.',
+  confirmLabel: 'Discard',
+  confirmClass: 'bg-red-500/80 hover:bg-red-500 text-white',
+} as const;
 
 /**
  * Retry a fetch call once on transient infrastructure errors (405, 502, 503, 504).
@@ -184,6 +200,9 @@ export default function PracticePage() {
     aircraft_class: string;
     metadata: Record<string, unknown>;
     acs_tasks_covered?: { task_id: string; status: string; attempts?: number }[];
+    selected_areas?: string[];
+    selected_tasks?: string[];
+    status?: string;
   } | null>(null);
   const [preferredVoiceEnabled, setPreferredVoiceEnabled] = useState(true);
   // Exam results modal state
@@ -195,6 +214,11 @@ export default function PracticePage() {
   const [allResumableSessions, setAllResumableSessions] = useState<NonNullable<typeof resumableSession>[]>([]);
   const [hasCompletedExams, setHasCompletedExams] = useState(false);
   const [showOpenExamsModal, setShowOpenExamsModal] = useState(false);
+  // Area differentiation for the resume card (modal rows derive their own).
+  const resumeSummary = useMemo(
+    () => (resumableSession ? summarizeExam(resumableSession) : null),
+    [resumableSession]
+  );
   // Feature flag: sentence-level TTS streaming (default OFF)
   const [sentenceStreamEnabled, setSentenceStreamEnabled] = useState(false);
   // Custom confirmation dialog (replaces browser confirm())
@@ -2029,8 +2053,8 @@ export default function PracticePage() {
 
             {/* Resume previous exam card */}
             {resumableSession && (
-              <>
-              <div className="iframe rounded-lg p-4 mb-5 border-l-2 border-c-cyan">
+              <div className="mb-5">
+              <div className="iframe rounded-lg p-4 mb-2 border-l-2 border-c-cyan">
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
@@ -2043,11 +2067,24 @@ export default function PracticePage() {
                       , {resumableSession.difficulty_preference === 'easy' ? 'Easy' : resumableSession.difficulty_preference === 'medium' ? 'Medium' : resumableSession.difficulty_preference === 'hard' ? 'Hard' : 'Mixed'}
                       {' '}&mdash; {resumableSession.exchange_count || 0} exchanges
                     </p>
+                    {resumeSummary && (
+                      <p className="text-xs mt-0.5">
+                        <span className="text-c-muted">{resumeSummary.coveredAreas.length > 0 ? 'Covered' : 'Scope'}:</span>{' '}
+                        <span className="text-c-text">
+                          {joinAreas(resumeSummary.coveredAreas.length > 0
+                            ? resumeSummary.coveredAreas.map((a) => a.areaName)
+                            : resumeSummary.scopeAreaNames)}
+                        </span>
+                        {resumeSummary.coveredAreas.length === 0 && (resumableSession.exchange_count || 0) === 0 && (
+                          <span className="text-c-muted"> &middot; not started</span>
+                        )}
+                      </p>
+                    )}
                     <p className="text-xs text-c-muted mt-0.5">
                       {new Date(resumableSession.started_at).toLocaleDateString('en-US', {
                         month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
                       })}
-                      {' '}&middot; {resumableSession.study_mode === 'linear' ? 'Area by Area' : resumableSession.study_mode === 'cross_acs' ? 'Across ACS' : 'Weak Areas'}
+                      {' '}&middot; {studyModeLabel(resumableSession.study_mode)}
                     </p>
                   </div>
                   <div className="flex flex-col gap-2 items-end">
@@ -2064,6 +2101,7 @@ export default function PracticePage() {
                       <button
                         onClick={gradeResumableSession}
                         disabled={gradingInProgress}
+                        title="Score &amp; keep this exam in your progress"
                         className="px-3 py-1.5 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded text-xs font-semibold transition-colors disabled:opacity-50"
                       >
                         {gradingInProgress ? 'Grading…' : 'Grade'}
@@ -2072,10 +2110,7 @@ export default function PracticePage() {
                         onClick={() => {
                           const sid = resumableSession.id;
                           setConfirmDialog({
-                            title: 'Discard exam',
-                            message: 'Discard this exam? It will be marked as abandoned and won\u2019t count toward your progress.',
-                            confirmLabel: 'Discard',
-                            confirmClass: 'bg-red-500/80 hover:bg-red-500 text-white',
+                            ...DISCARD_CONFIRM,
                             onConfirm: async () => {
                               await fetch('/api/session', {
                                 method: 'POST',
@@ -2086,6 +2121,7 @@ export default function PracticePage() {
                             },
                           });
                         }}
+                        title="Remove without counting toward progress"
                         className="px-3 py-1.5 text-c-muted hover:text-red-400 text-xs font-semibold transition-colors"
                       >
                         Discard
@@ -2102,7 +2138,7 @@ export default function PracticePage() {
                   + {allResumableSessions.length - 1} more open {allResumableSessions.length - 1 === 1 ? 'exam' : 'exams'}
                 </button>
               )}
-              </>
+              </div>
             )}
 
             {/* Session config form */}
@@ -2211,81 +2247,47 @@ export default function PracticePage() {
               </div>
               <div className="space-y-3">
                 {allResumableSessions.map((session) => (
-                  <div key={session.id} className="iframe rounded-lg p-3 border border-c-border">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-xs text-c-text">
-                          {session.rating === 'commercial' ? 'Commercial' : session.rating === 'instrument' ? 'Instrument' : session.rating === 'atp' ? 'ATP' : 'Private'}
-                          {session.aircraft_class ? ` ${session.aircraft_class}` : ''}
-                          , {session.difficulty_preference === 'easy' ? 'Easy' : session.difficulty_preference === 'medium' ? 'Medium' : session.difficulty_preference === 'hard' ? 'Hard' : 'Mixed'}
-                          {' '}&mdash; {session.exchange_count || 0} exchanges
-                        </p>
-                        <p className="text-xs text-c-muted mt-0.5">
-                          {new Date(session.started_at).toLocaleDateString('en-US', {
-                            month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
-                          })}
-                          {' '}&middot; {session.study_mode === 'linear' ? 'Area by Area' : session.study_mode === 'cross_acs' ? 'Across ACS' : 'Weak Areas'}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <button
-                          onClick={() => {
-                            setShowOpenExamsModal(false);
-                            resumeSession(session);
-                          }}
-                          disabled={loading || gradingInProgress}
-                          className="px-2.5 py-1 bg-c-cyan hover:bg-c-cyan-readable text-c-bg rounded text-xs font-semibold transition-colors disabled:opacity-50"
-                        >
-                          Continue
-                        </button>
-                        <button
-                          onClick={async () => {
-                            setGradingInProgress(true);
-                            try {
-                              const res = await fetch('/api/session', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ action: 'update', sessionId: session.id, status: 'completed' }),
-                              });
-                              const data = await res.json();
-                              removeFromResumable(session.id);
-                              if (data.result) {
-                                setShowOpenExamsModal(false);
-                                setExamResult(data.result as ExamResult);
-                              }
-                            } catch { /* ignore */ }
-                            setGradingInProgress(false);
-                          }}
-                          disabled={gradingInProgress}
-                          className="px-2.5 py-1 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded text-xs font-semibold transition-colors disabled:opacity-50"
-                        >
-                          {gradingInProgress ? '\u2026' : 'Grade'}
-                        </button>
-                        <button
-                          onClick={() => {
-                            const sid = session.id;
-                            setConfirmDialog({
-                              title: 'Discard exam',
-                              message: 'Discard this exam? It will be marked as abandoned and won\u2019t count toward your progress.',
-                              confirmLabel: 'Discard',
-                              confirmClass: 'bg-red-500/80 hover:bg-red-500 text-white',
-                              onConfirm: async () => {
-                                await fetch('/api/session', {
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ action: 'discard', sessionId: sid }),
-                                });
-                                removeFromResumable(sid);
-                              },
-                            });
-                          }}
-                          className="px-2.5 py-1 text-c-muted hover:text-red-400 text-xs font-semibold transition-colors"
-                        >
-                          Discard
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  <OpenExamRow
+                    key={session.id}
+                    session={session}
+                    loading={loading}
+                    gradingInProgress={gradingInProgress}
+                    onContinue={() => {
+                      setShowOpenExamsModal(false);
+                      resumeSession(session);
+                    }}
+                    onGrade={async () => {
+                      setGradingInProgress(true);
+                      try {
+                        const res = await fetch('/api/session', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ action: 'update', sessionId: session.id, status: 'completed' }),
+                        });
+                        const data = await res.json();
+                        removeFromResumable(session.id);
+                        if (data.result) {
+                          setShowOpenExamsModal(false);
+                          setExamResult(data.result as ExamResult);
+                        }
+                      } catch { /* ignore */ }
+                      setGradingInProgress(false);
+                    }}
+                    onDiscard={() => {
+                      const sid = session.id;
+                      setConfirmDialog({
+                        ...DISCARD_CONFIRM,
+                        onConfirm: async () => {
+                          await fetch('/api/session', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'discard', sessionId: sid }),
+                          });
+                          removeFromResumable(sid);
+                        },
+                      });
+                    }}
+                  />
                 ))}
               </div>
               {allResumableSessions.length === 0 && (
