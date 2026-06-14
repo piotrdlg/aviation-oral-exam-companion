@@ -4,9 +4,29 @@ import {
   studyModeLabel,
   areaIdFromTaskId,
   areaNameFromTaskId,
+  scopeAreaName,
   joinAreas,
   summarizeExam,
 } from '../exam-summary';
+
+describe('scopeAreaName', () => {
+  it('resolves a BARE Roman numeral using the session rating (the stored format)', () => {
+    expect(scopeAreaName('VIII', 'instrument')).toBe('Postflight Procedures');
+    expect(scopeAreaName('V', 'instrument')).toBe('Navigation Systems');
+    expect(scopeAreaName('I', 'private')).toBe('Preflight Preparation');
+    expect(scopeAreaName('VI', 'commercial')).toBe('Navigation');
+  });
+
+  it('resolves an already-qualified area or task id without a rating', () => {
+    expect(scopeAreaName('IR.VIII.')).toBe('Postflight Procedures');
+    expect(scopeAreaName('PA.IX.A')).toBe('Emergency Operations');
+  });
+
+  it('falls back to the raw numeral when the rating is missing/unknown', () => {
+    expect(scopeAreaName('VIII')).toBe('VIII');
+    expect(scopeAreaName('VIII', 'glider')).toBe('VIII');
+  });
+});
 
 describe('joinAreas', () => {
   it('joins up to max names with commas', () => {
@@ -123,10 +143,11 @@ describe('summarizeExam — started exams', () => {
 });
 
 describe('summarizeExam — not-yet-started exams', () => {
-  it('uses selected_areas (as names) for scope when nothing is covered yet', () => {
+  it('uses selected_areas (bare numerals + rating) for scope when nothing is covered yet', () => {
     const { coveredAreas, scopeAreaNames } = summarizeExam({
+      rating: 'instrument',
       exchange_count: 0,
-      selected_areas: ['IR.I.', 'IR.V.'],
+      selected_areas: ['I', 'V'], // the real stored format: bare Roman numerals
       acs_tasks_covered: [],
     });
     expect(coveredAreas).toHaveLength(0);
