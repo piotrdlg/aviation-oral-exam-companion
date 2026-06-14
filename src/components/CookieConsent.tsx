@@ -156,11 +156,11 @@ export function CookieConsent() {
         >
           <div className="border-t border-c-border bg-c-panel/95 backdrop-blur-sm">
             <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 px-4 py-3 sm:flex-row sm:gap-4 sm:py-3">
-              <p className="font-mono text-xs text-c-muted sm:flex-1">
+              <p className="text-sm text-c-muted sm:flex-1">
                 We use cookies to analyze traffic and improve your experience.{' '}
                 <Link
                   href="/privacy"
-                  className="text-c-amber underline underline-offset-2 hover:text-c-amber/80 transition-colors"
+                  className="text-c-amber underline underline-offset-2 hover:text-c-amber-bright transition-colors"
                 >
                   Privacy Policy
                 </Link>
@@ -168,19 +168,19 @@ export function CookieConsent() {
               <div className="flex shrink-0 items-center gap-2">
                 <button
                   onClick={handleAcceptAll}
-                  className="rounded border border-c-amber bg-c-amber/10 px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider text-c-amber hover:bg-c-amber/20 transition-colors focus:outline-none focus:ring-1 focus:ring-c-amber"
+                  className="rounded-lg bg-c-amber px-4 py-2 text-sm font-semibold text-c-bg hover:bg-c-amber-bright transition-colors"
                 >
-                  Accept All
+                  Accept all
                 </button>
                 <button
                   onClick={handleNecessaryOnly}
-                  className="rounded border border-c-border px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider text-c-muted hover:border-c-border-hi hover:text-c-text transition-colors focus:outline-none focus:ring-1 focus:ring-c-border-hi"
+                  className="rounded-lg border border-c-border px-4 py-2 text-sm font-medium text-c-muted hover:border-c-border-hi hover:text-c-text transition-colors"
                 >
-                  Necessary Only
+                  Necessary only
                 </button>
                 <button
                   onClick={handleOpenCustomize}
-                  className="rounded border border-c-border px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider text-c-muted hover:border-c-border-hi hover:text-c-text transition-colors focus:outline-none focus:ring-1 focus:ring-c-border-hi"
+                  className="rounded-lg border border-c-border px-4 py-2 text-sm font-medium text-c-muted hover:border-c-border-hi hover:text-c-text transition-colors"
                 >
                   Customize
                 </button>
@@ -204,9 +204,9 @@ export function CookieConsent() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="border-b border-c-border px-5 py-3">
-              <h2 className="font-mono text-sm font-semibold uppercase tracking-wider text-c-amber">
-                Cookie Preferences
+            <div className="border-b border-c-border px-5 py-4">
+              <h2 className="text-lg font-semibold tracking-tight text-c-text">
+                Cookie preferences
               </h2>
             </div>
 
@@ -215,10 +215,10 @@ export function CookieConsent() {
               {/* Strictly Necessary */}
               <div className="flex items-center justify-between px-5 py-3">
                 <div className="flex-1 pr-4">
-                  <h3 className="font-mono text-xs font-semibold uppercase tracking-wider text-c-text">
+                  <h3 className="text-sm font-semibold text-c-text">
                     Strictly Necessary
                   </h3>
-                  <p className="mt-0.5 text-[11px] leading-relaxed text-c-muted">
+                  <p className="mt-0.5 text-xs leading-relaxed text-c-muted">
                     Auth sessions, security, consent storage
                   </p>
                 </div>
@@ -235,10 +235,10 @@ export function CookieConsent() {
               {/* Analytics */}
               <div className="flex items-center justify-between px-5 py-3">
                 <div className="flex-1 pr-4">
-                  <h3 className="font-mono text-xs font-semibold uppercase tracking-wider text-c-text">
+                  <h3 className="text-sm font-semibold text-c-text">
                     Analytics
                   </h3>
-                  <p className="mt-0.5 text-[11px] leading-relaxed text-c-muted">
+                  <p className="mt-0.5 text-xs leading-relaxed text-c-muted">
                     Google Analytics, Microsoft Clarity, PostHog
                   </p>
                 </div>
@@ -264,10 +264,10 @@ export function CookieConsent() {
               {/* Marketing */}
               <div className="flex items-center justify-between px-5 py-3">
                 <div className="flex-1 pr-4">
-                  <h3 className="font-mono text-xs font-semibold uppercase tracking-wider text-c-text">
+                  <h3 className="text-sm font-semibold text-c-text">
                     Marketing
                   </h3>
-                  <p className="mt-0.5 text-[11px] leading-relaxed text-c-muted">
+                  <p className="mt-0.5 text-xs leading-relaxed text-c-muted">
                     Google Ads remarketing, conversion tracking
                   </p>
                 </div>
@@ -295,15 +295,15 @@ export function CookieConsent() {
             <div className="flex items-center justify-end gap-2 border-t border-c-border px-5 py-3">
               <button
                 onClick={handleCloseCustomize}
-                className="rounded border border-c-border px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider text-c-muted hover:border-c-border-hi hover:text-c-text transition-colors focus:outline-none focus:ring-1 focus:ring-c-border-hi"
+                className="rounded-lg border border-c-border px-4 py-2 text-sm font-medium text-c-muted hover:border-c-border-hi hover:text-c-text transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSavePreferences}
-                className="rounded border border-c-amber bg-c-amber/10 px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider text-c-amber hover:bg-c-amber/20 transition-colors focus:outline-none focus:ring-1 focus:ring-c-amber"
+                className="rounded-lg bg-c-amber px-4 py-2 text-sm font-semibold text-c-bg hover:bg-c-amber-bright transition-colors"
               >
-                Save Preferences
+                Save preferences
               </button>
             </div>
           </div>
