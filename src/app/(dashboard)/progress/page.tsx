@@ -154,12 +154,8 @@ export default function ProgressPage() {
     [sessions, selectedRating]
   );
 
-  // Auto-select latest session when sessions load
-  useEffect(() => {
-    if (filteredSessions.length > 0 && selectedSessionId === null) {
-      setSelectedSessionId(filteredSessions[0].id); // first load only — 'lifetime' is sticky
-    }
-  }, [filteredSessions, selectedSessionId]);
+  // Default the ACS-map view to lifetime (selectedSessionId stays null → 'lifetime'),
+  // not the most-recent session — which is often an abandoned 0-coverage one.
 
   // Fetch session-specific scores when selectedSessionId changes
   useEffect(() => {
@@ -413,7 +409,7 @@ export default function ProgressPage() {
                   className="bg-c-panel border border-c-border rounded-lg text-sm text-c-text font-mono px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber"
                 >
                   <option value="lifetime">All Exams (Lifetime)</option>
-                  {filteredSessions.map((s) => (
+                  {recentSessions.map((s) => (
                     <option key={s.id} value={s.id}>
                       {new Date(s.started_at).toLocaleDateString('en-US', {
                         month: 'short',
