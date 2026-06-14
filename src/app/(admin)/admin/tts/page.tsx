@@ -8,7 +8,6 @@ const OPENAI_VOICES = [
   { value: 'onyx', label: 'Onyx — Deep, authoritative male' },
   { value: 'alloy', label: 'Alloy — Neutral, balanced' },
   { value: 'echo', label: 'Echo — Warm, conversational male' },
-  { value: 'fable', label: 'Fable — Expressive, British' },
   { value: 'nova', label: 'Nova — Warm, friendly female' },
   { value: 'shimmer', label: 'Shimmer — Clear, bright female' },
 ];
@@ -34,8 +33,6 @@ const DEEPGRAM_VOICES = [
   { value: 'aura-2-orpheus-en', label: 'Orpheus — Confident, trustworthy (M, American)' },
   { value: 'aura-2-pluto-en', label: 'Pluto — Calm, empathetic, baritone (M, American)' },
   { value: 'aura-2-saturn-en', label: 'Saturn — Confident, baritone (M, American)' },
-  { value: 'aura-2-draco-en', label: 'Draco — Warm, trustworthy, baritone (M, British)' },
-  { value: 'aura-2-hyperion-en', label: 'Hyperion — Caring, warm (M, Australian)' },
   // ── Feminine ──
   { value: 'aura-2-thalia-en', label: 'Thalia — Confident, energetic (F, American)' },
   { value: 'aura-2-athena-en', label: 'Athena — Calm, professional (F, American)' },
@@ -44,7 +41,6 @@ const DEEPGRAM_VOICES = [
   { value: 'aura-2-aurora-en', label: 'Aurora — Cheerful, energetic (F, American)' },
   { value: 'aura-2-hera-en', label: 'Hera — Smooth, warm, professional (F, American)' },
   { value: 'aura-2-helena-en', label: 'Helena — Caring, friendly, raspy (F, American)' },
-  { value: 'aura-2-pandora-en', label: 'Pandora — Smooth, calm, melodic (F, British)' },
 ];
 
 const DEEPGRAM_ENCODINGS = [
@@ -65,6 +61,9 @@ const SAMPLE_RATES = [
 ];
 
 const TEST_PHRASE = "Good morning. I'm your designated pilot examiner for today's oral examination. Let's begin with the first area of operation: Preflight Preparation. Can you describe the required documents for airworthiness?";
+
+// Short phrase for auditioning an individual voice (snappier + cheaper than the full TEST_PHRASE).
+const PREVIEW_PHRASE = "Good morning. I'm your designated pilot examiner. Let's begin the oral exam.";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -87,7 +86,8 @@ interface TTSState {
 
 const DEFAULTS: TTSState = {
   openai: { voice: 'onyx', model: 'gpt-4o-mini-tts', speed: 1.0 },
-  deepgram: { model: 'aura-2-orion-en', sample_rate: 48000, encoding: 'linear16' },
+  // Default to Luna (Maria's voice) so the system fallback matches the default examiner.
+  deepgram: { model: 'aura-2-luna-en', sample_rate: 48000, encoding: 'linear16' },
 };
 
 interface UserVoiceOption {
@@ -107,6 +107,7 @@ export default function TTSConfigPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [state, setState] = useState<TTSState>({ ...DEFAULTS });
   const [testing, setTesting] = useState<string | null>(null);
+  const [previewing, setPreviewing] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // User voice options curation state
@@ -206,6 +207,37 @@ export default function TTSConfigPage() {
       alert(err instanceof Error ? err.message : 'Test failed');
     } finally {
       setTesting(null);
+    }
+  }
+
+  // Audition a single Deepgram voice by passing it as a voice override to
+  // /api/tts. Admins are allowed any well-formed Aura-2 model server-side.
+  async function previewVoice(model: string) {
+    if (previewing) return;
+    setPreviewing(model);
+    try {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: PREVIEW_PHRASE, voice: model }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Preview failed (${res.status})`);
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onended = () => { URL.revokeObjectURL(url); setPreviewing(null); };
+      await audio.play();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Preview failed');
+      setPreviewing(null);
     }
   }
 
@@ -334,19 +366,33 @@ export default function TTSConfigPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {DEEPGRAM_VOICES.map((voice) => {
               const isSelected = userVoiceOptions.some((v) => v.model === voice.value);
+              const isPreviewing = previewing === voice.value;
               return (
-                <button
+                <div
                   key={voice.value}
-                  onClick={() => toggleUserVoice(voice.value, voice.label)}
-                  className={`text-left iframe rounded-lg p-3 font-mono text-[10px] transition-colors ${
-                    isSelected
-                      ? 'border-l-2 border-c-amber ring-1 ring-c-amber/20 text-c-amber font-semibold'
-                      : 'text-c-muted hover:border-c-border-hi'
+                  className={`iframe rounded-lg p-2.5 pl-3 font-mono text-[10px] flex items-center gap-2 transition-colors ${
+                    isSelected ? 'border-l-2 border-c-amber ring-1 ring-c-amber/20' : ''
                   }`}
                 >
-                  <span className="mr-2">{isSelected ? '\u2713' : '\u25CB'}</span>
-                  {voice.label}
-                </button>
+                  <button
+                    onClick={() => toggleUserVoice(voice.value, voice.label)}
+                    className={`text-left flex-1 min-w-0 transition-colors ${
+                      isSelected ? 'text-c-amber font-semibold' : 'text-c-muted hover:text-c-text'
+                    }`}
+                  >
+                    <span className="mr-2">{isSelected ? '\u2713' : '\u25CB'}</span>
+                    {voice.label}
+                  </button>
+                  <button
+                    onClick={() => previewVoice(voice.value)}
+                    disabled={previewing !== null}
+                    title="Preview this voice"
+                    aria-label={`Preview ${voice.label}`}
+                    className="shrink-0 w-7 h-7 flex items-center justify-center rounded bg-c-bezel hover:bg-c-elevated border border-c-border-hi text-c-text disabled:opacity-40 transition-colors"
+                  >
+                    {isPreviewing ? '\u25A0' : '\u25B6'}
+                  </button>
+                </div>
               );
             })}
           </div>
