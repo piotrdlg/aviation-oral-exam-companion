@@ -332,7 +332,8 @@ export async function GET(request: NextRequest) {
 
   // W2.5 (bug 16): lifetime aggregate stats — computed over ALL of the
   // user's sessions for the rating, not the 20-row list window the
-  // progress page previously summed client-side.
+  // progress page previously summed client-side. Excludes abandoned AND
+  // expired (both are dead sessions) so the counts reflect real attempts.
   if (action === 'stats') {
     const rating = searchParams.get('rating') || 'private';
     const { data: rows, error } = await supabase
@@ -340,7 +341,8 @@ export async function GET(request: NextRequest) {
       .select('status, exchange_count, acs_tasks_covered')
       .eq('user_id', user.id)
       .eq('rating', rating)
-      .neq('status', 'abandoned');
+      .neq('status', 'abandoned')
+      .neq('status', 'expired');
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
