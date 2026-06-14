@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import posthog from 'posthog-js';
+import { Logo } from '@/components/Brand';
 
 interface ConnectionItem {
   connectionId: string;
@@ -275,41 +276,44 @@ export default function InstructorCommandCenter() {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <p className="font-mono text-xs text-c-cyan glow-c tracking-[0.3em] uppercase mb-2">// INSTRUCTOR MODE</p>
-        <h1 className="text-2xl font-bold text-c-amber font-mono uppercase tracking-wider glow-a">Command Center</h1>
+        <div className="mb-3">
+          <Logo size="md" href="/home" />
+        </div>
+        <p className="font-mono text-xs text-c-cyan tracking-[0.3em] uppercase mb-2">// Instructor mode</p>
+        <h1 className="text-3xl font-bold text-c-text tracking-tight">Command center</h1>
       </div>
 
       {/* Legal disclaimer */}
       <div className="bg-c-panel border border-c-border rounded-lg px-4 py-3">
-        <p className="font-mono text-[10px] text-c-dim leading-relaxed">
+        <p className="text-sm text-c-muted leading-relaxed">
           HeyDPE supports your teaching; you remain the recommending instructor responsible for training and endorsement decisions.
         </p>
       </div>
 
       {error && (
         <div className="bg-c-red-dim/40 border border-c-red/20 rounded-lg px-4 py-3">
-          <p className="text-c-red text-sm font-mono">{error}</p>
+          <p className="text-c-red text-sm">{error}</p>
         </div>
       )}
 
       {/* Courtesy Access Banner */}
       {entitlement && entitlement.applicationStatus === 'suspended' && (
         <div className="bg-c-red-dim/20 border border-c-red/20 border-l-4 border-l-c-red rounded-lg px-4 py-3">
-          <p className="font-mono text-sm text-c-red">
+          <p className="text-sm text-c-red">
             Your instructor access has been suspended. Contact support@heydpe.com for assistance.
           </p>
         </div>
       )}
       {entitlement && entitlement.applicationStatus === 'approved' && entitlement.hasCourtesyAccess && (
         <div className="bg-c-green-lo/20 border border-c-green/20 border-l-4 border-l-c-green rounded-lg px-4 py-3">
-          <p className="font-mono text-sm text-c-green">
+          <p className="text-sm text-c-green-readable">
             You currently have full instructor access through your connected students.
           </p>
         </div>
       )}
       {entitlement && entitlement.applicationStatus === 'approved' && !entitlement.hasCourtesyAccess && (
         <div className="bg-c-amber-lo/20 border border-c-amber/20 border-l-4 border-l-c-amber rounded-lg px-4 py-3">
-          <p className="font-mono text-sm text-c-amber">
+          <p className="text-sm text-c-amber">
             You currently have no paying students connected. Connect a paying student to unlock full instructor access.
           </p>
         </div>
@@ -320,36 +324,36 @@ export default function InstructorCommandCenter() {
         <div className="bezel rounded-lg border border-c-border p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-mono text-[10px] text-c-cyan glow-c tracking-[0.3em] uppercase mb-1">// SHARE WITH STUDENTS</p>
-              <p className="font-mono text-xs text-c-muted">Students click your link and connect instantly — no approval step needed.</p>
+              <p className="font-mono text-[11px] text-c-cyan tracking-[0.3em] uppercase mb-1">// Share with students</p>
+              <p className="text-sm text-c-muted">Students click your link and connect instantly — no approval step needed.</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {/* Referral Code */}
             <div className="bg-c-panel rounded-lg border border-c-border px-3 py-2.5">
-              <div className="font-mono text-[9px] text-c-dim uppercase tracking-wider mb-1">Referral Code</div>
+              <div className="font-mono text-[11px] text-c-muted uppercase tracking-wider mb-1">Referral code</div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-sm text-c-amber font-bold tracking-widest">{identity.referralCode}</span>
+                <span className="font-mono text-sm text-c-amber font-bold tracking-widest tabular-nums">{identity.referralCode}</span>
                 <button
                   onClick={() => copyToClipboard(identity.referralCode!, 'code')}
-                  className="ml-auto px-2 py-0.5 rounded border border-c-border bg-c-bezel text-c-muted hover:text-c-text font-mono text-[9px] uppercase transition-colors shrink-0"
+                  className="ml-auto min-h-11 px-3 rounded border border-c-border bg-c-bezel text-c-muted hover:text-c-text text-sm font-semibold transition-colors shrink-0"
                 >
-                  {copiedField === 'code' ? 'COPIED!' : 'COPY'}
+                  {copiedField === 'code' ? 'Copied!' : 'Copy'}
                 </button>
               </div>
             </div>
 
             {/* Referral Link */}
             <div className="bg-c-panel rounded-lg border border-c-border px-3 py-2.5">
-              <div className="font-mono text-[9px] text-c-dim uppercase tracking-wider mb-1">Quick Link</div>
+              <div className="font-mono text-[11px] text-c-muted uppercase tracking-wider mb-1">Quick link</div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-[11px] text-c-text truncate">/ref/{identity.referralCode}</span>
+                <span className="font-mono text-[13px] text-c-text truncate">/ref/{identity.referralCode}</span>
                 <button
                   onClick={() => copyToClipboard(`${window.location.origin}/ref/${identity.referralCode}`, 'reflink')}
-                  className="ml-auto px-2 py-0.5 rounded border border-c-border bg-c-bezel text-c-muted hover:text-c-text font-mono text-[9px] uppercase transition-colors shrink-0"
+                  className="ml-auto min-h-11 px-3 rounded border border-c-border bg-c-bezel text-c-muted hover:text-c-text text-sm font-semibold transition-colors shrink-0"
                 >
-                  {copiedField === 'reflink' ? 'COPIED!' : 'COPY'}
+                  {copiedField === 'reflink' ? 'Copied!' : 'Copy'}
                 </button>
               </div>
             </div>
@@ -357,14 +361,14 @@ export default function InstructorCommandCenter() {
             {/* Profile Page Link */}
             {identity.slug && (
               <div className="bg-c-panel rounded-lg border border-c-border px-3 py-2.5">
-                <div className="font-mono text-[9px] text-c-dim uppercase tracking-wider mb-1">Profile Page</div>
+                <div className="font-mono text-[11px] text-c-muted uppercase tracking-wider mb-1">Profile page</div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-[11px] text-c-text truncate">/instructor/{identity.slug}</span>
+                  <span className="font-mono text-[13px] text-c-text truncate">/instructor/{identity.slug}</span>
                   <button
                     onClick={() => copyToClipboard(`${window.location.origin}/instructor/${identity.slug}`, 'profile')}
-                    className="ml-auto px-2 py-0.5 rounded border border-c-border bg-c-bezel text-c-muted hover:text-c-text font-mono text-[9px] uppercase transition-colors shrink-0"
+                    className="ml-auto min-h-11 px-3 rounded border border-c-border bg-c-bezel text-c-muted hover:text-c-text text-sm font-semibold transition-colors shrink-0"
                   >
-                    {copiedField === 'profile' ? 'COPIED!' : 'COPY'}
+                    {copiedField === 'profile' ? 'Copied!' : 'Copy'}
                   </button>
                 </div>
               </div>
@@ -376,7 +380,7 @@ export default function InstructorCommandCenter() {
             <button
               onClick={downloadQR}
               disabled={qrDownloading}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-c-amber/30 bg-c-amber-lo text-c-amber hover:bg-c-amber/20 disabled:opacity-50 font-mono text-[10px] uppercase tracking-wider transition-colors"
+              className="flex items-center gap-2 min-h-11 px-4 rounded-lg border border-c-amber/30 bg-c-amber-lo text-c-amber hover:bg-c-amber/20 disabled:opacity-50 text-sm font-semibold transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
                 <rect x="3" y="3" width="7" height="7" />
@@ -387,10 +391,10 @@ export default function InstructorCommandCenter() {
                 <rect x="14" y="18" width="3" height="3" />
                 <rect x="18" y="18" width="3" height="3" />
               </svg>
-              {qrDownloading ? 'GENERATING...' : 'DOWNLOAD QR CODE'}
+              {qrDownloading ? 'Generating…' : 'Download QR code'}
             </button>
-            <span className="font-mono text-[9px] text-c-dim">
-              Print or share your referral QR code -- students scan to connect instantly.
+            <span className="text-xs text-c-muted">
+              Print or share your referral QR code — students scan to connect instantly.
             </span>
           </div>
         </div>
@@ -406,8 +410,8 @@ export default function InstructorCommandCenter() {
           { label: 'Attention', value: needsAttentionCount, color: needsAttentionCount > 0 ? 'text-c-red' : 'text-c-dim' },
         ].map(kpi => (
           <div key={kpi.label} className="bezel rounded-lg border border-c-border p-4">
-            <div className={`font-mono text-2xl font-bold ${kpi.color}`}>{kpi.value}</div>
-            <div className="font-mono text-[10px] text-c-muted uppercase tracking-wider mt-1">{kpi.label}</div>
+            <div className={`font-mono tabular-nums text-2xl font-bold ${kpi.color}`}>{kpi.value}</div>
+            <div className="font-mono text-[11px] text-c-muted uppercase tracking-wider mt-1">{kpi.label}</div>
           </div>
         ))}
       </div>
@@ -418,15 +422,15 @@ export default function InstructorCommandCenter() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2.5 font-mono text-[10px] uppercase tracking-wider transition-colors border-b-2 -mb-[1px] ${
+            className={`min-h-11 px-4 py-2.5 text-sm font-semibold transition-colors border-b-2 -mb-[1px] ${
               activeTab === tab.key
-                ? 'border-c-amber text-c-amber font-semibold'
+                ? 'border-c-amber text-c-amber'
                 : 'border-transparent text-c-muted hover:text-c-text'
             }`}
           >
             {tab.label}
             {tab.count > 0 && (
-              <span className="ml-1.5 font-mono text-[9px] px-1.5 py-0.5 rounded-full bg-c-elevated text-c-muted">
+              <span className="ml-1.5 font-mono tabular-nums text-[11px] px-1.5 py-0.5 rounded-full bg-c-elevated text-c-muted">
                 {tab.count}
               </span>
             )}
@@ -438,7 +442,7 @@ export default function InstructorCommandCenter() {
       {activeTab === 'students' && (
         <div>
           {connected.length === 0 ? (
-            <p className="font-mono text-sm text-c-dim text-center py-12">No connected students yet. Share an invite link to get started.</p>
+            <p className="text-sm text-c-muted text-center py-12">No connected students yet. Share an invite link to get started.</p>
           ) : (
             <div className="space-y-2">
               {connected.map(conn => {
@@ -446,39 +450,39 @@ export default function InstructorCommandCenter() {
                 return (
                   <div key={conn.connectionId} className="bezel rounded-lg border border-c-border p-4 flex items-center gap-4">
                     <div className="flex-1 min-w-0">
-                      <div className="font-mono text-sm text-c-text font-semibold">
+                      <div className="text-sm text-c-text font-semibold">
                         {conn.studentName || summary?.displayName || 'Student'}
                       </div>
-                      <div className="font-mono text-[10px] text-c-dim mt-1 flex items-center gap-3">
+                      <div className="text-[11px] text-c-muted mt-1 flex items-center gap-3">
                         {summary?.readinessScore !== null && summary?.readinessScore !== undefined ? (
-                          <span className={summary.readinessScore >= 70 ? 'text-c-green' : summary.readinessScore >= 50 ? 'text-c-amber' : 'text-c-red'}>
-                            Readiness: {summary.readinessScore}%
+                          <span className={summary.readinessScore >= 70 ? 'text-c-green-readable' : summary.readinessScore >= 50 ? 'text-c-amber' : 'text-c-red'}>
+                            Readiness: <span className="font-mono tabular-nums">{summary.readinessScore}%</span>
                           </span>
                         ) : (
-                          <span className="text-c-dim">No score yet</span>
+                          <span className="text-c-muted">No score yet</span>
                         )}
                         {(summary?.readinessScore !== null && summary?.readinessScore !== undefined && summary.readinessScore < 60) && (
-                          <span className="text-c-red font-semibold">NEEDS ATTENTION</span>
+                          <span className="font-mono text-c-red font-semibold uppercase tracking-wider">Needs attention</span>
                         )}
                         <span>Last: {formatDate(summary?.lastActivityAt || null)}</span>
-                        <span>{summary?.sessionsLast7Days ?? 0} sessions (7d)</span>
+                        <span><span className="font-mono tabular-nums">{summary?.sessionsLast7Days ?? 0}</span> sessions (7d)</span>
                         {summary?.sessionsLast7Days === 0 && (
-                          <span className="text-c-amber">INACTIVE</span>
+                          <span className="font-mono text-c-amber uppercase tracking-wider">Inactive</span>
                         )}
                       </div>
                     </div>
                     <Link
                       href={`/instructor/students/${conn.studentUserId}`}
-                      className="px-3 py-1.5 rounded border border-c-amber/30 bg-c-amber-lo text-c-amber font-mono text-[10px] uppercase hover:bg-c-amber/20 transition-colors whitespace-nowrap"
+                      className="inline-flex items-center min-h-11 px-3 rounded border border-c-amber/30 bg-c-amber-lo text-c-amber text-sm font-semibold hover:bg-c-amber/20 transition-colors whitespace-nowrap"
                     >
-                      View Progress
+                      View progress
                     </Link>
                     <button
                       onClick={() => handleConnectionAction(conn.connectionId, 'disconnect')}
                       disabled={actionLoading === conn.connectionId}
-                      className="px-3 py-1.5 rounded border border-c-red/20 bg-c-red-dim text-c-red font-mono text-[10px] uppercase hover:bg-c-red/20 transition-colors disabled:opacity-50 whitespace-nowrap"
+                      className="min-h-11 px-3 rounded border border-c-red/20 bg-c-red-dim text-c-red text-sm font-semibold hover:bg-c-red/20 transition-colors disabled:opacity-50 whitespace-nowrap"
                     >
-                      {actionLoading === conn.connectionId ? '...' : 'Disconnect'}
+                      {actionLoading === conn.connectionId ? '…' : 'Disconnect'}
                     </button>
                   </div>
                 );
@@ -491,30 +495,30 @@ export default function InstructorCommandCenter() {
       {activeTab === 'pending' && (
         <div>
           {pending.length === 0 ? (
-            <p className="font-mono text-sm text-c-dim text-center py-12">No pending connection requests.</p>
+            <p className="text-sm text-c-muted text-center py-12">No pending connection requests.</p>
           ) : (
             <div className="space-y-2">
               {pending.map(conn => (
                 <div key={conn.connectionId} className="bezel rounded-lg border border-c-border p-4 flex items-center gap-4">
                   <div className="flex-1 min-w-0">
-                    <div className="font-mono text-sm text-c-text font-semibold">
+                    <div className="text-sm text-c-text font-semibold">
                       {conn.studentName || 'Student'}
                     </div>
-                    <div className="font-mono text-[10px] text-c-dim mt-1">
+                    <div className="text-[11px] text-c-muted mt-1">
                       Requested {formatDate(conn.requestedAt)} &middot; {conn.initiatedBy === 'student' ? 'Student-initiated' : 'Invite'}
                     </div>
                   </div>
                   <button
                     onClick={() => handleConnectionAction(conn.connectionId, 'approve')}
                     disabled={actionLoading === conn.connectionId}
-                    className="px-3 py-1.5 rounded border border-c-green/30 bg-c-green-lo text-c-green font-mono text-[10px] uppercase hover:bg-c-green/20 transition-colors disabled:opacity-50"
+                    className="min-h-11 px-3 rounded border border-c-green/30 bg-c-green-lo text-c-green-readable text-sm font-semibold hover:bg-c-green/20 transition-colors disabled:opacity-50"
                   >
-                    {actionLoading === conn.connectionId ? '...' : 'Approve'}
+                    {actionLoading === conn.connectionId ? '…' : 'Approve'}
                   </button>
                   <button
                     onClick={() => handleConnectionAction(conn.connectionId, 'reject')}
                     disabled={actionLoading === conn.connectionId}
-                    className="px-3 py-1.5 rounded border border-c-red/20 bg-c-red-dim text-c-red font-mono text-[10px] uppercase hover:bg-c-red/20 transition-colors disabled:opacity-50"
+                    className="min-h-11 px-3 rounded border border-c-red/20 bg-c-red-dim text-c-red text-sm font-semibold hover:bg-c-red/20 transition-colors disabled:opacity-50"
                   >
                     Reject
                   </button>
@@ -528,17 +532,17 @@ export default function InstructorCommandCenter() {
       {activeTab === 'invites' && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="font-mono text-[10px] text-c-muted">Share invite links with students to connect on HeyDPE.</p>
+            <p className="text-sm text-c-muted">Share invite links with students to connect on HeyDPE.</p>
             <button
               onClick={createInvite}
               disabled={inviteCreating}
-              className="px-3 py-1.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg font-mono text-[10px] font-semibold rounded-lg transition-colors uppercase whitespace-nowrap"
+              className="min-h-11 px-4 bg-c-amber hover:bg-c-amber-bright disabled:opacity-50 text-c-bg text-sm font-semibold rounded-lg transition-colors whitespace-nowrap"
             >
-              {inviteCreating ? 'CREATING...' : '+ NEW LINK'}
+              {inviteCreating ? 'Creating…' : 'New link'}
             </button>
           </div>
           {invites.filter(i => !i.revoked_at).length === 0 ? (
-            <p className="font-mono text-sm text-c-dim text-center py-8">No active invite links.</p>
+            <p className="text-sm text-c-muted text-center py-8">No active invite links.</p>
           ) : (
             <div className="space-y-2">
               {invites.filter(i => !i.revoked_at).map(invite => {
@@ -547,19 +551,19 @@ export default function InstructorCommandCenter() {
                 return (
                   <div key={invite.id} className="flex items-center gap-2 bg-c-panel rounded-lg border border-c-border px-3 py-2">
                     <div className="flex-1 min-w-0">
-                      <div className="font-mono text-[10px] text-c-text truncate">{invite.invite_url}</div>
-                      <div className="font-mono text-[9px] text-c-dim mt-0.5">
-                        {claimed ? <span className="text-c-green">Claimed</span> : expired ? <span className="text-c-red">Expired</span> : <span>Expires {new Date(invite.expires_at).toLocaleDateString()}</span>}
+                      <div className="font-mono text-[13px] text-c-text truncate">{invite.invite_url}</div>
+                      <div className="text-[11px] text-c-muted mt-0.5">
+                        {claimed ? <span className="text-c-green-readable">Claimed</span> : expired ? <span className="text-c-red">Expired</span> : <span>Expires {new Date(invite.expires_at).toLocaleDateString()}</span>}
                       </div>
                     </div>
                     {!claimed && !expired && (
-                      <button onClick={() => copyUrl(invite.invite_url, invite.id)} className="px-2 py-1 rounded border border-c-border bg-c-bezel text-c-muted hover:text-c-text font-mono text-[9px] uppercase transition-colors whitespace-nowrap">
-                        {inviteCopied === invite.id ? 'COPIED!' : 'COPY'}
+                      <button onClick={() => copyUrl(invite.invite_url, invite.id)} className="min-h-11 px-3 rounded border border-c-border bg-c-bezel text-c-muted hover:text-c-text text-sm font-semibold transition-colors whitespace-nowrap">
+                        {inviteCopied === invite.id ? 'Copied!' : 'Copy'}
                       </button>
                     )}
                     {!claimed && (
-                      <button onClick={() => revokeInvite(invite.id)} className="px-2 py-1 rounded border border-c-red/20 bg-c-red-dim text-c-red hover:bg-c-red/20 font-mono text-[9px] uppercase transition-colors whitespace-nowrap">
-                        REVOKE
+                      <button onClick={() => revokeInvite(invite.id)} className="min-h-11 px-3 rounded border border-c-red/20 bg-c-red-dim text-c-red hover:bg-c-red/20 text-sm font-semibold transition-colors whitespace-nowrap">
+                        Revoke
                       </button>
                     )}
                   </div>

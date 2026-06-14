@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import posthog from 'posthog-js';
+import { Logo } from '@/components/Brand';
 
 interface StudentDetail {
   studentUserId: string;
@@ -175,9 +176,9 @@ export default function StudentDetailPage() {
   if (!student) {
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
-        <p className="text-c-dim font-mono text-sm">{error || 'Student not found.'}</p>
-        <Link href="/instructor" className="font-mono text-sm text-c-amber hover:underline mt-4 inline-block">
-          Back to Command Center
+        <p className="text-c-muted text-sm">{error || 'Student not found.'}</p>
+        <Link href="/instructor" className="text-sm font-semibold text-c-amber hover:underline mt-4 inline-block">
+          Back to command center
         </Link>
       </div>
     );
@@ -187,41 +188,44 @@ export default function StudentDetailPage() {
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Back link + header */}
       <div>
-        <Link href="/instructor" className="font-mono text-[10px] text-c-muted hover:text-c-text uppercase tracking-wider transition-colors">
-          &larr; Command Center
+        <div className="mb-3">
+          <Logo size="md" href="/home" />
+        </div>
+        <Link href="/instructor" className="text-sm text-c-muted hover:text-c-text transition-colors">
+          &larr; Command center
         </Link>
-        <h1 className="text-xl font-bold text-c-amber font-mono uppercase tracking-wider mt-2 glow-a">
+        <h1 className="text-3xl font-bold text-c-text tracking-tight mt-2">
           {student.displayName || 'Student'}
         </h1>
       </div>
 
       {/* Legal disclaimer */}
       <div className="bg-c-panel border border-c-border rounded-lg px-4 py-3">
-        <p className="font-mono text-[10px] text-c-dim leading-relaxed">
+        <p className="text-sm text-c-muted leading-relaxed">
           HeyDPE supports your teaching; you remain the recommending instructor responsible for training and endorsement decisions.
         </p>
       </div>
 
       {error && (
         <div className="bg-c-red-dim/40 border border-c-red/20 rounded-lg px-4 py-3">
-          <p className="text-c-red text-sm font-mono">{error}</p>
+          <p className="text-c-red text-sm">{error}</p>
         </div>
       )}
 
       {/* Readiness Score */}
       <div className="bezel rounded-lg border border-c-border p-6">
-        <h2 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-3">READINESS SCORE</h2>
+        <h2 className="font-semibold text-base text-c-text tracking-tight mb-3">Readiness score</h2>
         <div className="flex items-baseline gap-4">
-          <span className={`font-mono text-4xl font-bold ${scoreColor(student.readinessScore)}`}>
+          <span className={`font-mono tabular-nums text-4xl font-bold ${scoreColor(student.readinessScore)}`}>
             {student.readinessScore !== null ? `${student.readinessScore}%` : '--'}
           </span>
-          <span className="font-mono text-[10px] text-c-dim">
+          <span className="text-[11px] text-c-muted">
             {student.readinessScore !== null ? 'Estimated based on recent practice sessions' : 'No completed sessions yet'}
           </span>
           {insights?.readinessTrend && insights.readinessTrend !== 'insufficient_data' && (
-            <span className={`font-mono text-[10px] ${
-              insights.readinessTrend === 'improving' ? 'text-c-green' :
-              insights.readinessTrend === 'declining' ? 'text-c-red' : 'text-c-dim'
+            <span className={`text-[11px] ${
+              insights.readinessTrend === 'improving' ? 'text-c-green-readable' :
+              insights.readinessTrend === 'declining' ? 'text-c-red' : 'text-c-muted'
             }`}>
               {insights.readinessTrend === 'improving' ? 'Trending up' :
                insights.readinessTrend === 'declining' ? 'Trending down' : 'Stable'}
@@ -229,22 +233,22 @@ export default function StudentDetailPage() {
           )}
         </div>
         {insights?.coveragePercent !== null && insights?.coveragePercent !== undefined && (
-          <div className="font-mono text-[10px] text-c-dim mt-1">
-            ACS Coverage: <span className="text-c-text">{insights.coveragePercent}%</span> of plan elements
+          <div className="text-[11px] text-c-muted mt-1">
+            ACS coverage: <span className="font-mono tabular-nums text-c-text">{insights.coveragePercent}%</span> of plan elements
           </div>
         )}
-        <div className="font-mono text-[10px] text-c-dim mt-2">
-          {student.sessionsLast7Days} session{student.sessionsLast7Days !== 1 ? 's' : ''} in last 7 days &middot; Last active: {formatDate(student.lastActivityAt)}
+        <div className="text-[11px] text-c-muted mt-2">
+          <span className="font-mono tabular-nums">{student.sessionsLast7Days}</span> session{student.sessionsLast7Days !== 1 ? 's' : ''} in last 7 days &middot; Last active: {formatDate(student.lastActivityAt)}
         </div>
       </div>
 
       {/* Needs Attention */}
       {insights?.needsAttention && (
         <div className="bg-c-red-dim/20 border border-c-red/20 border-l-4 border-l-c-red rounded-lg px-4 py-3">
-          <p className="font-mono text-xs text-c-red uppercase tracking-wider mb-1">Needs Attention</p>
+          <p className="font-mono text-[11px] text-c-red uppercase tracking-wider mb-1">Needs attention</p>
           <ul className="space-y-0.5">
             {insights.needsAttentionReasons.map((reason, i) => (
-              <li key={i} className="font-mono text-[10px] text-c-red/80">• {reason}</li>
+              <li key={i} className="text-xs text-c-red/90">• {reason}</li>
             ))}
           </ul>
         </div>
@@ -252,20 +256,20 @@ export default function StudentDetailPage() {
 
       {/* Milestones */}
       <div className="bezel rounded-lg border border-c-border p-6">
-        <h2 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-3">MILESTONES</h2>
-        <p className="font-mono text-[9px] text-c-dim mb-3">Self-reported by student or instructor. Not verified by HeyDPE.</p>
+        <h2 className="font-semibold text-base text-c-text tracking-tight mb-3">Milestones</h2>
+        <p className="text-xs text-c-muted mb-3">Self-reported by student or instructor. Not verified by HeyDPE.</p>
         <div className="space-y-2">
           {(insights?.milestones || []).map(m => {
             const badge = STATUS_BADGES[m.status] || STATUS_BADGES.not_set;
             return (
               <div key={m.key} className="flex items-center gap-3 py-1.5 border-b border-c-border last:border-0">
-                <span className="font-mono text-sm text-c-text flex-1">{MILESTONE_LABELS[m.key] || m.key}</span>
-                <span className={`font-mono text-[10px] ${badge.color}`}>{badge.label}</span>
+                <span className="text-sm text-c-text flex-1">{MILESTONE_LABELS[m.key] || m.key}</span>
+                <span className={`font-mono text-[11px] uppercase tracking-wider ${badge.color}`}>{badge.label}</span>
                 <select
                   value={m.status}
                   onChange={(e) => handleMilestoneUpdate(m.key, e.target.value)}
                   disabled={milestoneUpdating === m.key}
-                  className="font-mono text-[10px] bg-c-panel border border-c-border rounded px-2 py-1 text-c-text disabled:opacity-50"
+                  className="text-sm bg-c-panel border border-c-border rounded px-2 py-1 text-c-text disabled:opacity-50"
                 >
                   <option value="not_set">Not Set</option>
                   <option value="in_progress">In Progress</option>
@@ -280,18 +284,18 @@ export default function StudentDetailPage() {
       {/* Area Breakdown */}
       {student.areaBreakdown.length > 0 && (
         <div className="bezel rounded-lg border border-c-border p-6">
-          <h2 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-3">AREA BREAKDOWN</h2>
+          <h2 className="font-semibold text-base text-c-text tracking-tight mb-3">Area breakdown</h2>
           <div className="space-y-2">
             {student.areaBreakdown.map(area => (
               <div key={area.area} className="flex items-center gap-3">
-                <span className="font-mono text-[10px] text-c-muted w-16">Area {area.area}</span>
+                <span className="font-mono text-[11px] text-c-muted w-16">Area {area.area}</span>
                 <div className="flex-1 h-2 bg-c-panel rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full ${area.score >= 70 ? 'bg-c-green/70' : area.score >= 50 ? 'bg-c-amber/70' : 'bg-c-red/70'}`}
                     style={{ width: `${Math.min(area.score, 100)}%` }}
                   />
                 </div>
-                <span className={`font-mono text-[10px] w-10 text-right ${scoreColor(area.score)}`}>{area.score}%</span>
+                <span className={`font-mono tabular-nums text-[11px] w-10 text-right ${scoreColor(area.score)}`}>{area.score}%</span>
               </div>
             ))}
           </div>
@@ -301,12 +305,12 @@ export default function StudentDetailPage() {
       {/* Weak Elements / Recommended Topics */}
       {student.recommendedTopics.length > 0 && (
         <div className="bezel rounded-lg border border-c-border p-6">
-          <h2 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-3">RECOMMENDED LESSON TOPICS</h2>
+          <h2 className="font-semibold text-base text-c-text tracking-tight mb-3">Recommended lesson topics</h2>
           <div className="space-y-1.5">
             {student.recommendedTopics.map((topic, i) => (
               <div key={i} className="flex items-center gap-2">
-                <span className="font-mono text-[10px] text-c-amber">{i + 1}.</span>
-                <span className="font-mono text-sm text-c-text">{topic}</span>
+                <span className="font-mono tabular-nums text-xs text-c-amber">{i + 1}.</span>
+                <span className="text-sm text-c-text">{topic}</span>
               </div>
             ))}
           </div>
@@ -316,13 +320,13 @@ export default function StudentDetailPage() {
       {/* Weak Elements Detail */}
       {student.weakElements.length > 0 && (
         <div className="bezel rounded-lg border border-c-border p-6">
-          <h2 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-3">WEAK ELEMENTS</h2>
+          <h2 className="font-semibold text-base text-c-text tracking-tight mb-3">Weak elements</h2>
           <div className="space-y-1">
             {student.weakElements.map((el, i) => (
-              <div key={i} className="flex items-center gap-3 font-mono text-[10px]">
+              <div key={i} className="flex items-center gap-3 font-mono text-[11px]">
                 <span className="text-c-text w-24">{el.elementCode}</span>
-                <span className="text-c-dim">Area {el.area}</span>
-                <span className={el.severity === 'unsatisfactory' ? 'text-c-red' : 'text-c-amber'}>
+                <span className="text-c-muted">Area {el.area}</span>
+                <span className={`uppercase tracking-wider ${el.severity === 'unsatisfactory' ? 'text-c-red' : 'text-c-amber'}`}>
                   {el.severity.toUpperCase()}
                 </span>
               </div>
@@ -334,18 +338,18 @@ export default function StudentDetailPage() {
       {/* Recent Sessions */}
       {student.recentSessions.length > 0 && (
         <div className="bezel rounded-lg border border-c-border p-6">
-          <h2 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-3">RECENT SESSIONS</h2>
+          <h2 className="font-semibold text-base text-c-text tracking-tight mb-3">Recent sessions</h2>
           <div className="space-y-2">
             {student.recentSessions.map(session => (
               <div key={session.id} className="flex items-center gap-3 py-1.5 border-b border-c-border last:border-0">
-                <span className="font-mono text-[10px] text-c-dim w-20">{formatDate(session.createdAt)}</span>
-                <span className="font-mono text-[10px] text-c-text uppercase w-20">{session.rating}</span>
-                <span className={`font-mono text-[10px] w-16 ${session.status === 'completed' ? 'text-c-green' : 'text-c-muted'}`}>
+                <span className="font-mono tabular-nums text-[11px] text-c-muted w-20">{formatDate(session.createdAt)}</span>
+                <span className="font-mono text-[11px] text-c-text uppercase w-20">{session.rating}</span>
+                <span className={`text-[11px] w-16 ${session.status === 'completed' ? 'text-c-green-readable' : 'text-c-muted'}`}>
                   {session.status}
                 </span>
-                <span className="font-mono text-[10px] text-c-dim">{session.exchangeCount} Q&amp;A</span>
+                <span className="text-[11px] text-c-muted"><span className="font-mono tabular-nums">{session.exchangeCount}</span> Q&amp;A</span>
                 {session.overallScore !== null && (
-                  <span className={`font-mono text-[10px] ml-auto ${scoreColor(session.overallScore)}`}>
+                  <span className={`font-mono tabular-nums text-[11px] ml-auto ${scoreColor(session.overallScore)}`}>
                     {session.overallScore}%
                   </span>
                 )}
@@ -360,9 +364,9 @@ export default function StudentDetailPage() {
         <button
           onClick={handleDisconnect}
           disabled={disconnecting}
-          className="px-4 py-2 rounded border border-c-red/20 bg-c-red-dim text-c-red hover:bg-c-red/20 font-mono text-[10px] uppercase transition-colors disabled:opacity-50"
+          className="min-h-11 px-4 rounded border border-c-red/20 bg-c-red-dim text-c-red hover:bg-c-red/20 text-sm font-semibold transition-colors disabled:opacity-50"
         >
-          {disconnecting ? 'DISCONNECTING...' : 'DISCONNECT STUDENT'}
+          {disconnecting ? 'Disconnecting…' : 'Disconnect student'}
         </button>
       </div>
     </div>
