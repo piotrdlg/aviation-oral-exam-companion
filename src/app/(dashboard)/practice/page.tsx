@@ -109,6 +109,19 @@ function quotaModalCopy(reason: string | null): { heading: string; body: string 
 export default function PracticePage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  // Deep-link entry points (e.g. Progress → /practice?mode=weak_areas[&tasks=PA.I.B,…])
+  // preselect the study mode + Focus tasks in the config form.
+  const initialStudyMode = useMemo(() => {
+    const m = searchParams.get('mode');
+    const valid = ['linear', 'cross_acs', 'weak_areas', 'quick_drill', 'scenario'];
+    return m && valid.includes(m) ? (m as SessionConfigData['studyMode']) : undefined;
+  }, [searchParams]);
+  const initialSelectedTasks = useMemo(() => {
+    const t = searchParams.get('tasks');
+    const ids = t ? t.split(',').map((s) => s.trim()).filter(Boolean) : [];
+    return ids.length > 0 ? ids : undefined;
+  }, [searchParams]);
   const [sessionActive, setSessionActive] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -1873,6 +1886,8 @@ export default function PracticePage() {
               hasCompletedExams={hasCompletedExams}
               examinerProfileKey={examinerProfileKey}
               scenarioModeAvailable={scenarioModeAvailable}
+              initialStudyMode={initialStudyMode}
+              initialSelectedTasks={initialSelectedTasks}
             />
 
             {/* Disclaimer — always visible but low visual weight */}
