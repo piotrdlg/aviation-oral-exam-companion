@@ -74,14 +74,16 @@ export default function StudyRecommendations({ scores }: Props) {
       <p className="text-sm text-c-muted mb-3">Focus your study on these areas, weakest first:</p>
       <ul className="space-y-1.5 max-h-80 overflow-y-auto">
         {recs.map((rec) => (
-          <li key={rec.areaName} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-c-panel/60 border border-c-border">
-            <span
-              className="w-1.5 h-1.5 rounded-full shrink-0"
-              style={{ backgroundColor: rec.hasCritical ? 'var(--color-c-red)' : 'var(--color-c-amber)' }}
-            />
-            <span className="text-sm text-c-text flex-1 min-w-0 truncate">{rec.areaName}</span>
-            <span className="font-mono text-xs text-c-dim shrink-0 tabular-nums">{rec.count} weak</span>
-            <span className="font-mono text-xs text-c-cyan shrink-0 hidden sm:inline">{rec.source}</span>
+          <li key={rec.areaName} className="px-3 py-2 rounded-lg bg-c-panel/60 border border-c-border">
+            <div className="flex items-center gap-2">
+              <span
+                className="w-1.5 h-1.5 rounded-full shrink-0"
+                style={{ backgroundColor: rec.hasCritical ? 'var(--color-c-red)' : 'var(--color-c-amber)' }}
+              />
+              <span className="text-sm text-c-text flex-1 min-w-0 truncate">{rec.areaName}</span>
+              <span className="font-mono text-xs text-c-dim shrink-0 tabular-nums">{rec.count} weak</span>
+            </div>
+            <p className="font-mono text-[11px] text-c-cyan mt-0.5 ml-3.5 truncate">{rec.source}</p>
           </li>
         ))}
       </ul>
