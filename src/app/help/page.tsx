@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Footer from '@/components/Footer';
+import { Logo } from '@/components/Brand';
 
 export const metadata: Metadata = {
   title: 'Help & FAQ — HeyDPE',
@@ -69,27 +70,25 @@ export default function HelpPage() {
       {/* Nav */}
       <nav className="fixed top-0 inset-x-0 z-50 border-b border-c-border bg-c-bg/80 backdrop-blur-lg">
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
-          <Link href="/" className="font-mono font-bold text-c-amber glow-a text-sm tracking-widest">
-            HEYDPE
-          </Link>
-          <div className="flex items-center gap-4">
+          <Logo size="md" href="/" glow />
+          <div className="flex items-center gap-2 sm:gap-5">
             <Link
               href="/pricing"
-              className="font-mono text-xs text-c-muted hover:text-c-amber transition-colors tracking-wide"
+              className="text-sm text-c-muted hover:text-c-text transition-colors px-2"
             >
-              PRICING
+              Pricing
             </Link>
             <Link
               href="/login"
-              className="font-mono text-xs text-c-muted hover:text-c-text transition-colors tracking-wide"
+              className="text-sm text-c-muted hover:text-c-text transition-colors px-2"
             >
-              SIGN IN
+              Sign in
             </Link>
             <Link
               href="/signup"
-              className="font-mono text-xs px-4 py-1.5 bg-c-amber hover:bg-c-amber/90 text-c-bg rounded font-semibold tracking-wide transition-colors"
+              className="text-sm px-4 py-1.5 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded-lg font-semibold transition-colors"
             >
-              GET STARTED
+              Get started
             </Link>
           </div>
         </div>
@@ -98,33 +97,36 @@ export default function HelpPage() {
       {/* Content */}
       <div className="pt-24 pb-16 px-4">
         <div className="max-w-3xl mx-auto">
-          <h1 className="font-mono text-3xl font-bold text-c-amber mb-2 tracking-wide">
-            HELP & FAQ
+          <p className="font-mono text-xs text-c-cyan tracking-[0.3em] uppercase mb-3">// FAQ</p>
+          <h1 className="font-bold text-4xl sm:text-5xl text-c-text mb-3 tracking-tight">
+            Help &amp; FAQ
           </h1>
-          <p className="text-c-muted font-mono text-sm mb-12">
+          <p className="text-c-muted text-base mb-12 leading-relaxed">
             Everything you need to know about using HeyDPE for checkride preparation.
           </p>
 
           {/* FAQ Section */}
-          <div className="space-y-6">
+          <div className="space-y-3">
             {faqs.map((faq, i) => (
-              <div key={i} className="border border-c-border rounded-lg p-5">
-                <h2 className="font-mono text-sm font-semibold text-c-text mb-2 tracking-wide">
+              <details key={i} className="group bezel rounded-xl border border-c-border open:border-c-border-hi transition-colors">
+                <summary className="px-5 py-4 cursor-pointer text-[15px] font-semibold text-c-text flex items-center justify-between list-none gap-4">
                   {faq.q}
-                </h2>
-                <p className="text-c-muted text-sm leading-relaxed">
+                  <span className="text-c-muted transition-transform group-open:rotate-180 shrink-0 text-xs">&#9660;</span>
+                </summary>
+                <div className="px-5 pb-4 text-sm text-c-muted leading-relaxed">
                   {faq.a}
-                </p>
-              </div>
+                </div>
+              </details>
             ))}
           </div>
 
           {/* Supported Browsers & Platforms */}
           <div className="mt-16 mb-16">
-            <h2 className="font-mono text-lg font-bold text-c-amber mb-2 tracking-wide">
-              SUPPORTED BROWSERS & PLATFORMS
+            <p className="font-mono text-xs text-c-cyan tracking-[0.3em] uppercase mb-3">// Systems</p>
+            <h2 className="font-bold text-3xl text-c-text mb-3 tracking-tight">
+              Supported browsers &amp; platforms
             </h2>
-            <p className="text-c-muted text-sm mb-6">
+            <p className="text-c-muted text-base mb-6 leading-relaxed">
               HeyDPE uses cloud-based speech services (Deepgram), so voice mode works across all modern
               browsers. No browser-specific speech API required.
             </p>
@@ -144,12 +146,12 @@ export default function HelpPage() {
                   </svg>
                 </div>
                 <div className="min-w-0">
-                  <h3 className="font-mono text-sm font-semibold text-c-text tracking-wide">Google Chrome</h3>
+                  <h3 className="font-semibold text-base text-c-text">Google Chrome</h3>
                   <p className="text-c-muted text-xs mt-1">Windows, macOS, Linux, Android, ChromeOS</p>
                   <div className="flex flex-wrap gap-1.5 mt-2">
-                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE IN</span>
-                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE OUT</span>
-                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">TEXT MODE</span>
+                    <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE IN</span>
+                    <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE OUT</span>
+                    <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">TEXT MODE</span>
                   </div>
                 </div>
               </div>
@@ -172,12 +174,12 @@ export default function HelpPage() {
                   </svg>
                 </div>
                 <div className="min-w-0">
-                  <h3 className="font-mono text-sm font-semibold text-c-text tracking-wide">Safari</h3>
+                  <h3 className="font-semibold text-base text-c-text">Safari</h3>
                   <p className="text-c-muted text-xs mt-1">macOS 14+, iOS 16+, iPadOS 16+</p>
                   <div className="flex flex-wrap gap-1.5 mt-2">
-                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE IN</span>
-                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE OUT</span>
-                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">TEXT MODE</span>
+                    <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE IN</span>
+                    <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE OUT</span>
+                    <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">TEXT MODE</span>
                   </div>
                 </div>
               </div>
@@ -198,12 +200,12 @@ export default function HelpPage() {
                   </svg>
                 </div>
                 <div className="min-w-0">
-                  <h3 className="font-mono text-sm font-semibold text-c-text tracking-wide">Microsoft Edge</h3>
+                  <h3 className="font-semibold text-base text-c-text">Microsoft Edge</h3>
                   <p className="text-c-muted text-xs mt-1">Windows 10+, macOS</p>
                   <div className="flex flex-wrap gap-1.5 mt-2">
-                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE IN</span>
-                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE OUT</span>
-                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">TEXT MODE</span>
+                    <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE IN</span>
+                    <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE OUT</span>
+                    <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">TEXT MODE</span>
                   </div>
                 </div>
               </div>
@@ -226,21 +228,21 @@ export default function HelpPage() {
                   </svg>
                 </div>
                 <div className="min-w-0">
-                  <h3 className="font-mono text-sm font-semibold text-c-text tracking-wide">Firefox</h3>
+                  <h3 className="font-semibold text-base text-c-text">Firefox</h3>
                   <p className="text-c-muted text-xs mt-1">Windows, macOS, Linux</p>
                   <div className="flex flex-wrap gap-1.5 mt-2">
-                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE IN</span>
-                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE OUT</span>
-                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">TEXT MODE</span>
+                    <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE IN</span>
+                    <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">VOICE OUT</span>
+                    <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">TEXT MODE</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Platform details */}
-            <div className="border border-c-border rounded-lg p-5">
-              <h3 className="font-mono text-sm font-semibold text-c-text mb-3 tracking-wide">
-                PLATFORM NOTES
+            <div className="bezel border border-c-border rounded-xl p-5">
+              <h3 className="font-semibold text-base text-c-text mb-3">
+                Platform notes
               </h3>
               <div className="space-y-3 text-sm text-c-muted">
                 <div className="flex items-start gap-2">
@@ -286,9 +288,10 @@ export default function HelpPage() {
           </div>
 
           {/* Something Wrong Section */}
-          <div className="mt-16 border border-c-amber/30 rounded-lg p-6 bg-c-amber/5">
-            <h2 className="font-mono text-lg font-bold text-c-amber mb-3 tracking-wide">
-              SOMETHING NOT WORKING?
+          <div className="mt-16 station rounded-xl border border-c-amber/30 ring-1 ring-c-amber/20 p-6">
+            <p className="font-mono text-xs text-c-amber tracking-[0.3em] uppercase mb-3">// Support</p>
+            <h2 className="font-bold text-3xl text-c-text mb-3 tracking-tight">
+              Something not working?
             </h2>
             <p className="text-c-muted text-sm leading-relaxed mb-4">
               If the AI examiner gives an incorrect answer, you can report it directly during your exam
@@ -302,14 +305,14 @@ export default function HelpPage() {
                 <span className="text-c-amber mt-0.5">{'>'}</span>
                 <span>
                   Use the feedback form in{' '}
-                  <Link href="/settings" className="text-c-cyan hover:underline">Settings</Link>
+                  <Link href="/settings" className="text-c-cyan-readable hover:text-c-cyan transition-colors underline underline-offset-2">Settings</Link>
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-c-amber mt-0.5">{'>'}</span>
                 <span>
                   Email us at{' '}
-                  <a href="mailto:support@heydpe.com" className="text-c-cyan hover:underline">
+                  <a href="mailto:support@heydpe.com" className="text-c-cyan-readable hover:text-c-cyan transition-colors underline underline-offset-2">
                     support@heydpe.com
                   </a>
                 </span>
@@ -321,9 +324,9 @@ export default function HelpPage() {
           </div>
 
           {/* Educational Disclaimer */}
-          <div className="mt-12 border border-c-border rounded-lg p-5">
-            <h2 className="font-mono text-sm font-semibold text-c-text mb-2 tracking-wide">
-              EDUCATIONAL USE & LIMITATIONS
+          <div className="mt-12 bezel border border-c-border rounded-xl p-5">
+            <h2 className="font-semibold text-base text-c-text mb-2">
+              Educational use &amp; limitations
             </h2>
             <p className="text-c-muted text-sm leading-relaxed mb-3">
               HeyDPE is a study aid designed to supplement your checkride preparation. It uses
@@ -339,18 +342,18 @@ export default function HelpPage() {
           </div>
 
           {/* Quick Links */}
-          <div className="mt-12 flex flex-wrap gap-4 text-xs font-mono">
-            <Link href="/privacy" className="text-c-muted hover:text-c-amber transition-colors">
-              PRIVACY POLICY
+          <div className="mt-12 flex flex-wrap gap-x-6 gap-y-2 text-sm">
+            <Link href="/privacy" className="text-c-muted hover:text-c-text transition-colors">
+              Privacy policy
             </Link>
-            <Link href="/terms" className="text-c-muted hover:text-c-amber transition-colors">
-              TERMS OF SERVICE
+            <Link href="/terms" className="text-c-muted hover:text-c-text transition-colors">
+              Terms of service
             </Link>
-            <Link href="/pricing" className="text-c-muted hover:text-c-amber transition-colors">
-              PRICING
+            <Link href="/pricing" className="text-c-muted hover:text-c-text transition-colors">
+              Pricing
             </Link>
-            <a href="mailto:support@heydpe.com" className="text-c-muted hover:text-c-amber transition-colors">
-              CONTACT US
+            <a href="mailto:support@heydpe.com" className="text-c-muted hover:text-c-text transition-colors">
+              Contact us
             </a>
           </div>
         </div>
