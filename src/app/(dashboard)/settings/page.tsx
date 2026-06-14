@@ -1031,7 +1031,7 @@ export default function SettingsPage() {
       case 'running':
         return 'text-c-amber blink';
       case 'pass':
-        return 'text-c-green glow-g';
+        return 'text-c-green';
       case 'fail':
         return 'text-c-red';
     }
@@ -1042,14 +1042,14 @@ export default function SettingsPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="font-mono font-bold text-2xl text-c-amber glow-a tracking-wider uppercase">SETTINGS</h1>
-        <p className="font-mono text-sm text-c-muted mt-1">Manage your account, subscription, and preferences.</p>
+        <h1 className="font-bold text-3xl text-c-text tracking-tight">Settings</h1>
+        <p className="text-base text-c-muted mt-1.5">Manage your account, subscription, and preferences.</p>
       </div>
 
       {/* 1. Profile */}
       <div data-testid="profile-section" className="bezel rounded-lg border border-c-border p-6">
-        <h2 className="font-mono font-semibold text-base text-c-amber mb-1 tracking-wider uppercase">PROFILE</h2>
-        <p className="font-mono text-xs text-c-muted mb-5">
+        <h2 className="font-semibold text-lg text-c-text mb-1 tracking-tight">Profile</h2>
+        <p className="text-sm text-c-muted mb-5">
           Your name and avatar appear during exam sessions.
         </p>
 
@@ -1066,12 +1066,12 @@ export default function SettingsPage() {
           </div>
           <div>
             <input data-testid="avatar-file-input" type="file" id="avatar-upload" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleAvatarUpload} />
-            <label data-testid="avatar-upload-label" htmlFor="avatar-upload" className={`cursor-pointer inline-block px-3 py-1.5 rounded font-mono text-xs font-medium bg-c-bezel border border-c-border text-c-muted hover:bg-c-border hover:text-c-text transition-colors uppercase ${avatarUploading ? 'opacity-50 pointer-events-none' : ''}`}>
-              {avatarUploading ? 'UPLOADING...' : 'UPLOAD PHOTO'}
+            <label data-testid="avatar-upload-label" htmlFor="avatar-upload" className={`cursor-pointer inline-flex items-center min-h-11 px-4 py-2 rounded-lg text-sm font-semibold bg-c-bezel border border-c-border text-c-text hover:bg-c-border transition-colors ${avatarUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+              {avatarUploading ? 'Uploading\u2026' : 'Upload photo'}
             </label>
-            <p className="font-mono text-xs text-c-dim mt-1">Max 2MB. JPG, PNG, or WebP.</p>
+            <p className="text-xs text-c-dim mt-1.5">Max 2MB. JPG, PNG, or WebP.</p>
             {avatarMessage && (
-              <p className={`font-mono text-xs mt-1 ${avatarMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+              <p className={`text-xs mt-1.5 ${avatarMessage.type === 'success' ? 'text-c-green' : 'text-c-red'}`}>
                 {avatarMessage.type === 'success' ? '\u2713 ' : ''}{avatarMessage.text}
               </p>
             )}
@@ -1080,14 +1080,14 @@ export default function SettingsPage() {
 
         {/* Default avatar options */}
         <div data-testid="default-avatars-grid" className="mb-4">
-          <label className="block font-mono text-xs text-c-muted mb-2 uppercase tracking-wider">OR CHOOSE AN AVATAR</label>
+          <label className="block text-sm text-c-muted mb-2">Or choose an avatar</label>
           <div className="flex gap-2">
             {DEFAULT_AVATARS.map((av) => (
               <button
                 key={av.id}
                 data-testid={`default-avatar-${av.id}`}
                 onClick={() => savePracticeDefault('avatarUrl', av.url)}
-                className={`w-10 h-10 rounded-full overflow-hidden border-2 transition-colors ${
+                className={`w-11 h-11 rounded-full overflow-hidden border-2 transition-colors ${
                   tierInfo?.avatarUrl === av.url ? 'border-c-amber' : 'border-c-border hover:border-c-border-hi'
                 }`}
               >
@@ -1099,7 +1099,7 @@ export default function SettingsPage() {
 
         {/* Display name */}
         <div>
-          <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase tracking-wider">DISPLAY NAME</label>
+          <label className="block font-mono text-[11px] text-c-muted mb-1.5 uppercase tracking-wider">DISPLAY NAME</label>
           <input
             data-testid="display-name-input"
             type="text"
@@ -1110,41 +1110,41 @@ export default function SettingsPage() {
             }}
             placeholder="How should the examiner address you?"
             maxLength={50}
-            className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
+            className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
           />
         </div>
       </div>
 
       {/* 2. Account Info */}
       <div className="bezel rounded-lg border border-c-border p-6">
-        <h2 className="font-mono font-semibold text-base text-c-amber mb-4 tracking-wider uppercase">ACCOUNT</h2>
-        <div className="text-sm mb-5 font-mono">
-          <span className="text-c-muted">EMAIL: </span>
-          <span className="text-c-text">{email ?? 'LOADING...'}</span>
+        <h2 className="font-semibold text-lg text-c-text mb-4 tracking-tight">Account</h2>
+        <div className="text-sm mb-5">
+          <span className="font-mono text-[11px] text-c-muted tracking-wider uppercase">EMAIL: </span>
+          <span className="text-c-text">{email ?? 'Loading…'}</span>
         </div>
 
         {/* Practice Defaults (folded into Account) */}
         <div className="border-t border-c-border pt-4">
-          <h3 className="font-mono text-xs text-c-muted mb-3 tracking-wider uppercase">PRACTICE DEFAULTS</h3>
+          <h3 className="font-mono text-[11px] text-c-muted mb-3 tracking-wider uppercase">PRACTICE DEFAULTS</h3>
           {tierLoading ? (
-            <div className="font-mono text-sm text-c-dim">LOADING PREFERENCES...</div>
+            <div className="text-sm text-c-dim">Loading preferences…</div>
           ) : (
             <div className="space-y-4">
               <div>
-                <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase">CERTIFICATE / RATING</label>
+                <label className="block font-mono text-[11px] text-c-muted mb-1.5 uppercase tracking-wider">CERTIFICATE / RATING</label>
                 <div className="flex gap-2">
                   {([
-                    { value: 'private', label: 'PRIVATE PILOT' },
-                    { value: 'commercial', label: 'COMMERCIAL' },
-                    { value: 'instrument', label: 'INSTRUMENT' },
+                    { value: 'private', label: 'Private pilot' },
+                    { value: 'commercial', label: 'Commercial' },
+                    { value: 'instrument', label: 'Instrument' },
                   ] as const).map((r) => (
                     <button
                       key={r.value}
                       onClick={() => savePracticeDefault('preferredRating', r.value)}
                       disabled={defaultsSaving || tierInfo?.preferredRating === r.value}
-                      className={`px-3 py-1.5 rounded-lg border font-mono text-xs transition-colors ${
+                      className={`min-h-11 px-3 py-2 rounded-lg border text-sm font-semibold transition-colors ${
                         tierInfo?.preferredRating === r.value
-                          ? 'border-c-amber/50 bg-c-amber-lo/50 text-c-amber font-semibold'
+                          ? 'border-c-amber/50 bg-c-amber-lo/50 text-c-amber'
                           : 'border-c-border bg-c-bezel text-c-muted hover:border-c-border-hi'
                       } disabled:opacity-70`}
                     >
@@ -1155,7 +1155,7 @@ export default function SettingsPage() {
               </div>
               {tierInfo?.preferredRating !== 'instrument' ? (
                 <div>
-                  <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase">AIRCRAFT CLASS</label>
+                  <label className="block font-mono text-[11px] text-c-muted mb-1.5 uppercase tracking-wider">AIRCRAFT CLASS</label>
                   <div className="flex gap-2">
                     {([
                       { value: 'ASEL', label: 'ASEL' },
@@ -1167,7 +1167,7 @@ export default function SettingsPage() {
                         key={cls.value}
                         onClick={() => savePracticeDefault('preferredAircraftClass', cls.value)}
                         disabled={defaultsSaving || tierInfo?.preferredAircraftClass === cls.value}
-                        className={`px-3 py-1.5 rounded-lg border font-mono text-xs transition-colors ${
+                        className={`min-h-11 px-3 py-2 rounded-lg border font-mono text-xs transition-colors ${
                           tierInfo?.preferredAircraftClass === cls.value
                             ? 'border-c-cyan/50 bg-c-cyan-lo/50 text-c-cyan font-semibold'
                             : 'border-c-border bg-c-bezel text-c-muted hover:border-c-border-hi'
@@ -1179,10 +1179,10 @@ export default function SettingsPage() {
                   </div>
                 </div>
               ) : (
-                <p className="font-mono text-xs text-c-dim uppercase">INSTRUMENT RATING — AIRPLANE</p>
+                <p className="text-sm text-c-dim">Instrument rating — airplane</p>
               )}
               <div>
-                <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase">AIRCRAFT TYPE</label>
+                <label className="block font-mono text-[11px] text-c-muted mb-1.5 uppercase tracking-wider">AIRCRAFT TYPE</label>
                 <input
                   type="text"
                   value={tierInfo?.aircraftType || ''}
@@ -1195,11 +1195,11 @@ export default function SettingsPage() {
                   }}
                   placeholder="e.g., Cessna 172"
                   maxLength={100}
-                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
+                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
                 />
               </div>
               <div>
-                <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase">HOME AIRPORT</label>
+                <label className="block font-mono text-[11px] text-c-muted mb-1.5 uppercase tracking-wider">HOME AIRPORT</label>
                 <input
                   type="text"
                   value={tierInfo?.homeAirport || ''}
@@ -1212,12 +1212,12 @@ export default function SettingsPage() {
                   }}
                   placeholder="e.g., KJAX"
                   maxLength={10}
-                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim uppercase transition-colors"
+                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-2 focus:ring-c-amber focus:border-c-amber placeholder-c-dim uppercase transition-colors"
                 />
               </div>
               <div>
-                <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase">VOICE MODE</label>
-                <label className="flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-lg border border-c-border hover:border-c-border-hi bg-c-panel transition-colors">
+                <label className="block font-mono text-[11px] text-c-muted mb-1.5 uppercase tracking-wider">VOICE MODE</label>
+                <label className="flex items-center gap-3 cursor-pointer min-h-11 px-3 py-2.5 rounded-lg border border-c-border hover:border-c-border-hi bg-c-panel transition-colors">
                   <input
                     type="checkbox"
                     checked={tierInfo?.voiceEnabled ?? true}
@@ -1225,15 +1225,15 @@ export default function SettingsPage() {
                     disabled={defaultsSaving}
                     className="w-4 h-4 rounded border-c-border bg-c-bezel text-c-green focus:ring-c-green"
                   />
-                  <span className="font-mono text-sm text-c-text uppercase">ENABLE VOICE MODE</span>
-                  <span className="text-xs text-c-dim font-mono">(MIC + SPEAKER)</span>
+                  <span className="text-sm text-c-text">Enable voice mode</span>
+                  <span className="text-xs text-c-dim">(mic + speaker)</span>
                 </label>
-                <p className="font-mono text-xs text-c-dim mt-1.5">
+                <p className="text-xs text-c-dim mt-1.5">
                   Applied automatically when starting new exams.
                 </p>
               </div>
               {defaultsMessage && (
-                <p data-testid="profile-save-message" className={`font-mono text-xs ${defaultsMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+                <p data-testid="profile-save-message" className={`text-xs ${defaultsMessage.type === 'success' ? 'text-c-green' : 'text-c-red'}`}>
                   {defaultsMessage.type === 'success' ? '\u2713 ' : ''}{defaultsMessage.text}
                 </p>
               )}
@@ -1244,8 +1244,8 @@ export default function SettingsPage() {
 
       {/* 2. Plan & Usage */}
       <div className="bezel rounded-lg border border-c-border p-6">
-        <h2 className="font-mono font-semibold text-base text-c-amber mb-1 tracking-wider uppercase">PLAN &amp; USAGE</h2>
-        <p className="font-mono text-xs text-c-muted mb-5">
+        <h2 className="font-semibold text-lg text-c-text mb-1 tracking-tight">Plan &amp; usage</h2>
+        <p className="text-sm text-c-muted mb-5">
           Your current subscription and usage this billing period.
         </p>
 
@@ -1260,16 +1260,16 @@ export default function SettingsPage() {
           <>
             <div className="grid grid-cols-2 gap-3 mb-5">
               <div className="iframe rounded-lg p-4">
-                <div className="font-mono text-xs text-c-muted mb-1 uppercase">CURRENT PLAN</div>
-                <div className="font-mono text-c-green font-semibold text-base glow-g uppercase">
+                <div className="font-mono text-[11px] text-c-muted mb-1 uppercase tracking-wider">CURRENT PLAN</div>
+                <div className="font-mono text-c-green font-semibold text-base uppercase">
                   {isPaidUser ? (subInfo?.plan || 'PAID') : 'FREE'}
                 </div>
                 {subInfo?.status === 'trialing' && (
-                  <div className="font-mono text-xs text-c-amber mt-1 uppercase">TRIAL ACTIVE</div>
+                  <div className="font-mono text-[11px] text-c-amber mt-1 uppercase tracking-wider">TRIAL ACTIVE</div>
                 )}
               </div>
               <div className="iframe rounded-lg p-4">
-                <div className="font-mono text-xs text-c-muted mb-1 uppercase">
+                <div className="font-mono text-[11px] text-c-muted mb-1 uppercase tracking-wider">
                   {isPaidUser ? 'RENEWAL DATE' : 'STATUS'}
                 </div>
                 <div className="font-mono text-c-text font-semibold text-base uppercase">
@@ -1283,7 +1283,7 @@ export default function SettingsPage() {
             {tierInfo && (
               <div className="grid grid-cols-2 gap-3 mb-5">
                 <div className="iframe rounded-lg p-4">
-                  <div className="font-mono text-xs text-c-muted mb-1 uppercase">SESSIONS THIS MONTH</div>
+                  <div className="font-mono text-[11px] text-c-muted mb-1 uppercase tracking-wider">SESSIONS THIS MONTH</div>
                   <div className="font-mono text-c-text font-semibold text-base">
                     {tierInfo.usage.sessionsThisMonth}
                     <span className="text-c-muted font-normal">
@@ -1301,7 +1301,7 @@ export default function SettingsPage() {
                   )}
                 </div>
                 <div className="iframe rounded-lg p-4">
-                  <div className="font-mono text-xs text-c-muted mb-1 uppercase">TTS CHARACTERS</div>
+                  <div className="font-mono text-[11px] text-c-muted mb-1 uppercase tracking-wider">TTS CHARACTERS</div>
                   <div className="font-mono text-c-text font-semibold text-base">
                     {Math.round(tierInfo.usage.ttsCharsThisMonth / 1000)}k
                     <span className="text-c-muted font-normal">
@@ -1322,7 +1322,7 @@ export default function SettingsPage() {
             )}
 
             {portalError && (
-              <p className="font-mono text-sm text-c-red mb-3">{portalError}</p>
+              <p className="text-sm text-c-red mb-3">{portalError}</p>
             )}
 
             <div className="flex items-center gap-3">
@@ -1331,24 +1331,24 @@ export default function SettingsPage() {
                   <button
                     onClick={openCustomerPortal}
                     disabled={portalLoading}
-                    className="px-4 py-2 bg-c-bezel hover:bg-c-border border border-c-border text-c-text font-mono text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 uppercase tracking-wide"
+                    className="min-h-11 px-4 py-2 bg-c-bezel hover:bg-c-border border border-c-border text-c-text text-sm font-semibold rounded-lg transition-colors disabled:opacity-50"
                   >
-                    {portalLoading ? 'OPENING...' : 'MANAGE SUBSCRIPTION'}
+                    {portalLoading ? 'Opening…' : 'Manage subscription'}
                   </button>
                   <button
                     onClick={openCustomerPortal}
                     disabled={portalLoading}
-                    className="px-4 py-2 font-mono text-sm text-c-muted hover:text-c-text transition-colors uppercase tracking-wide"
+                    className="min-h-11 px-4 py-2 text-sm font-semibold text-c-muted hover:text-c-text transition-colors"
                   >
-                    PAUSE SUBSCRIPTION
+                    Pause subscription
                   </button>
                 </>
               ) : (
                 <a
                   href="/pricing"
-                  className="px-4 py-2 bg-c-amber hover:bg-c-amber/90 text-c-bg font-mono text-sm font-semibold rounded-lg transition-colors inline-block uppercase tracking-wide"
+                  className="inline-flex items-center min-h-11 px-4 py-2 bg-c-amber hover:bg-c-amber-bright text-c-bg text-sm font-semibold rounded-lg transition-colors"
                 >
-                  UPGRADE PLAN
+                  Upgrade plan
                 </a>
               )}
             </div>
@@ -1358,8 +1358,8 @@ export default function SettingsPage() {
 
       {/* 3. Theme */}
       <div className="bezel rounded-lg border border-c-border p-6">
-        <h2 className="font-mono font-semibold text-base text-c-amber mb-1 tracking-wider uppercase">THEME</h2>
-        <p className="font-mono text-xs text-c-muted mb-5">
+        <h2 className="font-semibold text-lg text-c-text mb-1 tracking-tight">Theme</h2>
+        <p className="text-sm text-c-muted mb-5">
           Choose the cockpit aesthetic for your entire interface.
         </p>
 
@@ -1383,16 +1383,16 @@ export default function SettingsPage() {
               >
                 <div className="flex items-center gap-2 mb-1">
                   <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ background: t.accent }} />
-                  <span className={`font-mono text-sm font-semibold uppercase ${isActive ? 'text-c-amber' : 'text-c-text'}`}>
+                  <span className={`text-sm font-semibold ${isActive ? 'text-c-amber' : 'text-c-text'}`}>
                     {t.label}
                   </span>
                   {isActive && (
-                    <span className="font-mono text-xs bg-c-amber-lo text-c-amber px-2 py-0.5 rounded border border-c-amber/20 uppercase ml-auto">
+                    <span className="font-mono text-[11px] bg-c-amber-lo text-c-amber px-2 py-0.5 rounded border border-c-amber/20 uppercase tracking-wider ml-auto">
                       ACTIVE
                     </span>
                   )}
                 </div>
-                <p className="font-mono text-xs text-c-dim">{t.desc}</p>
+                <p className="text-xs text-c-dim">{t.desc}</p>
               </button>
             );
           })}
@@ -1401,13 +1401,13 @@ export default function SettingsPage() {
 
       {/* 4. Your Examiner (unified profile selector) */}
       <div className="bezel rounded-lg border border-c-border p-6">
-        <h2 className="font-mono font-semibold text-base text-c-amber mb-1 tracking-wider uppercase">YOUR EXAMINER</h2>
-        <p className="font-mono text-xs text-c-muted mb-5">
+        <h2 className="font-semibold text-lg text-c-text mb-1 tracking-tight">Your examiner</h2>
+        <p className="text-sm text-c-muted mb-5">
           Choose your DPE examiner. This sets personality, voice, and identity for all sessions.
         </p>
 
         {tierLoading ? (
-          <div className="font-mono text-sm text-c-dim uppercase">LOADING EXAMINERS...</div>
+          <div className="text-sm text-c-dim">Loading examiners…</div>
         ) : (
           <>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -1435,14 +1435,14 @@ export default function SettingsPage() {
                           </div>
                         )}
                         <div>
-                          <span className={`font-mono text-sm font-semibold uppercase ${isActive ? 'text-c-amber' : 'font-medium text-c-text'}`}>
+                          <span className={`text-sm font-semibold ${isActive ? 'text-c-amber' : 'text-c-text'}`}>
                             {profile.defaultDisplayName}
                           </span>
-                          <p className="font-mono text-xs text-c-dim mt-0.5">{profile.description}</p>
+                          <p className="text-xs text-c-dim mt-0.5">{profile.description}</p>
                         </div>
                       </div>
                       {isActive && (
-                        <span className="font-mono text-xs bg-c-amber/15 text-c-amber px-2 py-0.5 rounded border border-c-amber/25 uppercase flex-shrink-0">
+                        <span className="font-mono text-[11px] bg-c-amber/15 text-c-amber px-2 py-0.5 rounded border border-c-amber/25 uppercase tracking-wider flex-shrink-0">
                           ACTIVE
                         </span>
                       )}
@@ -1456,21 +1456,21 @@ export default function SettingsPage() {
                             : previewVoice(modelId);
                         }}
                         disabled={previewingVoice !== null && !isPreviewing}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded font-mono text-xs font-medium transition-colors ${
+                        className={`flex items-center gap-1.5 min-h-11 px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
                           isPreviewing
                             ? 'bg-c-amber text-c-bg'
-                            : 'bg-c-bezel border border-c-border text-c-muted hover:bg-c-border hover:text-c-text'
-                        } disabled:opacity-40 uppercase`}
+                            : 'bg-c-bezel border border-c-border text-c-text hover:bg-c-border'
+                        } disabled:opacity-40`}
                       >
-                        {isPreviewing ? '\u25A0' : '\u25B6'} {isPreviewing ? 'STOP' : 'PREVIEW'}
+                        {isPreviewing ? '\u25A0' : '\u25B6'} {isPreviewing ? 'Stop' : 'Preview'}
                       </button>
                       {!isActive && (
                         <button
                           onClick={() => switchExaminerProfile(profileKey)}
                           disabled={voiceSaving}
-                          className="px-3 py-1.5 rounded font-mono text-xs font-medium bg-c-amber/15 text-c-amber hover:bg-c-amber hover:text-c-bg transition-colors border border-c-amber/30 disabled:opacity-40 uppercase"
+                          className="min-h-11 px-3 py-2 rounded-lg text-sm font-semibold bg-c-amber/15 text-c-amber hover:bg-c-amber hover:text-c-bg transition-colors border border-c-amber/30 disabled:opacity-40"
                         >
-                          SELECT
+                          Select
                         </button>
                       )}
                     </div>
@@ -1480,7 +1480,7 @@ export default function SettingsPage() {
             </div>
 
             {voiceMessage && (
-              <p className={`font-mono text-xs mt-3 ${voiceMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+              <p className={`text-xs mt-3 ${voiceMessage.type === 'success' ? 'text-c-green' : 'text-c-red'}`}>
                 {voiceMessage.text}
               </p>
             )}
@@ -1495,8 +1495,8 @@ export default function SettingsPage() {
           className="w-full flex items-center justify-between p-6 text-left"
         >
           <div>
-            <h2 className="font-mono font-semibold text-base text-c-amber tracking-wider uppercase">VOICE DIAGNOSTICS</h2>
-            <p className="font-mono text-xs text-c-muted mt-0.5">
+            <h2 className="font-semibold text-lg text-c-text tracking-tight">Voice diagnostics</h2>
+            <p className="text-sm text-c-muted mt-0.5">
               Test your microphone, speech recognition, and speaker.
             </p>
           </div>
@@ -1510,12 +1510,12 @@ export default function SettingsPage() {
             {/* Microphone selector */}
             {audioDevices.length > 0 && (
               <div className="mb-5">
-                <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase">MICROPHONE</label>
+                <label className="block font-mono text-[11px] text-c-muted mb-1.5 uppercase tracking-wider">MICROPHONE</label>
                 <select
                   value={selectedDeviceId}
                   onChange={(e) => setSelectedDeviceId(e.target.value)}
                   disabled={diagRunning}
-                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber disabled:opacity-50"
+                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-c-amber disabled:opacity-50"
                 >
                   {audioDevices.map((d) => (
                     <option key={d.deviceId} value={d.deviceId}>
@@ -1533,9 +1533,9 @@ export default function SettingsPage() {
                     {statusIcon(step.status)}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="font-mono text-sm text-c-text uppercase">{step.label}</p>
+                    <p className="text-sm font-medium text-c-text">{step.label}</p>
                     {step.detail && (
-                      <p className={`font-mono text-xs mt-0.5 ${step.status === 'fail' ? 'text-c-red' : step.status === 'pass' ? 'text-c-green' : 'text-c-muted'}`}>
+                      <p className={`text-xs mt-0.5 ${step.status === 'fail' ? 'text-c-red' : step.status === 'pass' ? 'text-c-green' : 'text-c-muted'}`}>
                         {step.detail}
                       </p>
                     )}
@@ -1550,7 +1550,7 @@ export default function SettingsPage() {
                     )}
                     {/* Recognized text display */}
                     {i === 1 && step.status === 'running' && recognizedText && (
-                      <p className="font-mono text-xs mt-1 text-c-cyan italic">
+                      <p className="text-xs mt-1 text-c-cyan italic">
                         &ldquo;{recognizedText}&rdquo;
                       </p>
                     )}
@@ -1562,12 +1562,12 @@ export default function SettingsPage() {
             <button
               onClick={runDiagnostics}
               disabled={diagRunning}
-              className="px-5 py-2.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg font-mono text-sm font-semibold rounded-lg transition-colors uppercase tracking-wide"
+              className="min-h-11 px-5 py-2.5 bg-c-amber hover:bg-c-amber-bright disabled:opacity-50 text-c-bg text-sm font-semibold rounded-lg transition-colors"
             >
-              {diagRunning ? 'RUNNING...' : 'RUN VOICE TEST'}
+              {diagRunning ? 'Running…' : 'Run voice test'}
             </button>
 
-            <p className="text-xs text-c-dim font-mono mt-3 leading-relaxed">
+            <p className="text-xs text-c-dim mt-3 leading-relaxed">
               Note: Speech recognition uses Chrome&apos;s built-in mic setting, which may differ from the selection above.
               Check chrome://settings/content/microphone if recognition fails.
             </p>
@@ -1577,8 +1577,8 @@ export default function SettingsPage() {
 
       {/* 6. Active Sessions */}
       <div className="bezel rounded-lg border border-c-border p-6">
-        <h2 className="font-mono font-semibold text-base text-c-amber mb-1 tracking-wider uppercase">ACTIVE SESSIONS</h2>
-        <p className="font-mono text-xs text-c-muted mb-5">
+        <h2 className="font-semibold text-lg text-c-text mb-1 tracking-tight">Active sessions</h2>
+        <p className="text-sm text-c-muted mb-5">
           Devices where you are currently signed in.
         </p>
 
@@ -1587,7 +1587,7 @@ export default function SettingsPage() {
             <div className="iframe rounded-lg p-3 h-16" />
           </div>
         ) : activeSessions.length === 0 ? (
-          <div className="font-mono text-sm text-c-dim uppercase">NO ACTIVE SESSIONS FOUND.</div>
+          <div className="text-sm text-c-dim">No active sessions found.</div>
         ) : (
           <div className="space-y-3">
             {activeSessions.map((session) => (
@@ -1603,26 +1603,26 @@ export default function SettingsPage() {
                   <span className="text-c-muted text-xl">&#9109;</span>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm text-c-text">{session.device_label}</span>
+                      <span className="text-sm font-medium text-c-text">{session.device_label}</span>
                       {session.this_device && (
-                        <span className="font-mono text-xs bg-c-cyan-lo text-c-cyan px-1.5 py-0.5 rounded border border-c-cyan/20 uppercase">
+                        <span className="font-mono text-xs bg-c-cyan-lo text-c-cyan px-1.5 py-0.5 rounded border border-c-cyan/20 uppercase tracking-wider">
                           THIS DEVICE
                         </span>
                       )}
                       {session.is_exam_active && (
-                        <span className="font-mono text-xs bg-c-green-lo text-c-green px-1.5 py-0.5 rounded border border-c-green/20 uppercase">
+                        <span className="font-mono text-xs bg-c-green-lo text-c-green px-1.5 py-0.5 rounded border border-c-green/20 uppercase tracking-wider">
                           EXAM ACTIVE
                         </span>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
                       {session.approximate_location && (
-                        <span className="font-mono text-xs text-c-dim">{session.approximate_location}</span>
+                        <span className="text-xs text-c-dim">{session.approximate_location}</span>
                       )}
                       {session.approximate_location && (
-                        <span className="font-mono text-xs text-c-dim">&middot;</span>
+                        <span className="text-xs text-c-dim">&middot;</span>
                       )}
-                      <span className="font-mono text-xs text-c-dim">
+                      <span className="text-xs text-c-dim">
                         Last active: {new Date(session.last_activity_at).toLocaleString('en-US', {
                           month: 'short',
                           day: 'numeric',
@@ -1639,7 +1639,7 @@ export default function SettingsPage() {
         )}
 
         {sessionsMessage && (
-          <p className={`font-mono text-xs mt-3 ${sessionsMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+          <p className={`text-xs mt-3 ${sessionsMessage.type === 'success' ? 'text-c-green' : 'text-c-red'}`}>
             {sessionsMessage.text}
           </p>
         )}
@@ -1662,17 +1662,17 @@ export default function SettingsPage() {
               }
             }}
             disabled={signOutOthersLoading}
-            className="mt-4 px-4 py-2 bg-c-red/80 hover:bg-c-red disabled:opacity-50 text-c-text font-mono text-sm font-semibold rounded-lg transition-colors uppercase tracking-wide"
+            className="mt-4 min-h-11 px-4 py-2 bg-c-red/80 hover:bg-c-red disabled:opacity-50 text-c-text text-sm font-semibold rounded-lg transition-colors"
           >
-            {signOutOthersLoading ? 'SIGNING OUT...' : 'SIGN OUT ALL OTHER SESSIONS'}
+            {signOutOthersLoading ? 'Signing out…' : 'Sign out other sessions'}
           </button>
         )}
       </div>
 
       {/* 7. Data & Danger Zone (W6.3 — GDPR export + account deletion) */}
       <div className="bezel rounded-lg border border-c-red/30 p-6">
-        <h2 className="font-mono font-semibold text-base text-c-red mb-1 tracking-wider uppercase">YOUR DATA</h2>
-        <p className="font-mono text-xs text-c-muted mb-5">
+        <h2 className="font-semibold text-lg text-c-red mb-1 tracking-tight">Your data</h2>
+        <p className="text-sm text-c-muted mb-5">
           Export everything we store about you, or delete your account permanently.
         </p>
 
@@ -1697,13 +1697,13 @@ export default function SettingsPage() {
             }
           }}
           disabled={exportLoading}
-          className="px-4 py-2 bg-c-bezel hover:bg-c-border disabled:opacity-50 text-c-text font-mono text-sm font-semibold rounded-lg transition-colors uppercase tracking-wide border border-c-border-hi"
+          className="min-h-11 px-4 py-2 bg-c-bezel hover:bg-c-border disabled:opacity-50 text-c-text text-sm font-semibold rounded-lg transition-colors border border-c-border-hi"
         >
-          {exportLoading ? 'PREPARING…' : 'DOWNLOAD MY DATA (JSON)'}
+          {exportLoading ? 'Preparing…' : 'Download my data (JSON)'}
         </button>
 
         <div className="mt-6 pt-5 border-t border-c-red/20">
-          <p className="font-mono text-xs text-c-red mb-2 uppercase tracking-wider">Delete account</p>
+          <p className="font-mono text-[11px] text-c-red mb-2 uppercase tracking-wider">Delete account</p>
           <p className="text-sm text-c-muted mb-3">
             Permanently deletes your profile, exam history, transcripts, and progress, and cancels any
             active subscription. This cannot be undone. Type <span className="font-mono text-c-red">DELETE</span> to confirm.
@@ -1713,7 +1713,7 @@ export default function SettingsPage() {
               value={deleteConfirmText}
               onChange={(e) => setDeleteConfirmText(e.target.value)}
               placeholder="DELETE"
-              className="px-3 py-2 bg-c-panel border border-c-border rounded-lg font-mono text-sm text-c-text w-32 focus:outline-none focus:ring-1 focus:ring-c-red"
+              className="px-3 py-2 bg-c-panel border border-c-border rounded-lg font-mono text-sm text-c-text w-32 focus:outline-none focus:ring-2 focus:ring-c-red"
             />
             <button
               onClick={async () => {
@@ -1735,9 +1735,9 @@ export default function SettingsPage() {
                 }
               }}
               disabled={deleteConfirmText !== 'DELETE' || deleteLoading}
-              className="px-4 py-2 bg-c-red/80 hover:bg-c-red disabled:opacity-40 text-c-text font-mono text-sm font-semibold rounded-lg transition-colors uppercase tracking-wide"
+              className="min-h-11 px-4 py-2 bg-c-red/80 hover:bg-c-red disabled:opacity-40 text-c-text text-sm font-semibold rounded-lg transition-colors"
             >
-              {deleteLoading ? 'DELETING…' : 'DELETE MY ACCOUNT'}
+              {deleteLoading ? 'Deleting…' : 'Delete account'}
             </button>
           </div>
           {deleteError && <p className="mt-2 text-sm text-c-red">{deleteError}</p>}
@@ -1746,8 +1746,8 @@ export default function SettingsPage() {
 
       {/* 6.5 Email Notifications */}
       <div className="bezel rounded-lg border border-c-border p-6">
-        <h2 className="font-mono font-semibold text-base text-c-amber mb-1 tracking-wider uppercase">EMAIL NOTIFICATIONS</h2>
-        <p className="font-mono text-xs text-c-muted mb-5">
+        <h2 className="font-semibold text-lg text-c-text mb-1 tracking-tight">Email notifications</h2>
+        <p className="text-sm text-c-muted mb-5">
           Control which emails you receive from HeyDPE.
         </p>
 
@@ -1770,12 +1770,12 @@ export default function SettingsPage() {
                   <span className="text-c-muted text-sm">&#128274;</span>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm text-c-text">{cat.label}</span>
-                      <span className="font-mono text-xs bg-c-bezel text-c-dim px-1.5 py-0.5 rounded border border-c-border uppercase">
+                      <span className="text-sm font-medium text-c-text">{cat.label}</span>
+                      <span className="font-mono text-xs bg-c-bezel text-c-dim px-1.5 py-0.5 rounded border border-c-border uppercase tracking-wider">
                         REQUIRED
                       </span>
                     </div>
-                    <p className="font-mono text-xs text-c-dim mt-0.5">{cat.desc}</p>
+                    <p className="text-xs text-c-dim mt-0.5">{cat.desc}</p>
                   </div>
                 </div>
                 <label className="flex-shrink-0 cursor-not-allowed">
@@ -1800,8 +1800,8 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-3 min-w-0">
                   <span className="text-c-muted text-sm">&#9993;</span>
                   <div className="min-w-0">
-                    <span className="font-mono text-sm text-c-text">{cat.label}</span>
-                    <p className="font-mono text-xs text-c-dim mt-0.5">{cat.desc}</p>
+                    <span className="text-sm font-medium text-c-text">{cat.label}</span>
+                    <p className="text-xs text-c-dim mt-0.5">{cat.desc}</p>
                   </div>
                 </div>
                 <label className="flex-shrink-0 cursor-pointer">
@@ -1819,7 +1819,7 @@ export default function SettingsPage() {
         )}
 
         {emailPrefsMessage && (
-          <p className={`font-mono text-xs mt-3 ${emailPrefsMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+          <p className={`text-xs mt-3 ${emailPrefsMessage.type === 'success' ? 'text-c-green' : 'text-c-red'}`}>
             {emailPrefsMessage.type === 'success' ? '\u2713 ' : ''}{emailPrefsMessage.text}
           </p>
         )}
@@ -1827,8 +1827,8 @@ export default function SettingsPage() {
 
       {/* 7. Feedback */}
       <div className="bezel rounded-lg border border-c-border p-6">
-        <h2 className="font-mono font-semibold text-base text-c-amber mb-1 tracking-wider uppercase">FEEDBACK</h2>
-        <p className="font-mono text-xs text-c-muted mb-5">
+        <h2 className="font-semibold text-lg text-c-text mb-1 tracking-tight">Feedback</h2>
+        <p className="text-sm text-c-muted mb-5">
           Help us improve HeyDPE by reporting bugs or content errors.
         </p>
 
@@ -1840,9 +1840,9 @@ export default function SettingsPage() {
             >
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-c-amber text-base">&#9888;</span>
-                <span className="font-mono text-sm font-semibold text-c-text uppercase">REPORT A BUG</span>
+                <span className="text-sm font-semibold text-c-text">Report a bug</span>
               </div>
-              <p className="font-mono text-xs text-c-muted">Something isn&apos;t working correctly</p>
+              <p className="text-xs text-c-muted">Something isn&apos;t working correctly</p>
             </button>
             <button
               onClick={() => { setFeedbackType('content_error'); setFeedbackMessage(null); }}
@@ -1850,15 +1850,15 @@ export default function SettingsPage() {
             >
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-c-cyan text-base">&#9776;</span>
-                <span className="font-mono text-sm font-semibold text-c-text uppercase">CONTENT ERROR</span>
+                <span className="text-sm font-semibold text-c-text">Content error</span>
               </div>
-              <p className="font-mono text-xs text-c-muted">Incorrect aviation information</p>
+              <p className="text-xs text-c-muted">Incorrect aviation information</p>
             </button>
           </div>
         ) : (
           <div>
             <div className="flex items-center justify-between mb-4">
-              <span className={`font-mono text-xs px-2 py-0.5 rounded border uppercase ${
+              <span className={`font-mono text-xs px-2 py-0.5 rounded border uppercase tracking-wider ${
                 feedbackType === 'bug_report'
                   ? 'bg-c-amber-lo text-c-amber border-c-amber/20'
                   : 'bg-c-cyan-lo text-c-cyan border-c-cyan/20'
@@ -1872,9 +1872,9 @@ export default function SettingsPage() {
                   setFeedbackMessage(null);
                 }}
                 disabled={feedbackSubmitting}
-                className="font-mono text-xs text-c-dim hover:text-c-text transition-colors uppercase"
+                className="min-h-11 text-sm font-semibold text-c-muted hover:text-c-text transition-colors"
               >
-                CHANGE TYPE
+                Change type
               </button>
             </div>
 
@@ -1885,11 +1885,11 @@ export default function SettingsPage() {
                 ? 'Describe the bug... What happened? What did you expect?'
                 : 'Describe the content error... What information was incorrect?'}
               rows={4}
-              className="fb-textarea w-full px-3 py-2.5 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:border-c-amber placeholder-c-dim resize-none mb-4 transition-colors"
+              className="fb-textarea w-full px-3 py-2.5 bg-c-panel border border-c-border rounded-lg text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-c-amber focus:border-c-amber placeholder-c-dim resize-none mb-4 transition-colors"
             />
 
             {feedbackMessage && (
-              <p className={`font-mono text-xs mb-3 ${feedbackMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+              <p className={`text-xs mb-3 ${feedbackMessage.type === 'success' ? 'text-c-green' : 'text-c-red'}`}>
                 {feedbackMessage.text}
               </p>
             )}
@@ -1902,9 +1902,9 @@ export default function SettingsPage() {
                   setFeedbackMessage(null);
                 }}
                 disabled={feedbackSubmitting}
-                className="px-4 py-2 text-c-muted hover:text-c-text font-mono text-sm transition-colors uppercase"
+                className="min-h-11 px-4 py-2 text-c-muted hover:text-c-text text-sm font-semibold transition-colors"
               >
-                CANCEL
+                Cancel
               </button>
               <button
                 onClick={async () => {
@@ -1944,9 +1944,9 @@ export default function SettingsPage() {
                   }
                 }}
                 disabled={feedbackSubmitting || !feedbackDescription.trim()}
-                className="px-5 py-2 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg font-mono text-sm font-semibold rounded-lg transition-colors uppercase tracking-wide"
+                className="min-h-11 px-5 py-2 bg-c-amber hover:bg-c-amber-bright disabled:opacity-50 text-c-bg text-sm font-semibold rounded-lg transition-colors"
               >
-                {feedbackSubmitting ? 'SUBMITTING...' : 'SUBMIT'}
+                {feedbackSubmitting ? 'Submitting…' : 'Submit'}
               </button>
             </div>
           </div>
@@ -1956,25 +1956,25 @@ export default function SettingsPage() {
       {/* 7.5. Your Instructor (student connection — behind feature flag) */}
       {instructorFeatureEnabled && (
         <div className="bezel rounded-lg border border-c-border p-6">
-          <h2 className="font-mono font-semibold text-base text-c-amber mb-1 tracking-wider uppercase">YOUR INSTRUCTOR</h2>
-          <p className="font-mono text-xs text-c-muted mb-5">
+          <h2 className="font-semibold text-lg text-c-text mb-1 tracking-tight">Your instructor</h2>
+          <p className="text-sm text-c-muted mb-5">
             Connect with your flight instructor to share your practice progress.
           </p>
 
           {studentConnLoading ? (
-            <div className="font-mono text-sm text-c-dim uppercase">LOADING...</div>
+            <div className="text-sm text-c-dim">Loading…</div>
           ) : studentConnection?.state === 'connected' ? (
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <span className="w-2.5 h-2.5 rounded-full bg-c-green inline-block glow-g" />
-                <span className="font-mono text-sm text-c-green font-semibold uppercase">CONNECTED</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-c-green inline-block" />
+                <span className="font-mono text-xs text-c-green font-semibold uppercase tracking-wider">CONNECTED</span>
               </div>
               <div className="iframe rounded-lg p-3 mb-3">
-                <div className="font-mono text-xs text-c-muted mb-1 uppercase">INSTRUCTOR</div>
-                <div className="font-mono text-sm text-c-text">
+                <div className="font-mono text-[11px] text-c-muted mb-1 uppercase tracking-wider">INSTRUCTOR</div>
+                <div className="text-sm text-c-text">
                   {studentConnection.instructorName || 'Instructor'}
                   {studentConnection.instructorCertType && (
-                    <span className="ml-2 font-mono text-[10px] px-2 py-0.5 rounded border border-c-amber/30 bg-c-amber-lo text-c-amber uppercase">
+                    <span className="ml-2 font-mono text-[11px] px-2 py-0.5 rounded border border-c-amber/30 bg-c-amber-lo text-c-amber uppercase tracking-wider">
                       {studentConnection.instructorCertType}
                     </span>
                   )}
@@ -1983,30 +1983,30 @@ export default function SettingsPage() {
               <button
                 onClick={() => cancelOrDisconnect(studentConnection.id, 'disconnect')}
                 disabled={connectionActionLoading}
-                className="px-3 py-1.5 rounded border border-c-red/20 bg-c-red-dim text-c-red hover:bg-c-red/20 font-mono text-[10px] uppercase transition-colors disabled:opacity-50"
+                className="min-h-11 px-3 py-2 rounded-lg border border-c-red/30 bg-c-red-dim text-c-red hover:bg-c-red/20 text-sm font-semibold transition-colors disabled:opacity-50"
               >
-                {connectionActionLoading ? '...' : 'DISCONNECT'}
+                {connectionActionLoading ? '…' : 'Disconnect'}
               </button>
               {connectionMessage && (
-                <p className={`font-mono text-xs mt-3 ${connectionMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+                <p className={`text-xs mt-3 ${connectionMessage.type === 'success' ? 'text-c-green' : 'text-c-red'}`}>
                   {connectionMessage.text}
                 </p>
               )}
             </div>
           ) : studentConnection?.state === 'pending' ? (
             <div>
-              <p className="font-mono text-sm text-c-muted mb-3">
+              <p className="text-sm text-c-muted mb-3">
                 Connection request sent to <span className="text-c-text">{studentConnection.instructorName || 'instructor'}</span>. Awaiting approval.
               </p>
               <button
                 onClick={() => cancelOrDisconnect(studentConnection.id, 'cancel_request')}
                 disabled={connectionActionLoading}
-                className="px-3 py-1.5 rounded border border-c-border bg-c-bezel text-c-muted hover:text-c-text font-mono text-[10px] uppercase transition-colors disabled:opacity-50"
+                className="min-h-11 px-3 py-2 rounded-lg border border-c-border bg-c-bezel text-c-text hover:bg-c-border text-sm font-semibold transition-colors disabled:opacity-50"
               >
-                {connectionActionLoading ? '...' : 'CANCEL REQUEST'}
+                {connectionActionLoading ? '…' : 'Cancel request'}
               </button>
               {connectionMessage && (
-                <p className={`font-mono text-xs mt-3 ${connectionMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+                <p className={`text-xs mt-3 ${connectionMessage.type === 'success' ? 'text-c-green' : 'text-c-red'}`}>
                   {connectionMessage.text}
                 </p>
               )}
@@ -2015,51 +2015,51 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase tracking-wider">INSTRUCTOR LAST NAME</label>
+                  <label className="block font-mono text-[11px] text-c-muted mb-1.5 uppercase tracking-wider">INSTRUCTOR LAST NAME</label>
                   <input
                     type="text"
                     value={instructorSearchLastName}
                     onChange={(e) => setInstructorSearchLastName(e.target.value)}
                     placeholder="e.g. Smith"
                     maxLength={100}
-                    className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
+                    className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase tracking-wider">CERTIFICATE NUMBER</label>
+                  <label className="block font-mono text-[11px] text-c-muted mb-1.5 uppercase tracking-wider">CERTIFICATE NUMBER</label>
                   <input
                     type="text"
                     value={instructorSearchCertNum}
                     onChange={(e) => setInstructorSearchCertNum(e.target.value)}
                     placeholder="Optional"
                     maxLength={50}
-                    className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
+                    className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
                   />
                 </div>
               </div>
               <button
                 onClick={searchForInstructor}
                 disabled={instructorSearching || !instructorSearchLastName.trim()}
-                className="px-4 py-2 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg font-mono text-sm font-semibold rounded-lg transition-colors uppercase tracking-wide"
+                className="min-h-11 px-4 py-2 bg-c-amber hover:bg-c-amber-bright disabled:opacity-50 text-c-bg text-sm font-semibold rounded-lg transition-colors"
               >
-                {instructorSearching ? 'SEARCHING...' : 'FIND INSTRUCTOR'}
+                {instructorSearching ? 'Searching…' : 'Find instructor'}
               </button>
 
               {connectionMessage && (
-                <p className={`font-mono text-xs ${connectionMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+                <p className={`text-xs ${connectionMessage.type === 'success' ? 'text-c-green' : 'text-c-red'}`}>
                   {connectionMessage.text}
                 </p>
               )}
 
               {instructorSearchResults.length > 0 && (
                 <div className="space-y-2">
-                  <p className="font-mono text-[10px] text-c-muted uppercase tracking-wider">RESULTS</p>
+                  <p className="font-mono text-[11px] text-c-muted uppercase tracking-wider">RESULTS</p>
                   {instructorSearchResults.map((inst) => (
                     <div key={inst.id} className="flex items-center justify-between bg-c-panel rounded-lg border border-c-border px-3 py-2">
                       <div>
-                        <span className="font-mono text-sm text-c-text">{inst.displayName}</span>
+                        <span className="text-sm text-c-text">{inst.displayName}</span>
                         {inst.certType && (
-                          <span className="ml-2 font-mono text-[10px] px-2 py-0.5 rounded border border-c-amber/30 bg-c-amber-lo text-c-amber uppercase">
+                          <span className="ml-2 font-mono text-[11px] px-2 py-0.5 rounded border border-c-amber/30 bg-c-amber-lo text-c-amber uppercase tracking-wider">
                             {inst.certType}
                           </span>
                         )}
@@ -2067,9 +2067,9 @@ export default function SettingsPage() {
                       <button
                         onClick={() => requestInstructorConnection(inst.userId)}
                         disabled={connectionActionLoading}
-                        className="px-3 py-1.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg font-mono text-[10px] font-semibold rounded-lg transition-colors uppercase"
+                        className="min-h-11 px-3 py-2 bg-c-amber hover:bg-c-amber-bright disabled:opacity-50 text-c-bg text-sm font-semibold rounded-lg transition-colors"
                       >
-                        {connectionActionLoading ? '...' : 'CONNECT'}
+                        {connectionActionLoading ? '…' : 'Connect'}
                       </button>
                     </div>
                   ))}
@@ -2082,8 +2082,8 @@ export default function SettingsPage() {
 
       {/* 7.75. Checkride Milestones */}
       <div className="bezel rounded-lg border border-c-border p-6">
-        <h2 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-1">CHECKRIDE MILESTONES</h2>
-        <p className="font-mono text-[9px] text-c-dim mb-4">
+        <h2 className="font-semibold text-lg text-c-text mb-1 tracking-tight">Checkride milestones</h2>
+        <p className="text-sm text-c-muted mb-4">
           Track your progress toward your checkride. These are self-reported and shared with your connected instructor.
         </p>
         {milestoneLoading ? (
@@ -2092,12 +2092,12 @@ export default function SettingsPage() {
           <div className="space-y-3">
             {milestones.map(m => (
               <div key={m.key} className="flex items-center gap-3 py-2 border-b border-c-border last:border-0">
-                <span className="font-mono text-sm text-c-text flex-1">{MILESTONE_LABELS[m.key] || m.key}</span>
+                <span className="text-sm text-c-text flex-1">{MILESTONE_LABELS[m.key] || m.key}</span>
                 <select
                   value={m.status}
                   onChange={(e) => handleMilestoneUpdate(m.key, e.target.value)}
                   disabled={milestoneUpdating === m.key}
-                  className="font-mono text-[10px] bg-c-panel border border-c-border rounded px-2 py-1 text-c-text disabled:opacity-50"
+                  className="min-h-11 text-sm bg-c-panel border border-c-border rounded-lg px-2 py-1 text-c-text disabled:opacity-50"
                 >
                   {STATUS_OPTIONS.map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -2112,24 +2112,24 @@ export default function SettingsPage() {
       {/* 8. Instructor Mode (behind feature flag) */}
       {instructorFeatureEnabled && (
         <div className="bezel rounded-lg border border-c-border p-6">
-          <h2 className="font-mono font-semibold text-base text-c-amber mb-1 tracking-wider uppercase">INSTRUCTOR MODE</h2>
-          <p className="font-mono text-xs text-c-muted mb-5">
+          <h2 className="font-semibold text-lg text-c-text mb-1 tracking-tight">Instructor mode</h2>
+          <p className="text-sm text-c-muted mb-5">
             Are you a CFI? Activate Instructor Mode to connect with your students on HeyDPE and monitor their checkride preparation progress.
           </p>
 
           {instructorLoading ? (
-            <div className="font-mono text-sm text-c-dim uppercase">LOADING...</div>
+            <div className="text-sm text-c-dim">Loading…</div>
           ) : !instructorState?.hasProfile && !instructorFormVisible ? (
             /* No profile yet — show activation prompt */
             <div>
               <button
                 onClick={() => setInstructorFormVisible(true)}
-                className="px-4 py-2 bg-c-amber hover:bg-c-amber/90 text-c-bg font-mono text-sm font-semibold rounded-lg transition-colors uppercase tracking-wide"
+                className="min-h-11 px-4 py-2 bg-c-amber hover:bg-c-amber-bright text-c-bg text-sm font-semibold rounded-lg transition-colors"
               >
-                APPLY FOR INSTRUCTOR MODE
+                Apply for instructor mode
               </button>
               {instructorMessage && (
-                <p className={`font-mono text-xs mt-3 ${instructorMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+                <p className={`text-xs mt-3 ${instructorMessage.type === 'success' ? 'text-c-green' : 'text-c-red'}`}>
                   {instructorMessage.type === 'success' ? '\u2713 ' : ''}{instructorMessage.text}
                 </p>
               )}
@@ -2138,7 +2138,7 @@ export default function SettingsPage() {
             /* Application form */
             <div className="space-y-4">
               <div>
-                <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase tracking-wider">FIRST NAME</label>
+                <label className="block font-mono text-[11px] text-c-muted mb-1.5 uppercase tracking-wider">FIRST NAME</label>
                 <input
                   type="text"
                   value={instructorFirstName}
@@ -2146,11 +2146,11 @@ export default function SettingsPage() {
                   placeholder="Your first name"
                   maxLength={100}
                   required
-                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
+                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
                 />
               </div>
               <div>
-                <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase tracking-wider">LAST NAME</label>
+                <label className="block font-mono text-[11px] text-c-muted mb-1.5 uppercase tracking-wider">LAST NAME</label>
                 <input
                   type="text"
                   value={instructorLastName}
@@ -2158,11 +2158,11 @@ export default function SettingsPage() {
                   placeholder="Your last name"
                   maxLength={100}
                   required
-                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
+                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
                 />
               </div>
               <div>
-                <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase tracking-wider">CERTIFICATE NUMBER</label>
+                <label className="block font-mono text-[11px] text-c-muted mb-1.5 uppercase tracking-wider">CERTIFICATE NUMBER</label>
                 <input
                   type="text"
                   value={instructorCertNumber}
@@ -2170,15 +2170,15 @@ export default function SettingsPage() {
                   placeholder="FAA certificate number"
                   maxLength={50}
                   required
-                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
+                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-c-amber focus:border-c-amber placeholder-c-dim transition-colors"
                 />
               </div>
               <div>
-                <label className="block font-mono text-xs text-c-muted mb-1.5 uppercase tracking-wider">CERTIFICATE TYPE</label>
+                <label className="block font-mono text-[11px] text-c-muted mb-1.5 uppercase tracking-wider">CERTIFICATE TYPE</label>
                 <select
                   value={instructorCertType}
                   onChange={(e) => setInstructorCertType(e.target.value as CertificateType)}
-                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text font-mono text-sm focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber transition-colors"
+                  className="w-full px-3 py-2 bg-c-panel border border-c-border rounded-lg text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-c-amber focus:border-c-amber transition-colors"
                 >
                   <option value="CFI">CFI — Certified Flight Instructor</option>
                   <option value="CFII">CFII — Certified Flight Instructor Instrument</option>
@@ -2189,7 +2189,7 @@ export default function SettingsPage() {
               </div>
 
               {instructorMessage && (
-                <p className={`font-mono text-xs ${instructorMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+                <p className={`text-xs ${instructorMessage.type === 'success' ? 'text-c-green' : 'text-c-red'}`}>
                   {instructorMessage.type === 'success' ? '\u2713 ' : ''}{instructorMessage.text}
                 </p>
               )}
@@ -2201,27 +2201,27 @@ export default function SettingsPage() {
                     setInstructorMessage(null);
                   }}
                   disabled={instructorSubmitting}
-                  className="px-4 py-2 text-c-muted hover:text-c-text font-mono text-sm transition-colors uppercase tracking-wide"
+                  className="min-h-11 px-4 py-2 text-c-muted hover:text-c-text text-sm font-semibold transition-colors"
                 >
-                  CANCEL
+                  Cancel
                 </button>
                 <button
                   onClick={submitInstructorApplication}
                   disabled={instructorSubmitting || !instructorFirstName.trim() || !instructorLastName.trim() || !instructorCertNumber.trim()}
-                  className="px-5 py-2 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg font-mono text-sm font-semibold rounded-lg transition-colors uppercase tracking-wide"
+                  className="min-h-11 px-5 py-2 bg-c-amber hover:bg-c-amber-bright disabled:opacity-50 text-c-bg text-sm font-semibold rounded-lg transition-colors"
                 >
-                  {instructorSubmitting ? 'SUBMITTING...' : 'APPLY FOR INSTRUCTOR MODE'}
+                  {instructorSubmitting ? 'Submitting\u2026' : 'Apply for instructor mode'}
                 </button>
               </div>
             </div>
           ) : instructorState?.applicationStatus === 'pending' ? (
             /* Pending review */
             <div>
-              <p className="font-mono text-sm text-c-muted">
+              <p className="text-sm text-c-muted">
                 Your instructor application is under review. We&apos;ll notify you when it&apos;s approved.
               </p>
               {instructorMessage && (
-                <p className={`font-mono text-xs mt-3 ${instructorMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+                <p className={`text-xs mt-3 ${instructorMessage.type === 'success' ? 'text-c-green' : 'text-c-red'}`}>
                   {instructorMessage.type === 'success' ? '\u2713 ' : ''}{instructorMessage.text}
                 </p>
               )}
@@ -2230,28 +2230,28 @@ export default function SettingsPage() {
             /* Approved — active instructor */
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <span className="w-2.5 h-2.5 rounded-full bg-c-green inline-block glow-g" />
-                <span className="font-mono text-sm text-c-green font-semibold uppercase">ACTIVE</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-c-green inline-block" />
+                <span className="font-mono text-xs text-c-green font-semibold uppercase tracking-wider">ACTIVE</span>
               </div>
-              <p className="font-mono text-xs text-gray-500 mb-3">
+              <p className="text-xs text-c-muted mb-3">
                 Instructor access is a courtesy benefit and may be revoked.
               </p>
               {/* Courtesy access status */}
               <div className="flex flex-col gap-1 mb-3">
                 {instructorState.hasCourtesyAccess ? (
-                  <span className="font-mono text-xs text-c-green">Courtesy access: Active</span>
+                  <span className="text-xs text-c-green">Courtesy access: Active</span>
                 ) : (
-                  <span className="font-mono text-xs text-c-amber">Courtesy access: Inactive</span>
+                  <span className="text-xs text-c-amber">Courtesy access: Inactive</span>
                 )}
                 {typeof instructorState.paidStudentCount === 'number' && (
-                  <span className="font-mono text-xs text-c-dim">
+                  <span className="text-xs text-c-dim">
                     {instructorState.paidStudentCount} paying {instructorState.paidStudentCount === 1 ? 'student' : 'students'} connected
                   </span>
                 )}
               </div>
               {instructorState.profile?.certificate_type && instructorState.profile?.certificate_number && (
                 <div className="iframe rounded-lg p-3">
-                  <div className="font-mono text-xs text-c-muted mb-1 uppercase">CERTIFICATE</div>
+                  <div className="font-mono text-[11px] text-c-muted mb-1 uppercase tracking-wider">CERTIFICATE</div>
                   <div className="font-mono text-sm text-c-text">
                     {instructorState.profile.certificate_type} &mdash; ****{instructorState.profile.certificate_number.slice(-4)}
                   </div>
@@ -2261,15 +2261,15 @@ export default function SettingsPage() {
               <div className="mt-5 pt-5 border-t border-c-border">
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <h3 className="font-mono text-xs text-c-muted uppercase tracking-wider mb-0.5">INVITE STUDENTS</h3>
-                    <p className="font-mono text-[10px] text-c-dim">Share a link with your students so they can connect with you on HeyDPE.</p>
+                    <h3 className="font-mono text-[11px] text-c-muted uppercase tracking-wider mb-0.5">INVITE STUDENTS</h3>
+                    <p className="text-xs text-c-dim">Share a link with your students so they can connect with you on HeyDPE.</p>
                   </div>
                   <button
                     onClick={createInviteLink}
                     disabled={inviteCreating}
-                    className="px-3 py-1.5 bg-c-amber hover:bg-c-amber/90 disabled:opacity-50 text-c-bg font-mono text-[10px] font-semibold rounded-lg transition-colors uppercase tracking-wide whitespace-nowrap"
+                    className="min-h-11 px-3 py-2 bg-c-amber hover:bg-c-amber-bright disabled:opacity-50 text-c-bg text-sm font-semibold rounded-lg transition-colors whitespace-nowrap"
                   >
-                    {inviteCreating ? 'CREATING...' : '+ NEW LINK'}
+                    {inviteCreating ? 'Creating…' : '+ New link'}
                   </button>
                 </div>
 
@@ -2281,8 +2281,8 @@ export default function SettingsPage() {
                       return (
                         <div key={invite.id} className="flex items-center gap-2 bg-c-panel rounded-lg border border-c-border px-3 py-2">
                           <div className="flex-1 min-w-0">
-                            <div className="font-mono text-[10px] text-c-text truncate">{invite.invite_url}</div>
-                            <div className="font-mono text-[9px] text-c-dim mt-0.5">
+                            <div className="font-mono text-[11px] text-c-text truncate">{invite.invite_url}</div>
+                            <div className="text-[11px] text-c-dim mt-0.5">
                               {claimed ? (
                                 <span className="text-c-green">Claimed</span>
                               ) : expired ? (
@@ -2295,17 +2295,17 @@ export default function SettingsPage() {
                           {!claimed && !expired && (
                             <button
                               onClick={() => copyInviteUrl(invite.invite_url, invite.id)}
-                              className="px-2 py-1 rounded border border-c-border bg-c-bezel text-c-muted hover:text-c-text font-mono text-[9px] uppercase transition-colors whitespace-nowrap"
+                              className="min-h-11 px-3 py-2 rounded-lg border border-c-border bg-c-bezel text-c-text hover:bg-c-border text-sm font-semibold transition-colors whitespace-nowrap"
                             >
-                              {inviteCopied === invite.id ? 'COPIED!' : 'COPY'}
+                              {inviteCopied === invite.id ? 'Copied!' : 'Copy'}
                             </button>
                           )}
                           {!claimed && (
                             <button
                               onClick={() => revokeInviteLink(invite.id)}
-                              className="px-2 py-1 rounded border border-c-red/20 bg-c-red-dim text-c-red hover:bg-c-red/20 font-mono text-[9px] uppercase transition-colors whitespace-nowrap"
+                              className="min-h-11 px-3 py-2 rounded-lg border border-c-red/30 bg-c-red-dim text-c-red hover:bg-c-red/20 text-sm font-semibold transition-colors whitespace-nowrap"
                             >
-                              REVOKE
+                              Revoke
                             </button>
                           )}
                         </div>
@@ -2313,26 +2313,26 @@ export default function SettingsPage() {
                     })}
                   </div>
                 ) : (
-                  <p className="font-mono text-[10px] text-c-dim">No active invite links. Create one to share with your students.</p>
+                  <p className="text-xs text-c-dim">No active invite links. Create one to share with your students.</p>
                 )}
               </div>
             </div>
           ) : instructorState?.applicationStatus === 'rejected' ? (
             /* Rejected — show reason + reapply */
             <div>
-              <p className="font-mono text-sm text-c-muted mb-3">
+              <p className="text-sm text-c-muted mb-3">
                 {instructorState.profile?.rejection_reason
                   ? `Your application was not approved: ${instructorState.profile.rejection_reason}`
                   : 'Your application was not approved. You may reapply with updated information.'}
               </p>
               <button
                 onClick={() => setInstructorFormVisible(true)}
-                className="px-4 py-2 bg-c-amber hover:bg-c-amber/90 text-c-bg font-mono text-sm font-semibold rounded-lg transition-colors uppercase tracking-wide"
+                className="min-h-11 px-4 py-2 bg-c-amber hover:bg-c-amber-bright text-c-bg text-sm font-semibold rounded-lg transition-colors"
               >
-                REAPPLY
+                Reapply
               </button>
               {instructorMessage && (
-                <p className={`font-mono text-xs mt-3 ${instructorMessage.type === 'success' ? 'text-c-green glow-g' : 'text-c-red'}`}>
+                <p className={`text-xs mt-3 ${instructorMessage.type === 'success' ? 'text-c-green' : 'text-c-red'}`}>
                   {instructorMessage.type === 'success' ? '\u2713 ' : ''}{instructorMessage.text}
                 </p>
               )}
@@ -2340,16 +2340,16 @@ export default function SettingsPage() {
           ) : instructorState?.applicationStatus === 'suspended' ? (
             /* Suspended — show reason + contact support */
             <div>
-              <p className="font-mono text-sm text-c-muted mb-3">
+              <p className="text-sm text-c-muted mb-3">
                 {instructorState.profile?.suspension_reason
                   ? `Your instructor account has been suspended: ${instructorState.profile.suspension_reason}`
                   : 'Your instructor account has been suspended.'}
               </p>
               <a
                 href="mailto:support@heydpe.com"
-                className="font-mono text-sm text-c-amber hover:underline uppercase"
+                className="text-sm font-semibold text-c-amber hover:underline"
               >
-                CONTACT SUPPORT
+                Contact support
               </a>
             </div>
           ) : null}
