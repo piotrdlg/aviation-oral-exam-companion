@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     default: "HeyDPE — AI Checkride Oral Exam Simulator",
     template: "%s | HeyDPE",
   },
-  description: "Practice your FAA checkride oral exam with an AI examiner that actually listens. Voice-first, ACS-scored, PPL + CPL + IR. Free trial — no credit card.",
+  description: "Practice your FAA checkride oral exam with an AI examiner that actually listens. Voice-first, ACS-scored, PPL + CPL + IR. 7-day free trial — no credit card required.",
   openGraph: {
     title: "HeyDPE — Your DPE Is Ready When You Are",
     description: "The only checkride oral exam simulator with real-time voice. Speak your answers, get scored on every ACS element. Try 3 sessions free.",

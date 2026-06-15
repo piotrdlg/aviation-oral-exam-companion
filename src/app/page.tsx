@@ -78,7 +78,7 @@ export default function Home() {
             </Link>
           </div>
           <p className="s5 mt-4 text-xs text-c-muted tracking-wide">
-            No credit card required &middot; Free sessions included
+            No credit card required &middot; 7-day free trial, 3 exams
           </p>
           <p className="s5 mt-3 text-sm text-c-muted max-w-xl mx-auto leading-relaxed">
             An AI examiner grounded in the FAA Airman Certification Standards &mdash; a practice tool,

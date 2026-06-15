@@ -167,6 +167,19 @@ Only 9 of 12 ACS areas are used for oral exam simulation. Areas IV (Takeoffs/Lan
 - Session marked "completed" when user ends exam
 - Progress page aggregates stats across all sessions
 
+### Trial / Paid tiers (decision D5, 2026-06-14)
+
+The free tier is a genuine **card-free trial: 7 days AND 3 exams** (whichever first), clock from
+signup (`user_profiles.created_at`), enforced **app-side** in `POST /api/session` create — 403 reason
+codes `trial_limit_reached` (count, checked first), `trial_expired` (window), `resubscribe_required`
+(churned payer), all routed to the upgrade modal. There is **no Stripe trial**: checkout bills the
+first month/year immediately (`stripe/checkout/route.ts` sends no `trial_period_days`). Canceling
+keeps full access until period end (monthly or annual) via the existing `cancel_at_period_end` →
+`status:'active'` → `dpe_live` path. Human labels **Trial / Paid / Tester** are a **display-only**
+layer (`src/lib/tier-labels.ts`) — the stored enum (`checkride_prep` / `dpe_live` / `ground_school`)
+and every `tier === 'dpe_live'` gate are unchanged (no migration). Full rationale + rollback:
+`docs/plans/2026-06-14-trial-and-tier-labels-decision.md`.
+
 ---
 
 ## Database Schema

@@ -13,8 +13,8 @@ export function SubscriptionCancelledEmail() {
       </Text>
 
       <Text style={paragraph}>
-        After that, you can still use HeyDPE with the free tier (3 sessions).
-        If you change your mind, you can resubscribe anytime.
+        After that, resubscribe anytime to restore unlimited access — your
+        progress and exam history stay saved.
       </Text>
 
       <Button href="https://heydpe.com/pricing" style={ctaButton}>

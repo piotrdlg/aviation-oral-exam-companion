@@ -9,6 +9,12 @@ evidence_level: high
 # 44 — Billing, Trial, and Conversion Readiness
 **Phase:** 16 | **Date:** 2026-03-13 | **Scope:** Revenue path audit for beta launch
 
+> **⚠ SUPERSEDED IN PART BY DECISION D5 (2026-06-14).** The trial model below (Stripe
+> `trial_period_days`, card-required, count-only free tier) was **replaced** by a card-free
+> **app-side trial: 7 days AND 3 exams**, with **immediate-pay** paid checkout (no Stripe trial),
+> and human **Trial / Paid / Tester** display labels. Sections updated inline below; full rationale,
+> reason-code contract, and rollback in `docs/plans/2026-06-14-trial-and-tier-labels-decision.md`.
+
 ## Billing Architecture
 
 | Component | File | Status |
@@ -22,33 +28,47 @@ evidence_level: high
 | Tier lookup | `src/lib/voice/tier-lookup.ts` | EXISTS (5-min TTL cache) |
 | Subscription events | `subscription_events` table | EXISTS (idempotency) |
 
-## Plans
+## Plans (D5)
 
-| Plan | Price | Trial | Stripe Price ID |
-|------|-------|-------|----------------|
-| Monthly | $39/month | 7-day free trial | `STRIPE_PRICE_MONTHLY` env var |
-| Annual | $299/year | 7-day free trial | `STRIPE_PRICE_ANNUAL` env var |
+| Plan | Price | Stripe trial | Billing | Stripe Price ID |
+|------|-------|--------------|---------|----------------|
+| Monthly | $39/month | **None** (app-side trial precedes checkout) | First month billed immediately | `STRIPE_PRICE_MONTHLY` env var |
+| Annual | $299/year | **None** | First year billed immediately | `STRIPE_PRICE_ANNUAL` env var |
 
-## Tier System
+The **free trial is app-side and card-free**: 7 days from signup AND 3 exams (whichever first),
+enforced in `POST /api/session` create. `trial_period_days` was removed from checkout.
 
-| Tier | Description | Access Level |
-|------|-------------|-------------|
-| `ground_school` | New user default (DB migration) | 3 free exam sessions |
-| `checkride_prep` | Free/downgraded (code default) | 3 free exam sessions |
-| `dpe_live` | Active subscriber or trialing | Unlimited sessions |
+## Tier System (D5 — stored value vs display LABEL)
 
-## Trial-to-Purchase Flow
+| Stored tier | Display label | Description | Access Level |
+|-------------|---------------|-------------|-------------|
+| `ground_school` | **Trial** | Dead legacy default (migrated away) | Card-free trial (7d / 3 exams) |
+| `checkride_prep` | **Trial** | Free / downgraded (code default) | Card-free trial (7d / 3 exams) |
+| `dpe_live` | **Paid** | Active subscriber (incl. canceling-but-not-yet-ended) | Unlimited sessions |
+| (any) + `paid_equivalent` override | **Tester** | Admin courtesy grant | Unlimited (admin-managed) |
+
+Labels live in `src/lib/tier-labels.ts` (display-only). Stored enum + gates unchanged.
+
+## Trial-to-Purchase Flow (D5)
 
 ```
-1. User signs up → tier: ground_school, status: none
-2. User starts free sessions (up to 3)
-3. User hits quota → shown upgrade modal with /pricing link
-4. User clicks plan → /api/stripe/checkout creates session with 7-day trial
-5. Stripe checkout completes → webhook: checkout.session.completed
-6. Webhook sets tier: dpe_live, status: trialing
-7. Trial ends → Stripe charges card → webhook: invoice.paid → tier stays dpe_live
-8. If card fails → webhook: invoice.payment_failed → tier: checkride_prep (FIXED in Phase 16)
+1. User signs up → tier: checkride_prep ("Trial"), status: none, created_at stamped
+2. User runs card-free trial: up to 3 exams within 7 days of signup
+3. Create blocked → 403 routed to upgrade modal, reason-specific copy:
+     - 3 exams used       → trial_limit_reached ("Free exams used")   [count checked FIRST]
+     - 7 days elapsed      → trial_expired       ("Trial ended")
+     - ever subscribed     → resubscribe_required ("Subscription ended")
+4. User clicks plan → /api/stripe/checkout creates an IMMEDIATE-PAY subscription (no trial)
+5. Stripe charges the first month/year now → webhook: checkout.session.completed / invoice.paid
+6. Webhook sets tier: dpe_live ("Paid"), status: active   (no 'trialing' state for new subs)
+7. Cancel → cancel_at_period_end keeps status: active → dpe_live until current_period_end
+8. Period end → customer.subscription.deleted → tier: checkride_prep (back to Trial/churned)
+9. If card fails → webhook: invoice.payment_failed → tier: checkride_prep (FIXED in Phase 16)
 ```
+
+`/api/stripe/status` calls `invalidateTierCache` after a direct `dpe_live` write so a fresh upgrade
+is not hard-blocked by the app-side trial window during the 5-min tier cache TTL. The mid-exam
+`expires_at` check in `/api/exam` bypasses for `dpe_live` (a user who upgrades mid-exam keeps going).
 
 ## Critical Fix Applied in Phase 16
 
@@ -68,8 +88,11 @@ evidence_level: high
 
 | Check | Type | Location | Status |
 |-------|------|----------|--------|
-| Free session limit (3) | Server-side | `/api/session/route.ts` | EXISTS |
+| Trial cap: 3 exams (checked first) | Server-side | `/api/session/route.ts` | EXISTS (D5) |
+| Trial cap: 7-day window from signup | Server-side | `/api/session/route.ts` | EXISTS (D5) |
+| Churned-payer block (resubscribe) | Server-side | `/api/session/route.ts` | EXISTS (D5) |
 | Tier check for session start | Server-side | `/api/session/route.ts` | EXISTS |
+| Mid-exam expiry (paid bypass) | Server-side | `/api/exam/route.ts` | EXISTS (D5) |
 | Subscription status display | Client-side | Settings page | EXISTS |
 | Quota warning banner | Client-side | Practice page (80% usage) | EXISTS |
 | Quota exceeded modal | Client-side | Practice page (100% usage) | EXISTS |

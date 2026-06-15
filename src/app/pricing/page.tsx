@@ -13,7 +13,7 @@ const plans = [
     name: 'Monthly',
     price: '$39',
     period: '/mo',
-    description: 'Full access, cancel anytime',
+    description: 'Full access, billed monthly, cancel anytime',
     features: [
       'Unlimited exam sessions',
       'All 3 ratings: Private, Commercial, Instrument',
@@ -23,7 +23,7 @@ const plans = [
       'Session resume across devices',
       'Cross-browser support',
     ],
-    cta: 'Start 7-Day Free Trial',
+    cta: 'Upgrade to Paid',
     popular: false,
   },
   {
@@ -39,7 +39,7 @@ const plans = [
       '2 months free vs monthly billing',
       'Lock in your rate for 12 months',
     ],
-    cta: 'Start 7-Day Free Trial',
+    cta: 'Upgrade to Paid',
     popular: true,
   },
 ];
@@ -47,7 +47,7 @@ const plans = [
 const faqs = [
   {
     q: 'Is there a free trial?',
-    a: 'Yes! Both plans include a 7-day free trial. You won\'t be charged until the trial ends, and you can cancel anytime before that. No credit card tricks — we\'ll remind you before your trial expires.',
+    a: 'Yes — and it\'s genuinely free. Every new account gets a 7-day free trial with 3 full practice exams, no credit card required. The free trial and the free tier are the same thing: full voice mode, AI assessment, and progress tracking, with nothing to enter up front. Upgrade to a paid plan whenever you want unlimited exams.',
   },
   {
     q: 'Can I cancel anytime?',
@@ -62,8 +62,8 @@ const faqs = [
     a: 'Voice mode lets you speak your answers naturally, just like a real oral exam. The AI examiner responds with a realistic DPE voice. It works across modern browsers (Chrome, Safari, Edge, Firefox) on desktop and tablet — voice is included on every plan, including the free trial.',
   },
   {
-    q: 'Is there a free tier?',
-    a: 'Yes. New accounts get 3 free practice exams with the complete experience — full voice mode, AI assessment, and progress tracking — no credit card required. Subscribe when you\'re ready for unlimited practice.',
+    q: 'Do I get another free trial when I subscribe?',
+    a: 'No — the free trial happens up front, before you ever enter a card. When you upgrade to a paid plan, your first month (or year) is billed immediately and your access continues uninterrupted. You can cancel anytime from Settings.',
   },
   {
     q: 'What payment methods do you accept?',
@@ -187,7 +187,7 @@ export default function PricingPage() {
             Simple pricing for serious<br className="hidden sm:block" /> checkride prep
           </h1>
           <p className="text-base text-c-muted max-w-xl mx-auto leading-relaxed">
-            Unlimited AI-powered oral exam practice. Start with a 7-day free trial — no charge until you decide.
+            Unlimited AI-powered oral exam practice. Start free — a 7-day trial with 3 exams, no credit card required. Upgrade when you&apos;re ready.
           </p>
         </div>
 
@@ -268,7 +268,7 @@ export default function PricingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-x-6 gap-y-2 text-sm text-c-muted">
             <span className="flex items-center gap-1.5">
               <span className="text-c-green">&#10003;</span>
-              7-day free trial on all plans
+              7-day free trial &mdash; no credit card required
             </span>
             <span className="flex items-center gap-1.5">
               <span className="text-c-green">&#10003;</span>
@@ -285,7 +285,7 @@ export default function PricingPage() {
         <div className="max-w-2xl mx-auto mb-20" id="compare">
           <p className="font-mono text-xs text-c-cyan tracking-[0.3em] uppercase text-center mb-3">// Comparison</p>
           <h2 className="font-bold text-3xl text-c-text text-center mb-3 tracking-tight">Compare plans</h2>
-          <p className="text-c-muted text-center text-base mb-8">Free tier included for everyone. Upgrade when you&apos;re ready.</p>
+          <p className="text-c-muted text-center text-base mb-8">Start free &mdash; no card required. Upgrade when you&apos;re ready.</p>
 
           <div className="bezel rounded-xl border border-c-border overflow-hidden">
             <div className="grid grid-cols-3 px-5 py-3 border-b border-c-border font-mono text-[11px] font-semibold uppercase tracking-wider">
@@ -373,7 +373,7 @@ export default function PricingPage() {
             Start practicing today
           </h2>
           <p className="text-c-muted mb-8 max-w-md mx-auto text-base">
-            7 days free. Cancel anytime. Walk into your checkride knowing you&apos;ve covered every ACS area.
+            Start free &mdash; 7-day trial, 3 exams, no credit card. Walk into your checkride knowing you&apos;ve covered every ACS area.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {isActiveSubscriber ? (
@@ -390,21 +390,21 @@ export default function PricingPage() {
                   disabled={loadingPlan !== null}
                   className="px-8 py-3.5 bg-c-amber hover:bg-c-amber-bright text-c-bg rounded-lg font-semibold text-[15px] transition-colors shadow-lg shadow-c-amber/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loadingPlan === 'annual' ? 'Redirecting…' : 'Start free trial — Annual (best value)'}
+                  {loadingPlan === 'annual' ? 'Redirecting…' : 'Upgrade to Paid — Annual (best value)'}
                 </button>
                 <button
                   onClick={() => handleCheckout('monthly')}
                   disabled={loadingPlan !== null}
                   className="px-8 py-3.5 bg-c-bezel hover:bg-c-border text-c-text rounded-lg font-medium text-[15px] border border-c-border transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loadingPlan === 'monthly' ? 'Redirecting…' : 'Start free trial — Monthly'}
+                  {loadingPlan === 'monthly' ? 'Redirecting…' : 'Upgrade to Paid — Monthly'}
                 </button>
               </>
             )}
           </div>
           {!isActiveSubscriber && (
             <p className="mt-6 text-sm text-c-dim">
-              Not ready to commit? <Link href="/signup" className="text-c-cyan-readable hover:text-c-cyan transition-colors">Create a free account</Link> and try limited sessions first.
+              Not ready to upgrade? <Link href="/signup" className="text-c-cyan-readable hover:text-c-cyan transition-colors">Start your free trial</Link> &mdash; 7 days, 3 exams, no credit card.
             </p>
           )}
         </div>

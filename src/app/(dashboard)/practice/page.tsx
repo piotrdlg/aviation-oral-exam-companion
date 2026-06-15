@@ -109,6 +109,10 @@ function quotaModalCopy(reason: string | null): { heading: string; body: string 
   switch (reason) {
     case 'exchanges_per_session':
       return { heading: 'Exam question limit', body: "You've reached this exam's question limit. Subscribe for longer mock orals and unlimited exams." };
+    case 'trial_limit_reached':
+      return { heading: 'Free exams used', body: "You've used all 3 free practice exams. Subscribe for unlimited mock orals." };
+    case 'resubscribe_required':
+      return { heading: 'Subscription ended', body: 'Your subscription has ended. Resubscribe to continue practicing for your checkride.' };
     case 'trial_expired':
     case 'session_expired':
       return { heading: 'Trial ended', body: 'Your free trial has ended. Subscribe to keep practicing for your checkride.' };
@@ -718,8 +722,13 @@ export default function PracticePage() {
       });
       const sessionData = await sessionRes.json();
       if (!sessionRes.ok) {
-        if (sessionData.error === 'trial_limit_reached') {
-          setError(`You've used all ${sessionData.limit} free exam slots. Upgrade to continue practicing.`);
+        const reason = sessionData.error as string | undefined;
+        // All three trial blocks (3-exam cap, 7-day window, churned-payer) route
+        // through the upgrade modal with reason-specific copy (quotaModalCopy).
+        if (reason === 'trial_limit_reached' || reason === 'trial_expired' || reason === 'resubscribe_required') {
+          setQuotaReason(reason);
+          setShowQuotaModal(true);
+          captureVoiceEvent('paywall_shown', { reason, session_id: sessionId });
           setSessionActive(false);
           setLoading(false);
           return;
@@ -2226,7 +2235,7 @@ export default function PracticePage() {
         )}
 
         {showQuotaModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
+          <div data-testid="upgrade-modal" className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
             <div className="bezel rounded-lg border border-c-border p-6 max-w-md mx-4 shadow-2xl">
               <h2 className="font-bold text-2xl text-c-text mb-2 tracking-tight">{quotaModalCopy(quotaReason).heading}</h2>
               <p className="text-c-muted text-base mb-6">{quotaModalCopy(quotaReason).body}</p>
@@ -2239,6 +2248,7 @@ export default function PracticePage() {
                   View plans
                 </a>
                 <button
+                  data-testid="upgrade-dismiss"
                   onClick={() => setShowQuotaModal(false)}
                   className="px-4 py-2.5 min-h-11 bg-c-bezel hover:bg-c-border text-c-text rounded-lg text-[15px] font-semibold transition-colors border border-c-border"
                 >
@@ -2768,7 +2778,7 @@ export default function PracticePage() {
 
       {/* Quota exceeded modal during active session (Task 34) */}
       {showQuotaModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
+        <div data-testid="upgrade-modal" className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
           <div className="bezel rounded-lg border border-c-border p-6 max-w-md mx-4 shadow-2xl">
             <h2 className="font-bold text-2xl text-c-text mb-2 tracking-tight">{quotaModalCopy(quotaReason).heading}</h2>
               <p className="text-c-muted text-base mb-6">{quotaModalCopy(quotaReason).body}</p>
@@ -2781,6 +2791,7 @@ export default function PracticePage() {
                 View plans
               </a>
               <button
+                data-testid="upgrade-dismiss"
                 onClick={() => setShowQuotaModal(false)}
                 className="px-4 py-2.5 min-h-11 bg-c-bezel hover:bg-c-border text-c-text rounded-lg text-[15px] font-semibold transition-colors border border-c-border"
               >

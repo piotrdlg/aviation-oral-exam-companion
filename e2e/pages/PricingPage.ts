@@ -6,7 +6,7 @@ import { type Page, type Locator, expect } from '@playwright/test';
  * Covers:
  * - Monthly and Annual plan cards with pricing
  * - Feature comparison lists
- * - CTA buttons (Start Free Trial)
+ * - CTA buttons (Upgrade to Paid — Stripe trial removed; checkout bills immediately)
  * - FAQ section
  * - Checkout canceled handling
  */

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HeyDPE — Tiers, Trial &amp; Terminology Audit</title>
+<style>
+  :root{
+    --bg:#0b0f14; --panel:#0f141b; --bezel:#141a22; --border:#283142; --border-hi:#3a4456;
+    --amber:#f5a623; --cyan:#4fd8ff; --green:#4be88e; --red:#ff7a6e; --violet:#b98cff;
+    --text:#dbe2ea; --muted:#aab4c0; --dim:#8b94a3;
+    --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace; --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1100px 460px at 50% -8%,#10202c 0%,transparent 60%),var(--bg);
+    color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;}
+  .wrap{max-width:1080px;margin:0 auto;padding:40px 26px 90px;}
+  h1{font-size:30px;letter-spacing:-.01em;margin:0 0 6px;}
+  h1 .amber{color:var(--amber)}
+  .lead{color:var(--muted);font-size:16px;margin:0 0 4px;}
+  .meta{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.04em;margin-bottom:26px;}
+  h2{font-size:21px;margin:42px 0 12px;padding-top:14px;border-top:1px solid var(--border);letter-spacing:-.01em;}
+  h2 .num{font-family:var(--mono);color:var(--cyan);font-size:14px;margin-right:10px;}
+  h3{font-size:16px;margin:24px 0 8px;color:var(--text);}
+  p{margin:10px 0;}
+  code{font-family:var(--mono);font-size:.86em;background:#0a0e13;border:1px solid var(--border);border-radius:5px;padding:1px 6px;color:#cbe8ff;}
+  .path{color:var(--amber);}
+  a{color:var(--cyan);}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px;}
+  th,td{border:1px solid var(--border);padding:8px 11px;text-align:left;vertical-align:top;}
+  th{background:var(--bezel);font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+  tr:nth-child(even) td{background:rgba(255,255,255,.012);}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin:16px 0;}
+  .callout{border-left:3px solid var(--amber);background:#1a1407;border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;}
+  .callout.cyan{border-color:var(--cyan);background:#06212b;}
+  .callout.red{border-color:var(--red);background:#260f0d;}
+  .callout.green{border-color:var(--green);background:#0a2417;}
+  .callout b{color:var(--text);}
+  .badge{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;padding:2px 8px;border-radius:5px;text-transform:uppercase;white-space:nowrap;display:inline-block;}
+  .b-high{color:#ffd0c8;background:#3a120d;border:1px solid #7a2a20;}
+  .b-med{color:#ffe6b0;background:#3a2c08;border:1px solid #7a5e18;}
+  .b-low{color:#bdebcf;background:#0c2a1a;border:1px solid #1f5a38;}
+  .b-info{color:#bfe6ff;background:#082836;border:1px solid #1d5571;}
+  .pill{font-family:var(--mono);font-size:12px;padding:2px 8px;border-radius:6px;border:1px solid var(--border);}
+  .pill.trial{color:var(--cyan);} .pill.paid{color:var(--amber);} .pill.tester{color:var(--violet);}
+  ul,ol{margin:10px 0;padding-left:22px;} li{margin:5px 0;}
+  .toc{columns:2;column-gap:30px;font-size:14px;}
+  .toc a{display:block;padding:3px 0;text-decoration:none;color:var(--muted);}
+  .toc a:hover{color:var(--cyan);}
+  pre{background:#0a0e13;border:1px solid var(--border);border-radius:8px;padding:13px 15px;overflow:auto;font-family:var(--mono);font-size:12.5px;line-height:1.55;color:#cbe8ff;}
+  pre .c{color:var(--dim);} pre .k{color:var(--amber);} pre .s{color:var(--green);}
+  .flow{font-family:var(--mono);font-size:12.5px;line-height:1.8;background:#0a0e13;border:1px solid var(--border);border-radius:8px;padding:14px 16px;overflow:auto;}
+  .arrow{color:var(--dim);}
+  .small{font-size:12.5px;color:var(--dim);}
+  hr{border:none;border-top:1px solid var(--border);margin:30px 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>HeyDPE — Tiers, Trial &amp; Terminology <span class="amber">Audit</span></h1>
+  <p class="lead">A plain-language inspection of how access tiers, the free trial, and billing actually work today — and exactly what a rename to <span class="pill trial">trial</span> / <span class="pill paid">paid</span> / <span class="pill tester">tester</span> would touch and risk.</p>
+  <p class="meta">Generated 2026-06-14 · scope: code + database + all billing routes · read-only analysis, no changes made</p>
+
+  <div class="card">
+    <strong>Contents</strong>
+    <div class="toc" style="margin-top:8px">
+      <a href="#tldr">0 · The 5 things you need to know first</a>
+      <a href="#today">1 · The tiers that exist today</a>
+      <a href="#db">2 · The database model (in English)</a>
+      <a href="#life">3 · The lifecycle, step by step</a>
+      <a href="#routes">4 · Every route in this aspect</a>
+      <a href="#tester">5 · "Free until revoked" today</a>
+      <a href="#desired">6 · Your desired model &amp; the gap</a>
+      <a href="#rename">7 · The rename: every place to change</a>
+      <a href="#risk">8 · The risk of renaming</a>
+      <a href="#rec">9 · Recommendation</a>
+    </div>
+  </div>
+
+  <!-- ───────────────────────── 0 ───────────────────────── -->
+  <h2 id="tldr"><span class="num">00</span>The 5 things you need to know first</h2>
+
+  <div class="callout">
+    <b>1. "Ground school" is already gone.</b> What you remember as the free/"ground school" tier is stored in the database as <code>checkride_prep</code> today. The value <code>ground_school</code> was a launch-era name that was migrated away on 2026‑02‑18 (<span class="path">20260218000001_simplify_voice_tiers.sql</span>) and no live user has it. New signups default to <code>checkride_prep</code> (<span class="path">auth/callback/route.ts:64</span>). So your rename is really <code>checkride_prep → trial</code>, not <code>ground_school → trial</code>.
+  </div>
+
+  <div class="callout cyan">
+    <b>2. There are 2 real tiers + 1 "override", not 3 tiers.</b> The stored <code>tier</code> column has exactly two live values: <code>checkride_prep</code> (free) and <code>dpe_live</code> (paid). Your "tester / free until revoked" is <em>not</em> a tier today — it's a separate row in <code>user_entitlement_overrides</code> (key <code>paid_equivalent</code>) that <em>simulates</em> paid. Making "tester" a first-class tier is a genuine new concept, not a rename.
+  </div>
+
+  <div class="callout red">
+    <b>3. The "7‑day trial" is two unrelated things, and neither matches your description.</b>
+    <ul style="margin-bottom:0">
+      <li><b>Free tier cap</b> = <em>3 exams, count-only, forever</em> — there is <u>no</u> 7‑day window enforced on the free tier today (<span class="path">session/route.ts:76</span> counts all exams ever; the <code>FREE_TRIAL_EXPIRY_DAYS=7</code> constant only stamps a per‑session field that isn't gated on).</li>
+      <li><b>Stripe 7‑day trial</b> = on the <em>paid</em> plan, and it <u>requires a credit card</u> (Stripe's default <code>payment_method_collection:'always'</code>; the route never overrides it).</li>
+    </ul>
+    Your desired "trial = 7 days AND 3 exams, no card, then pay" merges these into one app-enforced trial and removes the Stripe trial. That's new behaviour, covered in §6.
+  </div>
+
+  <div class="callout">
+    <b>4. <code>trialing</code> is Stripe's word, not ours.</b> The <code>subscription_status</code> values (<code>trialing</code>, <code>active</code>, <code>past_due</code>, …) arrive verbatim in Stripe webhooks. You cannot rename them. The "trial" concept you want to name lives in <em>our</em> tier column, separate from Stripe's status.
+  </div>
+
+  <div class="callout green">
+    <b>5. Tiers are stored values that gate access — so a rename is a data migration, not a find-replace.</b> <code>tier === 'dpe_live'</code> is the load-bearing check that unlocks unlimited exams (5+ places). The strings live in the production <code>user_profiles.tier</code> column, in <code>system_config</code> keys, in DB <code>CHECK</code> constraints, and in the signup trigger. Code and database must change <em>together</em> or paid users lose access mid-deploy (full detail in §8).
+  </div>
+
+  <p><b>Your model → what's actually stored today:</b></p>
+  <table>
+    <tr><th>Your name</th><th>Stored value today</th><th>Reality</th></tr>
+    <tr><td><span class="pill trial">trial</span></td><td><code>checkride_prep</code></td><td>The free tier. (<code>ground_school</code> is a dead legacy alias — already migrated away.)</td></tr>
+    <tr><td><span class="pill paid">paid</span></td><td><code>dpe_live</code></td><td>Paid. Covers <em>both</em> Stripe <code>trialing</code> and <code>active</code> — the Stripe 7‑day trial is "paid tier, status=trialing".</td></tr>
+    <tr><td><span class="pill tester">tester</span></td><td><em>(none)</em> → <code>user_entitlement_overrides.paid_equivalent</code></td><td>Not a tier. A revocable override that makes a user resolve to <code>dpe_live</code>. Making it a real tier is new work.</td></tr>
+  </table>
+
+  <!-- ───────────────────────── 1 ───────────────────────── -->
+  <h2 id="today"><span class="num">01</span>The tiers that exist today</h2>
+  <p>Access level is computed by one function — <code>getUserTier()</code> in <span class="path">src/lib/voice/tier-lookup.ts</span> — which reads the stored <code>tier</code>, then <em>upgrades</em> it if the user has instructor courtesy or a comp override. The canonical type is <code>VoiceTier</code> in <span class="path">src/types/database.ts:298</span> (duplicated in <span class="path">src/lib/voice/types.ts</span>).</p>
+  <table>
+    <tr><th>Stored <code>tier</code></th><th>Means</th><th>Exams</th><th>Set by</th></tr>
+    <tr><td><code>ground_school</code> <span class="badge b-info">legacy</span></td><td>Original free tier name</td><td>3</td><td>Nobody anymore — migrated to <code>checkride_prep</code> (Feb 18). Still in the enum/CHECK as dead weight.</td></tr>
+    <tr><td><code>checkride_prep</code> <span class="badge b-low">free</span></td><td>The free tier ("your trial")</td><td>3 (count-only)</td><td>Signup default (auth callback); webhook on cancel/refund/payment-fail.</td></tr>
+    <tr><td><code>dpe_live</code> <span class="badge b-med">paid</span></td><td>Paid — unlimited</td><td>∞</td><td>Stripe webhook when status ∈ {<code>trialing</code>, <code>active</code>}; comp override; instructor courtesy.</td></tr>
+  </table>
+  <p class="small">Note the historical duplication: <code>ground_school</code> and <code>checkride_prep</code> were always semantically identical (3 free exams). The "simplify" migration kept both in the constraint but pointed everything at <code>checkride_prep</code>.</p>
+
+  <!-- ───────────────────────── 2 ───────────────────────── -->
+  <h2 id="db"><span class="num">02</span>The database model (in English)</h2>
+  <p>Everything subscription-related hangs off <b><code>user_profiles</code></b> (defined in <span class="path">supabase/migrations/20260214000008_voice_tiers.sql</span>, extended by ~6 later migrations). The columns that matter here:</p>
+  <table>
+    <tr><th>Column</th><th>What it holds</th><th>Allowed / default</th></tr>
+    <tr><td><code>tier</code></td><td>The access level (above)</td><td><code>CHECK</code> in (<code>ground_school</code>,<code>checkride_prep</code>,<code>dpe_live</code>); default <code>checkride_prep</code></td></tr>
+    <tr><td><code>subscription_status</code></td><td>Stripe's subscription state (verbatim)</td><td><code>CHECK</code> in active/past_due/canceled/trialing/incomplete/incomplete_expired/unpaid/paused/none; default <code>none</code></td></tr>
+    <tr><td><code>has_trialed</code></td><td>Anti-abuse: did this customer already use a Stripe trial?</td><td>boolean, default <code>false</code>. Once <code>true</code>, no second 7‑day trial is offered.</td></tr>
+    <tr><td><code>trial_end</code></td><td>When the Stripe trial ends (from Stripe)</td><td>timestamp or null</td></tr>
+    <tr><td><code>stripe_customer_id</code> / <code>…subscription_id</code> / <code>…price_id</code></td><td>Stripe object IDs linking the account to billing</td><td>null until first checkout</td></tr>
+    <tr><td><code>cancel_at_period_end</code>, <code>current_period_end</code>, <code>latest_invoice_status</code>, <code>last_stripe_event_created</code></td><td>Billing housekeeping + out-of-order webhook guard</td><td>—</td></tr>
+    <tr><td><code>account_status</code></td><td>Admin moderation state (separate axis!)</td><td><code>active</code> / <code>suspended</code> / <code>banned</code></td></tr>
+  </table>
+  <p>Two supporting tables:</p>
+  <ul>
+    <li><b><code>user_entitlement_overrides</code></b> (<span class="path">20260305000004_instructor_entitlements.sql</span>) — the comp/"tester" mechanism. One row per grant: <code>entitlement_key='paid_equivalent'</code>, <code>active</code>, optional <code>expires_at</code>, <code>reason</code>. When active, <code>getUserTier()</code> resolves the user to <code>dpe_live</code> regardless of their stored tier. Admin-only (RLS).</li>
+    <li><b><code>subscription_events</code></b> (<span class="path">20260216100001_pre_commercialization.sql</span>) — idempotency log of Stripe webhooks (unique <code>stripe_event_id</code>), so a re-delivered event isn't double-applied.</li>
+  </ul>
+
+  <!-- ───────────────────────── 3 ───────────────────────── -->
+  <h2 id="life"><span class="num">03</span>The lifecycle, step by step</h2>
+  <div class="flow">
+1. <span class="k">Sign up</span> <span class="arrow">──▶</span> auth/callback creates profile: tier=<span class="s">checkride_prep</span>, status=<span class="s">none</span>, has_trialed=false<br>
+2. <span class="k">Practice free</span> <span class="arrow">──▶</span> session/route counts non-onboarding exams; allows while count &lt; <span class="s">3</span>  (no time limit)<br>
+3. <span class="k">Start exam #4</span> <span class="arrow">──▶</span> 403 <span class="s">trial_limit_reached</span> <span class="arrow">──▶</span> practice page shows paywall modal → /pricing<br>
+4. <span class="k">Click a plan</span> <span class="arrow">──▶</span> stripe/checkout: if !has_trialed adds <span class="s">trial_period_days:7</span>; <b>card is collected</b> (default)<br>
+5. <span class="k">Checkout done</span> <span class="arrow">──▶</span> webhook checkout.session.completed: tier→<span class="s">dpe_live</span>, status→<span class="s">trialing</span>, has_trialed→true<br>
+6. <span class="k">Day 7</span> <span class="arrow">──▶</span> Stripe charges the card: status→<span class="s">active</span>, tier stays <span class="s">dpe_live</span><br>
+7. <span class="k">Payment fails</span> <span class="arrow">──▶</span> status→<span class="s">past_due</span>, tier <b>kept</b> ~2 wks (dunning grace), then subscription.deleted → tier→<span class="s">checkride_prep</span><br>
+8. <span class="k">Cancel</span> <span class="arrow">──▶</span> subscription.deleted: tier→<span class="s">checkride_prep</span>; has_trialed <b>preserved</b> (no second trial ever)
+  </div>
+  <p class="small">Where each write happens: signup default <span class="path">auth/callback/route.ts:64</span> · quota gate <span class="path">api/session/route.ts:38,76</span> · checkout <span class="path">api/stripe/checkout/route.ts:75</span> · all tier writes <span class="path">api/stripe/webhook/route.ts</span> (checkout.session.completed, customer.subscription.updated/deleted, invoice.paid, invoice.payment_failed, charge.refunded) · fast-path grant <span class="path">api/stripe/status/route.ts:47</span>.</p>
+  <p><b>The unlimited gate</b> everywhere is the same line: <code>tier === 'dpe_live'</code> → <code>isPaid</code>/<code>isPaying</code> (<span class="path">api/exam/route.ts:420</span>, <span class="path">api/session/route.ts:38</span>, <span class="path">lib/kill-switch.ts:39</span>, <span class="path">pricing/page.tsx:127</span>).</p>
+
+  <!-- ───────────────────────── 4 ───────────────────────── -->
+  <h2 id="routes"><span class="num">04</span>Every route in this aspect</h2>
+  <table>
+    <tr><th>Route</th><th>Does</th><th>Tier/status it writes or reads</th></tr>
+    <tr><td><span class="path">api/stripe/checkout</span></td><td>Creates the Stripe Checkout session</td><td>reads <code>has_trialed</code>; adds 7‑day trial; <b>collects card</b></td></tr>
+    <tr><td><span class="path">api/stripe/webhook</span></td><td>Source of truth for tier changes</td><td>writes <code>tier</code>, <code>subscription_status</code>, <code>has_trialed</code></td></tr>
+    <tr><td><span class="path">api/stripe/status</span></td><td>Reconciles if webhook is slow</td><td>may write <code>dpe_live</code>/status directly</td></tr>
+    <tr><td><span class="path">api/stripe/portal</span></td><td>Redirect to Stripe billing portal</td><td>no tier change</td></tr>
+    <tr><td><span class="path">api/session</span></td><td>Starts an exam; enforces the 3‑exam free cap</td><td>reads tier; <code>isPaying = tier==='dpe_live'</code></td></tr>
+    <tr><td><span class="path">api/exam</span></td><td>Exam engine; gates paid-only features</td><td><code>isPaid = tier==='dpe_live'</code></td></tr>
+    <tr><td><span class="path">api/user/tier</span></td><td>Returns current tier + features to the client</td><td>reads tier; default <code>checkride_prep</code></td></tr>
+    <tr><td><span class="path">api/admin/users/[id]/actions</span></td><td>Admin manually sets a tier</td><td>validates against the 3 tier strings, writes <code>tier</code></td></tr>
+    <tr><td><span class="path">api/admin/user-overrides</span></td><td>Grant/revoke comp ("tester") access</td><td>writes <code>user_entitlement_overrides.paid_equivalent</code></td></tr>
+    <tr><td><span class="path">api/admin/analytics/overview</span></td><td>Dashboard tier counts + trial funnel</td><td>reads tier strings + <code>trialing</code>/<code>has_trialed</code></td></tr>
+  </table>
+  <p>Supporting libraries: <span class="path">lib/voice/tier-lookup.ts</span> (resolves effective tier, 5‑min cache), <span class="path">lib/stripe-tier.ts</span> (maps Stripe price→tier; <code>GRACE_STATUSES</code>), <span class="path">lib/voice/types.ts</span> (<code>TIER_FEATURES</code>), <span class="path">lib/kill-switch.ts</span> (degrades tier under load), <span class="path">lib/instructor-entitlements.ts</span> (<code>COURTESY_TIER='checkride_prep'</code>).</p>
+
+  <!-- ───────────────────────── 5 ───────────────────────── -->
+  <h2 id="tester"><span class="num">05</span>"Free until revoked" today</h2>
+  <p>Two paths grant free access without paying — neither is a tier:</p>
+  <ol>
+    <li><b>Comp override (your "tester").</b> An admin POSTs <span class="path">api/admin/user-overrides</span> → upserts <code>user_entitlement_overrides</code> with <code>paid_equivalent</code>, <code>active=true</code>, optional <code>expires_at</code>, a <code>reason</code>. <code>getUserTier()</code> then returns <code>dpe_live</code> for that user. Revoke = set <code>active=false</code>. This is exactly "free until revoked", just implemented as an override layer rather than a tier value.</li>
+    <li><b>Instructor courtesy.</b> An approved instructor with a connected paid student auto-resolves to <code>checkride_prep</code> courtesy (<span class="path">lib/instructor-entitlements.ts</span>).</li>
+  </ol>
+  <div class="callout cyan"><b>Design choice for you:</b> "tester" can stay an <em>override</em> (zero schema change, already revocable, already admin-managed) <u>or</u> become a first-class <code>tier='tester'</code> value. The override path is dramatically lower-risk and already does what you described. A real tier only helps if you need testers to behave differently from paid (e.g., different quotas or analytics bucket).</div>
+
+  <!-- ───────────────────────── 6 ───────────────────────── -->
+  <h2 id="desired"><span class="num">06</span>Your desired model &amp; the gap</h2>
+  <p>You described: <b>trial</b> = 7 days <em>and</em> ≤3 exams (whichever first), <b>no card</b>; at the end the user adds a card → <b>paid</b> with <b>no extra Stripe trial</b>; plus a <b>tester</b> = free until revoked. Here's what's missing beyond naming:</p>
+  <table>
+    <tr><th>Aspect</th><th>Today</th><th>Your model</th><th>Work needed</th><th>Risk</th></tr>
+    <tr><td>Trial window</td><td>3 exams, no time limit</td><td>3 exams <em>and</em> 7 days from signup</td><td>Add a time check on exam start (compare <code>now</code> vs signup+7d) in <span class="path">api/session</span></td><td><span class="badge b-low">low</span></td></tr>
+    <tr><td>Card at trial</td><td>Stripe trial requires a card</td><td>No card during trial (trial is the free tier)</td><td>The trial is app-side &amp; card-free <em>already</em> (free tier has no Stripe). The change is dropping the Stripe 7‑day trial in checkout.</td><td><span class="badge b-med">med</span></td></tr>
+    <tr><td>After trial</td><td>Stripe trial auto-charges card</td><td>User adds card → paid, no 2nd trial</td><td>Remove <code>trial_period_days</code> from checkout → straight paid subscription (<code>has_trialed</code> guard becomes redundant)</td><td><span class="badge b-med">med</span></td></tr>
+    <tr><td>Tester tier</td><td>Override (<code>paid_equivalent</code>)</td><td>First-class "free until revoked"</td><td>Keep as override (recommended) <em>or</em> add <code>tier='tester'</code> + lookup + admin UI</td><td><span class="badge b-med">med</span> / <span class="badge b-low">low</span></td></tr>
+  </table>
+  <div class="callout green"><b>Good news:</b> your model is actually <em>simpler</em> than today. It collapses two overlapping "trials" (the app's 3‑exam cap + Stripe's 7‑day card trial) into one clean app-side trial, and makes checkout a plain paid subscription. The hard part is the rename, not the behaviour.</div>
+
+  <!-- ───────────────────────── 7 ───────────────────────── -->
+  <h2 id="rename"><span class="num">07</span>The rename: every place to change</h2>
+  <p>Verified occurrence counts across <code>src/ · supabase/ · scripts/ · e2e/</code> (docs excluded):</p>
+  <table>
+    <tr><th>String</th><th>Files</th><th>Occurrences</th><th>Can rename?</th></tr>
+    <tr><td><code>ground_school</code></td><td>24</td><td>54</td><td>Yes (but it's dead — could just be deleted)</td></tr>
+    <tr><td><code>checkride_prep</code> → <span class="pill trial">trial</span></td><td>40</td><td>104</td><td>Yes — stored value + gates</td></tr>
+    <tr><td><code>dpe_live</code> → <span class="pill paid">paid</span></td><td>37</td><td>108</td><td>Yes — stored value + gates</td></tr>
+    <tr><td><code>trialing</code></td><td>30</td><td>121</td><td><b>No</b> — Stripe-owned status</td></tr>
+    <tr><td><code>has_trialed</code></td><td>5</td><td>12</td><td>Yes (internal flag)</td></tr>
+  </table>
+  <p>Grouped by what kind of change each occurrence needs (highest risk first):</p>
+
+  <h3>① Database / migrations <span class="badge b-high">highest risk — stored values</span></h3>
+  <p>8 migration files hold the strings in <code>CHECK</code> constraints, the signup trigger default, <code>system_config</code> kill-switch seed keys, and (historically) seed rows: <span class="path">20260214000008_voice_tiers</span>, <span class="path">…009_fix_user_profile_trigger</span>, <span class="path">20260216100001_pre_commercialization</span>, <span class="path">…217100001_stripe_schema_fixes</span>, <span class="path">…217100003_fix_profile_trigger_safety</span>, <span class="path">20260218000001_simplify_voice_tiers</span>, <span class="path">…218000002_practice_defaults</span>, <span class="path">…219000001_onboarding_columns</span>. <b>You never edit old migrations</b> — you add ONE new migration that: (a) <code>UPDATE user_profiles SET tier='paid' WHERE tier='dpe_live'</code> + the free-tier update, (b) swaps the <code>CHECK</code> constraint, (c) rebuilds the trigger default, (d) renames the <code>system_config</code> kill-switch keys.</p>
+
+  <h3>② Server access gates <span class="badge b-high">highest risk — load-bearing</span></h3>
+  <p>Every comparison that unlocks access must flip in the SAME deploy as the data migration: <span class="path">api/exam/route.ts:420</span>, <span class="path">api/session/route.ts:38</span>, <span class="path">lib/kill-switch.ts:39</span>, <span class="path">api/stripe/status</span>, <span class="path">api/stripe/webhook</span> (tier writes), <span class="path">lib/stripe-tier.ts</span> (defaults + price map), <span class="path">api/user/tier/route.ts</span>, <span class="path">api/stripe/checkout</span>, <span class="path">pricing/page.tsx:127</span>. <b>Drift = paid users locked out.</b></p>
+
+  <h3>③ Types <span class="badge b-low">compile-time safe</span></h3>
+  <p><code>VoiceTier</code> union in <span class="path">src/types/database.ts:298</span> and the duplicate in <span class="path">src/lib/voice/types.ts</span> (+ <code>TIER_FEATURES</code>, <code>TIER_ORDER</code>). TypeScript will flag every missed reference — your safety net for ② .</p>
+
+  <h3>④ Admin tier management <span class="badge b-med">medium</span></h3>
+  <p>Tier labels, colours, dropdown options &amp; the valid-tier list: <span class="path">(admin)/admin/users/page.tsx</span>, <span class="path">…/users/[id]/page.tsx</span>, <span class="path">…/config/page.tsx</span>, <span class="path">…/analytics/page.tsx</span>, and <span class="path">api/admin/users/[id]/actions/route.ts</span> (validation list).</p>
+
+  <h3>⑤ Analytics / dashboards <span class="badge b-med">medium — breaks history</span></h3>
+  <p><span class="path">api/admin/analytics/overview/route.ts</span> keys its <code>tierCounts</code> on the strings; partnership/fraud/referrals queries filter on <code>trialing</code>/<code>has_trialed</code>. Renaming splits historical vs new buckets unless you map old→new.</p>
+
+  <h3>⑥ UI &amp; email copy <span class="badge b-low">cosmetic</span></h3>
+  <p>User-facing words ("trial", "free", "no credit card"): <span class="path">pricing/page.tsx</span>, <span class="path">(dashboard)/settings/page.tsx</span>, <span class="path">practice/components/OnboardingWizard.tsx</span>, <span class="path">try/page.tsx</span>, <span class="path">layout.tsx</span> (meta), and emails <span class="path">emails/subscription-*.tsx</span> + checkout <code>custom_text</code>. Change freely — independent of stored values.</p>
+
+  <h3>⑦ Tests &amp; e2e <span class="badge b-low">caught by CI</span></h3>
+  <p>~12 unit files + ~10 e2e specs hardcode tier strings as fixtures/assertions (<span class="path">lib/__tests__/{tier-lookup,voice-usage,stripe-webhook,instructor-entitlements}.test.ts</span>, <span class="path">api/exam/__tests__/exam-flow-regression.test.ts</span>, <span class="path">e2e/billing/*</span>, <span class="path">e2e/settings/*</span>, <span class="path">e2e/admin/*</span>, <span class="path">e2e/helpers/persona-mocks.ts</span>) plus audit/load scripts under <span class="path">scripts/</span>. Mechanical, but they must all flip or CI goes red.</p>
+
+  <!-- ───────────────────────── 8 ───────────────────────── -->
+  <h2 id="risk"><span class="num">08</span>The risk of renaming</h2>
+  <table>
+    <tr><th>Risk</th><th>Why</th><th>Severity</th></tr>
+    <tr><td>Code/DB drift locks out paying users</td><td>The gate is <code>tier==='dpe_live'</code>. If the deploy ships before the data migration (or vice-versa), real subscribers fail the gate and lose access until both land.</td><td><span class="badge b-high">high</span></td></tr>
+    <tr><td>Production data must be backfilled</td><td>~19 live user rows carry the old <code>tier</code> string; <code>system_config</code> kill-switch keys embed it too. A rename without an <code>UPDATE</code> orphans them.</td><td><span class="badge b-high">high</span></td></tr>
+    <tr><td>Stripe status can't move</td><td><code>trialing</code>/<code>active</code>/… come from Stripe. Renaming our internal use is fine; renaming the stored <code>subscription_status</code> values would break every webhook write.</td><td><span class="badge b-high">high</span></td></tr>
+    <tr><td>Analytics discontinuity</td><td>Dashboards + any PostHog properties keyed on tier strings split into "before/after" buckets.</td><td><span class="badge b-med">med</span></td></tr>
+    <tr><td>Broad blast radius</td><td>~58 files, ~260 code occurrences across gates, admin, tests, scripts — easy to miss one that isn't type-checked (e.g. a string in SQL or a test fixture).</td><td><span class="badge b-med">med</span></td></tr>
+    <tr><td>Migration is one-way-ish</td><td>Rolling back means another data migration; not a simple <code>git revert</code> once production rows are rewritten.</td><td><span class="badge b-med">med</span></td></tr>
+  </table>
+
+  <!-- ───────────────────────── 9 ───────────────────────── -->
+  <h2 id="rec"><span class="num">09</span>Recommendation</h2>
+  <p>You can get the clarity you want with far less risk by separating <b>what users see</b> from <b>what's stored</b>:</p>
+  <ol>
+    <li><b>Rename the words, not the stored values (do now, ~zero risk).</b> Introduce one constants module — e.g. <code>TIER_LABEL = { checkride_prep:'Trial', dpe_live:'Paid' }</code> — and route every admin/UI/email label through it. The database keeps <code>checkride_prep</code>/<code>dpe_live</code>; humans see "Trial"/"Paid". This kills the confusion immediately with no migration and no gate risk.</li>
+    <li><b>Keep "tester" as the override (recommended).</b> It's already "free until revoked" and admin-managed. Just surface it in the admin UI as a "Tester" badge. Only promote it to a real <code>tier='tester'</code> if testers must differ from paid in quotas/analytics.</li>
+    <li><b>Do the behaviour change separately (the real value).</b> If you want the genuine "7 days + 3 exams, no card, then pay" model: add the 7‑day window check in <span class="path">api/session</span> and drop <code>trial_period_days</code> from <span class="path">api/stripe/checkout</span>. That's a small, testable change independent of any rename.</li>
+    <li><b>Only do a full DB string rename if you truly need it.</b> If so: one migration (UPDATE + CHECK + trigger + config keys) deployed <em>atomically</em> with the code (TypeScript union flip is your safety net), behind a staging dry-run, with the analytics old→new map prepared. Budget ~1–2 days + a careful release, not a find-replace.</li>
+  </ol>
+  <div class="callout"><b>Bottom line:</b> the naming you want is a 1‑hour label change; the <em>trial-behaviour</em> you described is a small, worthwhile change; a full stored-value rename is the only expensive/risky piece — and it's optional. I'd do 1+3 now, keep tester as an override, and skip the stored-value rename unless there's a concrete reason.</div>
+
+  <div class="callout" style="border-color:#16a34a;background:#0a1f14">
+    <b>✅ DECIDED &amp; SHIPPED — Decision D5 (2026-06-14).</b> The owner chose options <b>1 + 2 + 3</b> and
+    <b>skipped the stored-value rename (4)</b>, exactly as recommended:
+    <ul>
+      <li><b>Labels, not stored values</b> — <code>src/lib/tier-labels.ts</code> maps
+        <code>checkride_prep</code>/<code>ground_school</code>→"Trial", <code>dpe_live</code>→"Paid",
+        <code>paid_equivalent</code> override→"Tester". Wired through admin + emails. No migration.</li>
+      <li><b>Tester stays an override</b> — surfaced as a "Tester" badge in admin (list + detail).</li>
+      <li><b>Card-free trial behaviour</b> — app-side <b>7 days AND 3 exams</b> from signup enforced in
+        <span class="path">api/session</span> (reason codes <code>trial_limit_reached</code> /
+        <code>trial_expired</code> / <code>resubscribe_required</code>); <code>trial_period_days</code>
+        removed from <span class="path">api/stripe/checkout</span> (immediate-pay). Cancel keeps access
+        until period end.</li>
+    </ul>
+    Full decision record, reason-code contract, tests, and rollback:
+    <code>docs/plans/2026-06-14-trial-and-tier-labels-decision.md</code>.
+  </div>
+
+  <p class="small" style="margin-top:34px">Sources: live code under <code>src/</code>, migrations under <code>supabase/migrations/</code>, and the Stripe billing routes, inspected 2026‑06‑14. All claims cite a file (and line where stable). Counts are exact <code>grep</code>s over src/supabase/scripts/e2e.</p>
+
+</div>
+</body>
+</html>

@@ -58,6 +58,8 @@ interface SubscriptionInfo {
   status: string;
   plan: string | null;
   renewalDate: string | null;
+  cancelAtPeriodEnd: boolean;
+  currentPeriodEnd: string | null;
   hasStripeCustomer: boolean;
 }
 
@@ -231,6 +233,8 @@ export default function SettingsPage() {
           status: data.status || 'free',
           plan: data.plan || null,
           renewalDate: data.renewalDate || null,
+          cancelAtPeriodEnd: !!data.cancelAtPeriodEnd,
+          currentPeriodEnd: data.currentPeriodEnd || null,
           hasStripeCustomer: !!data.tier && data.status !== 'free',
         });
       })
@@ -1270,13 +1274,16 @@ export default function SettingsPage() {
               </div>
               <div className="iframe rounded-lg p-4">
                 <div className="font-mono text-[11px] text-c-muted mb-1 uppercase tracking-wider">
-                  {isPaidUser ? 'RENEWAL DATE' : 'STATUS'}
+                  {subInfo?.cancelAtPeriodEnd ? 'ACCESS UNTIL' : isPaidUser ? 'RENEWS' : 'STATUS'}
                 </div>
                 <div className="font-mono text-c-text font-semibold text-base uppercase">
-                  {subInfo?.renewalDate
-                    ? new Date(subInfo.renewalDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                  {subInfo?.currentPeriodEnd
+                    ? new Date(subInfo.currentPeriodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                     : isPaidUser ? 'N/A' : 'FREE TIER'}
                 </div>
+                {subInfo?.cancelAtPeriodEnd && (
+                  <div className="font-mono text-[11px] text-c-amber mt-1 tracking-wide">Cancels — full access until then</div>
+                )}
               </div>
             </div>
 
