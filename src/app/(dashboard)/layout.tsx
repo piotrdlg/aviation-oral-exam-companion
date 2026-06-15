@@ -62,7 +62,7 @@ export default function DashboardLayout({
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
           <div className="flex items-center gap-3 sm:gap-6 min-w-0">
             <Logo size="md" href="/home" />
-            <div className="flex gap-0.5 min-w-0 overflow-x-auto">
+            <div className="flex gap-0.5 min-w-0 overflow-x-auto overflow-y-hidden">
               {navItems.map((item) => {
                 const active = pathname === item.href;
                 return (

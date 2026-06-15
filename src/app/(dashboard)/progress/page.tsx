@@ -69,7 +69,6 @@ const CLASS_OPTIONS: { value: AircraftClass; label: string }[] = [
 interface Achievement {
   id: string;
   label: string;
-  icon: string;
   earned: boolean;
 }
 
@@ -82,16 +81,16 @@ function computeAchievements(
   attemptedElements: number,
 ): Achievement[] {
   return [
-    { id: 'first', label: 'First Exam', icon: '1', earned: totalSessions >= 1 },
-    { id: 'five', label: '5 Exams', icon: '5', earned: completedSessions >= 5 },
-    { id: 'ten', label: '10 Exams', icon: '10', earned: completedSessions >= 10 },
-    { id: 'exchanges50', label: '50 Exchanges', icon: '50', earned: totalExchanges >= 50 },
-    { id: 'exchanges200', label: '200 Exchanges', icon: '200', earned: totalExchanges >= 200 },
-    { id: 'coverage25', label: '25% Coverage', icon: '25%', earned: coveragePct >= 25 },
-    { id: 'coverage50', label: '50% Coverage', icon: '50%', earned: coveragePct >= 50 },
-    { id: 'coverage75', label: '75% Coverage', icon: '75%', earned: coveragePct >= 75 },
-    { id: 'coverage100', label: 'Full Coverage', icon: '100%', earned: coveragePct >= 100 },
-    { id: 'noWeak', label: 'No Weak Areas', icon: '0', earned: attemptedElements > 0 && weakCount === 0 },
+    { id: 'first', label: 'First Exam', earned: totalSessions >= 1 },
+    { id: 'five', label: '5 Exams', earned: completedSessions >= 5 },
+    { id: 'ten', label: '10 Exams', earned: completedSessions >= 10 },
+    { id: 'exchanges50', label: '50 Exchanges', earned: totalExchanges >= 50 },
+    { id: 'exchanges200', label: '200 Exchanges', earned: totalExchanges >= 200 },
+    { id: 'coverage25', label: '25% Coverage', earned: coveragePct >= 25 },
+    { id: 'coverage50', label: '50% Coverage', earned: coveragePct >= 50 },
+    { id: 'coverage75', label: '75% Coverage', earned: coveragePct >= 75 },
+    { id: 'coverage100', label: 'Full Coverage', earned: coveragePct >= 100 },
+    { id: 'noWeak', label: 'No Weak Areas', earned: attemptedElements > 0 && weakCount === 0 },
   ];
 }
 
@@ -361,7 +360,7 @@ export default function ProgressPage() {
                     title={a.label}
                     className="shrink-0 inline-flex items-center gap-1.5 font-mono text-xs bg-c-bezel text-c-muted px-2.5 py-1 rounded-full border border-c-border"
                   >
-                    <span className="text-c-amber font-bold text-xs">{a.icon}</span>
+                    <span className="text-c-amber text-xs" aria-hidden="true">✓</span>
                     {a.label}
                   </span>
                 ))}
@@ -370,7 +369,7 @@ export default function ProgressPage() {
                     title={`Next: ${nextAchievement.label}`}
                     className="shrink-0 inline-flex items-center gap-1.5 font-mono text-xs bg-c-panel text-c-dim px-2.5 py-1 rounded-full border border-c-border border-dashed"
                   >
-                    <span className="text-c-dim font-bold text-xs">{nextAchievement.icon}</span>
+                    <span className="text-c-dim text-xs" aria-hidden="true">○</span>
                     {nextAchievement.label}
                   </span>
                 )}
