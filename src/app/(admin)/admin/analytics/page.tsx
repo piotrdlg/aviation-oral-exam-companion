@@ -218,7 +218,7 @@ export default function AdminAnalyticsPage() {
         <StatCard
           label="Tier Breakdown"
           value={data?.growth.totalUsers.toLocaleString() ?? '0'}
-          detail={data ? `${data.growth.tierBreakdown.ground_school} ground \u00b7 ${data.growth.tierBreakdown.checkride_prep} prep \u00b7 ${data.growth.tierBreakdown.dpe_live} live` : 'Loading...'}
+          detail={data ? `${data.growth.tierBreakdown.ground_school + data.growth.tierBreakdown.checkride_prep} trial \u00b7 ${data.growth.tierBreakdown.dpe_live} paid` : 'Loading...'}
           color="cyan"
           loading={loading && !data}
         />

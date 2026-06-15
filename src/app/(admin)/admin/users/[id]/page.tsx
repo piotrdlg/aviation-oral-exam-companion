@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import type { VoiceTier, AccountStatus } from '@/types/database';
+import { tierBand, tierDisplay, subscriptionStatusLabel, OVERRIDE_LABEL, type TierBand } from '@/lib/tier-labels';
 
 interface UserDetail {
   id: string;
@@ -15,6 +16,7 @@ interface UserDetail {
   last_login_at: string | null;
   created_at: string;
   stripe_customer_id: string | null;
+  has_paid_override: boolean;
 }
 
 interface UserSession {
@@ -72,10 +74,10 @@ const TABS: { value: Tab; label: string }[] = [
   { value: 'notes', label: 'Notes' },
 ];
 
-const TIER_LABELS: Record<VoiceTier, string> = {
-  ground_school: 'Ground School',
-  checkride_prep: 'Checkride Prep',
-  dpe_live: 'DPE Live',
+const BAND_STYLE: Record<TierBand, string> = {
+  trial: 'bg-c-amber-lo text-c-amber border-c-amber/20',
+  paid: 'bg-c-green-lo text-c-green border-c-green/20',
+  tester: 'bg-c-cyan-lo text-c-cyan border-c-cyan/20',
 };
 
 export default function UserDetailPage({
@@ -206,12 +208,15 @@ export default function UserDetailPage({
           <h1 className="text-2xl font-bold text-c-amber font-mono uppercase tracking-wider glow-a">{user.email.split('@')[0]}</h1>
           <p className="text-c-cyan font-mono text-xs mt-1">{user.email}</p>
           <div className="flex items-center gap-2 mt-2">
-            <TierBadge tier={user.tier} />
+            <TierBadge tier={user.tier} hasPaidOverride={user.has_paid_override} />
             <AccountStatusBadge status={user.account_status} />
             {user.subscription_status && user.subscription_status !== 'none' && (
               <span className="font-mono text-[10px] bg-c-elevated text-c-muted px-2 py-0.5 rounded border border-c-border uppercase">
-                Sub: {user.subscription_status}
+                Sub: {subscriptionStatusLabel(user.subscription_status)}
               </span>
+            )}
+            {user.has_paid_override && (
+              <span className="font-mono text-[10px] text-c-cyan/80">{OVERRIDE_LABEL} &mdash; courtesy access</span>
             )}
           </div>
           {user.status_reason && (
@@ -330,16 +335,12 @@ export default function UserDetailPage({
 
 // ─── Sub-components ──────────────────────────────────────────────────────
 
-function TierBadge({ tier }: { tier: VoiceTier }) {
-  const styles: Record<VoiceTier, string> = {
-    ground_school: 'bg-c-elevated text-c-muted border-c-border',
-    checkride_prep: 'bg-c-amber-lo text-c-amber border-c-amber/20',
-    dpe_live: 'bg-c-green-lo text-c-green border-c-green/20',
-  };
-  const glow = tier === 'dpe_live' ? ' glow-g' : '';
+function TierBadge({ tier, hasPaidOverride = false }: { tier: VoiceTier; hasPaidOverride?: boolean }) {
+  const band = tierBand(tier, hasPaidOverride);
+  const glow = band === 'paid' ? ' glow-g' : '';
   return (
-    <span className={`font-mono text-[10px] px-2 py-0.5 rounded border uppercase${glow} ${styles[tier]}`}>
-      {TIER_LABELS[tier]}
+    <span className={`font-mono text-[10px] px-2 py-0.5 rounded border uppercase${glow} ${BAND_STYLE[band]}`}>
+      {tierDisplay(tier, hasPaidOverride)}
     </span>
   );
 }
@@ -373,9 +374,9 @@ function TierDropdown({
       onChange={(e) => onChange(e.target.value as VoiceTier)}
       className="px-3 py-2 text-xs rounded-lg bg-c-panel text-c-text border border-c-border focus:outline-none focus:ring-1 focus:ring-c-amber focus:border-c-amber font-mono uppercase disabled:opacity-50 transition-colors"
     >
-      <option value="ground_school">Ground School</option>
-      <option value="checkride_prep">Checkride Prep</option>
-      <option value="dpe_live">DPE Live</option>
+      <option value="checkride_prep">Trial (free)</option>
+      <option value="dpe_live">Paid</option>
+      <option value="ground_school">Trial — legacy (ground_school)</option>
     </select>
   );
 }
@@ -414,8 +415,8 @@ function OverviewTab({
           <InfoRow label="Auth Method" value={user.auth_method || 'password'} />
           <InfoRow
             label="Tier"
-            value={TIER_LABELS[user.tier]}
-            badge={<TierBadge tier={user.tier} />}
+            value={tierDisplay(user.tier, user.has_paid_override)}
+            badge={<TierBadge tier={user.tier} hasPaidOverride={user.has_paid_override} />}
           />
           <InfoRow
             label="Joined"
