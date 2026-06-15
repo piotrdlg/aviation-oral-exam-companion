@@ -405,7 +405,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
               Your free trial
             </h2>
             <p className="text-base text-c-muted text-center mb-5">
-              You are about to start your free 7-day trial
+              You are about to start your free 7-day trial — no credit card required
             </p>
 
             {/* What's included */}
@@ -440,7 +440,7 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
                 An exam is one practice session with your AI examiner. You choose the rating, study mode
                 (Area by Area, Random, or Weak Areas), and difficulty level. The examiner asks questions,
                 assesses your answers, and grades your performance. You can pause and resume any exam
-                within 7 days.
+                while your trial is active.
               </p>
             </div>
 
@@ -448,8 +448,9 @@ export default function OnboardingWizard({ defaultRating, defaultAircraftClass, 
             <div className="iframe rounded-lg p-4 mb-6">
               <p className="font-mono text-[11px] text-c-muted uppercase tracking-wider mb-2">After the trial</p>
               <p className="text-sm text-c-muted leading-relaxed">
-                Each exam stays available for 7 days to pause and resume. After your 3 trial exams,
-                subscribe to continue with unlimited exams. Plans start at <span className="text-c-amber font-mono font-semibold tabular-nums">$39/month</span>.
+                Each exam stays available until your trial ends to pause and resume. When your trial ends —
+                after 7 days or once you&apos;ve used your 3 exams — subscribe to continue with unlimited exams.
+                Plans start at <span className="text-c-amber font-mono font-semibold tabular-nums">$39/month</span>, billed when you subscribe. No card needed until then.
               </p>
             </div>
 

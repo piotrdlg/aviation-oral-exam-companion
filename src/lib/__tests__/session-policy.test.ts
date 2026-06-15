@@ -49,6 +49,7 @@ vi.mock('next/server', async (importOriginal) => {
 
 vi.mock('@/lib/posthog-server', () => ({
   captureServerEvent: vi.fn(),
+  flushPostHog: vi.fn(),
 }));
 
 // Import route handler after mocks are in place
@@ -136,9 +137,11 @@ describe('create — is_onboarding validation', () => {
       .mockReturnValueOnce(q({ data: { onboarding_completed: true } }))
       .mockReturnValueOnce(q({ count: 0 }));
     const trialQ = q({ count: 0 });
+    const profileQ = q({ data: { created_at: new Date().toISOString(), stripe_customer_id: null } });
     const insertQ = q({ data: { id: 's2' } });
     mocks.serviceFrom
       .mockReturnValueOnce(trialQ)
+      .mockReturnValueOnce(profileQ)
       .mockReturnValueOnce(insertQ);
 
     const res = await POST(postReq({ action: 'create', is_onboarding: true }));
@@ -153,9 +156,11 @@ describe('create — is_onboarding validation', () => {
       .mockReturnValueOnce(q({ data: { onboarding_completed: false } }))
       .mockReturnValueOnce(q({ count: 1 }));
     const trialQ = q({ count: 0 });
+    const profileQ = q({ data: { created_at: new Date().toISOString(), stripe_customer_id: null } });
     const insertQ = q({ data: { id: 's3' } });
     mocks.serviceFrom
       .mockReturnValueOnce(trialQ)
+      .mockReturnValueOnce(profileQ)
       .mockReturnValueOnce(insertQ);
 
     const res = await POST(postReq({ action: 'create', is_onboarding: true }));
@@ -167,9 +172,11 @@ describe('create — is_onboarding validation', () => {
 
   it('never sets onboarding when client does not request it', async () => {
     const trialQ = q({ count: 0 });
+    const profileQ = q({ data: { created_at: new Date().toISOString(), stripe_customer_id: null } });
     const insertQ = q({ data: { id: 's4' } });
     mocks.serviceFrom
       .mockReturnValueOnce(trialQ)
+      .mockReturnValueOnce(profileQ)
       .mockReturnValueOnce(insertQ);
 
     await POST(postReq({ action: 'create' }));
@@ -193,11 +200,13 @@ describe('create — trial limits', () => {
     expect(body.limit).toBe(3);
   });
 
-  it('allows free user under limit', async () => {
+  it('allows free user under the cap and inside the 7-day window', async () => {
     const trialQ = q({ count: 2 });
+    const profileQ = q({ data: { created_at: new Date().toISOString(), stripe_customer_id: null } });
     const insertQ = q({ data: { id: 's5' } });
     mocks.serviceFrom
       .mockReturnValueOnce(trialQ)
+      .mockReturnValueOnce(profileQ)
       .mockReturnValueOnce(insertQ);
 
     const res = await POST(postReq({ action: 'create' }));
@@ -227,22 +236,94 @@ describe('create — trial limits', () => {
 });
 
 // ================================================================
+// Create — 7-day trial window + one-trial-per-account
+// ================================================================
+describe('create — trial window + resubscribe', () => {
+  const recent = () => new Date().toISOString();
+  const longAgo = () => new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString();
+
+  it('blocks a free user past the 7-day window → trial_expired', async () => {
+    mocks.serviceFrom
+      .mockReturnValueOnce(q({ count: 1 })) // under the 3-exam cap
+      .mockReturnValueOnce(q({ data: { created_at: longAgo(), stripe_customer_id: null } }));
+    const res = await POST(postReq({ action: 'create' }));
+    expect(res.status).toBe(403);
+    expect((await res.json()).error).toBe('trial_expired');
+  });
+
+  it('blocks a churned / once-subscribed user → resubscribe_required', async () => {
+    mocks.serviceFrom
+      .mockReturnValueOnce(q({ count: 0 }))
+      .mockReturnValueOnce(q({ data: { created_at: recent(), stripe_customer_id: 'cus_123' } }));
+    const res = await POST(postReq({ action: 'create' }));
+    expect(res.status).toBe(403);
+    expect((await res.json()).error).toBe('resubscribe_required');
+  });
+
+  it('the 3-exam cap is checked first (count wins, no profile fetch)', async () => {
+    mocks.serviceFrom.mockReturnValueOnce(q({ count: 3 }));
+    const res = await POST(postReq({ action: 'create' }));
+    expect(res.status).toBe(403);
+    expect((await res.json()).error).toBe('trial_limit_reached');
+    expect(mocks.serviceFrom).toHaveBeenCalledTimes(1);
+  });
+
+  it('allows a free user inside the window with no prior subscription', async () => {
+    mocks.serviceFrom
+      .mockReturnValueOnce(q({ count: 1 }))
+      .mockReturnValueOnce(q({ data: { created_at: recent(), stripe_customer_id: null } }))
+      .mockReturnValueOnce(q({ data: { id: 'sw1' } }));
+    const res = await POST(postReq({ action: 'create' }));
+    expect(res.status).toBe(200);
+  });
+
+  it('fails OPEN on missing created_at (count cap still applies)', async () => {
+    const insertQ = q({ data: { id: 'sw2' } });
+    mocks.serviceFrom
+      .mockReturnValueOnce(q({ count: 1 }))
+      .mockReturnValueOnce(q({ data: { created_at: null, stripe_customer_id: null } }))
+      .mockReturnValueOnce(insertQ);
+    const before = Date.now();
+    const res = await POST(postReq({ action: 'create' }));
+    expect(res.status).toBe(200);
+    // The fail-open path must still stamp a REAL forward window (now + 7d), not
+    // null (no mid-exam cap) and not a 1970 epoch (instant expiry from null→0).
+    const arg = insertQ.insert.mock.calls[0][0] as { expires_at: string | null };
+    expect(arg.expires_at).toBeTruthy();
+    const stampedMs = new Date(arg.expires_at as string).getTime();
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+    expect(stampedMs).toBeGreaterThanOrEqual(before + sevenDaysMs - 5_000);
+    expect(stampedMs).toBeLessThanOrEqual(Date.now() + sevenDaysMs + 5_000);
+  });
+
+  it('paid / tester-override users bypass BOTH the cap and the window', async () => {
+    mocks.getUserTier.mockResolvedValue('dpe_live');
+    mocks.serviceFrom.mockReturnValueOnce(q({ data: { id: 'sw3' } }));
+    const res = await POST(postReq({ action: 'create' }));
+    expect(res.status).toBe(200);
+    expect(mocks.serviceFrom).toHaveBeenCalledTimes(1); // insert only
+  });
+});
+
+// ================================================================
 // Create — expires_at assignment
 // ================================================================
 describe('create — expires_at', () => {
-  it('sets 7-day expiry for free non-onboarding exams', async () => {
+  it('sets 7-day-from-signup expiry for free non-onboarding exams', async () => {
+    const signup = new Date();
     const trialQ = q({ count: 0 });
+    const profileQ = q({ data: { created_at: signup.toISOString(), stripe_customer_id: null } });
     const insertQ = q({ data: { id: 's8' } });
     mocks.serviceFrom
       .mockReturnValueOnce(trialQ)
+      .mockReturnValueOnce(profileQ)
       .mockReturnValueOnce(insertQ);
 
     await POST(postReq({ action: 'create' }));
     const arg = insertQ.insert.mock.calls[0][0];
     expect(arg.expires_at).toBeTruthy();
     const expires = new Date(arg.expires_at).getTime();
-    const expected = Date.now() + 7 * 24 * 60 * 60 * 1000;
-    // Allow up to 2 hours tolerance for DST boundary crossings
+    const expected = signup.getTime() + 7 * 24 * 60 * 60 * 1000; // window = signup + 7d
     expect(Math.abs(expires - expected)).toBeLessThan(2 * 60 * 60 * 1000);
   });
 

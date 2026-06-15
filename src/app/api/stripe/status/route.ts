@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getStripe } from '@/lib/stripe';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
+import { invalidateTierCache } from '@/lib/voice/tier-lookup';
 
 const serviceSupabase = createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -61,6 +62,10 @@ export async function GET() {
                 : null,
             })
             .eq('user_id', user.id);
+
+          // Drop the cached (stale free) tier so the new dpe_live takes effect
+          // immediately — otherwise the trial gate could block a just-paid user.
+          invalidateTierCache(user.id);
 
           return NextResponse.json({ tier: 'dpe_live', status: sub.status });
         }

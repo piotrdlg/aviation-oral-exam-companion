@@ -5,6 +5,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { getUserTier } from '@/lib/voice/tier-lookup';
 import { getSystemConfig } from '@/lib/system-config';
 import { requireSafeDbTarget } from '@/lib/app-env';
+import { captureServerEvent, flushPostHog } from '@/lib/posthog-server';
 
 // Service-role client for tier lookups + grading queries (bypasses RLS)
 const serviceSupabase = createServiceClient(
@@ -13,7 +14,8 @@ const serviceSupabase = createServiceClient(
 );
 
 const FREE_TRIAL_EXAM_LIMIT = 3;
-const FREE_TRIAL_EXPIRY_DAYS = 7;
+const FREE_TRIAL_WINDOW_DAYS = 7;
+const FREE_TRIAL_WINDOW_MS = FREE_TRIAL_WINDOW_DAYS * 24 * 60 * 60 * 1000;
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -59,10 +61,19 @@ export async function POST(request: NextRequest) {
 
     let expiresAt: string | null = null;
 
+    // Free trial = up to 3 exams AND 7 days from signup (whichever first), and
+    // no second trial once the account has ever subscribed. Paid + tester-override
+    // users (tier 'dpe_live', incl. a cancel-at-period-end sub still active) bypass
+    // all of this — they're handled by the `!isPaying` guard.
+    const blockTrial = (reason: string, extra: Record<string, unknown> = {}) => {
+      captureServerEvent(user.id, 'trial_blocked', { reason });
+      after(() => flushPostHog());
+      return NextResponse.json({ error: reason, upgrade_url: '/pricing', ...extra }, { status: 403 });
+    };
+
     if (!isPaying && !isOnboarding) {
-      // W3.2 #3: count ALL non-onboarding exams ever created — including
-      // abandoned ones. Previously abandoned sessions were excluded, so a free
-      // user could discard old exams to mint unlimited new ones.
+      // (a) 3-exam cap — counts ALL non-onboarding exams ever (incl. abandoned,
+      //     W3.2 #3, so discarding can't mint new slots). Checked FIRST.
       const { count, error: countError } = await serviceSupabase
         .from('exam_sessions')
         .select('id', { count: 'exact', head: true })
@@ -74,18 +85,34 @@ export async function POST(request: NextRequest) {
       }
 
       if ((count ?? 0) >= FREE_TRIAL_EXAM_LIMIT) {
-        return NextResponse.json(
-          { error: 'trial_limit_reached', limit: FREE_TRIAL_EXAM_LIMIT, upgrade_url: '/pricing' },
-          { status: 403 }
-        );
+        return blockTrial('trial_limit_reached', { limit: FREE_TRIAL_EXAM_LIMIT });
       }
-    }
 
-    // Set expiration for free-tier exams (onboarding exams don't expire)
-    if (!isPaying && !isOnboarding) {
-      const expiry = new Date();
-      expiry.setDate(expiry.getDate() + FREE_TRIAL_EXPIRY_DAYS);
-      expiresAt = expiry.toISOString();
+      // (b) Signup time + whether this account ever had a Stripe relationship.
+      const { data: trialProfile } = await serviceSupabase
+        .from('user_profiles')
+        .select('created_at, stripe_customer_id')
+        .eq('user_id', user.id)
+        .single();
+
+      // One trial per account: a churned / once-subscribed user does not get the
+      // free trial again — they resubscribe.
+      if (trialProfile?.stripe_customer_id) {
+        return blockTrial('resubscribe_required');
+      }
+
+      // 7-day window from signup. Fail OPEN if created_at is missing (the count
+      // cap still bounds abuse) so a brand-new user is never wrongly blocked.
+      const signupMs = trialProfile?.created_at ? new Date(trialProfile.created_at).getTime() : null;
+      if (signupMs !== null && Date.now() > signupMs + FREE_TRIAL_WINDOW_MS) {
+        return blockTrial('trial_expired', { windowDays: FREE_TRIAL_WINDOW_DAYS });
+      }
+
+      // Stamp expires_at = the trial window END (signup + 7d), so an exam started
+      // late in the window can't be answered past the trial boundary (enforced
+      // mid-exam in exam/route.ts; paid users excepted there).
+      const windowEndMs = signupMs !== null ? signupMs + FREE_TRIAL_WINDOW_MS : Date.now() + FREE_TRIAL_WINDOW_MS;
+      expiresAt = new Date(windowEndMs).toISOString();
     }
 
     // Use service role to insert — prevents RLS bypass of is_onboarding/expires_at fields

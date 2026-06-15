@@ -79,11 +79,14 @@ test.describe('Pricing Page — CTA Buttons', () => {
     await expect(pricingPage.annualCtaButton).toBeEnabled();
   });
 
-  test('CTA button text says Start Free Trial', async ({ page }) => {
+  test('CTA button text says Upgrade to Paid', async ({ page }) => {
+    // The Stripe trial was removed — checkout bills immediately, so the CTA no
+    // longer says "Start Free Trial". The free 7-day/3-exam trial is app-side,
+    // surfaced on the landing/signup flow, not the paid-plan CTA.
     const pricingPage = new PricingPage(page);
     await pricingPage.goto();
-    await expect(pricingPage.monthlyCtaButton).toContainText(/start free trial/i);
-    await expect(pricingPage.annualCtaButton).toContainText(/start free trial/i);
+    await expect(pricingPage.monthlyCtaButton).toContainText(/upgrade to paid/i);
+    await expect(pricingPage.annualCtaButton).toContainText(/upgrade to paid/i);
   });
 });
 

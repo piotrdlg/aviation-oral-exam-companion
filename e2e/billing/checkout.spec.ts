@@ -9,7 +9,8 @@ import { test, expect } from '@playwright/test';
  * - Post-checkout entitlement sync (?checkout=success on /practice)
  * - Tier upgrade verification after successful checkout
  * - Error handling when checkout fails
- * - 7-day trial period inclusion
+ * - Immediate-pay subscription: checkout creates an `active` sub with NO Stripe
+ *   trial (the 7-day / 3-exam trial is app-side and card-free, before checkout).
  */
 
 test.describe('Checkout — Stripe Session Creation', () => {
@@ -81,7 +82,7 @@ test.describe('Checkout — Post-Checkout Entitlement Sync', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ tier: 'dpe_live', status: 'trialing' }),
+        body: JSON.stringify({ tier: 'dpe_live', status: 'active' }),
       });
     });
 
@@ -96,7 +97,7 @@ test.describe('Checkout — Post-Checkout Entitlement Sync', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ tier: 'dpe_live', status: 'trialing' }),
+        body: JSON.stringify({ tier: 'dpe_live', status: 'active' }),
       });
     });
 
@@ -127,7 +128,8 @@ test.describe('Checkout — Post-Checkout Entitlement Sync', () => {
   });
 
   test('handles race condition: status API called before webhook', async ({ page }) => {
-    // First call returns free tier (webhook not yet processed)
+    // First call returns active tier (webhook not yet processed; status route
+    // reads Stripe directly — the sub is `active` from creation, no trial state)
     let callCount = 0;
     await page.route('**/api/stripe/status', async (route) => {
       callCount++;
@@ -136,7 +138,7 @@ test.describe('Checkout — Post-Checkout Entitlement Sync', () => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ tier: 'dpe_live', status: 'trialing' }),
+          body: JSON.stringify({ tier: 'dpe_live', status: 'active' }),
         });
       } else {
         await route.fulfill({

@@ -6,7 +6,7 @@ import { Logo } from '@/components/Brand';
 
 export const metadata: Metadata = {
   title: "Try HeyDPE Free — AI Checkride Oral Exam Practice",
-  description: "Practice your checkride oral with an AI DPE who actually listens. 3 free sessions, no credit card. Voice-first, ACS-scored.",
+  description: "Practice your checkride oral with an AI DPE who actually listens. 7-day free trial, 3 exams, no credit card. Voice-first, ACS-scored.",
   alternates: { canonical: 'https://heydpe.com/try' },
 };
 
@@ -41,7 +41,7 @@ export default function TryPage() {
               Let&apos;s talk — start free
             </Link>
             <p className="mt-3 text-xs text-c-muted">
-              3 free sessions. No credit card required.
+              7-day free trial — 3 exams. No credit card required.
             </p>
           </div>
 
@@ -260,7 +260,7 @@ export default function TryPage() {
             Your DPE is ready when you are
           </h2>
           <p className="s2 text-c-muted mb-8 max-w-lg mx-auto text-base">
-            3 free sessions. No credit card. Cancel anytime.
+            7-day free trial — 3 exams, no credit card. Cancel anytime.
           </p>
           <div className="s3 flex flex-col items-center">
             <Link
@@ -270,7 +270,7 @@ export default function TryPage() {
               Let&apos;s talk — start free
             </Link>
             <p className="mt-4 text-sm text-c-muted max-w-sm">
-              Less than 1 hour of flight time per month. $39/mo after free trial.
+              Less than 1 hour of flight time per month. $39/mo when you upgrade — billed immediately, cancel anytime.
             </p>
           </div>
         </div>

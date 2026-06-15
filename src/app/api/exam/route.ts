@@ -408,7 +408,9 @@ export async function POST(request: NextRequest) {
           { status: 409 }
         );
       }
-      if (sessionRow.expires_at && new Date(sessionRow.expires_at).getTime() < Date.now()) {
+      // Trial-window expiry only applies to free users. A user who upgraded to
+      // paid (tier 'dpe_live') after starting a trial exam keeps their session.
+      if (tier !== 'dpe_live' && sessionRow.expires_at && new Date(sessionRow.expires_at).getTime() < Date.now()) {
         return NextResponse.json(
           { error: 'session_expired', upgrade_url: '/pricing' },
           { status: 403 }

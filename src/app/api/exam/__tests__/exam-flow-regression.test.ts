@@ -405,7 +405,9 @@ describe('exam quota enforcement (W3.2)', () => {
     expect((await res.json()).error).toBe('session_not_active');
   });
 
-  it('rejects respond on an expired session (403)', async () => {
+  it('rejects respond on an expired session for a TRIAL user (403)', async () => {
+    // expiry only applies to non-paid users (the trial window stamp)
+    h.tier = 'checkride_prep';
     h.db.exam_sessions[0].expires_at = new Date(Date.now() - 86_400_000).toISOString();
     const res = await examPost(req({
       action: 'respond', sessionId: 'sess-1', sessionConfig: SESSION_CONFIG,
@@ -413,6 +415,23 @@ describe('exam quota enforcement (W3.2)', () => {
     }));
     expect(res.status).toBe(403);
     expect((await res.json()).error).toBe('session_expired');
+  });
+
+  it('a PAID user is NOT cut off by a stale trial expires_at (W1 H2a bypass)', async () => {
+    // A user who upgrades mid-exam keeps going even if the session carries a
+    // stale trial-window expires_at — dpe_live bypasses the expiry guard.
+    h.tier = 'dpe_live';
+    h.db.exam_sessions[0].expires_at = new Date(Date.now() - 86_400_000).toISOString();
+    const res = await examPost(req({
+      action: 'respond', sessionId: 'sess-1', sessionConfig: SESSION_CONFIG,
+      taskData: { id: 'PA.I.A' }, history: [{ role: 'examiner', text: 'q' }], studentAnswer: 'a', stream: false,
+    }));
+    // Not merely "not 403" — the respond must actually succeed and produce a turn,
+    // proving the paid user proceeds rather than failing for some other reason.
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.error).toBeUndefined();
+    expect(body.advance !== undefined || body.examinerText !== undefined || body.text !== undefined).toBe(true);
   });
 
   it('rejects respond when sessionId is missing (400)', async () => {

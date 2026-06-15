@@ -12,10 +12,14 @@ import { AdminUsersPage } from '../pages/AdminUsersPage';
  * - Audit log creation for admin actions
  */
 
+// tier is the STORED value; the admin UI renders a display LABEL via tier-labels.ts
+// (checkride_prep/ground_school → "Trial", dpe_live → "Paid", paid_equivalent
+// override → "Tester"). has_paid_override is computed server-side and surfaced here.
 const mockUsers = [
-  { id: 'user-1', email: 'alice@example.com', tier: 'dpe_live', account_status: 'active', auth_method: 'google', last_login_at: '2026-02-16T10:00:00Z', created_at: '2026-01-01T00:00:00Z' },
-  { id: 'user-2', email: 'bob@example.com', tier: 'ground_school', account_status: 'active', auth_method: 'email_otp', last_login_at: '2026-02-15T10:00:00Z', created_at: '2026-01-15T00:00:00Z' },
-  { id: 'user-3', email: 'charlie@example.com', tier: 'checkride_prep', account_status: 'suspended', auth_method: 'apple', last_login_at: '2026-02-10T10:00:00Z', created_at: '2026-02-01T00:00:00Z' },
+  { id: 'user-1', email: 'alice@example.com', tier: 'dpe_live', has_paid_override: false, account_status: 'active', auth_method: 'google', last_login_at: '2026-02-16T10:00:00Z', created_at: '2026-01-01T00:00:00Z' },
+  { id: 'user-2', email: 'bob@example.com', tier: 'ground_school', has_paid_override: false, account_status: 'active', auth_method: 'email_otp', last_login_at: '2026-02-15T10:00:00Z', created_at: '2026-01-15T00:00:00Z' },
+  { id: 'user-3', email: 'charlie@example.com', tier: 'checkride_prep', has_paid_override: false, account_status: 'suspended', auth_method: 'apple', last_login_at: '2026-02-10T10:00:00Z', created_at: '2026-02-01T00:00:00Z' },
+  { id: 'user-4', email: 'dana@example.com', tier: 'checkride_prep', has_paid_override: true, account_status: 'active', auth_method: 'google', last_login_at: '2026-02-12T10:00:00Z', created_at: '2026-02-05T00:00:00Z' },
 ];
 
 test.describe('Admin Users — User List', () => {
@@ -41,7 +45,7 @@ test.describe('Admin Users — User List', () => {
 
   test('displays user list with all users', async () => {
     await expect(usersPage.userTable).toBeVisible();
-    await usersPage.expectUserCount(3);
+    await usersPage.expectUserCount(4);
   });
 
   test('search filters users by email', async () => {
@@ -54,10 +58,17 @@ test.describe('Admin Users — User List', () => {
     await usersPage.expectUserCount(0);
   });
 
-  test('user rows display email, tier, and status', async () => {
+  test('user rows display email and the human tier LABEL (not the raw enum)', async ({ page }) => {
     const firstRow = usersPage.userRows.first();
     await expect(firstRow).toContainText('alice@example.com');
-    await expect(firstRow).toContainText(/dpe_live|DPE Live/i);
+    // alice is stored dpe_live → rendered "Paid"; the raw enum must NOT leak
+    await expect(firstRow).toContainText(/Paid/);
+    await expect(firstRow).not.toContainText(/dpe_live/);
+    // a stored checkride_prep/ground_school user renders "Trial"
+    await expect(usersPage.userTable).toContainText(/Trial/);
+    // a paid_equivalent override renders the "Tester" badge (dana)
+    await expect(usersPage.userTable).toContainText(/Tester/);
+    await expect(page.getByText('checkride_prep')).toHaveCount(0);
   });
 
   test('clicking user row navigates to user detail', async ({ page }) => {
@@ -107,8 +118,10 @@ test.describe('Admin Users — User Detail', () => {
     await usersPage.expectUserStatus('active');
   });
 
-  test('displays user tier and auth method', async () => {
-    await expect(usersPage.userTier).toContainText(/dpe_live/i);
+  test('displays user tier LABEL and auth method', async () => {
+    // alice is stored dpe_live → the detail header renders "Paid", not the enum
+    await expect(usersPage.userTier).toContainText(/Paid/);
+    await expect(usersPage.userTier).not.toContainText(/dpe_live/);
     await expect(usersPage.userAuthMethod).toContainText(/google/i);
   });
 

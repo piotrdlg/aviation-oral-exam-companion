@@ -19,8 +19,8 @@ export function SubscriptionConfirmedEmail({
       <Text style={heading}>Your subscription is active</Text>
 
       <Text style={paragraph}>
-        You now have unlimited access to HeyDPE. Your AI-powered DPE is ready
-        whenever you are.
+        Your payment went through and you now have unlimited access to HeyDPE.
+        Your AI-powered DPE is ready whenever you are.
       </Text>
 
       <Text style={planBox}>
