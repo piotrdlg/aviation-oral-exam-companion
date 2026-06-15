@@ -172,7 +172,10 @@ Only 9 of 12 ACS areas are used for oral exam simulation. Areas IV (Takeoffs/Lan
 The free tier is a genuine **card-free trial: 7 days AND 3 exams** (whichever first), clock from
 signup (`user_profiles.created_at`), enforced **app-side** in `POST /api/session` create — 403 reason
 codes `trial_limit_reached` (count, checked first), `trial_expired` (window), `resubscribe_required`
-(churned payer), all routed to the upgrade modal. There is **no Stripe trial**: checkout bills the
+(genuinely churned — real `subscription_status` or legacy `has_trialed`, **not** a bare
+`stripe_customer_id` which is written pre-payment), all routed to the upgrade modal. A live
+`stripe_subscription_id` is treated as paying even past a stale tier cache. There is **no Stripe
+trial**: checkout bills the
 first month/year immediately (`stripe/checkout/route.ts` sends no `trial_period_days`). Canceling
 keeps full access until period end (monthly or annual) via the existing `cancel_at_period_end` →
 `status:'active'` → `dpe_live` path. Human labels **Trial / Paid / Tester** are a **display-only**

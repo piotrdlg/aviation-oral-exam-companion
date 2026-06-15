@@ -25,8 +25,12 @@ The pricing page promised a **"7-day free trial — no credit card required,"** 
 
 ### Supporting rules
 
-- **One trial per account** — a user who has ever subscribed (`stripe_customer_id` present) does
-  **not** get the free trial again → `resubscribe_required` ("Resubscribe to continue").
+- **One trial per account** — a user who has genuinely subscribed does **not** get the free trial
+  again → `resubscribe_required` ("Resubscribe to continue"). The churned signal is a real
+  subscription status (`subscription_status` ∈ {`canceled`,`unpaid`,`past_due`}) or the legacy
+  `has_trialed` flag — **never** a bare `stripe_customer_id` (that column is written at checkout
+  *initiation*, before payment, so an abandoned checkout must not count). A live subscription
+  (`stripe_subscription_id` set) is treated as paying even if the tier cache is briefly stale.
 - **Enforced immediately for everyone** on deploy — no feature flag. Existing free users past 7 days
   are paywalled on first create after deploy (intentional).
 - **Cancel keeps full access until period end (monthly OR annual)** — a `cancel_at_period_end`
@@ -41,7 +45,7 @@ The pricing page promised a **"7-day free trial — no credit card required,"** 
 |--------|---------|--------------------|
 | `trial_limit_reached` | 3-exam cap (checked **first**) | "Free exams used" |
 | `trial_expired` | 7-day window elapsed, never subscribed | "Trial ended" |
-| `resubscribe_required` | `stripe_customer_id` present (churned payer) | "Subscription ended" |
+| `resubscribe_required` | genuinely churned (`subscription_status` canceled/unpaid/past_due, or `has_trialed`), no live sub | "Subscription ended" |
 
 All three route through the existing upgrade **modal** (`quotaModalCopy` in `practice/page.tsx`), not
 the inline banner. Mid-exam expiry keeps emitting `session_expired`. The mid-exam expiry check in
@@ -50,8 +54,9 @@ a stale trial `expires_at`.
 
 ## What changed
 
-- `src/app/api/session/route.ts` — lazy profile fetch (`created_at, stripe_customer_id`) **after** the
-  count cap; window + churned-payer gates; `expires_at = signup + 7d`; `trial_blocked` server analytics.
+- `src/app/api/session/route.ts` — lazy profile fetch (`created_at, has_trialed, subscription_status,
+  stripe_subscription_id`) **after** the count cap; live-sub read-through (paid bypass past a stale
+  cache), real churned-payer gate, window gate; `expires_at = signup + 7d`; `trial_blocked` analytics.
 - `src/app/api/exam/route.ts` — paid bypass on the mid-exam `expires_at` check.
 - `src/app/api/stripe/checkout/route.ts` — removed `trial_period_days` + `has_trialed` read;
   unconditional "Subscribe to HeyDPE…" submit copy.
