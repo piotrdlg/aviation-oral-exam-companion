@@ -23,9 +23,9 @@ const KILL_SWITCH_GROUPS = {
     { key: 'kill_switch.deepgram', label: 'Deepgram', description: 'Disables Deepgram STT' },
   ],
   tiers: [
-    { key: 'kill_switch.tier.ground_school', label: 'Ground School', description: 'Free tier' },
-    { key: 'kill_switch.tier.checkride_prep', label: 'Checkride Prep', description: 'Mid tier' },
-    { key: 'kill_switch.tier.dpe_live', label: 'DPE Live', description: 'Premium tier' },
+    { key: 'kill_switch.tier.ground_school', label: 'Trial (legacy)', description: 'Dead legacy free tier' },
+    { key: 'kill_switch.tier.checkride_prep', label: 'Trial', description: 'Free trial tier' },
+    { key: 'kill_switch.tier.dpe_live', label: 'Paid', description: 'Paid subscription tier' },
   ],
 };
 

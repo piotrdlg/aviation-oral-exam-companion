@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import type { VoiceTier, AccountStatus } from '@/types/database';
+import { TIER_LABEL, tierBand, tierDisplay, type TierBand } from '@/lib/tier-labels';
 
 interface UserRow {
   id: string;
@@ -14,6 +15,7 @@ interface UserRow {
   created_at: string;
   session_count: number;
   total_exchanges: number;
+  has_paid_override?: boolean;
 }
 
 interface UsersResponse {
@@ -23,23 +25,20 @@ interface UsersResponse {
   pageSize: number;
 }
 
-const TIER_LABELS: Record<VoiceTier, string> = {
-  ground_school: 'Ground School',
-  checkride_prep: 'Checkride Prep',
-  dpe_live: 'DPE Live',
-};
-
 const PAGE_SIZE = 25;
 
-function TierBadge({ tier }: { tier: VoiceTier }) {
-  const styles: Record<VoiceTier, string> = {
-    ground_school: 'bg-c-elevated text-c-muted border-c-border',
-    checkride_prep: 'bg-c-amber-lo text-c-amber border-c-amber/20',
-    dpe_live: 'bg-c-green-lo text-c-green border-c-green/20',
-  };
+// Badge colours keyed off the display band (Trial/Paid/Tester), not raw tiers.
+const BAND_STYLE: Record<TierBand, string> = {
+  trial: 'bg-c-amber-lo text-c-amber border-c-amber/20',
+  paid: 'bg-c-green-lo text-c-green border-c-green/20',
+  tester: 'bg-c-cyan-lo text-c-cyan border-c-cyan/20',
+};
+
+function TierBadge({ tier, hasPaidOverride = false }: { tier: VoiceTier; hasPaidOverride?: boolean }) {
+  const band = tierBand(tier, hasPaidOverride);
   return (
-    <span className={`font-mono text-[10px] px-2 py-0.5 rounded border uppercase ${styles[tier]}`}>
-      {TIER_LABELS[tier]}
+    <span className={`font-mono text-[10px] px-2 py-0.5 rounded border uppercase ${BAND_STYLE[band]}`}>
+      {tierDisplay(tier, hasPaidOverride)}
     </span>
   );
 }
@@ -105,11 +104,12 @@ export default function UsersPage() {
 
   const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 0;
 
+  // Filter by stored tier value; labels are the display names. ground_school is a
+  // dead legacy value (0 live users) so it's dropped from the filter.
   const tierOptions: { value: VoiceTier | 'all'; label: string }[] = [
     { value: 'all', label: 'All Tiers' },
-    { value: 'ground_school', label: 'Ground School' },
-    { value: 'checkride_prep', label: 'Checkride Prep' },
-    { value: 'dpe_live', label: 'DPE Live' },
+    { value: 'checkride_prep', label: TIER_LABEL.checkride_prep },
+    { value: 'dpe_live', label: TIER_LABEL.dpe_live },
   ];
 
   const statusOptions: { value: AccountStatus | 'all'; label: string }[] = [
@@ -250,7 +250,7 @@ export default function UsersPage() {
                     </Link>
                   </td>
                   <td className="px-4 py-3">
-                    <TierBadge tier={user.tier} />
+                    <TierBadge tier={user.tier} hasPaidOverride={user.has_paid_override} />
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={user.account_status} />

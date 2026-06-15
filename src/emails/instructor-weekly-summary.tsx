@@ -205,7 +205,7 @@ export function InstructorWeeklySummaryEmail(props: InstructorWeeklySummaryProps
           <Hr style={sectionDivider} />
 
           <Text style={disclaimerText}>
-            Courtesy access (Checkride Prep tier) is automatically granted when at least one of
+            Courtesy access (Trial tier) is automatically granted when at least one of
             your connected students has an active paid subscription.
           </Text>
         </>

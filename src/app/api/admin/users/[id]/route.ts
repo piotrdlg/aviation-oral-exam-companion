@@ -22,6 +22,7 @@ export async function GET(
       elementScoresResult,
       usageSummaryResult,
       adminNotesResult,
+      overrideResult,
     ] = await Promise.all([
       // User profile
       serviceSupabase
@@ -67,6 +68,15 @@ export async function GET(
         .select('*')
         .eq('target_user_id', userId)
         .order('created_at', { ascending: false }),
+
+      // Active paid_equivalent override ("Tester" courtesy access)
+      serviceSupabase
+        .from('user_entitlement_overrides')
+        .select('active, expires_at')
+        .eq('user_id', userId)
+        .eq('entitlement_key', 'paid_equivalent')
+        .eq('active', true)
+        .maybeSingle(),
     ]);
 
     if (profileResult.error || !profileResult.data) {
@@ -146,6 +156,9 @@ export async function GET(
     // Build user object matching frontend's UserDetail interface
     const profile = profileResult.data;
     const authUser = authUserResult.data?.user;
+    const override = overrideResult.data;
+    const hasPaidOverride =
+      !!override && (!override.expires_at || new Date(override.expires_at as string).getTime() > Date.now());
     const user_detail = {
       id: profile.user_id,
       email: authUser?.email || 'unknown',
@@ -157,6 +170,7 @@ export async function GET(
       last_login_at: profile.last_login_at || null,
       created_at: profile.created_at,
       stripe_customer_id: profile.stripe_customer_id || null,
+      has_paid_override: hasPaidOverride,
     };
 
     // Build sessions matching frontend's UserSession interface

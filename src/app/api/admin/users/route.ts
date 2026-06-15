@@ -103,6 +103,23 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Active paid_equivalent overrides ("Tester" courtesy access) for these users.
+    const overrideUserIds = new Set<string>();
+    if (userIds.length > 0) {
+      const { data: overrides } = await serviceSupabase
+        .from('user_entitlement_overrides')
+        .select('user_id, expires_at')
+        .in('user_id', userIds)
+        .eq('entitlement_key', 'paid_equivalent')
+        .eq('active', true);
+      const now = Date.now();
+      for (const o of overrides || []) {
+        if (!o.expires_at || new Date(o.expires_at as string).getTime() > now) {
+          overrideUserIds.add(o.user_id as string);
+        }
+      }
+    }
+
     const users = (profiles || []).map((profile) => ({
       id: profile.user_id as string,
       email: emailMap.get(profile.user_id as string) || 'unknown',
@@ -113,6 +130,7 @@ export async function GET(request: NextRequest) {
       created_at: profile.created_at as string,
       session_count: sessionCounts[profile.user_id as string]?.count ?? 0,
       total_exchanges: sessionCounts[profile.user_id as string]?.exchanges ?? 0,
+      has_paid_override: overrideUserIds.has(profile.user_id as string),
     }));
 
     return NextResponse.json({
