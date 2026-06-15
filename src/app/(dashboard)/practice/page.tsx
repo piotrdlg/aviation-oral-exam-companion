@@ -658,9 +658,13 @@ export default function PracticePage() {
     }
   }, [voice, flushReveal]);
 
-  async function startSession(configData: SessionConfigData) {
-    // W6.5: the FAA disclaimer must be acknowledged once before the first exam
-    if (!disclaimerAcknowledged) {
+  async function startSession(configData: SessionConfigData, disclaimerOverride = false) {
+    // W6.5: the FAA disclaimer must be acknowledged once before the first exam.
+    // `disclaimerOverride` lets the acknowledgement handler start immediately —
+    // it has just called setDisclaimerAcknowledged(true), but that state isn't
+    // visible to this closure yet, so relying on `disclaimerAcknowledged` here
+    // would bounce the user straight back into the modal (stale-closure bug).
+    if (!disclaimerAcknowledged && !disclaimerOverride) {
       setPendingStartConfig(configData);
       setShowDisclaimerModal(true);
       return;
@@ -2188,9 +2192,9 @@ export default function PracticePage() {
           </>
         )}
 
-        {/* Quota exceeded modal (Task 34) */}
+        {/* First-exam FAA disclaimer modal (W6.5) — gated by disclaimerAcknowledged */}
         {showDisclaimerModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
+          <div data-testid="disclaimer-modal" className="fixed inset-0 z-50 flex items-center justify-center bg-c-bg/80 backdrop-blur-sm">
             <div className="bezel rounded-lg border border-c-amber/40 p-6 max-w-lg mx-4 shadow-2xl">
               <h2 className="font-bold text-xl text-c-text mb-3 tracking-tight">Before your first exam</h2>
               <ul className="text-sm text-c-text/85 leading-relaxed space-y-2 mb-5 list-disc pl-5">
@@ -2200,7 +2204,14 @@ export default function PracticePage() {
               </ul>
               <div className="flex gap-3">
                 <button
+                  data-testid="disclaimer-begin-button"
                   onClick={async () => {
+                    if (disclaimerSaving) return;
+                    const cfg = pendingStartConfig;
+                    // Unlock audio SYNCHRONOUSLY in this gesture, before the await —
+                    // otherwise the post-await startSession can't satisfy Safari/iOS
+                    // autoplay. warmUpAudio is idempotent.
+                    if (cfg?.voiceEnabled) warmUpAudio();
                     setDisclaimerSaving(true);
                     try {
                       await fetch('/api/consent', {
@@ -2212,11 +2223,11 @@ export default function PracticePage() {
                     setDisclaimerAcknowledged(true);
                     setShowDisclaimerModal(false);
                     setDisclaimerSaving(false);
-                    if (pendingStartConfig) {
-                      const cfg = pendingStartConfig;
-                      setPendingStartConfig(null);
-                      void startSession(cfg);
-                    }
+                    setPendingStartConfig(null);
+                    // Pass disclaimerOverride=true: the acknowledged state we just set
+                    // isn't visible to startSession's closure yet, so without this the
+                    // guard would re-open the modal (the "one click does nothing" bug).
+                    if (cfg) void startSession(cfg, true);
                   }}
                   disabled={disclaimerSaving}
                   className="flex-1 py-2.5 min-h-11 bg-c-amber hover:bg-c-amber-bright disabled:opacity-50 text-c-bg rounded-lg font-semibold text-[15px] text-center transition-colors"

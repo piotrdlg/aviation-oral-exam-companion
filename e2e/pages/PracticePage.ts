@@ -51,6 +51,10 @@ export class PracticePage {
   readonly reportSubmitButton: Locator;
   readonly reportTypeSelect: Locator;
 
+  // First-exam FAA disclaimer
+  readonly disclaimerModal: Locator;
+  readonly disclaimerBeginButton: Locator;
+
   // Upgrade prompts
   readonly upgradeModal: Locator;
   readonly upgradeBanner: Locator;
@@ -117,6 +121,10 @@ export class PracticePage {
     this.reportCommentInput = page.getByTestId('report-comment');
     this.reportSubmitButton = page.getByTestId('report-submit');
     this.reportTypeSelect = page.getByTestId('report-type-select');
+
+    // First-exam FAA disclaimer
+    this.disclaimerModal = page.getByTestId('disclaimer-modal');
+    this.disclaimerBeginButton = page.getByTestId('disclaimer-begin-button');
 
     // Upgrade
     this.upgradeModal = page.getByTestId('upgrade-modal');
