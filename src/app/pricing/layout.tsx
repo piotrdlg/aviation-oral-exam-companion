@@ -3,7 +3,7 @@ import JsonLd from '@/components/JsonLd';
 
 export const metadata: Metadata = {
   title: "Pricing — HeyDPE | $39/mo Unlimited Practice",
-  description: "Unlimited AI oral exam sessions for $39/month or $299/year. PPL, CPL, and IR. 3 free sessions, no credit card.",
+  description: "Unlimited AI oral exam sessions for $39/month or $299/year. PPL, CPL, and IR. 7-day free trial with 3 exams — no credit card required.",
   alternates: { canonical: 'https://heydpe.com/pricing' },
 };
 
@@ -19,7 +19,7 @@ export default function PricingLayout({ children }: { children: React.ReactNode 
             "name": "Is there a free trial?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes! Both plans include a 7-day free trial. You won't be charged until the trial ends, and you can cancel anytime before that. No credit card tricks — we'll remind you before your trial expires."
+              "text": "Yes — and it's genuinely free. Every new account gets a 7-day free trial with 3 full practice exams, no credit card required. The free trial and the free tier are the same thing: full voice mode, AI assessment, and progress tracking, with nothing to enter up front. Upgrade to a paid plan whenever you want unlimited exams."
             }
           },
           {
@@ -43,15 +43,15 @@ export default function PricingLayout({ children }: { children: React.ReactNode 
             "name": "How does voice mode work?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Voice mode lets you speak your answers naturally, just like a real oral exam. The AI examiner responds with a realistic DPE voice. Works in Chrome with the Web Speech API, and all paid tiers include cross-browser TTS support."
+              "text": "Voice mode lets you speak your answers naturally, just like a real oral exam. The AI examiner responds with a realistic DPE voice. It works across modern browsers (Chrome, Safari, Edge, Firefox) on desktop and tablet — voice is included on every plan, including the free trial."
             }
           },
           {
             "@type": "Question",
-            "name": "Is there a free tier?",
+            "name": "Do I get another free trial when I subscribe?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes. New accounts get limited free sessions to explore the platform — no credit card required. Upgrade when you're ready for unlimited practice."
+              "text": "No — the free trial happens up front, before you ever enter a card. When you upgrade to a paid plan, your first month (or year) is billed immediately and your access continues uninterrupted. You can cancel anytime from Settings."
             }
           },
           {
