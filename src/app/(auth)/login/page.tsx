@@ -118,6 +118,12 @@ function LoginForm() {
       provider,
       options: {
         redirectTo: callbackUrl,
+        // Azure/Microsoft returns no email under its default bare `openid` scope,
+        // which makes Supabase fail the callback with "Error getting user email
+        // from external provider". Request email explicitly. (Google/Apple already
+        // include email in their default scopes; Apple uses `name email`, so we
+        // only override for azure.)
+        ...(provider === 'azure' ? { scopes: 'openid email profile' } : {}),
       },
     });
 
