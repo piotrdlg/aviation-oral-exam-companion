@@ -241,23 +241,79 @@ describe('create — trial limits', () => {
 describe('create — trial window + resubscribe', () => {
   const recent = () => new Date().toISOString();
   const longAgo = () => new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString();
+  // A brand-new / never-subscribed account: subscription_status DEFAULTS to
+  // 'active' in the DB (migration 20260214000008), and there is NO live
+  // subscription id. This shape must NEVER be treated as churned/paid.
+  const neverSubscribed = (created_at: string | null) => ({
+    created_at,
+    subscription_status: 'active',
+    stripe_subscription_id: null,
+    has_trialed: false,
+  });
 
   it('blocks a free user past the 7-day window → trial_expired', async () => {
     mocks.serviceFrom
       .mockReturnValueOnce(q({ count: 1 })) // under the 3-exam cap
-      .mockReturnValueOnce(q({ data: { created_at: longAgo(), stripe_customer_id: null } }));
+      .mockReturnValueOnce(q({ data: neverSubscribed(longAgo()) }));
     const res = await POST(postReq({ action: 'create' }));
     expect(res.status).toBe(403);
     expect((await res.json()).error).toBe('trial_expired');
   });
 
-  it('blocks a churned / once-subscribed user → resubscribe_required', async () => {
+  it('blocks a churned (canceled) user → resubscribe_required', async () => {
     mocks.serviceFrom
       .mockReturnValueOnce(q({ count: 0 }))
-      .mockReturnValueOnce(q({ data: { created_at: recent(), stripe_customer_id: 'cus_123' } }));
+      .mockReturnValueOnce(q({ data: { created_at: recent(), subscription_status: 'canceled', stripe_subscription_id: null, has_trialed: false } }));
     const res = await POST(postReq({ action: 'create' }));
     expect(res.status).toBe(403);
     expect((await res.json()).error).toBe('resubscribe_required');
+  });
+
+  it('blocks a legacy Stripe-trial cohort (has_trialed) → resubscribe_required', async () => {
+    mocks.serviceFrom
+      .mockReturnValueOnce(q({ count: 0 }))
+      .mockReturnValueOnce(q({ data: { created_at: recent(), subscription_status: 'active', stripe_subscription_id: null, has_trialed: true } }));
+    const res = await POST(postReq({ action: 'create' }));
+    expect(res.status).toBe(403);
+    expect((await res.json()).error).toBe('resubscribe_required');
+  });
+
+  it('resubscribe_required wins over the window when a churned user is also past 7 days', async () => {
+    mocks.serviceFrom
+      .mockReturnValueOnce(q({ count: 0 }))
+      .mockReturnValueOnce(q({ data: { created_at: longAgo(), subscription_status: 'canceled', stripe_subscription_id: null, has_trialed: false } }));
+    const res = await POST(postReq({ action: 'create' }));
+    expect(res.status).toBe(403);
+    expect((await res.json()).error).toBe('resubscribe_required');
+  });
+
+  // REGRESSION (critical): a Stripe customer id is written at checkout INITIATION
+  // before payment, so a trial user who clicks Upgrade and ABANDONS Stripe checkout
+  // must NOT be locked out. The gate keys on real subscription signals, not on the
+  // bare customer id — so the default-'active'/no-sub-id shape is allowed.
+  it('does NOT lock out an abandoned-checkout user (no live sub, default active)', async () => {
+    mocks.serviceFrom
+      .mockReturnValueOnce(q({ count: 2 })) // used 2 of 3, still under cap
+      .mockReturnValueOnce(q({ data: neverSubscribed(recent()) }))
+      .mockReturnValueOnce(q({ data: { id: 'sw-abandon' } }));
+    const res = await POST(postReq({ action: 'create' }));
+    expect(res.status).toBe(200);
+  });
+
+  // REGRESSION (high): a freshly-upgraded user whose tier cache is stale
+  // (getUserTier still says checkride_prep) is rescued by the read-through live
+  // subscription check — even past the window — and is not blocked.
+  it('a live stripe_subscription_id bypasses the window despite a stale tier cache', async () => {
+    mocks.getUserTier.mockResolvedValue('checkride_prep'); // stale: real tier is dpe_live
+    const insertQ = q({ data: { id: 'sw-live' } });
+    mocks.serviceFrom
+      .mockReturnValueOnce(q({ count: 1 }))
+      .mockReturnValueOnce(q({ data: { created_at: longAgo(), subscription_status: 'active', stripe_subscription_id: 'sub_live_123', has_trialed: false } }))
+      .mockReturnValueOnce(insertQ);
+    const res = await POST(postReq({ action: 'create' }));
+    expect(res.status).toBe(200);
+    // treated as paying → no trial-window stamp
+    expect((insertQ.insert.mock.calls[0][0] as { expires_at: string | null }).expires_at).toBeNull();
   });
 
   it('the 3-exam cap is checked first (count wins, no profile fetch)', async () => {
@@ -271,17 +327,35 @@ describe('create — trial window + resubscribe', () => {
   it('allows a free user inside the window with no prior subscription', async () => {
     mocks.serviceFrom
       .mockReturnValueOnce(q({ count: 1 }))
-      .mockReturnValueOnce(q({ data: { created_at: recent(), stripe_customer_id: null } }))
+      .mockReturnValueOnce(q({ data: neverSubscribed(recent()) }))
       .mockReturnValueOnce(q({ data: { id: 'sw1' } }));
     const res = await POST(postReq({ action: 'create' }));
     expect(res.status).toBe(200);
+  });
+
+  // Boundary: the window uses a strict `>` so a user at exactly the edge is still in.
+  it('allows just INSIDE the 7-day window and blocks just OUTSIDE it', async () => {
+    const justInside = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000) + 60_000).toISOString();
+    mocks.serviceFrom
+      .mockReturnValueOnce(q({ count: 0 }))
+      .mockReturnValueOnce(q({ data: neverSubscribed(justInside) }))
+      .mockReturnValueOnce(q({ data: { id: 'sw-edge-in' } }));
+    expect((await POST(postReq({ action: 'create' }))).status).toBe(200);
+
+    const justOutside = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000) - 60_000).toISOString();
+    mocks.serviceFrom
+      .mockReturnValueOnce(q({ count: 0 }))
+      .mockReturnValueOnce(q({ data: neverSubscribed(justOutside) }));
+    const res = await POST(postReq({ action: 'create' }));
+    expect(res.status).toBe(403);
+    expect((await res.json()).error).toBe('trial_expired');
   });
 
   it('fails OPEN on missing created_at (count cap still applies)', async () => {
     const insertQ = q({ data: { id: 'sw2' } });
     mocks.serviceFrom
       .mockReturnValueOnce(q({ count: 1 }))
-      .mockReturnValueOnce(q({ data: { created_at: null, stripe_customer_id: null } }))
+      .mockReturnValueOnce(q({ data: neverSubscribed(null) }))
       .mockReturnValueOnce(insertQ);
     const before = Date.now();
     const res = await POST(postReq({ action: 'create' }));
