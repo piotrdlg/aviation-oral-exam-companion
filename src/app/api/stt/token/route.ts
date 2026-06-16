@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { after } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
+import { getAuthedUser } from '@/lib/supabase/auth';
 import { getUserTier } from '@/lib/voice/tier-lookup';
 import { getSystemConfig } from '@/lib/system-config';
 import { checkKillSwitch } from '@/lib/kill-switch';
@@ -9,7 +9,7 @@ import { requireSafeDbTarget } from '@/lib/app-env';
 import { captureServerEvent, flushPostHog } from '@/lib/posthog-server';
 import { checkQuota } from '@/lib/voice/usage';
 import { isQuotaEnforced } from '@/lib/voice/quota-flags';
-import { appendKeytermParams } from '@/lib/voice/aviation-keyterms';
+import { buildListenUrl, ENCODING_ALLOW, UnsupportedEncodingError } from './listen-url';
 
 const serviceSupabase = createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -26,14 +26,25 @@ const TOKEN_TTL_SECONDS = 600; // 10 minutes — enough for a full exam session
  * W3.2 / D1: voice is universal — available on every tier, bounded by the
  * monthly STT-seconds budget (free tier ~70 min) rather than feature-gated.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   after(() => flushPostHog());
 
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    const authed = await getAuthedUser(request);
+    if (!authed) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const { user } = authed;
+
+    // Native raw-PCM capture passes an explicit codec; validate against the
+    // allowlist BEFORE spending a Deepgram token grant. Web sends no `encoding`.
+    const reqEncoding = request.nextUrl.searchParams.get('encoding');
+    const reqRate = request.nextUrl.searchParams.get('sample_rate');
+    if (reqEncoding !== null && !ENCODING_ALLOW.has(reqEncoding)) {
+      return NextResponse.json(
+        { error: 'unsupported_encoding', allowed: [...ENCODING_ALLOW] },
+        { status: 400 }
+      );
     }
 
     // Verify tier + load config in parallel
@@ -141,30 +152,25 @@ export async function GET() {
     // containers directly, so the client capture path is unchanged.
     const fluxEnabled = (config['stt.flux_pilot'] as { enabled?: boolean } | undefined)?.enabled === true;
 
+    // URL building (Nova-3/Flux params + aviation keyterms + the linear16/16k
+    // raw-PCM passthrough) is extracted to the pure, unit-tested buildListenUrl().
+    // Web passes no `encoding` → container auto-detect URL, byte-identical to before.
     let wsUrl: string;
     let keytermCount = 0;
-    if (fluxEnabled) {
-      const params = new URLSearchParams({
-        model: 'flux-general-en',
-        eot_threshold: '0.7',
+    try {
+      const built = buildListenUrl({
+        flux: fluxEnabled,
+        keytermsConfig: config['stt.keyterms'],
+        encoding: reqEncoding,
+        sampleRate: reqRate,
       });
-      keytermCount = appendKeytermParams(params, config['stt.keyterms']).length;
-      wsUrl = 'wss://api.deepgram.com/v2/listen?' + params.toString();
-    } else {
-      // Nova-3 (default). History: the NOVA-2-era `keywords=` param (30
-      // repeats) broke the WS handshake — removed after a GPT-5.2/Gemini
-      // consensus. Nova-3's `keyterm=` is its replacement (W4.3) and the
-      // handshake was live-verified with the full list before shipping.
-      const params = new URLSearchParams({
-        model: 'nova-3',
-        language: 'en-US',
-        smart_format: 'true',
-        interim_results: 'true',
-        utterance_end_ms: '1500',
-        vad_events: 'true',
-      });
-      keytermCount = appendKeytermParams(params, config['stt.keyterms']).length;
-      wsUrl = 'wss://api.deepgram.com/v1/listen?' + params.toString();
+      wsUrl = built.url;
+      keytermCount = built.keytermCount;
+    } catch (e) {
+      if (e instanceof UnsupportedEncodingError) {
+        return NextResponse.json({ error: 'unsupported_encoding', allowed: e.allowed }, { status: 400 });
+      }
+      throw e;
     }
 
     // Log token issuance (non-blocking)
