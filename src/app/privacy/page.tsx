@@ -173,8 +173,8 @@ export default function PrivacyPolicyPage() {
                 AI-powered exam simulations, tracking your progress, and personalizing your experience.
               </li>
               <li>
-                <strong className="text-c-text">Process payments</strong> — managing subscriptions,
-                billing, and refunds through Stripe.
+                <strong className="text-c-text">Process payments</strong> — managing subscriptions
+                and billing through Stripe.
               </li>
               <li>
                 <strong className="text-c-text">Analytics and improvement</strong> — understanding how

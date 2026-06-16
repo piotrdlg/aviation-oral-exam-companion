@@ -180,16 +180,33 @@ export default function TermsOfServicePage() {
           {/* 5. Refund Policy */}
           <section className="mb-12">
             <h2 className="font-bold text-xl sm:text-2xl text-c-text tracking-tight mb-4">
-              5. Refund policy
+              5. Refunds
             </h2>
+            {/* LAWYER REVIEW: this is a blanket "all sales final / non-refundable" policy. Some
+                jurisdictions (e.g., EU/UK consumer-withdrawal law and certain US states) grant
+                statutory cancellation or refund rights that can override this clause — confirm the
+                "except where required by applicable law" carve-out is sufficient for our markets.
+                Note also that the Apple App Store, Google Play, and card-network chargebacks can
+                issue refunds outside our control regardless of this policy. */}
             <div className="bezel rounded-lg p-5 border border-c-border">
+              <p className="text-sm text-c-muted leading-relaxed mb-3">
+                All fees are <strong className="text-c-text">non-refundable</strong>. Except where a
+                refund is required by applicable law, we do not provide refunds or credits for
+                subscription fees, already-paid billing periods, partial periods, or unused time —
+                all sales are final.
+              </p>
+              <p className="text-sm text-c-muted leading-relaxed mb-3">
+                Because every account includes a free trial before any payment, we encourage you to
+                use the trial to decide whether HeyDPE is right for you. You may{' '}
+                <strong className="text-c-text">cancel at any time</strong> from your account
+                settings; you will keep access to paid features until the end of your current billing
+                period, after which your subscription will not renew and you will not be charged
+                again.
+              </p>
               <p className="text-sm text-c-muted leading-relaxed">
-                We offer a <strong className="text-c-green">full refund within 7 days</strong> of your
-                first payment, no questions asked. To request a refund, contact us at{' '}
-                <a href="mailto:pd@imagineflying.com" className="text-c-cyan-readable hover:text-c-cyan transition-colors underline underline-offset-2">
-                  pd@imagineflying.com
-                </a>{' '}
-                with your account email and we will process your refund promptly.
+                If you purchase a subscription through a third-party platform (such as the Apple App
+                Store or Google Play), that platform&apos;s refund policies and processes apply and
+                are outside our control.
               </p>
             </div>
           </section>
