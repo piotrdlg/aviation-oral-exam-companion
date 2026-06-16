@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
 import { checkRateLimit, getRateLimitConfig } from '@/lib/rate-limit';
+import { deriveRateIdentifier } from '@/lib/rate-identity';
 
 export async function middleware(request: NextRequest) {
   // E2E test bypass: skip Supabase auth so Playwright can mock APIs client-side.
@@ -25,31 +26,12 @@ export async function middleware(request: NextRequest) {
           || request.headers.get('x-real-ip')
           || 'unknown';
       } else {
-        // For per-user limits, extract user ID from Supabase auth cookie.
-        // We parse the cookie directly to avoid a full Supabase client instantiation
-        // in the hot path. If no auth cookie, fall back to IP-based limiting.
-        const authCookie = request.cookies.getAll().find(c => c.name.includes('auth-token'));
-        if (authCookie?.value) {
-          try {
-            // The Supabase auth cookie contains a base64-encoded JWT.
-            // Extract the `sub` (user ID) from the JWT payload without full verification
-            // (verification happens later in the route handler).
-            const parts = authCookie.value.split('.');
-            if (parts.length >= 2) {
-              const payload = JSON.parse(atob(parts[1]));
-              identifier = payload.sub || 'anon';
-            } else {
-              identifier = 'anon';
-            }
-          } catch {
-            identifier = 'anon';
-          }
-        } else {
-          // Fallback to IP for unauthenticated requests to user-limited routes
-          identifier = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-            || request.headers.get('x-real-ip')
-            || 'unknown';
-        }
+        // Per-user limits: derive identity from the Bearer JWT (native clients) or
+        // the Supabase auth cookie (web), falling back to IP. Decode-only — the
+        // route handler's getUser() is the trust boundary (see lib/rate-identity.ts).
+        // This is what gives mobile users behind one carrier NAT independent buckets
+        // instead of sharing a single per-IP STT 4/min limit.
+        identifier = deriveRateIdentifier(request);
       }
 
       const result = await checkRateLimit(pathname, identifier);
