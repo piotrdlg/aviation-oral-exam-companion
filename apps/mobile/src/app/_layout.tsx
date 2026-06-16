@@ -9,14 +9,18 @@ import {
   JetBrainsMono_700Bold,
 } from '@expo-google-fonts/jetbrains-mono';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 import { View } from 'react-native';
 
+import { AuthProvider, useAuth } from '@/lib/auth';
 import { colors } from '@/theme/tokens';
 
-// HeyDPE is dark-first (FLIGHT DECK cockpit theme). The root stack hosts the
-// (tabs) group; deep-linked stacks (exam, upgrade, auth) mount here later.
+function DarkFrame() {
+  return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
+}
+
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     IBMPlexSans_400Regular,
@@ -27,21 +31,41 @@ export default function RootLayout() {
     JetBrainsMono_700Bold,
   });
 
-  // Hold on a dark frame (no white flash) until the brand fonts are ready.
-  if (!fontsLoaded) {
-    return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
-  }
+  if (!fontsLoaded) return <DarkFrame />;
 
   return (
-    <>
+    <AuthProvider>
       <StatusBar style="light" />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.bg },
-        }}>
-        <Stack.Screen name="(tabs)" />
-      </Stack>
-    </>
+      <RootNavigator />
+    </AuthProvider>
+  );
+}
+
+// Session gate: no session → /login; signed in while on an auth route → /(tabs).
+function RootNavigator() {
+  const { session, loading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (loading) return;
+    const root = segments[0];
+    const onAuthRoute = root === 'login' || root === 'dev-login';
+    if (!session && !onAuthRoute) router.replace('/login');
+    else if (session && onAuthRoute) router.replace('/(tabs)');
+  }, [session, loading, segments, router]);
+
+  if (loading) return <DarkFrame />;
+
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: colors.bg },
+      }}>
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="login" />
+      <Stack.Screen name="dev-login" />
+    </Stack>
   );
 }
