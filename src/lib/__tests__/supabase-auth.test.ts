@@ -4,10 +4,11 @@ import { NextRequest } from 'next/server';
 // server-only throws outside an RSC/route context.
 vi.mock('server-only', () => ({}));
 
-// Bearer path: the module-scoped service-role client (from @supabase/supabase-js).
+// Bearer path: the module-scoped service-role verifier AND the per-request
+// RLS-bound data client are both created via @supabase/supabase-js createClient.
 const getUserBearer = vi.fn();
 vi.mock('@supabase/supabase-js', () => ({
-  createClient: vi.fn(() => ({ auth: { getUser: getUserBearer } })),
+  createClient: vi.fn(() => ({ auth: { getUser: getUserBearer }, from: vi.fn() })),
 }));
 
 // Cookie path: the SSR client from src/lib/supabase/server.
@@ -16,6 +17,7 @@ const getSessionCookie = vi.fn();
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(async () => ({
     auth: { getUser: getUserCookie, getSession: getSessionCookie },
+    from: vi.fn(),
   })),
 }));
 
@@ -32,10 +34,13 @@ beforeEach(() => {
 });
 
 describe('getAuthedUser', () => {
-  it('authenticates a valid Bearer token (native client, no cookies)', async () => {
+  it('authenticates a valid Bearer token and returns an RLS-bound client (native client)', async () => {
     getUserBearer.mockResolvedValue({ data: { user: USER }, error: null });
     const authed = await getAuthedUser(req({ authorization: 'Bearer good-jwt' }));
-    expect(authed).toEqual({ user: USER, accessToken: 'good-jwt', transport: 'bearer' });
+    expect(authed?.user).toEqual(USER);
+    expect(authed?.accessToken).toBe('good-jwt');
+    expect(authed?.transport).toBe('bearer');
+    expect(authed?.supabase).toBeDefined();
     expect(getUserBearer).toHaveBeenCalledWith('good-jwt');
   });
 
@@ -44,11 +49,14 @@ describe('getAuthedUser', () => {
     expect(await getAuthedUser(req({ authorization: 'Bearer bad' }))).toBeNull();
   });
 
-  it('falls back to the cookie session and returns its access_token (web, unchanged)', async () => {
+  it('falls back to the cookie session and returns its access_token + client (web, unchanged)', async () => {
     getSessionCookie.mockResolvedValue({ data: { session: { access_token: 'cookie-jwt' } } });
     getUserCookie.mockResolvedValue({ data: { user: USER } });
     const authed = await getAuthedUser(req()); // no Authorization header
-    expect(authed).toEqual({ user: USER, accessToken: 'cookie-jwt', transport: 'cookie' });
+    expect(authed?.user).toEqual(USER);
+    expect(authed?.accessToken).toBe('cookie-jwt');
+    expect(authed?.transport).toBe('cookie');
+    expect(authed?.supabase).toBeDefined();
     expect(getUserBearer).not.toHaveBeenCalled(); // bearer branch fully skipped
   });
 

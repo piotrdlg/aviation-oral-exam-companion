@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { after } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getAuthedUser } from '@/lib/supabase/auth';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { getUserTier } from '@/lib/voice/tier-lookup';
 import { getSystemConfig } from '@/lib/system-config';
@@ -18,12 +18,11 @@ const FREE_TRIAL_WINDOW_DAYS = 7;
 const FREE_TRIAL_WINDOW_MS = FREE_TRIAL_WINDOW_DAYS * 24 * 60 * 60 * 1000;
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
+  const authed = await getAuthedUser(request);
+  if (!authed) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  const { user, supabase } = authed;
 
   const body = await request.json();
   const { action } = body;
@@ -372,12 +371,11 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
+  const authed = await getAuthedUser(request);
+  if (!authed) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  const { user, supabase } = authed;
 
   const { searchParams } = new URL(request.url);
   const action = searchParams.get('action');

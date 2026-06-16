@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { after } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { createClient as createServiceClient } from '@supabase/supabase-js';
+import { getAuthedUser } from '@/lib/supabase/auth';
+import { createClient as createServiceClient, type SupabaseClient } from '@supabase/supabase-js';
 import {
   pickStartingTask,
   pickNextTask,
@@ -145,7 +145,7 @@ function logLlmUsage(
  * Follows the invariant: student transcript -> assessment -> element_attempts
  */
 async function writeElementAttempts(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  supabase: SupabaseClient,
   sessionId: string,
   transcriptId: string,
   assessment: AssessmentData
@@ -201,11 +201,11 @@ export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    const authed = await getAuthedUser(request);
+    if (!authed) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const { user, supabase } = authed;
 
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
@@ -325,11 +325,11 @@ export async function POST(request: NextRequest) {
   });
 
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    const authed = await getAuthedUser(request);
+    if (!authed) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const { user, supabase } = authed;
 
     // Kill switch check: fetch config + tier, block if Anthropic or tier is disabled
     const [config, tier] = await Promise.all([
@@ -464,9 +464,11 @@ export async function POST(request: NextRequest) {
     const enforcementPromise = (async () => {
       if (!sessionId) return { rejected: false, pausedSessionId: undefined as string | undefined };
       try {
-        const { data: { session: authSession } } = await supabase.auth.getSession();
-        if (authSession?.access_token) {
-          const tokenHash = getSessionTokenHash(authSession);
+        // Transport-agnostic: getAuthedUser supplies the bearer JWT (native) or the
+        // cookie session's access_token (web); getSessionTokenHash decodes the
+        // session_id claim from either. (Replaces the cookie-only getSession().)
+        if (authed.accessToken) {
+          const tokenHash = getSessionTokenHash({ access_token: authed.accessToken });
           return enforceOneActiveExam(serviceSupabase, user.id, sessionId, tokenHash, action);
         }
       } catch (err) {
