@@ -239,7 +239,7 @@ export function CookieConsent() {
                     Analytics
                   </h3>
                   <p className="mt-0.5 text-xs leading-relaxed text-c-muted">
-                    Google Analytics, Microsoft Clarity, PostHog
+                    Google Analytics, PostHog
                   </p>
                 </div>
                 <button

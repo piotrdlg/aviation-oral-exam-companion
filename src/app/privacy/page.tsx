@@ -53,7 +53,7 @@ export default function PrivacyPolicyPage() {
             Privacy policy
           </h1>
           <p className="text-sm text-c-muted mb-2">
-            Effective date: February 18, 2026 &nbsp;|&nbsp; Last updated: February 18, 2026
+            Effective date: February 18, 2026 &nbsp;|&nbsp; Last updated: June 15, 2026
           </p>
           <p className="text-sm text-c-muted mb-12">
             Also see our{' '}
@@ -110,9 +110,9 @@ export default function PrivacyPolicyPage() {
                     <td className="px-4 py-2.5 text-c-muted">Contract performance</td>
                   </tr>
                   <tr className="border-b border-c-border/50 bg-c-panel/30">
-                    <td className="px-4 py-2.5">Password (hashed)</td>
-                    <td className="px-4 py-2.5 text-c-muted">Registration</td>
-                    <td className="px-4 py-2.5 text-c-muted">Authentication</td>
+                    <td className="px-4 py-2.5">Authentication method</td>
+                    <td className="px-4 py-2.5 text-c-muted">One-time email code or OAuth (Google / Apple / Microsoft)</td>
+                    <td className="px-4 py-2.5 text-c-muted">Passwordless sign-in — we do not store passwords</td>
                   </tr>
                   <tr className="border-b border-c-border/50">
                     <td className="px-4 py-2.5">Exam session data</td>
@@ -121,13 +121,13 @@ export default function PrivacyPolicyPage() {
                   </tr>
                   <tr className="border-b border-c-border/50 bg-c-panel/30">
                     <td className="px-4 py-2.5">Voice input (transient)</td>
-                    <td className="px-4 py-2.5 text-c-muted">Microphone / STT</td>
-                    <td className="px-4 py-2.5 text-c-muted">Processed client-side via Web Speech API; NOT stored</td>
+                    <td className="px-4 py-2.5 text-c-muted">Microphone</td>
+                    <td className="px-4 py-2.5 text-c-muted">Streamed to Deepgram for speech-to-text; raw audio not stored</td>
                   </tr>
                   <tr className="border-b border-c-border/50">
                     <td className="px-4 py-2.5">Conversation transcripts</td>
                     <td className="px-4 py-2.5 text-c-muted">App usage</td>
-                    <td className="px-4 py-2.5 text-c-muted">Sent to Anthropic API for AI assessment</td>
+                    <td className="px-4 py-2.5 text-c-muted">Sent to Anthropic Claude for examiner responses &amp; assessment; stored as exam history</td>
                   </tr>
                   <tr className="border-b border-c-border/50 bg-c-panel/30">
                     <td className="px-4 py-2.5">Payment information</td>
@@ -151,7 +151,7 @@ export default function PrivacyPolicyPage() {
                   </tr>
                   <tr>
                     <td className="px-4 py-2.5">Usage analytics</td>
-                    <td className="px-4 py-2.5 text-c-muted">GA4, Clarity cookies</td>
+                    <td className="px-4 py-2.5 text-c-muted">PostHog, Google Analytics 4</td>
                     <td className="px-4 py-2.5 text-c-muted">Product analytics</td>
                   </tr>
                 </tbody>
@@ -197,9 +197,13 @@ export default function PrivacyPolicyPage() {
               4. Third-party services
             </h2>
             <p className="text-sm text-c-muted leading-relaxed mb-4">
-              We share data with the following third-party service providers, each under their own
-              privacy policies:
+              We share data with the following third-party service providers (sub-processors), each
+              under their own privacy policies and our agreements with them:
             </p>
+            {/* LAWYER REVIEW: this table reflects the sub-processors actually integrated in the
+                product as of June 2026. Confirm that data-processing agreements (DPAs) are in place
+                for each, and that none use customer content to train their models in a way that
+                requires additional disclosure or consent. */}
             <div className="overflow-x-auto">
               <table className="w-full text-sm border border-c-border rounded-lg overflow-hidden">
                 <thead>
@@ -212,43 +216,58 @@ export default function PrivacyPolicyPage() {
                 <tbody className="text-c-muted">
                   <tr className="border-b border-c-border/50">
                     <td className="px-4 py-2.5 font-medium text-c-text">Supabase</td>
-                    <td className="px-4 py-2.5 text-c-muted">Email, auth data</td>
-                    <td className="px-4 py-2.5 text-c-muted">Database &amp; authentication</td>
+                    <td className="px-4 py-2.5 text-c-muted">Email, authentication data, exam transcripts &amp; session data</td>
+                    <td className="px-4 py-2.5 text-c-muted">Database, authentication &amp; storage</td>
                   </tr>
                   <tr className="border-b border-c-border/50 bg-c-panel/30">
-                    <td className="px-4 py-2.5 font-medium text-c-text">Anthropic Claude API</td>
-                    <td className="px-4 py-2.5 text-c-muted">Conversation text</td>
-                    <td className="px-4 py-2.5 text-c-muted">AI examiner responses</td>
+                    <td className="px-4 py-2.5 font-medium text-c-text">Anthropic (Claude API)</td>
+                    <td className="px-4 py-2.5 text-c-muted">Conversation transcripts, your answers, retrieved reference text</td>
+                    <td className="px-4 py-2.5 text-c-muted">AI examiner questions &amp; answer assessment</td>
                   </tr>
                   <tr className="border-b border-c-border/50">
-                    <td className="px-4 py-2.5 font-medium text-c-text">OpenAI TTS API</td>
-                    <td className="px-4 py-2.5 text-c-muted">Examiner text</td>
-                    <td className="px-4 py-2.5 text-c-muted">Text-to-speech</td>
+                    <td className="px-4 py-2.5 font-medium text-c-text">Deepgram</td>
+                    <td className="px-4 py-2.5 text-c-muted">Voice audio (speech-to-text); examiner text (text-to-speech)</td>
+                    <td className="px-4 py-2.5 text-c-muted">Speech recognition (Nova-3) &amp; speech synthesis (Aura-2)</td>
                   </tr>
                   <tr className="border-b border-c-border/50 bg-c-panel/30">
+                    <td className="px-4 py-2.5 font-medium text-c-text">OpenAI</td>
+                    <td className="px-4 py-2.5 text-c-muted">Exam text (embeddings); examiner text (TTS fallback)</td>
+                    <td className="px-4 py-2.5 text-c-muted">Document retrieval (RAG) &amp; backup speech synthesis</td>
+                  </tr>
+                  <tr className="border-b border-c-border/50">
                     <td className="px-4 py-2.5 font-medium text-c-text">Stripe</td>
                     <td className="px-4 py-2.5 text-c-muted">Payment details</td>
-                    <td className="px-4 py-2.5 text-c-muted">Billing</td>
+                    <td className="px-4 py-2.5 text-c-muted">Billing &amp; subscriptions</td>
+                  </tr>
+                  <tr className="border-b border-c-border/50 bg-c-panel/30">
+                    <td className="px-4 py-2.5 font-medium text-c-text">Resend</td>
+                    <td className="px-4 py-2.5 text-c-muted">Email address</td>
+                    <td className="px-4 py-2.5 text-c-muted">Transactional &amp; notification email</td>
                   </tr>
                   <tr className="border-b border-c-border/50">
                     <td className="px-4 py-2.5 font-medium text-c-text">Vercel</td>
-                    <td className="px-4 py-2.5 text-c-muted">IP address, headers</td>
-                    <td className="px-4 py-2.5 text-c-muted">Hosting</td>
+                    <td className="px-4 py-2.5 text-c-muted">IP address, request headers</td>
+                    <td className="px-4 py-2.5 text-c-muted">Hosting &amp; delivery</td>
                   </tr>
                   <tr className="border-b border-c-border/50 bg-c-panel/30">
-                    <td className="px-4 py-2.5 font-medium text-c-text">Google Analytics (GA4)</td>
-                    <td className="px-4 py-2.5 text-c-muted">Anonymized usage</td>
-                    <td className="px-4 py-2.5 text-c-muted">Traffic analysis</td>
+                    <td className="px-4 py-2.5 font-medium text-c-text">Google Analytics 4 (via Google Tag Manager)</td>
+                    <td className="px-4 py-2.5 text-c-muted">Anonymized usage events</td>
+                    <td className="px-4 py-2.5 text-c-muted">Traffic analysis (consent-gated)</td>
                   </tr>
                   <tr className="border-b border-c-border/50">
-                    <td className="px-4 py-2.5 font-medium text-c-text">Google Ads</td>
-                    <td className="px-4 py-2.5 text-c-muted">Conversion data</td>
-                    <td className="px-4 py-2.5 text-c-muted">Ad attribution</td>
+                    <td className="px-4 py-2.5 font-medium text-c-text">Google Ads (via Google Tag Manager)</td>
+                    <td className="px-4 py-2.5 text-c-muted">Conversion events</td>
+                    <td className="px-4 py-2.5 text-c-muted">Advertising attribution (consent-gated)</td>
+                  </tr>
+                  <tr className="border-b border-c-border/50 bg-c-panel/30">
+                    <td className="px-4 py-2.5 font-medium text-c-text">PostHog</td>
+                    <td className="px-4 py-2.5 text-c-muted">Product usage events</td>
+                    <td className="px-4 py-2.5 text-c-muted">Product analytics (consent-gated)</td>
                   </tr>
                   <tr>
-                    <td className="px-4 py-2.5 font-medium text-c-text">Microsoft Clarity</td>
-                    <td className="px-4 py-2.5 text-c-muted">Click / scroll behavior</td>
-                    <td className="px-4 py-2.5 text-c-muted">UX analysis</td>
+                    <td className="px-4 py-2.5 font-medium text-c-text">Sentry</td>
+                    <td className="px-4 py-2.5 text-c-muted">Error / diagnostic context (no personal data)</td>
+                    <td className="px-4 py-2.5 text-c-muted">Error monitoring (when enabled)</td>
                   </tr>
                 </tbody>
               </table>
@@ -265,31 +284,40 @@ export default function PrivacyPolicyPage() {
                 Important disclosure
               </p>
               <p className="text-sm text-c-muted leading-relaxed">
-                HeyDPE offers an optional voice input feature powered by your browser&apos;s Web Speech
-                API. Here is exactly what happens with your voice data:
+                HeyDPE offers an optional voice mode. Here is exactly what happens with your voice
+                data:
               </p>
             </div>
             <ul className="list-disc list-outside ml-5 space-y-2 text-sm text-c-muted leading-relaxed">
               <li>
-                <strong className="text-c-text">Speech recognition runs in your browser.</strong> When
-                you use voice mode in Google Chrome, your audio is sent to Google&apos;s servers for
-                speech-to-text conversion as part of Chrome&apos;s built-in Web Speech API. This is a
-                browser feature, not a HeyDPE feature.
+                <strong className="text-c-text">Your speech is transcribed by Deepgram.</strong> When
+                you use voice mode, your microphone audio is streamed over an encrypted connection to
+                Deepgram, our speech-to-text provider (the Deepgram Nova-3 model), which converts it
+                to text. Transcription happens on Deepgram&apos;s servers, not in your browser.
               </li>
               <li>
                 <strong className="text-c-text">HeyDPE does NOT store your audio recordings.</strong>{' '}
-                We never receive, store, or process raw audio data. Voice input is transient and
-                processed entirely client-side.
+                Your audio is streamed for real-time transcription only and is not saved by HeyDPE.
+                {/* LAWYER REVIEW: HeyDPE does not retain raw audio. Deepgram processes the audio
+                    under its own privacy terms / our agreement; confirm whether to state Deepgram's
+                    retention or model-training posture explicitly. */}
               </li>
               <li>
-                <strong className="text-c-text">The resulting text transcript IS sent to Anthropic.</strong>{' '}
-                Once your speech is converted to text by the browser, the text is sent to the Anthropic
-                Claude API to generate examiner responses and assessments.
+                <strong className="text-c-text">The text transcript is sent to Anthropic.</strong>{' '}
+                Once your speech is converted to text, the transcript is sent to the Anthropic Claude
+                API to generate examiner questions and assess your answers, and is stored in your
+                exam history so you can review your progress.
+              </li>
+              <li>
+                <strong className="text-c-text">Examiner replies are synthesized as speech.</strong>{' '}
+                The examiner&apos;s text responses are converted to audio by Deepgram&apos;s
+                text-to-speech service (the Aura-2 model), with OpenAI used as an automatic fallback
+                if Deepgram is briefly unavailable.
               </li>
               <li>
                 <strong className="text-c-text">You can always use text input instead.</strong> Voice
-                mode is optional. You may type your answers at any time to avoid using the Web Speech
-                API entirely.
+                mode is optional. You may type your answers at any time, in which case no microphone
+                audio is captured or transmitted.
               </li>
             </ul>
           </section>
@@ -301,20 +329,22 @@ export default function PrivacyPolicyPage() {
             </h2>
             <ul className="list-disc list-outside ml-5 space-y-2 text-sm text-c-muted leading-relaxed">
               <li>
-                <strong className="text-c-text">Account data</strong> — retained while your account is
-                active, plus 30 days after account deletion to allow for recovery.
+                <strong className="text-c-text">Account &amp; exam data</strong> — including your
+                conversation transcripts and progress, retained while your account is active, plus 30
+                days after account deletion to allow for recovery.
               </li>
               <li>
                 <strong className="text-c-text">Payment records</strong> — retained for 7 years as
                 required by tax and financial regulations.
               </li>
               <li>
-                <strong className="text-c-text">Analytics data</strong> — retained for 26 months
-                (Google Analytics default retention period).
+                <strong className="text-c-text">Analytics data</strong> — retained per our analytics
+                providers&apos; default retention periods (e.g., Google Analytics&apos; 26-month default).
               </li>
               <li>
-                <strong className="text-c-text">Voice recordings</strong> — not retained. Audio is never
-                stored by HeyDPE (see Section 5).
+                <strong className="text-c-text">Voice recordings (raw audio)</strong> — not retained.
+                Audio is streamed to Deepgram for transcription only and is never stored by HeyDPE
+                (see Section 5). Text transcripts of your answers are retained with your exam history.
               </li>
             </ul>
           </section>
@@ -337,7 +367,7 @@ export default function PrivacyPolicyPage() {
               <li><strong className="text-c-text">Correction</strong> — request that we correct inaccurate or incomplete data.</li>
               <li><strong className="text-c-text">Deletion</strong> — request that we delete your personal data.</li>
               <li><strong className="text-c-text">Export</strong> — receive your data in a portable, machine-readable format.</li>
-              <li><strong className="text-c-text">Opt-out of analytics</strong> — disable Google Analytics and Clarity tracking via your browser settings or cookie preferences.</li>
+              <li><strong className="text-c-text">Opt-out of analytics</strong> — disable analytics and advertising tracking (PostHog, Google Analytics, Google Ads) via the cookie-consent banner or your browser settings.</li>
             </ul>
 
             <h3 className="font-semibold text-base text-c-text tracking-tight mb-3">
@@ -353,6 +383,10 @@ export default function PrivacyPolicyPage() {
             <h3 className="font-semibold text-base text-c-text tracking-tight mb-3">
               GDPR rights (EEA/UK residents)
             </h3>
+            {/* LAWYER REVIEW: several sub-processors (Anthropic, Deepgram, OpenAI, Stripe, Vercel,
+                Google) process data in the United States. Confirm whether an international-transfer
+                mechanism (e.g., Standard Contractual Clauses) and a transfer disclosure should be
+                added here for EEA/UK users. */}
             <ul className="list-disc list-outside ml-5 space-y-2 text-sm text-c-muted leading-relaxed">
               <li><strong className="text-c-text">Data portability</strong> — receive your data in a structured, commonly used format.</li>
               <li><strong className="text-c-text">Restrict processing</strong> — request that we limit how we use your data.</li>
@@ -396,7 +430,7 @@ export default function PrivacyPolicyPage() {
             <ul className="list-disc list-outside ml-5 space-y-2 text-sm text-c-muted leading-relaxed">
               <li><strong className="text-c-text">TLS encryption</strong> — all data in transit is encrypted using TLS (HTTPS).</li>
               <li><strong className="text-c-text">Encryption at rest</strong> — database data is encrypted at rest via Supabase infrastructure.</li>
-              <li><strong className="text-c-text">Password hashing</strong> — passwords are hashed using bcrypt and never stored in plaintext.</li>
+              <li><strong className="text-c-text">Passwordless authentication</strong> — sign-in uses one-time email codes or OAuth (Google, Apple, Microsoft) via Supabase Auth; we do not store passwords.</li>
               <li><strong className="text-c-text">Row-Level Security (RLS)</strong> — database access policies ensure users can only access their own data.</li>
             </ul>
             <p className="text-sm text-c-muted leading-relaxed mt-3">
