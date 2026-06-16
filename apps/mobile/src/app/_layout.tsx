@@ -1,16 +1,21 @@
-import { DarkTheme, ThemeProvider } from 'expo-router';
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { colors } from '@/theme/tokens';
 
-// HeyDPE is dark-first (FLIGHT DECK cockpit theme). Force the dark navigation
-// theme regardless of the device color scheme; full token-level navigation
-// theming lands with the design-system + tabs build.
+// HeyDPE is dark-first (FLIGHT DECK cockpit theme). The root stack hosts the
+// (tabs) group; deep-linked stacks (exam, upgrade, auth) mount here later.
 export default function RootLayout() {
   return (
-    <ThemeProvider value={DarkTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <>
+      <StatusBar style="light" />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.bg },
+        }}>
+        <Stack.Screen name="(tabs)" />
+      </Stack>
+    </>
   );
 }
