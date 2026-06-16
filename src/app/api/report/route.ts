@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { type NextRequest, NextResponse } from 'next/server';
+import { getAuthedUser } from '@/lib/supabase/auth';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import type { ReportType } from '@/types/database';
 
@@ -30,11 +30,11 @@ const VALID_REPORT_TYPES: ReportType[] = [
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    const authed = await getAuthedUser(request);
+    if (!authed) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const { user } = authed;
 
     const body = await request.json();
     const { report_type, session_id, transcript_id, details } = body as {

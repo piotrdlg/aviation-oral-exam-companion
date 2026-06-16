@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { type NextRequest, NextResponse } from 'next/server';
+import { getAuthedUser } from '@/lib/supabase/auth';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import type { MilestoneKey, MilestoneStatus } from '@/types/database';
 import { MILESTONE_KEYS } from '@/types/database';
@@ -12,13 +12,13 @@ const serviceSupabase = createServiceClient(
 
 const VALID_STATUSES: MilestoneStatus[] = ['not_set', 'in_progress', 'completed'];
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    const authed = await getAuthedUser(request);
+    if (!authed) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const { user } = authed;
 
     const milestones = await getCurrentMilestones(serviceSupabase, user.id);
 
@@ -31,11 +31,11 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    const authed = await getAuthedUser(request);
+    if (!authed) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const { user } = authed;
 
     const body = await request.json();
     const { milestoneKey, status, notes } = body;

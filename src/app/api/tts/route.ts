@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { after } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getAuthedUser } from '@/lib/supabase/auth';
 import { getUserTier, getUserPreferredVoice } from '@/lib/voice/tier-lookup';
 import { createTTSProvider, getTTSProviderName } from '@/lib/voice/provider-factory';
 import { checkQuota } from '@/lib/voice/usage';
@@ -35,11 +35,11 @@ export async function POST(request: NextRequest) {
   after(() => flushPostHog());
 
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    const authed = await getAuthedUser(request);
+    if (!authed) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const { user } = authed;
 
     const { text, voice: voiceOverride } = await request.json();
     if (!text || typeof text !== 'string') {

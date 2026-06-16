@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { after } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getAuthedUser } from '@/lib/supabase/auth';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { getUserEmailPreferences, updateEmailPreference } from '@/lib/email-preferences';
 import { captureServerEvent, flushPostHog } from '@/lib/posthog-server';
@@ -16,13 +16,13 @@ const serviceSupabase = createServiceClient(
  * GET /api/user/email-preferences
  * Returns the authenticated user's email preferences as a map of category -> enabled.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    const authed = await getAuthedUser(request);
+    if (!authed) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const { user } = authed;
 
     const preferences = await getUserEmailPreferences(serviceSupabase, user.id);
 
@@ -42,11 +42,11 @@ export async function POST(request: NextRequest) {
   after(() => flushPostHog());
 
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    const authed = await getAuthedUser(request);
+    if (!authed) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const { user } = authed;
 
     const body = await request.json();
     const { category, enabled } = body;

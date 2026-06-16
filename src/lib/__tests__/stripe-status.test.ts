@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { NextRequest } from 'next/server';
 
 // ----------------------------------------------------------------
 // Hoisted mocks (mirror stripe-checkout.test.ts)
@@ -28,6 +29,10 @@ vi.mock('@/lib/voice/tier-lookup', () => ({
 
 import { GET } from '@/app/api/stripe/status/route';
 
+// GET now takes a request (Bearer-or-cookie dual-mode). No Authorization header →
+// getAuthedUser falls through to the cookie path mocked above.
+const req = () => new NextRequest('https://app.test/api/stripe/status');
+
 // Fluent builder: select/eq/single/update → builder; await → {data}
 function builder(result: { data?: unknown }) {
   const b: Record<string, any> = {};
@@ -45,7 +50,7 @@ beforeEach(() => {
 describe('stripe status', () => {
   it('returns 401 when unauthenticated', async () => {
     mocks.getUser.mockResolvedValue({ data: { user: null } });
-    const res = await GET();
+    const res = await GET(req());
     expect(res.status).toBe(401);
   });
 
@@ -61,7 +66,7 @@ describe('stripe status', () => {
         current_period_end: periodEnd,
       },
     }));
-    const res = await GET();
+    const res = await GET(req());
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.tier).toBe('dpe_live');
@@ -85,7 +90,7 @@ describe('stripe status', () => {
         items: { data: [{ price: { id: 'price_m' }, current_period_start: 1, current_period_end: 2 }] },
       }],
     });
-    const res = await GET();
+    const res = await GET(req());
     expect(res.status).toBe(200);
     expect((await res.json()).tier).toBe('dpe_live');
     // critical: drop the stale free tier so the trial gate can't block a just-paid user
@@ -96,7 +101,7 @@ describe('stripe status', () => {
     mocks.serviceFrom.mockReturnValueOnce(builder({
       data: { tier: 'checkride_prep', subscription_status: 'free', stripe_customer_id: null },
     }));
-    const res = await GET();
+    const res = await GET(req());
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.tier).toBe('checkride_prep');

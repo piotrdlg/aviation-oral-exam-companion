@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { type NextRequest, NextResponse } from 'next/server';
+import { getAuthedUser } from '@/lib/supabase/auth';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { checkRateLimit } from '@/lib/rate-limit';
 
@@ -14,10 +14,10 @@ const serviceSupabase = createServiceClient(
  * assessment only — internal RAG chunks are not user data), element
  * attempts, email preferences.
  */
-export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export async function GET(request: NextRequest) {
+  const authed = await getAuthedUser(request);
+  if (!authed) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const { user } = authed;
 
   const rl = await checkRateLimit('/api/user/export', user.id);
   if (!rl.allowed) {
