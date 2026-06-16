@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { type NextRequest, NextResponse } from 'next/server';
+import { getAuthedUser } from '@/lib/supabase/auth';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { isInstructorFeatureEnabled } from '@/lib/instructor-access';
 import { lookupByReferralCode } from '@/lib/instructor-identity';
@@ -24,14 +24,14 @@ const serviceSupabase = createServiceClient(
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    const authed = await getAuthedUser(request);
+    if (!authed) {
       return NextResponse.json(
         { error: 'Please sign in to use this referral code' },
         { status: 401 }
       );
     }
+    const { user } = authed;
 
     const featureEnabled = await isInstructorFeatureEnabled(serviceSupabase);
     if (!featureEnabled) {

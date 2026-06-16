@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getAuthedUser } from '@/lib/supabase/auth';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { getSessionTokenHash } from '@/lib/session-enforcement';
 
@@ -15,24 +15,20 @@ const serviceSupabase = createServiceClient(
  * Returns device label, approximate location, last activity, exam status,
  * and a "this_device" flag for the current session.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data: { user, session } } = await (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      const { data: { session } } = await supabase.auth.getSession();
-      return { data: { user, session } };
-    })();
-
-    if (!user) {
+    const authed = await getAuthedUser(request);
+    if (!authed) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const { user } = authed;
 
-    // Get current device token hash (if session available)
+    // Current device token hash — transport-agnostic: the bearer JWT (native) or
+    // the cookie session's access_token both carry the stable session_id claim.
     let currentTokenHash: string | null = null;
-    if (session?.access_token) {
+    if (authed.accessToken) {
       try {
-        currentTokenHash = getSessionTokenHash(session);
+        currentTokenHash = getSessionTokenHash({ access_token: authed.accessToken });
       } catch {
         // If JWT decoding fails, we just won't mark "this device"
       }
@@ -79,21 +75,21 @@ export async function GET() {
  * MVP limitation: no per-session revocation (we only store session_token_hash,
  * not the raw session_id needed for targeted revocation).
  */
-export async function DELETE() {
+export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (!user) {
+    const authed = await getAuthedUser(request);
+    if (!authed) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    // `supabase` is the user-bound client (cookie or anon+bearer) — needed for
+    // signOut({ scope: 'others' }), which acts on the caller's own session.
+    const { user, supabase } = authed;
 
-    // Get current device token hash
+    // Current device token hash (transport-agnostic)
     let currentTokenHash: string | null = null;
-    if (session?.access_token) {
+    if (authed.accessToken) {
       try {
-        currentTokenHash = getSessionTokenHash(session);
+        currentTokenHash = getSessionTokenHash({ access_token: authed.accessToken });
       } catch {
         // Continue without token hash — we'll clear all sessions
       }

@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { type NextRequest, NextResponse } from 'next/server';
+import { getAuthedUser } from '@/lib/supabase/auth';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 
 const serviceSupabase = createServiceClient(
@@ -15,9 +15,9 @@ const serviceSupabase = createServiceClient(
  * Anonymous cookie choices stay localStorage-only (no user to key on).
  */
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const authed = await getAuthedUser(request);
+  if (!authed) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const { user } = authed;
 
   const body = await request.json().catch(() => null) as { kind?: string; choices?: Record<string, unknown> } | null;
   const kind = body?.kind === 'disclaimer' ? 'disclaimer' : 'cookie';
