@@ -64,16 +64,17 @@ export const radius = {
 } as const;
 
 /**
- * Font families. Until IBM Plex Sans / JetBrains Mono are loaded via expo-font
- * (next step), fall back to the platform system + monospace faces so layout and
- * the caps-mono cockpit labels still read correctly.
+ * Font families — IBM Plex Sans + JetBrains Mono, matching the web app exactly.
+ * Loaded via expo-font in the root layout; the family strings equal the
+ * @expo-google-fonts export names.
  */
 export const font = {
-  sans: 'System',
-  sansMedium: 'System',
-  sansSemibold: 'System',
-  sansBold: 'System',
-  mono: 'Menlo', // iOS system monospace; swapped for JetBrains Mono next
+  sans: 'IBMPlexSans_400Regular',
+  sansMedium: 'IBMPlexSans_500Medium',
+  sansSemibold: 'IBMPlexSans_600SemiBold',
+  sansBold: 'IBMPlexSans_700Bold',
+  mono: 'JetBrainsMono_400Regular',
+  monoBold: 'JetBrainsMono_700Bold',
 } as const;
 
 /** Type scale (px). 12px is the hard floor — never 10px (FLIGHT DECK rule). */

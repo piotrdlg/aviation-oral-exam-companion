@@ -184,9 +184,8 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: {
-    fontFamily: font.mono,
+    fontFamily: font.monoBold,
     fontSize: fontSize.xxl,
-    fontWeight: '700',
     marginBottom: space[1],
   },
   statLabel: {
