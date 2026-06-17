@@ -34,6 +34,21 @@
   camelCase `ExamConfig` and maps to snake_case only at the create boundary, and
   pins `difficulty` to the DB enum (`easy|medium|hard|mixed`) — an earlier
   `'standard'` violated the check constraint.
+- **Adversarial review (ultracode workflow) caught 3 more real bugs — all fixed:**
+  1. **(critical, prod)** Fresh exam **start** 500'd on mobile — `buildElementQueue`
+     read `config.selectedAreas.length` unguarded; the web always sends `[]` but the
+     native fresh-start config sent neither, so a brand-new exam couldn't begin.
+     Server normalizes both to `[]` now (commit `8fa2209` → **deployed to main**),
+     client sends them too; regression test added. Root-caused by reproducing
+     against prod via a local prod-env Next server (bypassing the masking
+     `DB_TARGET_UNSAFE` guard to see the real stack).
+  2. **(high)** Resuming a **paused** exam 409'd on the first answer — `resumeExam`
+     now reactivates (`update{status:'active'}`) before `resume-current` (whose
+     CLAIM also clears any stale device claim, so respond's supersession check
+     passes).
+  3. **(medium)** Score badges vanished after resume — assessments persist on the
+     student transcript row but render on the following examiner bubble; `resumeExam`
+     now shifts them. (1 review finding was a false positive, rejected by the verify pass.)
 
 ---
 
