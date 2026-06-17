@@ -26,6 +26,14 @@ export const getElementScores = (rating: string) =>
 /** Recent sessions (most recent first). */
 export const getSessions = () => apiFetch<SessionsResponse>('/api/session');
 
+/** Reactivate a paused session so /api/exam respond/next-task (which require
+ *  status 'active') don't 409 on the first answer after a resume. */
+export const reactivateSession = (sessionId: string) =>
+  apiFetch<{ session?: unknown }>('/api/session', {
+    method: 'POST',
+    json: { action: 'update', sessionId, status: 'active' },
+  });
+
 /** Finish + grade an in-progress exam (returns to the completion screen). */
 export const completeSession = (sessionId: string) =>
   apiFetch<{ session?: unknown }>('/api/session', {

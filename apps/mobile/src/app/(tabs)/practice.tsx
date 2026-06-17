@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, H1, Lead, MicroLabel, PrimaryButton, Screen } from '@/components/cockpit';
 import { UPGRADE_CODES, UpgradeSheet } from '@/components/upgrade-sheet';
 import { ApiError } from '@/lib/api';
-import { completeSession, getResumable, getTier } from '@/lib/endpoints';
+import { completeSession, getResumable, getTier, reactivateSession } from '@/lib/endpoints';
 import {
   AircraftClass,
   Assessment,
@@ -95,7 +95,7 @@ export default function PracticeScreen() {
         setAircraftClass(ac);
         const { session: open } = await getResumable();
         if (open) {
-          await resumeExam(open.id, open.rating, open.study_mode, ac);
+          await resumeExam(open.id, open.rating, open.study_mode, ac, open.status);
         } else {
           setPhase('config');
         }
@@ -129,7 +129,7 @@ export default function PracticeScreen() {
     if (turn.elementCode) s.elementCode = turn.elementCode;
   }
 
-  async function resumeExam(id: string, r: string, mode: string, ac: AircraftClass) {
+  async function resumeExam(id: string, r: string, mode: string, ac: AircraftClass, status?: string) {
     setPhase('loading');
     const cfg: ExamConfig = {
       studyMode: (mode || 'linear') as StudyMode,
@@ -138,12 +138,22 @@ export default function PracticeScreen() {
       aircraftClass: ac,
     };
     session.current = { id, config: cfg, aircraftClass: ac };
+
+    // A paused session must be reactivated first, or the first respond/next-task
+    // (which require status 'active') 409s straight into the error screen.
+    if (status === 'paused') await reactivateSession(id);
+
     const transcripts = await getTranscripts(id);
-    const restored: Bubble[] = transcripts.map((t) => ({
-      role: t.role,
-      text: t.text,
-      assessment: t.assessment ?? undefined,
-    }));
+    const restored: Bubble[] = transcripts.map((t) => ({ role: t.role, text: t.text }));
+    // Assessments persist on the STUDENT row (exam route updates the student
+    // transcript), but the live UI renders the score badge on the following
+    // examiner (feedback) bubble — shift them so resumed badges match.
+    transcripts.forEach((t, i) => {
+      if (t.assessment && t.role === 'student' && restored[i + 1]?.role === 'examiner') {
+        restored[i + 1].assessment = t.assessment;
+      }
+    });
+
     const turn = await resumeCurrent({ sessionId: id, sessionConfig: cfg });
     applyOpaque(turn);
     setBubbles(restored);
