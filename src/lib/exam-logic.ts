@@ -371,6 +371,17 @@ export function buildElementQueue(
   taxonomyFingerprints?: TaxonomyFingerprints,
   adjacencyNeighbors?: AdjacencyNeighbors
 ): string[] {
+  // Defensive normalization: SessionConfig types selectedAreas/selectedTasks as
+  // required, but the /api/exam route forwards the request body's sessionConfig
+  // as-is, so a non-web client can omit them. Several `.length` reads below would
+  // then throw "Cannot read properties of undefined". Default both to [] once.
+  // (The web client always sends []; the native app's fresh-start config did not.)
+  config = {
+    ...config,
+    selectedTasks: config.selectedTasks ?? [],
+    selectedAreas: config.selectedAreas ?? [],
+  };
+
   let filtered = elements;
 
   // Filter by selected tasks (most granular, wins over selectedAreas)
