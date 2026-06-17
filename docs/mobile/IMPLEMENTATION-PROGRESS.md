@@ -10,6 +10,33 @@
 
 ---
 
+## Latest session (2026-06-16) — M2 exam loop live + a production bug fix
+
+- **M2 text-only exam loop built and verified end-to-end against production.**
+  `apps/mobile/src/lib/exam.ts` (typed client) + a full rewrite of
+  `practice.tsx`: config → `POST /api/session` create → `POST /api/exam` start →
+  respond → assessment badges → next-task → completion, in FLIGHT DECK. Auto-resumes
+  an in-progress exam on mount (rebuilds the conversation from `session_transcripts`
+  via resume-current). Screenshot-verified rendering pd's resumed Instrument exam;
+  curl-verified the write path (create → start `PA.I.A.K1` → respond *satisfactory/
+  advance* → next-task) with a real bearer token.
+- **Found + fixed a latent production bug in the shared exam engine.** `next-task`
+  (and the streaming generator) handed the model a conversation **ending with the
+  examiner's turn** (assistant), which `claude-sonnet-4-6` rejects —
+  *"does not support assistant message prefill"* → 400 → route 500. Latent on web
+  (next-task usually races ahead of respond's deferred transcript write); the
+  slower mobile client hit it deterministically. Fix strips trailing assistant
+  turns before the LLM call; regression test added. **Shipped to `main` →
+  production** (commit `d2843ea`, cherry-picked from the feature branch).
+- **Two config shapes reconciled:** `/api/session` create is snake_case
+  (`study_mode`/`difficulty_preference`/`aircraft_class`); `/api/exam` reads
+  camelCase (`studyMode`/`difficulty`/`aircraftClass`). The client now models the
+  camelCase `ExamConfig` and maps to snake_case only at the create boundary, and
+  pins `difficulty` to the DB enum (`easy|medium|hard|mixed`) — an earlier
+  `'standard'` violated the check constraint.
+
+---
+
 ## A. Audit — master-plan milestones vs. actual state
 
 | Milestone | Status | Detail |
@@ -17,10 +44,11 @@
 | **M1 — Backend enablement** | ✅ **DONE** | All 17 v1 routes accept `Authorization: Bearer` via `getAuthedUser()`; rate-limit identity, exam enforcement, STT `encoding` param all shipped; 1458 web tests green. (3 commits) |
 | **M0 — Scaffold** | ✅ **DONE** | Expo SDK 56 app `apps/mobile`, identity `HeyDPE`/`heydpe://`/`com.imagineflying.heydpe`, iPhone-only, boots in sim. |
 | **M0 — Monorepo (Turborepo + `apps/web` + `packages/shared`)** | ⏸️ **DEFERRED (skipped)** | Web still at repo root; no `packages/`, no `turbo.json`. Organizational, **not** required for a functional sim app. Shared TS (sentence-boundary) will be **vendored** into `apps/mobile` for now; full extraction is a later cleanup. |
-| **M0 — Auth** | 🔜 **NOT STARTED** | No login screen, no session gate. `src/lib/supabase.ts` client exists + `.env` wired with the real anon key, but nothing signs in yet. **NEXT.** |
+| **M0 — Auth** | ✅ **DONE** | FLIGHT DECK login (Email OTP + Google/Microsoft OAuth; Apple disabled-with-note), `AuthProvider` + root session gate, `__DEV__` dev sign-in (session-inject via deep link). Verified signed-in as both dev-sim and pd@imagineflying.com in sim. |
 | **Design system + nav (spans M0/M2/M5)** | ✅ **DONE** | FLIGHT DECK tokens + `cockpit.tsx` primitives; 4-tab nav (Home/Practice/Progress/Settings); IBM Plex Sans + JetBrains Mono. All 4 tabs verified rendering in sim. |
 | **Data layer** | ✅ **DONE** | Native Supabase client (Keychain/SecureStore chunked session), `apiFetch`/`apiRequest` Bearer wrappers, config/env. |
-| **M2 — Exam loop (text-only)** | 🔜 **NOT STARTED** | The core product. Screens are placeholder stubs (no `apiFetch` calls). Fully **sim-achievable**. |
+| **M5 — Home (real data)** | ✅ **DONE** | Wired to `/api/user/tier` + stats + resumable via parallel GETs; renders real stats/resume for the signed-in user. |
+| **M2 — Exam loop (text-only)** | ✅ **DONE** | `exam.ts` client + `practice.tsx`: config → create → start → respond → assessment badges → next-task → completion, with auto-resume. Verified end-to-end against prod. Surfaced + fixed the `next-task` 500 (see Latest session). |
 | **M2 — Onboarding wizard + consent** | 🔜 **NOT STARTED** | Incl. the separate `ai_data_processing` consent. Sim-achievable. |
 | **M2 — Telemetry (PostHog/Sentry behind consent)** | 🔜 **NOT STARTED** | Sim-achievable. |
 | **M3 — Voice pipeline** | 🔒 **WALL (partial)** | Code is buildable; the spike's hard latency/echo thresholds need **physical devices**. Sim can do TTS playback + basic mic. |
