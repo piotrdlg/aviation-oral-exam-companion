@@ -44,3 +44,37 @@ export interface ResumableSession {
 export interface ResumableResponse {
   session: ResumableSession | null;
 }
+
+export type AssessmentScore = 'satisfactory' | 'partial' | 'unsatisfactory' | 'ungraded';
+
+/** A row from get_element_scores — lifetime per-element performance for a rating. */
+export interface ElementScore {
+  element_code: string;
+  task_id: string;
+  area: string; // full area name, e.g. "Preflight Preparation"
+  element_type: string;
+  total_attempts: number;
+  satisfactory_count: number;
+  partial_count: number;
+  unsatisfactory_count: number;
+  latest_score: AssessmentScore | null;
+  latest_attempt_at: string | null;
+}
+export interface ElementScoresResponse {
+  scores: ElementScore[];
+}
+
+/** A row from the default GET /api/session list (recent sessions). */
+export interface SessionRow {
+  id: string;
+  rating: string;
+  study_mode: string;
+  status: string;
+  exchange_count: number;
+  started_at: string;
+  ended_at: string | null;
+  result: { grade?: string } | null;
+}
+export interface SessionsResponse {
+  sessions: SessionRow[];
+}
