@@ -49,11 +49,13 @@
 | **Data layer** | ✅ **DONE** | Native Supabase client (Keychain/SecureStore chunked session), `apiFetch`/`apiRequest` Bearer wrappers, config/env. |
 | **M5 — Home (real data)** | ✅ **DONE** | Wired to `/api/user/tier` + stats + resumable via parallel GETs; renders real stats/resume for the signed-in user. |
 | **M2 — Exam loop (text-only)** | ✅ **DONE** | `exam.ts` client + `practice.tsx`: config → create → start → respond → assessment badges → next-task → completion, with auto-resume. Verified end-to-end against prod. Surfaced + fixed the `next-task` 500 (see Latest session). |
-| **M2 — Onboarding wizard + consent** | 🔜 **NOT STARTED** | Incl. the separate `ai_data_processing` consent. Sim-achievable. |
+| **M2 — Onboarding wizard + consent** | 🔜 **NOT STARTED** | Incl. the separate `ai_data_processing` consent. Sim-achievable. **NEXT.** |
 | **M2 — Telemetry (PostHog/Sentry behind consent)** | 🔜 **NOT STARTED** | Sim-achievable. |
 | **M3 — Voice pipeline** | 🔒 **WALL (partial)** | Code is buildable; the spike's hard latency/echo thresholds need **physical devices**. Sim can do TTS playback + basic mic. |
-| **M4 — Payments (RevenueCat IAP)** | 🔒 **WALL (partial)** | Paywall UI + server IAP backend buildable; actual purchase/restore needs **App Store Connect products + Apple account + sandbox device**. |
-| **M5 — Progress / Settings / Home (real data) + polish** | 🔜 **NOT STARTED** | Fully **sim-achievable** once auth lands. Settings → in-app account deletion wired to `/api/user/delete`. |
+| **M4 — Paywall UI** | ✅ **DONE (render-only)** | `UpgradeSheet` maps trial/quota 403/429 reason codes → tailored paywall; exam loop's fail() routes to it. Verified the real 403 + sheet render. Actual RevenueCat purchase is the App Store wall. |
+| **M5 — Progress (real data)** | ✅ **DONE** | ACS coverage aggregated by area + recent sessions. Verified on pd's real data. |
+| **M5 — Settings (real data) + account deletion** | ✅ **DONE** | Account/plan, exam prefs, subscription line, sign-out, Apple-required type-to-confirm deletion → `/api/user/delete`. Verified rendering pd's data. |
+| **Exam loop polish** | ✅ **DONE** | Study-mode + difficulty selectors on config; 'End exam' → grades via update{status:'completed'} (verified against prod). |
 | **M6 — iOS store submission** | 🔒 **WALL** | Apple Developer account + the blocking `/privacy` correction (owner) + EAS production build signing. |
 
 ---
