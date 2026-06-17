@@ -358,6 +358,16 @@ export async function generateExaminerTurn(
     content: msg.text,
   }));
 
+  // This call generates the NEXT examiner (assistant) turn, so the conversation
+  // handed to the model must end with a user message — claude-sonnet-4-6 rejects
+  // an assistant prefill ("...must end with a user message"). next-task loads the
+  // full DB transcript, which ends with the examiner's last turn, so strip any
+  // trailing assistant messages before the call (start passes empty history, and
+  // respond's history already ends with the student's answer — both unaffected).
+  while (messages.length > 0 && messages[messages.length - 1].role === 'assistant') {
+    messages.pop();
+  }
+
   const startMs = Date.now();
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
@@ -460,6 +470,15 @@ export async function generateExaminerTurnStreaming(
     role: msg.role === 'examiner' ? 'assistant' as const : 'user' as const,
     content: msg.text,
   }));
+
+  // The model continues into the next examiner (assistant) turn, so the
+  // conversation must end with a user message (claude-sonnet-4-6 rejects an
+  // assistant prefill). Strip any trailing assistant turns so the structured-
+  // response reminder below also lands on the real last user turn. (respond's
+  // history ends with the student answer and start's is empty — both no-ops.)
+  while (messages.length > 0 && messages[messages.length - 1].role === 'assistant') {
+    messages.pop();
+  }
 
   // Fix 2: When structured JSON mode is active, append a format reminder to the last
   // user message. Claude weights user-turn instructions more heavily than content buried
