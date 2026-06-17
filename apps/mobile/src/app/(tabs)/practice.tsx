@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Card, H1, Lead, MicroLabel, PrimaryButton, Screen } from '@/components/cockpit';
+import { UPGRADE_CODES, UpgradeSheet } from '@/components/upgrade-sheet';
 import { ApiError } from '@/lib/api';
 import { getResumable, getTier } from '@/lib/endpoints';
 import {
@@ -51,6 +52,7 @@ export default function PracticeScreen() {
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
   const [answer, setAnswer] = useState('');
   const [busy, setBusy] = useState(false);
+  const [upgrade, setUpgrade] = useState<string | null>(null);
 
   // Opaque, server-owned exam state — passed back unchanged each turn.
   const session = useRef<{
@@ -88,6 +90,13 @@ export default function PracticeScreen() {
   }, []);
 
   function fail(e: unknown) {
+    // Trial/quota blocks (403 create, 429 mid-exam) route to the paywall, not an error.
+    if (e instanceof ApiError && e.code && UPGRADE_CODES.has(e.code)) {
+      setUpgrade(e.code);
+      setBusy(false);
+      setPhase((p) => (p === 'active' ? 'active' : 'config'));
+      return;
+    }
     setError(e instanceof ApiError ? e.message : (e as Error)?.message ?? 'Something went wrong');
     setPhase('error');
   }
@@ -196,6 +205,8 @@ export default function PracticeScreen() {
   }
 
   // ---- render ----
+  const overlay = upgrade ? <UpgradeSheet reason={upgrade} onDismiss={() => setUpgrade(null)} /> : null;
+
   if (phase === 'loading') {
     return (
       <Screen>
@@ -222,28 +233,31 @@ export default function PracticeScreen() {
 
   if (phase === 'config') {
     return (
-      <Screen scroll>
-        <MicroLabel>PRACTICE</MicroLabel>
-        <H1>Start an exam</H1>
-        <Lead>Pick a rating, then talk through the oral with your AI examiner.</Lead>
-        <Card style={{ marginBottom: space[4] }}>
-          <MicroLabel color={colors.amber}>RATING</MicroLabel>
-          <View style={styles.chips}>
-            {RATINGS.map((r) => (
-              <Pressable
-                key={r.key}
-                onPress={() => setRating(r.key)}
-                style={[styles.chip, rating === r.key && styles.chipActive]}>
-                <Text style={[styles.chipText, rating === r.key && styles.chipTextActive]}>
-                  {r.label}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-          <View style={{ height: space[5] }} />
-          <PrimaryButton label="Begin exam" onPress={begin} />
-        </Card>
-      </Screen>
+      <>
+        <Screen scroll>
+          <MicroLabel>PRACTICE</MicroLabel>
+          <H1>Start an exam</H1>
+          <Lead>Pick a rating, then talk through the oral with your AI examiner.</Lead>
+          <Card style={{ marginBottom: space[4] }}>
+            <MicroLabel color={colors.amber}>RATING</MicroLabel>
+            <View style={styles.chips}>
+              {RATINGS.map((r) => (
+                <Pressable
+                  key={r.key}
+                  onPress={() => setRating(r.key)}
+                  style={[styles.chip, rating === r.key && styles.chipActive]}>
+                  <Text style={[styles.chipText, rating === r.key && styles.chipTextActive]}>
+                    {r.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+            <View style={{ height: space[5] }} />
+            <PrimaryButton label="Begin exam" onPress={begin} />
+          </Card>
+        </Screen>
+        {overlay}
+      </>
     );
   }
 
@@ -269,6 +283,7 @@ export default function PracticeScreen() {
   const elementCode = session.current?.elementCode;
   return (
     <View style={styles.root}>
+      {overlay}
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <View style={styles.header}>
           <MicroLabel>{elementCode ? `EXAM · ${elementCode}` : 'EXAM'}</MicroLabel>
