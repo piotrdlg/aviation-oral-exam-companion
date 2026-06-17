@@ -307,6 +307,23 @@ describe('buildElementQueue', () => {
     expect(queue).not.toContain('PA.I.A.K1');
   });
 
+  it('does not throw when a client omits selectedAreas/selectedTasks', () => {
+    // SessionConfig types these as required, but the /api/exam route forwards the
+    // request body's sessionConfig as-is. The native app's fresh-start config sent
+    // neither, so buildElementQueue read `.length` off undefined → 500 in prod.
+    // It must default them to [] instead.
+    const partial = {
+      rating: 'private',
+      aircraftClass: 'ASEL',
+      studyMode: 'linear',
+      difficulty: 'mixed',
+    } as unknown as SessionConfig;
+    expect(() => buildElementQueue(elements, partial)).not.toThrow();
+    const queue = buildElementQueue(elements, partial);
+    expect(queue).toContain('PA.I.A.K1');
+    expect(queue).not.toContain('PA.I.A.S1');
+  });
+
   it('filters by difficulty when not mixed', () => {
     const config: SessionConfig = { ...defaultConfig, difficulty: 'easy' };
     const queue = buildElementQueue(elements, config);
