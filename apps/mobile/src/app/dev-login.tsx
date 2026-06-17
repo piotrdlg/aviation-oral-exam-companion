@@ -1,18 +1,20 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
 import { colors, font, fontSize, space } from '@/theme/tokens';
 
-// Dev-only fast sign-in for simulator verification — no typing required: open
-// `heydpe://dev-login` (or `exp://…/--/dev-login` in Expo Go). Credentials come
-// from the gitignored .env (a throwaway test account); the route is inert in
-// production builds (the effect early-returns under !__DEV__).
+// Dev-only fast sign-in for simulator verification (no typing). Two modes:
+//  1. Session inject — `heydpe://dev-login?at=<access>&rt=<refresh>` → setSession
+//     (sign in as a real OTP/OAuth account whose token is minted out-of-band).
+//  2. Password fallback — a throwaway test account from the gitignored .env.
+// Inert in production builds (the effect early-returns under !__DEV__).
 const DEV_EMAIL = process.env.EXPO_PUBLIC_DEV_EMAIL;
 const DEV_PASSWORD = process.env.EXPO_PUBLIC_DEV_PASSWORD;
 
 export default function DevLogin() {
+  const { at, rt } = useLocalSearchParams<{ at?: string; rt?: string }>();
   const [msg, setMsg] = useState('Signing in…');
 
   useEffect(() => {
@@ -21,8 +23,13 @@ export default function DevLogin() {
       return;
     }
     (async () => {
+      if (at && rt) {
+        const { error } = await supabase.auth.setSession({ access_token: at, refresh_token: rt });
+        if (error) setMsg(`Session inject failed: ${error.message}`);
+        return;
+      }
       if (!DEV_EMAIL || !DEV_PASSWORD) {
-        setMsg('Set EXPO_PUBLIC_DEV_EMAIL / EXPO_PUBLIC_DEV_PASSWORD in apps/mobile/.env');
+        setMsg('Pass ?at=&rt= or set EXPO_PUBLIC_DEV_EMAIL / _PASSWORD in apps/mobile/.env');
         return;
       }
       const { error } = await supabase.auth.signInWithPassword({
@@ -32,7 +39,7 @@ export default function DevLogin() {
       if (error) setMsg(`Dev sign-in failed: ${error.message}`);
       // success → onAuthStateChange → the root gate redirects to /(tabs)
     })();
-  }, []);
+  }, [at, rt]);
 
   return (
     <View style={styles.root}>
