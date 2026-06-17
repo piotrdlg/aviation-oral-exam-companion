@@ -86,11 +86,22 @@ export async function createSession(cfg: ExamConfig): Promise<{ id: string }> {
   return res.session;
 }
 
-/** start (planner path) → opening question as JSON. The exam engine reads camelCase sessionConfig. */
+/** start (planner path) → opening question as JSON. The exam engine reads camelCase sessionConfig.
+ *  selectedAreas/selectedTasks default to [] — the planner's buildElementQueue reads their
+ *  .length, so a missing field would 500 the start (server now guards this too). */
 export function startExam(sessionId: string, sessionConfig: ExamConfig): Promise<ExamTurn> {
   return apiFetch<ExamTurn>('/api/exam', {
     method: 'POST',
-    json: { action: 'start', sessionId, sessionConfig, stream: false },
+    json: {
+      action: 'start',
+      sessionId,
+      sessionConfig: {
+        ...sessionConfig,
+        selectedAreas: sessionConfig.selectedAreas ?? [],
+        selectedTasks: sessionConfig.selectedTasks ?? [],
+      },
+      stream: false,
+    },
   });
 }
 
