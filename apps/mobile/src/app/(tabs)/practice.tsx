@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, H1, Lead, MicroLabel, PrimaryButton, Screen } from '@/components/cockpit';
 import { UPGRADE_CODES, UpgradeSheet } from '@/components/upgrade-sheet';
 import { ApiError } from '@/lib/api';
-import { getResumable, getTier } from '@/lib/endpoints';
+import { completeSession, getResumable, getTier } from '@/lib/endpoints';
 import {
   AircraftClass,
   Assessment,
@@ -43,11 +43,28 @@ const RATINGS: { key: Rating; label: string }[] = [
   { key: 'instrument', label: 'Instrument' },
 ];
 
+const MODES: { key: StudyMode; label: string }[] = [
+  { key: 'linear', label: 'Linear' },
+  { key: 'cross_acs', label: 'Cross-ACS' },
+  { key: 'weak_areas', label: 'Weak areas' },
+  { key: 'quick_drill', label: 'Quick drill' },
+];
+
+type Diff = 'easy' | 'medium' | 'hard' | 'mixed';
+const DIFFS: { key: Diff; label: string }[] = [
+  { key: 'easy', label: 'Easy' },
+  { key: 'medium', label: 'Medium' },
+  { key: 'hard', label: 'Hard' },
+  { key: 'mixed', label: 'Mixed' },
+];
+
 export default function PracticeScreen() {
   const [phase, setPhase] = useState<Phase>('loading');
   const [error, setError] = useState<string | null>(null);
   const [rating, setRating] = useState<Rating>('private');
   const [aircraftClass, setAircraftClass] = useState<AircraftClass>('ASEL');
+  const [studyMode, setStudyMode] = useState<StudyMode>('linear');
+  const [difficulty, setDifficulty] = useState<Diff>('mixed');
 
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
   const [answer, setAnswer] = useState('');
@@ -139,8 +156,8 @@ export default function PracticeScreen() {
     try {
       const ac = aircraftClass;
       const cfg: ExamConfig = {
-        studyMode: 'linear',
-        difficulty: 'mixed',
+        studyMode,
+        difficulty,
         rating,
         aircraftClass: ac,
       };
@@ -204,6 +221,20 @@ export default function PracticeScreen() {
     }
   }
 
+  async function endExam() {
+    const s = session.current;
+    if (!s || busy) return;
+    setBusy(true);
+    try {
+      await completeSession(s.id);
+      setPhase('complete');
+    } catch (e) {
+      fail(e);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   // ---- render ----
   const overlay = upgrade ? <UpgradeSheet reason={upgrade} onDismiss={() => setUpgrade(null)} /> : null;
 
@@ -252,6 +283,37 @@ export default function PracticeScreen() {
                 </Pressable>
               ))}
             </View>
+
+            <View style={{ height: space[4] }} />
+            <MicroLabel color={colors.amber}>MODE</MicroLabel>
+            <View style={styles.chips}>
+              {MODES.map((m) => (
+                <Pressable
+                  key={m.key}
+                  onPress={() => setStudyMode(m.key)}
+                  style={[styles.chip, studyMode === m.key && styles.chipActive]}>
+                  <Text style={[styles.chipText, studyMode === m.key && styles.chipTextActive]}>
+                    {m.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+
+            <View style={{ height: space[4] }} />
+            <MicroLabel color={colors.amber}>DIFFICULTY</MicroLabel>
+            <View style={styles.chips}>
+              {DIFFS.map((d) => (
+                <Pressable
+                  key={d.key}
+                  onPress={() => setDifficulty(d.key)}
+                  style={[styles.chip, difficulty === d.key && styles.chipActive]}>
+                  <Text style={[styles.chipText, difficulty === d.key && styles.chipTextActive]}>
+                    {d.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+
             <View style={{ height: space[5] }} />
             <PrimaryButton label="Begin exam" onPress={begin} />
           </Card>
@@ -287,6 +349,9 @@ export default function PracticeScreen() {
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <View style={styles.header}>
           <MicroLabel>{elementCode ? `EXAM · ${elementCode}` : 'EXAM'}</MicroLabel>
+          <Pressable onPress={endExam} disabled={busy} hitSlop={8}>
+            <Text style={styles.endBtn}>End exam</Text>
+          </Pressable>
         </View>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -397,7 +462,15 @@ const styles = StyleSheet.create({
   chipActive: { borderColor: colors.amber, backgroundColor: colors.amberLo },
   chipText: { fontFamily: font.sans, fontSize: fontSize.sm, color: colors.muted },
   chipTextActive: { color: colors.amberBright, fontWeight: '600' },
-  header: { paddingHorizontal: space[5], paddingTop: space[3], paddingBottom: space[2] },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: space[5],
+    paddingTop: space[3],
+    paddingBottom: space[2],
+  },
+  endBtn: { fontFamily: font.sansMedium, fontSize: fontSize.sm, color: colors.dim },
   convo: { paddingHorizontal: space[4], paddingBottom: space[4], gap: space[3] },
   examinerRow: { flexDirection: 'row' },
   examinerBubble: {

@@ -26,6 +26,13 @@ export const getElementScores = (rating: string) =>
 /** Recent sessions (most recent first). */
 export const getSessions = () => apiFetch<SessionsResponse>('/api/session');
 
+/** Finish + grade an in-progress exam (returns to the completion screen). */
+export const completeSession = (sessionId: string) =>
+  apiFetch<{ session?: unknown }>('/api/session', {
+    method: 'POST',
+    json: { action: 'update', sessionId, status: 'completed' },
+  });
+
 /** Permanently delete the account + all data (type-to-confirm guarded server-side). */
 export const deleteAccount = () =>
   apiFetch<{ deleted: boolean }>('/api/user/delete', {
