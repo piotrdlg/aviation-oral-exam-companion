@@ -25,3 +25,17 @@ export const getElementScores = (rating: string) =>
 
 /** Recent sessions (most recent first). */
 export const getSessions = () => apiFetch<SessionsResponse>('/api/session');
+
+/** Permanently delete the account + all data (type-to-confirm guarded server-side). */
+export const deleteAccount = () =>
+  apiFetch<{ deleted: boolean }>('/api/user/delete', {
+    method: 'POST',
+    json: { confirm: 'DELETE' },
+  });
+
+/** Display-only plan label (the stored enum + every gate is unchanged — decision D5). */
+export function planLabel(tier: string): string {
+  if (tier === 'dpe_live') return 'Paid';
+  if (tier === 'ground_school') return 'Tester';
+  return 'Trial';
+}
