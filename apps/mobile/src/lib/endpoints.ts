@@ -1,6 +1,8 @@
 import { apiFetch } from './api';
 import type {
+  ConsentKind,
   ElementScoresResponse,
+  OnboardingPrefs,
   ResumableResponse,
   SessionsResponse,
   StatsResponse,
@@ -47,6 +49,23 @@ export const deleteAccount = () =>
     method: 'POST',
     json: { confirm: 'DELETE' },
   });
+
+/** Save onboarding prefs + mark onboarding complete. Non-blocking by design
+ *  (the web swallows failures and still starts the exam). */
+export const updateTier = (prefs: OnboardingPrefs) =>
+  apiFetch<{ ok: boolean }>('/api/user/tier', { method: 'POST', json: prefs });
+
+/** Skip onboarding: marks it complete only (no prefs) → lands on Practice config. */
+export const skipOnboarding = () =>
+  apiFetch<{ ok: boolean }>('/api/user/tier', {
+    method: 'POST',
+    json: { onboardingCompleted: true },
+  });
+
+/** Record a consent server-side. 'disclaimer' also stamps disclaimer_acknowledged_at;
+ *  'ai_data_processing' writes a consent_records row only. `choices` is required. */
+export const recordConsent = (kind: ConsentKind, choices: Record<string, unknown>) =>
+  apiFetch<{ ok: boolean }>('/api/consent', { method: 'POST', json: { kind, choices } });
 
 /** Display-only plan label (the stored enum + every gate is unchanged — decision D5). */
 export function planLabel(tier: string): string {

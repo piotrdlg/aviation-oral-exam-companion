@@ -12,8 +12,12 @@ export interface TierResponse {
   usage: { sessionsThisMonth: number; ttsCharsThisMonth: number; sttSecondsThisMonth: number };
   preferredRating: Rating;
   preferredAircraftClass: string;
+  aircraftType: string | null;
+  homeAirport: string | null;
   onboardingCompleted: boolean;
   disclaimerAcknowledged: boolean;
+  /** D-ONB-8: whether the user has an ai_data_processing consent record. */
+  aiDataConsented: boolean;
   displayName: string | null;
   avatarUrl: string | null;
   voiceEnabled: boolean;
@@ -21,6 +25,22 @@ export interface TierResponse {
   examinerProfile: string | null;
   preferredTheme: string;
 }
+
+/** Onboarding preferences sent to POST /api/user/tier (camelCase, per the route).
+ *  rating/class are widened to string here — the route validates the enum and the
+ *  exam-engine Rating (incl. 'atp') differs from the mobile-narrowed Rating. */
+export interface OnboardingPrefs {
+  preferredRating: string;
+  preferredAircraftClass: string;
+  aircraftType: string | null;
+  homeAirport: string | null;
+  preferredTheme: string;
+  displayName: string | null;
+  voiceEnabled: boolean;
+  onboardingCompleted: boolean;
+}
+
+export type ConsentKind = 'disclaimer' | 'ai_data_processing';
 
 export interface SessionStats {
   totalSessions: number;

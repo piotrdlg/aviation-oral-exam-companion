@@ -27,17 +27,33 @@ type ApiInit = Omit<RequestInit, 'body'> & { json?: unknown; body?: BodyInit };
  * Throws {@link ApiError} on non-2xx, surfacing the server's reason code so
  * callers can route trial/quota 403/429s to the upgrade flow.
  */
+/** Hard ceiling so a stalled connection rejects instead of hanging a gate/screen forever. */
+const REQUEST_TIMEOUT_MS = 20_000;
+
 export async function apiFetch<T = unknown>(path: string, init: ApiInit = {}): Promise<T> {
   const { json, headers, ...rest } = init;
-  const res = await fetch(`${config.apiUrl}${path}`, {
-    ...rest,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(await authHeader()),
-      ...(headers as Record<string, string> | undefined),
-    },
-    body: json !== undefined ? JSON.stringify(json) : rest.body,
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  let res: Response;
+  try {
+    res = await fetch(`${config.apiUrl}${path}`, {
+      ...rest,
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(await authHeader()),
+        ...(headers as Record<string, string> | undefined),
+      },
+      body: json !== undefined ? JSON.stringify(json) : rest.body,
+    });
+  } catch (e) {
+    if (e instanceof Error && e.name === 'AbortError') {
+      throw new ApiError(0, 'timeout', 'The request timed out. Check your connection.');
+    }
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (!res.ok) {
     let code: string | undefined;

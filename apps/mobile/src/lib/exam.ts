@@ -70,7 +70,7 @@ export interface TranscriptRow {
  * ApiError). The create endpoint is DB-column shaped (snake_case), so we map the
  * camelCase ExamConfig here — this is the ONLY place the two shapes meet.
  */
-export async function createSession(cfg: ExamConfig): Promise<{ id: string }> {
+export async function createSession(cfg: ExamConfig, isOnboarding = false): Promise<{ id: string }> {
   const res = await apiFetch<{ session: { id: string } }>('/api/session', {
     method: 'POST',
     json: {
@@ -81,6 +81,9 @@ export async function createSession(cfg: ExamConfig): Promise<{ id: string }> {
       difficulty_preference: cfg.difficulty,
       selected_areas: cfg.selectedAreas ?? [],
       selected_tasks: cfg.selectedTasks ?? [],
+      // is_onboarding is recomputed + capped (1/user) server-side; the free
+      // uncounted onboarding exam requests it, normal exams send false.
+      is_onboarding: isOnboarding,
     },
   });
   return res.session;
