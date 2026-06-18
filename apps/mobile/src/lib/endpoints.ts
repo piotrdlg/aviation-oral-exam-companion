@@ -6,6 +6,7 @@ import type {
   ResumableResponse,
   SessionsResponse,
   StatsResponse,
+  SttTokenResponse,
   TierResponse,
 } from './types';
 
@@ -27,6 +28,10 @@ export const getElementScores = (rating: string) =>
 
 /** Recent sessions (most recent first). */
 export const getSessions = () => apiFetch<SessionsResponse>('/api/session');
+
+/** Short-lived Deepgram token + listen URL for native raw-PCM16 STT (linear16@16000). */
+export const getSttToken = () =>
+  apiFetch<SttTokenResponse>('/api/stt/token?encoding=linear16&sample_rate=16000');
 
 /** Reactivate a paused session so /api/exam respond/next-task (which require
  *  status 'active') don't 409 on the first answer after a resume. */

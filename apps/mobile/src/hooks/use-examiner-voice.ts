@@ -21,17 +21,15 @@ function loadMods() {
   return mods;
 }
 
-// Set the audio session once: play even with the iOS silent switch on, exclusive focus.
-let audioModeReady: Promise<void> | null = null;
+// Re-assert the PLAYBACK session on every utterance (not once): the student STT
+// hook switches the shared iOS audio session to RECORD (allowsRecording), so a
+// one-shot cache would leave the examiner mute after the first voice answer.
+// `allowsRecording:false` flips it back to playback so TTS sounds even with the
+// silent switch on.
 function ensureAudioMode(audio: AudioMod) {
-  if (!audioModeReady) {
-    audioModeReady = audio
-      .setAudioModeAsync({ playsInSilentMode: true, interruptionMode: 'doNotMix' })
-      .catch(() => {
-        audioModeReady = null;
-      });
-  }
-  return audioModeReady;
+  return audio
+    .setAudioModeAsync({ playsInSilentMode: true, interruptionMode: 'doNotMix', allowsRecording: false })
+    .catch(() => {});
 }
 
 type VoiceState = { speaking: boolean; loading: boolean };

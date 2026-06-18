@@ -42,6 +42,14 @@ export interface OnboardingPrefs {
 
 export type ConsentKind = 'disclaimer' | 'ai_data_processing';
 
+/** GET /api/stt/token?encoding=linear16&sample_rate=16000 — short-lived Deepgram grant. */
+export interface SttTokenResponse {
+  token: string; // Deepgram JWT (starts with 'eyJ' → 'bearer' subprotocol)
+  url: string; // wss Deepgram listen URL (Nova-3 /v1/listen, pinned to linear16@16000)
+  expiresAt: number; // epoch ms
+  flux?: boolean; // /v2/listen TurnInfo schema instead of Results (default off)
+}
+
 export interface SessionStats {
   totalSessions: number;
   completedSessions: number;

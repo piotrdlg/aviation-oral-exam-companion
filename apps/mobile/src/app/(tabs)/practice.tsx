@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, H1, Lead, MicroLabel, PrimaryButton, Screen } from '@/components/cockpit';
 import { UPGRADE_CODES, UpgradeSheet } from '@/components/upgrade-sheet';
 import { useExaminerVoice } from '@/hooks/use-examiner-voice';
+import { useStudentSTT } from '@/hooks/use-student-stt';
 import { track } from '@/lib/analytics';
 import { ApiError } from '@/lib/api';
 import { completeSession, getResumable, getTier, reactivateSession } from '@/lib/endpoints';
@@ -75,6 +76,7 @@ export default function PracticeScreen() {
   const [voiceOn, setVoiceOn] = useState(false);
 
   const voice = useExaminerVoice();
+  const stt = useStudentSTT();
   const lastSpoken = useRef<string>('');
 
   // Opaque, server-owned exam state — passed back unchanged each turn.
@@ -140,6 +142,25 @@ export default function PracticeScreen() {
       track('voice_mode_toggled', { enabled: next });
       return next;
     });
+  }
+
+  // Live-fill the answer field from the speech transcript while listening (the
+  // student can then edit before sending — never auto-submit a misheard answer).
+  // Only overwrite once there's recognized content, so tapping the mic doesn't
+  // instantly wipe an already-typed answer before any speech arrives.
+  useEffect(() => {
+    if ((stt.listening || stt.connecting) && (stt.transcript || stt.interim)) {
+      setAnswer(`${stt.transcript}${stt.interim ? ` ${stt.interim}` : ''}`.trim());
+    }
+  }, [stt.transcript, stt.interim, stt.listening, stt.connecting]);
+
+  async function toggleMic() {
+    if (stt.listening || stt.connecting) {
+      stt.stop();
+      return;
+    }
+    voice.stop(); // barge-in: the examiner must stop before we take the mic (half-duplex)
+    await stt.start();
   }
 
   function fail(e: unknown) {
@@ -223,6 +244,7 @@ export default function PracticeScreen() {
   async function submit() {
     const a = answer.trim();
     if (!a || busy || !session.current) return;
+    stt.stop(); // finalize + release the mic / restore the playback session
     voice.stop(); // barge-in: the student is answering, cut off the examiner
     setBusy(true);
     setAnswer('');
@@ -435,15 +457,34 @@ export default function PracticeScreen() {
               </View>
             ) : null}
           </ScrollView>
+          {stt.error ? <Text style={styles.sttError}>{stt.error}</Text> : null}
+          {stt.listening || stt.connecting ? (
+            <View style={styles.sttBar}>
+              <View style={[styles.sttDot, stt.listening && styles.sttDotLive]} />
+              <Text style={styles.sttBarText} numberOfLines={1}>
+                {stt.connecting ? 'Connecting…' : stt.interim ? stt.interim : 'Listening — speak your answer'}
+              </Text>
+            </View>
+          ) : null}
           <View style={styles.inputBar}>
+            <Pressable
+              onPress={toggleMic}
+              disabled={busy}
+              accessibilityRole="button"
+              accessibilityLabel={stt.listening ? 'Stop voice input' : 'Answer by voice'}
+              style={[styles.mic, (stt.listening || stt.connecting) && styles.micOn, busy && { opacity: 0.4 }]}>
+              <Text style={[styles.micGlyph, (stt.listening || stt.connecting) && styles.micGlyphOn]}>
+                {stt.connecting ? '…' : stt.listening ? '■' : '🎤'}
+              </Text>
+            </Pressable>
             <TextInput
               value={answer}
               onChangeText={setAnswer}
-              placeholder="Type your answer…"
+              placeholder="Type or speak your answer…"
               placeholderTextColor={colors.dim}
               style={styles.input}
               multiline
-              editable={!busy}
+              editable={!busy && !stt.listening && !stt.connecting}
             />
             <Pressable
               onPress={submit}
@@ -602,4 +643,34 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
   },
   sendText: { fontFamily: font.sansSemibold, fontSize: 15, color: colors.bg },
+  mic: {
+    minHeight: 44,
+    minWidth: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.bezel,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+  },
+  micOn: { backgroundColor: colors.cyanLo, borderColor: colors.cyanDim },
+  micGlyph: { fontFamily: font.sans, fontSize: 18, color: colors.muted },
+  micGlyphOn: { color: colors.cyanReadable },
+  sttBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[2],
+    paddingHorizontal: space[4],
+    paddingVertical: space[2],
+  },
+  sttDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.dim },
+  sttDotLive: { backgroundColor: colors.cyan },
+  sttBarText: { flex: 1, fontFamily: font.sans, fontSize: fontSize.sm, color: colors.cyanReadable },
+  sttError: {
+    fontFamily: font.sans,
+    fontSize: fontSize.xs,
+    color: colors.red,
+    paddingHorizontal: space[4],
+    paddingTop: space[2],
+  },
 });
