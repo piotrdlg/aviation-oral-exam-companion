@@ -14,7 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError } from '@/lib/api';
-import { track } from '@/lib/analytics';
+import { setAnalyticsEnabled, track } from '@/lib/analytics';
 import { getTier, recordConsent, skipOnboarding, updateTier } from '@/lib/endpoints';
 import { AircraftClass, ExamConfig, Rating, createSession, startExam } from '@/lib/exam';
 import { useOnboardingGate } from '@/lib/onboarding-gate';
@@ -145,6 +145,7 @@ export default function Onboarding() {
       hasDisplayName: !!displayName.trim(),
       path: 'explore',
     });
+    setAnalyticsEnabled(true); // completed the consent flow → enable analytics (opt out in Settings)
     setOnboarded();
     router.replace('/(tabs)');
   }
@@ -232,6 +233,7 @@ export default function Onboarding() {
         hasDisplayName: !!displayName.trim(),
         path: 'start',
       });
+      setAnalyticsEnabled(true); // completed the consent flow → enable analytics (opt out in Settings)
       setOnboarded();
       router.replace('/(tabs)/practice'); // Practice auto-resumes the new exam
     } catch (e) {

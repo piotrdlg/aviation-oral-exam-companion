@@ -18,4 +18,7 @@ export const config = {
   supabaseAnonKey: SUPABASE_ANON_KEY ?? '',
   /** HeyDPE API the native client calls with `Authorization: Bearer <jwt>` (M1 contract). */
   apiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'https://aviation-oral-exam-companion.vercel.app',
+  /** PostHog product analytics (client-safe project key). Unset → telemetry no-ops. */
+  posthogKey: process.env.EXPO_PUBLIC_POSTHOG_KEY ?? '',
+  posthogHost: process.env.EXPO_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com',
 } as const;

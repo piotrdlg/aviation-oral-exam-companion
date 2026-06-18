@@ -137,7 +137,7 @@ export default function PracticeScreen() {
         // turning on mid-exam: speak the current pending question
         lastSpoken.current = '';
       }
-      track('settings_voice_changed', { enabled: next });
+      track('voice_mode_toggled', { enabled: next });
       return next;
     });
   }
@@ -146,6 +146,7 @@ export default function PracticeScreen() {
     // Trial/quota blocks (403 create, 429 mid-exam) route to the paywall, not an error.
     if (e instanceof ApiError && e.code && UPGRADE_CODES.has(e.code)) {
       setUpgrade(e.code);
+      track('paywall_shown', { reason: e.code });
       setBusy(false);
       setPhase((p) => (p === 'active' ? 'active' : 'config'));
       return;

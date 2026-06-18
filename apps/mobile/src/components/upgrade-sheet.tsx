@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { track } from '@/lib/analytics';
 import { colors, font, fontSize, radius, space } from '@/theme/tokens';
 
 /** Server reason codes (session create 403 + exam 429) that mean "upgrade to continue". */
@@ -65,9 +66,12 @@ export function UpgradeSheet({ reason, onDismiss }: { reason: string; onDismiss:
           ))}
         </View>
 
-        <View style={styles.cta}>
+        <Pressable
+          style={styles.cta}
+          accessibilityRole="button"
+          onPress={() => track('upgrade_clicked', { reason })}>
           <Text style={styles.ctaText}>Upgrade in the App Store</Text>
-        </View>
+        </Pressable>
         <Text style={styles.ctaNote}>In-app subscriptions unlock with the App Store release.</Text>
 
         <Pressable onPress={onDismiss} style={styles.dismiss} accessibilityRole="button">

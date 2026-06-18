@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Card, H1, MicroLabel, Screen } from '@/components/cockpit';
+import { analyticsEnabled, setAnalyticsEnabled } from '@/lib/analytics';
 import { ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { deleteAccount, getTier, planLabel } from '@/lib/endpoints';
@@ -17,8 +18,17 @@ export default function SettingsScreen() {
   const [confirmText, setConfirmText] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [analytics, setAnalytics] = useState(analyticsEnabled());
 
   const email = session?.user?.email ?? '—';
+
+  function toggleAnalytics() {
+    setAnalytics((on) => {
+      const next = !on;
+      void setAnalyticsEnabled(next);
+      return next;
+    });
+  }
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -63,6 +73,25 @@ export default function SettingsScreen() {
       </Section>
       <Text style={styles.note}>
         Manage or cancel your subscription from the App Store account settings.
+      </Text>
+
+      <Section title="PRIVACY">
+        <Pressable
+          onPress={toggleAnalytics}
+          accessibilityRole="switch"
+          accessibilityState={{ checked: analytics }}
+          style={styles.row}>
+          <Text style={styles.rowLabel}>Usage analytics</Text>
+          <View style={[styles.toggle, analytics && styles.toggleOn]}>
+            <Text style={[styles.toggleText, analytics && styles.toggleTextOn]}>
+              {analytics ? 'ON' : 'OFF'}
+            </Text>
+          </View>
+        </Pressable>
+      </Section>
+      <Text style={styles.note}>
+        Share anonymous usage data to help improve HeyDPE. No exam content or personal
+        details — you can turn this off anytime.
       </Text>
 
       <View style={{ marginTop: space[5] }}>
@@ -163,6 +192,19 @@ const styles = StyleSheet.create({
   chevron: { fontFamily: font.sans, fontSize: fontSize.xl, color: colors.dim },
   danger: { color: colors.red },
   note: { fontFamily: font.sans, fontSize: fontSize.xs, color: colors.dim, marginTop: space[2], lineHeight: 18 },
+  toggle: {
+    minWidth: 52,
+    paddingHorizontal: space[3],
+    paddingVertical: 4,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.panel,
+    alignItems: 'center',
+  },
+  toggleOn: { borderColor: colors.greenDim, backgroundColor: colors.greenLo },
+  toggleText: { fontFamily: font.mono, fontSize: 11, letterSpacing: 1, color: colors.dim },
+  toggleTextOn: { color: colors.greenReadable },
   confirmBox: { paddingVertical: space[4], gap: space[2] },
   confirmTitle: { fontFamily: font.sansMedium, fontSize: fontSize.sm, color: colors.text, lineHeight: 20 },
   confirmHint: { fontFamily: font.mono, fontSize: fontSize.xs, color: colors.dim },

@@ -14,6 +14,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { identify, loadAnalyticsConsent, reset } from '@/lib/analytics';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { OnboardingGateProvider, useOnboardingGate } from '@/lib/onboarding-gate';
 import { colors, font, fontSize, radius, space } from '@/theme/tokens';
@@ -70,6 +71,17 @@ function RootNavigator() {
   const { needsOnboarding, gateError, retry } = useOnboardingGate();
   const segments = useSegments();
   const router = useRouter();
+
+  // Telemetry: load persisted analytics consent once, then attribute events to
+  // the signed-in user (or reset to anonymous on sign-out). Both no-op until
+  // consent is granted + a PostHog key is configured.
+  useEffect(() => {
+    loadAnalyticsConsent();
+  }, []);
+  useEffect(() => {
+    if (session?.user?.id) identify(session.user.id);
+    else reset();
+  }, [session?.user?.id]);
 
   useEffect(() => {
     if (loading) return;
