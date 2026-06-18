@@ -74,7 +74,7 @@
 | **M2 — Exam loop (text-only)** | ✅ **DONE** | `exam.ts` client + `practice.tsx`: config → create → start → respond → assessment badges → next-task → completion, with auto-resume. Verified end-to-end against prod. Surfaced + fixed the `next-task` 500 (see Latest session). |
 | **M2 — Onboarding wizard + consent** | ✅ **DONE** | `onboarding.tsx` modal: 6 steps + the two store-required consent gates (`ai_data_processing` naming Anthropic/Deepgram/OpenAI + FAA `disclaimer`), gated by `OnboardingGateProvider`. Backend prereqs (constraint + route allow-list + `aiDataConsented`) shipped to main. Free **uncounted** onboarding exam (create-before-complete order verified vs prod). 6 review bugs fixed (gate fail-open, handoff idempotency, etc.). Verified e2e + in sim. M2 type-only (voice off, no mic-priming). |
 | **M2 — Telemetry (PostHog/Sentry behind consent)** | 🟡 **SHIM** | `track()` consent-gated stub wired at all onboarding/exam/paywall call sites; real PostHog/Sentry init lands in this phase. **NEXT** (or voice M3). |
-| **M3 — Voice pipeline** | 🔒 **WALL (partial)** | Code is buildable; the spike's hard latency/echo thresholds need **physical devices**. Sim can do TTS playback + basic mic. |
+| **M3 — Voice (examiner TTS playback)** | 🟡 **CODE DONE / dev-build to verify** | `useExaminerVoice` + Practice integration: examiner SPEAKS each turn via `/api/tts` (Deepgram Aura-2 mp3) → `expo-audio`, with barge-in, a voice toggle, and text-only fallback. **Discovery: Expo Go lacks `expo-audio` (and secure-store/apple-auth) — running voice needs a custom dev build (`expo run:ios`, no Apple acct for sim).** Building the dev client now. STT (speaking answers) + hard latency/AEC thresholds remain the **physical-device** wall. |
 | **M4 — Paywall UI** | ✅ **DONE (render-only)** | `UpgradeSheet` maps trial/quota 403/429 reason codes → tailored paywall; exam loop's fail() routes to it. Verified the real 403 + sheet render. Actual RevenueCat purchase is the App Store wall. |
 | **M5 — Progress (real data)** | ✅ **DONE** | ACS coverage aggregated by area + recent sessions. Verified on pd's real data. |
 | **M5 — Settings (real data) + account deletion** | ✅ **DONE** | Account/plan, exam prefs, subscription line, sign-out, Apple-required type-to-confirm deletion → `/api/user/delete`. Verified rendering pd's data. |
@@ -87,6 +87,14 @@
 
 1. **Apple Developer account / App Store Connect** — Sign in with Apple service config, IAP product creation, EAS build signing (dev-client + production), TestFlight, store submission.
 2. **Physical iPhone** — the M3 voice spike thresholds (PCM mic→Deepgram latency, AEC), IAP sandbox purchase, native Sign-in-with-Apple end-to-end.
+
+> **Harness note (2026-06-17):** Expo Go can't run this app's native modules
+> (`expo-audio`, `expo-secure-store`, `expo-apple-authentication`,
+> `expo-glass-effect`) — `Cannot find native module 'ExpoAudio'`. A **simulator
+> dev build** (`npx expo run:ios`) is required for faithful testing (voice, real
+> Keychain auth, native Apple sign-in). This needs NO Apple Developer account
+> (simulator builds are unsigned) — only Xcode + CocoaPods — so it's done
+> programmatically. `ios/`/`android/` are gitignored (CNG regenerates them).
 
 Everything else I do autonomously, including the items below.
 
