@@ -49,6 +49,14 @@
   3. **(medium)** Score badges vanished after resume — assessments persist on the
      student transcript row but render on the following examiner bubble; `resumeExam`
      now shifts them. (1 review finding was a false positive, rejected by the verify pass.)
+- **Onboarding (2026-06-17):** native wizard + the two store-required consent gates
+  shipped; backend consent prereqs deployed to main (`5580a2d` + test `e868800`).
+  A second adversarial review found **6 more real bugs** in the gate/handoff — all
+  fixed: gate fail-open on tier error (→ retry, never skip consents), tabs flash
+  pre-redirect (→ block render), non-idempotent handoff (→ ref-guarded create/start
+  + required-with-retry complete so the onboarding exam stays uncounted), consent
+  double-tap, stuck `busy`. apiFetch gained a 20s timeout. Corrected the spec's
+  network order (create exam BEFORE completing onboarding — else it counts).
 
 ---
 
@@ -64,8 +72,8 @@
 | **Data layer** | ✅ **DONE** | Native Supabase client (Keychain/SecureStore chunked session), `apiFetch`/`apiRequest` Bearer wrappers, config/env. |
 | **M5 — Home (real data)** | ✅ **DONE** | Wired to `/api/user/tier` + stats + resumable via parallel GETs; renders real stats/resume for the signed-in user. |
 | **M2 — Exam loop (text-only)** | ✅ **DONE** | `exam.ts` client + `practice.tsx`: config → create → start → respond → assessment badges → next-task → completion, with auto-resume. Verified end-to-end against prod. Surfaced + fixed the `next-task` 500 (see Latest session). |
-| **M2 — Onboarding wizard + consent** | 🔜 **NOT STARTED** | Incl. the separate `ai_data_processing` consent. Sim-achievable. **NEXT.** |
-| **M2 — Telemetry (PostHog/Sentry behind consent)** | 🔜 **NOT STARTED** | Sim-achievable. |
+| **M2 — Onboarding wizard + consent** | ✅ **DONE** | `onboarding.tsx` modal: 6 steps + the two store-required consent gates (`ai_data_processing` naming Anthropic/Deepgram/OpenAI + FAA `disclaimer`), gated by `OnboardingGateProvider`. Backend prereqs (constraint + route allow-list + `aiDataConsented`) shipped to main. Free **uncounted** onboarding exam (create-before-complete order verified vs prod). 6 review bugs fixed (gate fail-open, handoff idempotency, etc.). Verified e2e + in sim. M2 type-only (voice off, no mic-priming). |
+| **M2 — Telemetry (PostHog/Sentry behind consent)** | 🟡 **SHIM** | `track()` consent-gated stub wired at all onboarding/exam/paywall call sites; real PostHog/Sentry init lands in this phase. **NEXT** (or voice M3). |
 | **M3 — Voice pipeline** | 🔒 **WALL (partial)** | Code is buildable; the spike's hard latency/echo thresholds need **physical devices**. Sim can do TTS playback + basic mic. |
 | **M4 — Paywall UI** | ✅ **DONE (render-only)** | `UpgradeSheet` maps trial/quota 403/429 reason codes → tailored paywall; exam loop's fail() routes to it. Verified the real 403 + sheet render. Actual RevenueCat purchase is the App Store wall. |
 | **M5 — Progress (real data)** | ✅ **DONE** | ACS coverage aggregated by area + recent sessions. Verified on pd's real data. |
