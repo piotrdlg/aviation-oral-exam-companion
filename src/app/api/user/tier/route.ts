@@ -19,8 +19,8 @@ export async function GET(request: NextRequest) {
     }
     const { user } = authed;
 
-    // Get user's profile and voice options in parallel
-    const [profileResult, voiceOptionsResult] = await Promise.all([
+    // Get user's profile, voice options, and AI-data-consent record in parallel
+    const [profileResult, voiceOptionsResult, aiConsentResult] = await Promise.all([
       serviceSupabase
         .from('user_profiles')
         .select('tier, preferred_voice, preferred_rating, preferred_aircraft_class, aircraft_type, home_airport, onboarding_completed, disclaimer_acknowledged_at, preferred_theme, subscription_status, cancel_at_period_end, current_period_end, display_name, avatar_url, voice_enabled, examiner_profile')
@@ -31,6 +31,13 @@ export async function GET(request: NextRequest) {
         .select('value')
         .eq('key', 'voice.user_options')
         .maybeSingle(),
+      // D-ONB-8: symmetric with disclaimerAcknowledged — lets the native
+      // onboarding skip an already-given third-party-AI consent gate.
+      serviceSupabase
+        .from('consent_records')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('kind', 'ai_data_processing'),
     ]);
 
     const profile = profileResult.data;
@@ -83,6 +90,7 @@ export async function GET(request: NextRequest) {
       homeAirport: profile?.home_airport || null,
       onboardingCompleted: profile?.onboarding_completed ?? false,
       disclaimerAcknowledged: !!profile?.disclaimer_acknowledged_at,
+      aiDataConsented: (aiConsentResult.count ?? 0) > 0,
       preferredTheme: profile?.preferred_theme || 'cockpit',
       displayName: profile?.display_name || null,
       avatarUrl: profile?.avatar_url || null,
