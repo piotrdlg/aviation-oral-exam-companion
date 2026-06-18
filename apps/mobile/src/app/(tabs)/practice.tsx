@@ -14,6 +14,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Card, H1, Lead, MicroLabel, PrimaryButton, Screen } from '@/components/cockpit';
 import { UPGRADE_CODES, UpgradeSheet } from '@/components/upgrade-sheet';
+import { useExaminerVoice } from '@/hooks/use-examiner-voice';
+import { track } from '@/lib/analytics';
 import { ApiError } from '@/lib/api';
 import { completeSession, getResumable, getTier, reactivateSession } from '@/lib/endpoints';
 import {
@@ -70,6 +72,10 @@ export default function PracticeScreen() {
   const [answer, setAnswer] = useState('');
   const [busy, setBusy] = useState(false);
   const [upgrade, setUpgrade] = useState<string | null>(null);
+  const [voiceOn, setVoiceOn] = useState(false);
+
+  const voice = useExaminerVoice();
+  const lastSpoken = useRef<string>('');
 
   // Opaque, server-owned exam state — passed back unchanged each turn.
   const session = useRef<{
@@ -91,6 +97,7 @@ export default function PracticeScreen() {
       try {
         const tier = await getTier();
         setRating(tier.preferredRating);
+        setVoiceOn(tier.voiceEnabled);
         const ac = (tier.preferredAircraftClass || 'ASEL') as AircraftClass;
         setAircraftClass(ac);
         const { session: open } = await getResumable();
@@ -105,6 +112,35 @@ export default function PracticeScreen() {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Speak the most recent examiner turn whenever it changes (start / respond
+  // feedback / next-task question / resumed pending question), if voice is on.
+  useEffect(() => {
+    if (!voiceOn || phase !== 'active') return;
+    for (let i = bubbles.length - 1; i >= 0; i--) {
+      if (bubbles[i].role === 'examiner') {
+        if (bubbles[i].text !== lastSpoken.current) {
+          lastSpoken.current = bubbles[i].text;
+          voice.speak(bubbles[i].text);
+        }
+        break;
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bubbles, voiceOn, phase]);
+
+  function toggleVoice() {
+    setVoiceOn((on) => {
+      const next = !on;
+      if (!next) voice.stop();
+      else {
+        // turning on mid-exam: speak the current pending question
+        lastSpoken.current = '';
+      }
+      track('settings_voice_changed', { enabled: next });
+      return next;
+    });
+  }
 
   function fail(e: unknown) {
     // Trial/quota blocks (403 create, 429 mid-exam) route to the paywall, not an error.
@@ -186,6 +222,7 @@ export default function PracticeScreen() {
   async function submit() {
     const a = answer.trim();
     if (!a || busy || !session.current) return;
+    voice.stop(); // barge-in: the student is answering, cut off the examiner
     setBusy(true);
     setAnswer('');
     const withAnswer = [...bubbles, { role: 'student' as const, text: a }];
@@ -359,9 +396,21 @@ export default function PracticeScreen() {
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <View style={styles.header}>
           <MicroLabel>{elementCode ? `EXAM · ${elementCode}` : 'EXAM'}</MicroLabel>
-          <Pressable onPress={endExam} disabled={busy} hitSlop={8}>
-            <Text style={styles.endBtn}>End exam</Text>
-          </Pressable>
+          <View style={styles.headerActions}>
+            <Pressable
+              onPress={toggleVoice}
+              hitSlop={8}
+              accessibilityRole="switch"
+              accessibilityState={{ checked: voiceOn }}
+              accessibilityLabel="Examiner voice">
+              <Text style={[styles.voiceBtn, voiceOn && styles.voiceBtnOn]}>
+                {voiceOn ? (voice.speaking ? '◉ speaking' : '🔊 voice') : '🔇 voice'}
+              </Text>
+            </Pressable>
+            <Pressable onPress={endExam} disabled={busy} hitSlop={8}>
+              <Text style={styles.endBtn}>End exam</Text>
+            </Pressable>
+          </View>
         </View>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -481,6 +530,9 @@ const styles = StyleSheet.create({
     paddingBottom: space[2],
   },
   endBtn: { fontFamily: font.sansMedium, fontSize: fontSize.sm, color: colors.dim },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: space[4] },
+  voiceBtn: { fontFamily: font.mono, fontSize: fontSize.xs, color: colors.dim },
+  voiceBtnOn: { color: colors.cyanReadable },
   convo: { paddingHorizontal: space[4], paddingBottom: space[4], gap: space[3] },
   examinerRow: { flexDirection: 'row' },
   examinerBubble: {

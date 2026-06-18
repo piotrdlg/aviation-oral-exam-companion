@@ -40,7 +40,13 @@
       ],
       "expo-font",
       "expo-secure-store",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "HeyDPE uses your microphone so your AI examiner can hear and respond to your spoken answers during practice oral exams."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
