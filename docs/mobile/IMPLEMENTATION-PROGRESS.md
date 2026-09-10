@@ -6,9 +6,69 @@
 > submission + the device-only / Apple-account work comes after.
 >
 > Derived from the master plan (`00-MOBILE-MASTER-PLAN.md` §4) and the sub-docs.
-> Branch: `feat/mobile-m1-api-enablement` (one PR). Updated 2026-06-16.
+> Branch: `feat/mobile-test-readiness` (preserves `feat/mobile-m1-api-enablement`). Updated 2026-09-10.
+
+## Takeover Implementation (2026-09-10)
+
+**This section supersedes the historical June status below. The app is not yet
+TestFlight-ready or store-complete.** The approved next milestone remains
+`10-TEST-READINESS-PLAN.md`; IAP, App Store submission, and Android follow its
+physical-device voice gate.
+
+Implemented locally:
+- Expo 57.0.21 / React Native 0.86.3, current SDK-matched native dependencies,
+  native Apple nonce authentication, EAS development/smoke/preview/production
+  profiles, HeyDPE icon, and stop-on-background native audio configuration.
+- A single serialized `VoiceSession`, per-attempt cancellation, ordered
+  feedback/question playback, lossless 2,000-character TTS splitting, graceful
+  final transcription, typed-prefix preservation, and AppState/focus cleanup.
+- Unit-tested Deepgram timing deduplication and Flux multi-turn accumulation;
+  native adapter tests cover cancellation and trailing finals. T1/T2/T3/E2E
+  measurement hooks are prepared, not physical-device proof.
+- Server-graded results, resume configuration preservation, draft recovery,
+  offline state, 409 reclaim, 503 retry, and correct Tester override labeling.
+  Natural completion retains the server's grade instead of regrading it as
+  user-ended. Exam generation gets a 70-second client ceiling for the server's
+  60-second request window; ordinary API requests retain 20 seconds.
+- Consent-gated Sentry with payload scrubbing; analytics opt-out race fix;
+  onboarding skip/explore cannot bypass the separate AI/disclaimer consents.
+  Auth startup failures are retryable; release Keychain failures cannot silently
+  fall back to volatile memory. Development credentials are stripped in release.
+- Saved examiner-voice preference and native switches in Settings. Purchase UI
+  explicitly reports billing unavailable instead of offering a no-op command.
+- Mobile tests, lint/typecheck configuration, dedicated CI, and root web/native
+  TypeScript/Vitest separation. Removed the credential-bearing staging-auth page
+  locally; corrected root AGENTS model names. No production deployment performed.
+
+Verification and native smoke evidence are recorded in
+`testing/2026-09-10-takeover.md`. The 30-minute physical test script is
+`11-TESTFLIGHT-TEST-SCRIPT.md`. Existing June claims below are historical evidence,
+not re-certification of the rewritten native pipeline.
+
+**External prerequisites:** EAS CLI reports "Not logged in". The real EAS project,
+App Store Connect app record/signing, Apple bundle-ID provider configuration,
+Sentry project/DSN, and two physical test iPhones are not verified. No TestFlight
+build, physical T1-T4 GO, Apple native sign-in, crash-ingestion, or IAP result may
+be inferred from this implementation.
+
+**Plan deviations:** source preparation for Phases 4/6 proceeded while Phase 3
+account/device access was unavailable; those phases are not accepted as complete.
+The Maestro flow currently assumes an authenticated QA account, because no
+fixed-OTP fixture was supplied. Its release smoke gate remains open. No branch
+history has been rewritten and no mobile changes have been deployed to main.
 
 ---
+
+## Restart (2026-09-10) — test-readiness plan approved
+
+No code changed between 2026-06-18 and 2026-09-10. The path from "works in the simulator" to
+"TestFlight internal testing with voice proven on a device" is `10-TEST-READINESS-PLAN.md`
+(7 phases, 11–15 engineering days, reviewed and **approved by GPT-6 Astra** in three rounds).
+Key corrections found during the audit: the Tester mechanism is the admin `paid_equivalent`
+override (not `ground_school`); Expo SDK 57 is the target (SDK 58 is preview-only); expo-audio 57
+has no interruption events, so the lifecycle is `AppState`-driven; examiner turn delivery, STT
+finalization and half-duplex coordination in the current hooks need the Phase 4 rewrite before
+any device spike. Next action: Phase 0 (push the branch, open the PR).
 
 ## Latest session (2026-06-16) — M2 exam loop live + a production bug fix
 
