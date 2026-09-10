@@ -1,6 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { track } from '@/lib/analytics';
 import { colors, font, fontSize, radius, space } from '@/theme/tokens';
 
 /** Server reason codes (session create 403 + exam 429) that mean "upgrade to continue". */
@@ -51,9 +50,10 @@ export function UpgradeSheet({ reason, onDismiss }: { reason: string; onDismiss:
     body: 'Upgrade for unlimited checkride practice.',
   };
   return (
+    <Modal transparent animationType="none" onRequestClose={onDismiss}>
     <View style={styles.backdrop}>
-      <View style={styles.sheet}>
-        <Text style={styles.kicker}>// HEYDPE PRO</Text>
+      <ScrollView style={styles.sheet} contentContainerStyle={styles.sheetContent}>
+        <Text style={styles.kicker}>{'// HEYDPE PRO'}</Text>
         <Text style={styles.title}>{copy.title}</Text>
         <Text style={styles.body}>{copy.body}</Text>
 
@@ -66,19 +66,14 @@ export function UpgradeSheet({ reason, onDismiss }: { reason: string; onDismiss:
           ))}
         </View>
 
-        <Pressable
-          style={styles.cta}
-          accessibilityRole="button"
-          onPress={() => track('upgrade_clicked', { reason })}>
-          <Text style={styles.ctaText}>Upgrade in the App Store</Text>
-        </Pressable>
-        <Text style={styles.ctaNote}>In-app subscriptions unlock with the App Store release.</Text>
+        <Text style={styles.ctaNote}>Purchases are unavailable in this test build.</Text>
 
         <Pressable onPress={onDismiss} style={styles.dismiss} accessibilityRole="button">
           <Text style={styles.dismissText}>Not now</Text>
         </Pressable>
-      </View>
+      </ScrollView>
     </View>
+    </Modal>
   );
 }
 
@@ -97,15 +92,17 @@ const styles = StyleSheet.create({
   },
   sheet: {
     width: '100%',
+    flexGrow: 0,
+    maxHeight: '85%',
     maxWidth: 420,
     backgroundColor: colors.bezel,
     borderWidth: 1,
     borderColor: colors.amberDim,
     borderRadius: radius.xl,
-    padding: space[5],
   },
+  sheetContent: { padding: space[5] },
   kicker: { fontFamily: font.mono, fontSize: fontSize.micro, letterSpacing: 3, color: colors.amber, marginBottom: space[2] },
-  title: { fontFamily: font.sansBold, fontSize: fontSize.h2, color: colors.text, letterSpacing: -0.3, marginBottom: space[2] },
+  title: { fontFamily: font.sansBold, fontSize: fontSize.h2, color: colors.text, letterSpacing: 0, marginBottom: space[2] },
   body: { fontFamily: font.sans, fontSize: fontSize.base, lineHeight: 23, color: colors.muted, marginBottom: space[4] },
   bullets: { gap: space[2], marginBottom: space[5] },
   bulletRow: { flexDirection: 'row', alignItems: 'center', gap: space[3] },

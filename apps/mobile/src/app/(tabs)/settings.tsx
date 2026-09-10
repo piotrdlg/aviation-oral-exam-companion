@@ -1,18 +1,19 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
 import { Card, H1, MicroLabel, Screen } from '@/components/cockpit';
 import { analyticsEnabled, setAnalyticsEnabled } from '@/lib/analytics';
 import { ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import { deleteAccount, getTier, planLabel } from '@/lib/endpoints';
+import { deleteAccount, getTier, planLabel, updateTier } from '@/lib/endpoints';
 import { supabase } from '@/lib/supabase';
 import { useAsync } from '@/lib/use-async';
 import { colors, font, fontSize, radius, space } from '@/theme/tokens';
 
 export default function SettingsScreen() {
   const { session } = useAuth();
-  const { data: tier, loading } = useAsync(getTier);
+  const { data: tier, loading, error: loadError, refresh } = useAsync(getTier);
+  const [saving, setSaving] = useState(false);
 
   const [confirming, setConfirming] = useState(false);
   const [confirmText, setConfirmText] = useState('');
@@ -23,15 +24,24 @@ export default function SettingsScreen() {
   const email = session?.user?.email ?? '—';
 
   function toggleAnalytics() {
-    setAnalytics((on) => {
-      const next = !on;
-      void setAnalyticsEnabled(next);
-      return next;
-    });
+    const next = !analytics;
+    setAnalytics(next);
+    void setAnalyticsEnabled(next);
+  }
+
+  async function toggleVoice(enabled: boolean) {
+    setSaving(true);
+    setErr(null);
+    try {
+      await updateTier({ voiceEnabled: enabled });
+      await refresh();
+    } catch (error) { setErr(error instanceof Error ? error.message : 'Could not save your preference.'); }
+    finally { setSaving(false); }
   }
 
   async function signOut() {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) setErr(error.message);
     // root gate redirects to /login on the auth-state change
   }
 
@@ -52,42 +62,39 @@ export default function SettingsScreen() {
     <Screen scroll>
       <MicroLabel>SETTINGS</MicroLabel>
       <H1>Account</H1>
+      {loadError ? <Pressable accessibilityRole="button" onPress={refresh}><Text style={styles.errText}>Account details unavailable. Retry</Text></Pressable> : null}
+      {err && !confirming ? <Text accessibilityRole="alert" style={styles.errText}>{err}</Text> : null}
 
       <Section title="ACCOUNT">
         <Row label="Email" value={email} />
-        <Row label="Plan" value={loading ? '…' : tier ? planLabel(tier.tier) : '—'} last />
+        <Row label="Plan" value={loading ? '…' : tier ? planLabel(tier.tier, tier.hasPaidOverride) : '—'} last />
       </Section>
 
       <Section title="EXAM">
-        <Row label="Examiner voice" value={voiceLabel(tier?.preferredVoice, tier?.voiceEnabled)} />
+        <View style={[styles.row, styles.rowBorder]}>
+          <Text style={styles.rowLabel}>Examiner voice</Text>
+          <Switch accessibilityLabel="Examiner voice" value={tier?.voiceEnabled ?? false} disabled={saving || loading || !tier} onValueChange={toggleVoice} trackColor={{ true: colors.greenDim }} />
+        </View>
         <Row label="Examiner style" value={titleCase(tier?.examinerProfile) ?? 'Standard'} />
         <Row label="Theme" value={titleCase(tier?.preferredTheme) ?? 'Flight deck'} last />
       </Section>
 
       <Section title="SUBSCRIPTION">
         <Row
-          label="Manage subscription"
-          value={tier?.tier === 'dpe_live' ? 'Active' : 'Trial'}
+          label="Access"
+          value={tier ? planLabel(tier.tier, tier.hasPaidOverride) : 'Unavailable'}
           last
         />
       </Section>
       <Text style={styles.note}>
-        Manage or cancel your subscription from the App Store account settings.
+        Subscription changes are unavailable in this test build.
       </Text>
 
       <Section title="PRIVACY">
-        <Pressable
-          onPress={toggleAnalytics}
-          accessibilityRole="switch"
-          accessibilityState={{ checked: analytics }}
-          style={styles.row}>
+        <View style={styles.row}>
           <Text style={styles.rowLabel}>Usage analytics</Text>
-          <View style={[styles.toggle, analytics && styles.toggleOn]}>
-            <Text style={[styles.toggleText, analytics && styles.toggleTextOn]}>
-              {analytics ? 'ON' : 'OFF'}
-            </Text>
-          </View>
-        </Pressable>
+          <Switch accessibilityLabel="Usage analytics" value={analytics} onValueChange={toggleAnalytics} trackColor={{ true: colors.greenDim }} />
+        </View>
       </Section>
       <Text style={styles.note}>
         Share anonymous usage data to help improve HeyDPE. No exam content or personal
@@ -174,10 +181,6 @@ function Row({ label, value, last }: { label: string; value?: string; last?: boo
   );
 }
 
-function voiceLabel(voice?: string | null, enabled?: boolean) {
-  if (enabled === false) return 'Off';
-  return titleCase(voice) ?? 'Aura-2';
-}
 function titleCase(s?: string | null): string | undefined {
   if (!s) return undefined;
   return s.replace(/[_-]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());

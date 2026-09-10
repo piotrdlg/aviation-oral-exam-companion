@@ -18,6 +18,7 @@ import { identify, loadAnalyticsConsent, reset } from '@/lib/analytics';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { OnboardingGateProvider, useOnboardingGate } from '@/lib/onboarding-gate';
 import { colors, font, fontSize, radius, space } from '@/theme/tokens';
+import { OfflineBanner } from '@/components/offline-banner';
 
 function DarkFrame() {
   return (
@@ -58,7 +59,10 @@ export default function RootLayout() {
     <AuthProvider>
       <OnboardingGateProvider>
         <StatusBar style="light" />
-        <RootNavigator />
+        <View style={{ flex: 1 }}>
+          <RootNavigator />
+          <OfflineBanner />
+        </View>
       </OnboardingGateProvider>
     </AuthProvider>
   );
@@ -67,7 +71,7 @@ export default function RootLayout() {
 // Gate: no session → /login; signed-in but not onboarded → /onboarding (modal);
 // signed-in + onboarded while on an auth/onboarding route → /(tabs).
 function RootNavigator() {
-  const { session, loading } = useAuth();
+  const { session, loading, error: authError, retry: retryAuth } = useAuth();
   const { needsOnboarding, gateError, retry } = useOnboardingGate();
   const segments = useSegments();
   const router = useRouter();
@@ -103,6 +107,7 @@ function RootNavigator() {
   }, [session, loading, needsOnboarding, segments, router]);
 
   if (loading) return <DarkFrame />;
+  if (authError) return <GateErrorFrame onRetry={retryAuth} />;
   // Don't mount the tab UI until onboarding status is known for a signed-in user
   // (otherwise a not-onboarded user flashes/interacts with the tabs pre-redirect).
   if (session && gateError) return <GateErrorFrame onRetry={retry} />;

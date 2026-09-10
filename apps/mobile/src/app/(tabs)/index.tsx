@@ -2,16 +2,18 @@ import { router } from 'expo-router';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Card, H1, Lead, MicroLabel, PrimaryButton, Screen, Stat } from '@/components/cockpit';
-import { getResumable, getStats, getTier } from '@/lib/endpoints';
+import { getResumable, getStats, getTier, planLabel } from '@/lib/endpoints';
 import { useAsync } from '@/lib/use-async';
 import { colors, font, fontSize, space } from '@/theme/tokens';
 
-export default function HomeScreen() {
-  const { data, error, loading, refresh } = useAsync(async () => {
+async function loadDashboard() {
     const tier = await getTier();
     const [stats, resumable] = await Promise.all([getStats(tier.preferredRating), getResumable()]);
     return { tier, stats: stats.stats, resumable: resumable.session };
-  });
+}
+
+export default function HomeScreen() {
+  const { data, error, loading, refresh } = useAsync(loadDashboard);
 
   if (loading && !data) {
     return (
@@ -38,7 +40,7 @@ export default function HomeScreen() {
   }
 
   const { tier, stats, resumable } = data;
-  const paid = tier.tier === 'dpe_live';
+  const paid = tier.tier === 'dpe_live' || tier.hasPaidOverride;
 
   return (
     <Screen scroll>
@@ -46,7 +48,7 @@ export default function HomeScreen() {
         <MicroLabel>FLIGHT DECK</MicroLabel>
         <View style={[styles.chip, { borderColor: paid ? colors.greenDim : colors.amberDim }]}>
           <Text style={[styles.chipText, { color: paid ? colors.greenReadable : colors.amber }]}>
-            {paid ? 'PAID' : `TRIAL · ${tier.usage.sessionsThisMonth}/3`}
+            {paid ? planLabel(tier.tier, tier.hasPaidOverride).toUpperCase() : 'TRIAL'}
           </Text>
         </View>
       </View>

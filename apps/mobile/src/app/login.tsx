@@ -1,9 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Crypto from 'expo-crypto';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -14,6 +17,8 @@ import {
 
 import { H1, MicroLabel, PrimaryButton, Screen } from '@/components/cockpit';
 import { supabase } from '@/lib/supabase';
+import { apiFetch } from '@/lib/api';
+import { config } from '@/lib/config';
 import { colors, font, fontSize, radius, space } from '@/theme/tokens';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -24,39 +29,76 @@ export default function LoginScreen() {
   const [stage, setStage] = useState<'email' | 'code'>('email');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [appleAvailable, setAppleAvailable] = useState(false);
+  const pending = useRef(false);
+
+  useEffect(() => {
+    if (Platform.OS === 'ios') AppleAuthentication.isAvailableAsync().then(setAppleAvailable).catch(() => {});
+  }, []);
+
+  async function signIn(action: () => Promise<void>) {
+    if (pending.current) return;
+    pending.current = true;
+    setBusy(true);
+    setError(null);
+    try { await action(); } catch (error) {
+      if ((error as { code?: string })?.code !== 'ERR_REQUEST_CANCELED') {
+        setError(error instanceof Error ? error.message : 'Sign-in failed. Please try again.');
+      }
+    } finally { pending.current = false; setBusy(false); }
+  }
+
+  async function apple() {
+    await signIn(async () => {
+      const nonce = Crypto.randomUUID();
+      const hashedNonce = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, nonce);
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [AppleAuthentication.AppleAuthenticationScope.FULL_NAME, AppleAuthentication.AppleAuthenticationScope.EMAIL],
+        nonce: hashedNonce,
+      });
+      if (!credential.identityToken) throw new Error('Apple did not return a sign-in token. Please retry.');
+      const { error } = await supabase.auth.signInWithIdToken({ provider: 'apple', token: credential.identityToken, nonce });
+      if (error) throw error;
+      const fullName = [credential.fullName?.givenName, credential.fullName?.familyName].filter(Boolean).join(' ');
+      if (fullName) {
+        const displayName = fullName.slice(0, 50);
+        // Apple supplies the name only on first authorization. Persist it in auth
+        // metadata as well as the profile so onboarding can recover it on retry.
+        await supabase.auth.updateUser({ data: { full_name: fullName } });
+        await apiFetch('/api/user/tier', { method: 'POST', json: { displayName } });
+      }
+    });
+  }
 
   async function sendCode() {
     if (!email.includes('@')) {
       setError('Enter a valid email.');
       return;
     }
-    setBusy(true);
-    setError(null);
+    await signIn(async () => {
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: { shouldCreateUser: true },
     });
-    setBusy(false);
-    if (error) setError(error.message);
+    if (error) throw error;
     else setStage('code');
+    });
   }
 
   async function verify() {
-    setBusy(true);
-    setError(null);
+    await signIn(async () => {
     const { error } = await supabase.auth.verifyOtp({
       email: email.trim(),
       token: code.trim(),
       type: 'email',
     });
-    setBusy(false);
-    if (error) setError(error.message);
+    if (error) throw error;
+    });
     // success → onAuthStateChange → the root gate redirects to /(tabs)
   }
 
   async function oauth(provider: 'google' | 'azure') {
-    setBusy(true);
-    setError(null);
+    await signIn(async () => {
     const redirectTo = Linking.createURL('auth-callback');
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
@@ -68,19 +110,19 @@ export default function LoginScreen() {
       },
     });
     if (error || !data?.url) {
-      setBusy(false);
-      setError(error?.message ?? 'Could not start sign-in.');
-      return;
+      throw new Error(error?.message ?? 'Could not start sign-in.');
     }
     const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
     if (result.type === 'success' && result.url) {
       const authCode = new URL(result.url).searchParams.get('code');
       if (authCode) {
         const { error: exErr } = await supabase.auth.exchangeCodeForSession(authCode);
-        if (exErr) setError(exErr.message);
+        if (exErr) throw exErr;
+      } else {
+        throw new Error('Sign-in did not return an authorization code. Please retry.');
       }
     }
-    setBusy(false);
+    });
   }
 
   return (
@@ -145,9 +187,21 @@ export default function LoginScreen() {
 
       <OAuthButton icon="logo-google" label="Continue with Google" onPress={() => oauth('google')} disabled={busy} />
       <OAuthButton icon="logo-microsoft" label="Continue with Microsoft" onPress={() => oauth('azure')} disabled={busy} />
-      <OAuthButton icon="logo-apple" label="Sign in with Apple" disabled note="Available once Apple sign-in is configured" />
+      {appleAvailable ? <View pointerEvents={busy ? 'none' : 'auto'}>
+        <AppleAuthentication.AppleAuthenticationButton
+          buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+          buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
+          cornerRadius={8}
+          style={{ height: 50, marginBottom: space[3] }}
+          onPress={apple}
+        />
+      </View> : null}
 
       <Text style={styles.legal}>By continuing you agree to the Terms of Service and Privacy Policy.</Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap' }}>
+        <Pressable accessibilityRole="link" onPress={() => WebBrowser.openBrowserAsync(`${config.apiUrl}/terms`)} style={styles.linkBtn}><Text style={styles.link}>Terms of Service</Text></Pressable>
+        <Pressable accessibilityRole="link" onPress={() => WebBrowser.openBrowserAsync(`${config.apiUrl}/privacy`)} style={styles.linkBtn}><Text style={styles.link}>Privacy Policy</Text></Pressable>
+      </View>
     </Screen>
   );
 }
@@ -158,6 +212,7 @@ function Field({ label, ...props }: TextInputProps & { label: string }) {
       <Text style={styles.fieldLabel}>{label}</Text>
       <TextInput
         {...props}
+        accessibilityLabel={label}
         placeholderTextColor={colors.dim}
         style={styles.input}
       />

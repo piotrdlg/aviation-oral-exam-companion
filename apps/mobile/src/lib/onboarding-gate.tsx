@@ -37,8 +37,7 @@ const MAX_ATTEMPTS = 3;
 export function OnboardingGateProvider({ children }: { children: ReactNode }) {
   const { session } = useAuth();
   const userId = session?.user?.id ?? null;
-  const [needsOnboarding, setNeeds] = useState<boolean | null>(null);
-  const [gateError, setGateError] = useState(false);
+  const [resolved, setResolved] = useState<{ userId: string | null; attempt: number; needs: boolean | null; error: boolean }>({ userId: null, attempt: 0, needs: null, error: false });
   const [attempt, setAttempt] = useState(0);
 
   const retry = useCallback(() => setAttempt((a) => a + 1), []);
@@ -48,19 +47,15 @@ export function OnboardingGateProvider({ children }: { children: ReactNode }) {
   // acting on the previous user's stale value (which would bounce mid-transition).
   useEffect(() => {
     if (!userId) {
-      setNeeds(null);
-      setGateError(false);
       return;
     }
-    setNeeds(null);
-    setGateError(false);
     let cancelled = false;
     (async () => {
       for (let i = 0; i < MAX_ATTEMPTS; i++) {
         if (cancelled) return;
         try {
           const t = await getTier();
-          if (!cancelled) setNeeds(!t.onboardingCompleted);
+          if (!cancelled) setResolved({ userId, attempt, needs: !t.onboardingCompleted || !t.aiDataConsented || !t.disclaimerAcknowledged, error: false });
           return;
         } catch {
           if (i < MAX_ATTEMPTS - 1) {
@@ -68,15 +63,16 @@ export function OnboardingGateProvider({ children }: { children: ReactNode }) {
           }
         }
       }
-      if (!cancelled) setGateError(true); // give up → retry UI, never silently onboard
+      if (!cancelled) setResolved({ userId, attempt, needs: null, error: true });
     })();
     return () => {
       cancelled = true;
     };
   }, [userId, attempt]);
 
+  const current = resolved.userId === userId && resolved.attempt === attempt;
   return (
-    <Ctx.Provider value={{ needsOnboarding, gateError, retry, setOnboarded: () => setNeeds(false) }}>
+    <Ctx.Provider value={{ needsOnboarding: current ? resolved.needs : null, gateError: current && resolved.error, retry, setOnboarded: () => setResolved({ userId, attempt, needs: false, error: false }) }}>
       {children}
     </Ctx.Provider>
   );

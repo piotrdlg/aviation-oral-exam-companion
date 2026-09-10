@@ -26,8 +26,7 @@ function aggregateByArea(scores: ElementScore[]): AreaCov[] {
   );
 }
 
-export default function ProgressScreen() {
-  const { data, error, loading, refresh } = useAsync(async () => {
+async function loadProgress() {
     const tier = await getTier();
     const r = tier.preferredRating;
     const [stats, elementScores, sessions] = await Promise.all([
@@ -36,7 +35,10 @@ export default function ProgressScreen() {
       getSessions(),
     ]);
     return { stats: stats.stats, scores: elementScores.scores, sessions: sessions.sessions };
-  });
+}
+
+export default function ProgressScreen() {
+  const { data, error, loading, refresh } = useAsync(loadProgress);
 
   if (loading && !data) {
     return (

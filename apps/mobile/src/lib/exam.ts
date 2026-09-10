@@ -65,6 +65,20 @@ export interface TranscriptRow {
   assessment: Assessment | null;
 }
 
+export function restoreTranscript(rows: TranscriptRow[], pending?: string): (ExamMessage & { assessment?: Assessment })[] {
+  const messages: (ExamMessage & { assessment?: Assessment })[] = rows.map(({ role, text }) => ({ role, text }));
+  rows.forEach((row, index) => {
+    if (row.role === 'student' && row.assessment && messages[index + 1]?.role === 'examiner') {
+      messages[index + 1].assessment = row.assessment;
+    }
+  });
+  const last = messages.at(-1);
+  if (pending?.trim() && !(last?.role === 'examiner' && last.text.trim() === pending.trim())) {
+    messages.push({ role: 'examiner', text: pending });
+  }
+  return messages;
+}
+
 /**
  * POST /api/session create → the new exam session (403 trial blocks surface via
  * ApiError). The create endpoint is DB-column shaped (snake_case), so we map the
@@ -95,6 +109,7 @@ export async function createSession(cfg: ExamConfig, isOnboarding = false): Prom
 export function startExam(sessionId: string, sessionConfig: ExamConfig): Promise<ExamTurn> {
   return apiFetch<ExamTurn>('/api/exam', {
     method: 'POST',
+    timeoutMs: 70_000,
     json: {
       action: 'start',
       sessionId,
@@ -120,6 +135,7 @@ export function respond(args: {
 }): Promise<ExamTurn> {
   return apiFetch<ExamTurn>('/api/exam', {
     method: 'POST',
+    timeoutMs: 70_000,
     json: { action: 'respond', stream: false, chunkedResponse: false, ...args },
   });
 }
@@ -133,7 +149,7 @@ export function nextTask(args: {
   examPlan?: Json;
   sessionConfig?: ExamConfig;
 }): Promise<ExamTurn> {
-  return apiFetch<ExamTurn>('/api/exam', { method: 'POST', json: { action: 'next-task', ...args } });
+  return apiFetch<ExamTurn>('/api/exam', { method: 'POST', timeoutMs: 70_000, json: { action: 'next-task', ...args } });
 }
 
 /** resume-current → re-render the pending element question (no LLM). */

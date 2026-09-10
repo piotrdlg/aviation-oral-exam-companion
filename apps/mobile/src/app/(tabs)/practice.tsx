@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -14,11 +17,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Card, H1, Lead, MicroLabel, PrimaryButton, Screen } from '@/components/cockpit';
 import { UPGRADE_CODES, UpgradeSheet } from '@/components/upgrade-sheet';
-import { useExaminerVoice } from '@/hooks/use-examiner-voice';
-import { useStudentSTT } from '@/hooks/use-student-stt';
+import { useVoiceSession } from '@/hooks/use-voice-session';
+import { ExamResults } from '@/components/exam-results';
 import { track } from '@/lib/analytics';
 import { ApiError } from '@/lib/api';
-import { completeSession, getResumable, getTier, reactivateSession } from '@/lib/endpoints';
+import { beginVoiceExchange, markExamResponse, markVoiceFinalized } from '@/lib/voice-metrics';
+import { completeSession, getResumable, getSessions, getTier, reactivateSession } from '@/lib/endpoints';
 import {
   AircraftClass,
   Assessment,
@@ -33,6 +37,7 @@ import {
   nextTask,
   resumeCurrent,
   respond,
+  restoreTranscript,
   startExam,
 } from '@/lib/exam';
 import { colors, font, fontSize, radius, space } from '@/theme/tokens';
@@ -64,6 +69,7 @@ const DIFFS: { key: Diff; label: string }[] = [
 export default function PracticeScreen() {
   const [phase, setPhase] = useState<Phase>('loading');
   const [error, setError] = useState<string | null>(null);
+  const [errorStatus, setErrorStatus] = useState(0);
   const [rating, setRating] = useState<Rating>('private');
   const [aircraftClass, setAircraftClass] = useState<AircraftClass>('ASEL');
   const [studyMode, setStudyMode] = useState<StudyMode>('linear');
@@ -74,10 +80,17 @@ export default function PracticeScreen() {
   const [busy, setBusy] = useState(false);
   const [upgrade, setUpgrade] = useState<string | null>(null);
   const [voiceOn, setVoiceOn] = useState(false);
-
-  const voice = useExaminerVoice();
-  const stt = useStudentSTT();
-  const lastSpoken = useRef<string>('');
+  const voiceEnabled = useRef(false);
+  const audio = useVoiceSession();
+  const controller = audio.controller;
+  const stt = { listening: audio.mode === 'listening' && !audio.connecting, connecting: audio.connecting, interim: '', error: audio.error };
+  const finalizing = audio.mode === 'finalizing';
+  const submitting = useRef(false);
+  const pendingAnswer = useRef<string | null>(null);
+  const pendingStudentCount = useRef(0);
+  const pendingAdvance = useRef(false);
+  const responseId = useRef(0);
+  const router = useRouter();
 
   // Opaque, server-owned exam state — passed back unchanged each turn.
   const session = useRef<{
@@ -100,11 +113,16 @@ export default function PracticeScreen() {
         const tier = await getTier();
         setRating(tier.preferredRating);
         setVoiceOn(tier.voiceEnabled);
+        voiceEnabled.current = tier.voiceEnabled;
         const ac = (tier.preferredAircraftClass || 'ASEL') as AircraftClass;
         setAircraftClass(ac);
         const { session: open } = await getResumable();
         if (open) {
-          await resumeExam(open.id, open.rating, open.study_mode, ac, open.status);
+          await resumeExam(open.id, open.rating, open.study_mode, (open.aircraft_class || ac) as AircraftClass, open.status, {
+            difficulty: open.difficulty_preference ?? 'mixed',
+            selectedAreas: open.selected_areas ?? [], selectedTasks: open.selected_tasks ?? [],
+            ...open.metadata?.sessionConfig,
+          });
         } else {
           setPhase('config');
         }
@@ -115,55 +133,40 @@ export default function PracticeScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Speak the most recent examiner turn whenever it changes (start / respond
-  // feedback / next-task question / resumed pending question), if voice is on.
-  useEffect(() => {
-    if (!voiceOn || phase !== 'active') return;
-    for (let i = bubbles.length - 1; i >= 0; i--) {
-      if (bubbles[i].role === 'examiner') {
-        if (bubbles[i].text !== lastSpoken.current) {
-          lastSpoken.current = bubbles[i].text;
-          voice.speak(bubbles[i].text);
-        }
-        break;
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bubbles, voiceOn, phase]);
-
-  function toggleVoice() {
-    setVoiceOn((on) => {
-      const next = !on;
-      if (!next) voice.stop();
-      else {
-        // turning on mid-exam: speak the current pending question
-        lastSpoken.current = '';
-      }
-      track('voice_mode_toggled', { enabled: next });
-      return next;
-    });
+  function speak(text?: string) {
+    if (text && voiceEnabled.current) void controller.enqueue(text, String(responseId.current));
   }
 
-  // Live-fill the answer field from the speech transcript while listening (the
-  // student can then edit before sending — never auto-submit a misheard answer).
-  // Only overwrite once there's recognized content, so tapping the mic doesn't
-  // instantly wipe an already-typed answer before any speech arrives.
-  useEffect(() => {
-    if ((stt.listening || stt.connecting) && (stt.transcript || stt.interim)) {
-      setAnswer(`${stt.transcript}${stt.interim ? ` ${stt.interim}` : ''}`.trim());
+  function toggleVoice() {
+    const next = !voiceEnabled.current;
+    voiceEnabled.current = next;
+    setVoiceOn(next);
+    if (!next && audio.mode === 'speaking') void controller.abort().catch(() => {});
+    if (next && audio.mode !== 'listening' && !finalizing) {
+      speak(bubbles.findLast((bubble) => bubble.role === 'examiner')?.text);
     }
-  }, [stt.transcript, stt.interim, stt.listening, stt.connecting]);
+    track('voice_mode_toggled', { enabled: next });
+  }
+
+  useEffect(() => {
+    let previous = controller.getSnapshot().draft;
+    return controller.subscribe(() => {
+      const { draft } = controller.getSnapshot();
+      if (draft !== previous) { previous = draft; setAnswer(draft); }
+    });
+  }, [controller]);
 
   async function toggleMic() {
-    if (stt.listening || stt.connecting) {
-      stt.stop();
-      return;
+    if (submitting.current || finalizing) return;
+    if (audio.mode === 'listening') {
+      try { setAnswer(await controller.finalize()); } catch { /* Voice error is shown below. */ }
+    } else {
+      await controller.startListening(answer);
     }
-    voice.stop(); // barge-in: the examiner must stop before we take the mic (half-duplex)
-    await stt.start();
   }
 
   function fail(e: unknown) {
+    void controller.abort().catch(() => {});
     // Trial/quota blocks (403 create, 429 mid-exam) route to the paywall, not an error.
     if (e instanceof ApiError && e.code && UPGRADE_CODES.has(e.code)) {
       setUpgrade(e.code);
@@ -172,7 +175,12 @@ export default function PracticeScreen() {
       setPhase((p) => (p === 'active' ? 'active' : 'config'));
       return;
     }
-    setError(e instanceof ApiError ? e.message : (e as Error)?.message ?? 'Something went wrong');
+    const status = e instanceof ApiError ? e.status : 0;
+    setErrorStatus(status);
+    setError(status === 409 ? 'This exam is active on another device. Continue here to reclaim it.'
+      : status === 503 ? 'The examiner is temporarily unavailable. Your session is saved.'
+        : status === 0 ? 'Could not reach HeyDPE. Check your connection and retry.'
+          : e instanceof ApiError ? e.message : (e as Error)?.message ?? 'Something went wrong');
     setPhase('error');
   }
 
@@ -187,13 +195,15 @@ export default function PracticeScreen() {
     if (turn.elementCode) s.elementCode = turn.elementCode;
   }
 
-  async function resumeExam(id: string, r: string, mode: string, ac: AircraftClass, status?: string) {
+  async function resumeExam(id: string, r: string, mode: string, ac: AircraftClass, status?: string, stored?: Partial<ExamConfig>) {
+    responseId.current++;
     setPhase('loading');
     const cfg: ExamConfig = {
       studyMode: (mode || 'linear') as StudyMode,
       difficulty: 'mixed',
       rating: (r || 'private') as Rating,
       aircraftClass: ac,
+      ...stored,
     };
     session.current = { id, config: cfg, aircraftClass: ac };
 
@@ -202,24 +212,20 @@ export default function PracticeScreen() {
     if (status === 'paused') await reactivateSession(id);
 
     const transcripts = await getTranscripts(id);
-    const restored: Bubble[] = transcripts.map((t) => ({ role: t.role, text: t.text }));
-    // Assessments persist on the STUDENT row (exam route updates the student
-    // transcript), but the live UI renders the score badge on the following
-    // examiner (feedback) bubble — shift them so resumed badges match.
-    transcripts.forEach((t, i) => {
-      if (t.assessment && t.role === 'student' && restored[i + 1]?.role === 'examiner') {
-        restored[i + 1].assessment = t.assessment;
-      }
-    });
-
     const turn = await resumeCurrent({ sessionId: id, sessionConfig: cfg });
     applyOpaque(turn);
+    const restored = restoreTranscript(transcripts, turn.sessionComplete ? undefined : turn.examinerMessage);
     setBubbles(restored);
     setPhase(turn.sessionComplete ? 'complete' : 'active');
+    if (turn.sessionComplete) await controller.abort();
+    else speak(restored.findLast((bubble) => bubble.role === 'examiner')?.text);
     scrollEnd();
   }
 
   async function begin() {
+    if (submitting.current) return;
+    submitting.current = true;
+    responseId.current++;
     setPhase('loading');
     try {
       const ac = aircraftClass;
@@ -234,24 +240,33 @@ export default function PracticeScreen() {
       const turn = await startExam(created.id, cfg);
       applyOpaque(turn);
       setBubbles([{ role: 'examiner', text: turn.examinerMessage ?? '…' }]);
-      setPhase('active');
+      setPhase(turn.sessionComplete ? 'complete' : 'active');
+      if (!turn.sessionComplete) speak(turn.examinerMessage);
       scrollEnd();
     } catch (e) {
       fail(e);
+    } finally {
+      submitting.current = false;
     }
   }
 
   async function submit() {
-    const a = answer.trim();
-    if (!a || busy || !session.current) return;
-    stt.stop(); // finalize + release the mic / restore the playback session
-    voice.stop(); // barge-in: the student is answering, cut off the examiner
+    if (submitting.current || busy || finalizing || !session.current) return;
+    submitting.current = true;
+    beginVoiceExchange();
+    responseId.current++;
     setBusy(true);
-    setAnswer('');
-    const withAnswer = [...bubbles, { role: 'student' as const, text: a }];
-    setBubbles(withAnswer);
-    scrollEnd();
     try {
+      const a = (audio.mode === 'listening' ? await controller.finalize() : answer).trim();
+      markVoiceFinalized();
+      if (!a || !controller.active) return;
+      await controller.abort();
+      pendingAnswer.current = a;
+      pendingStudentCount.current = bubbles.filter((bubble) => bubble.role === 'student').length;
+      setAnswer('');
+      const withAnswer = [...bubbles, { role: 'student' as const, text: a }];
+      setBubbles(withAnswer);
+      scrollEnd();
       const s = session.current;
       const turn = await respond({
         sessionId: s.id,
@@ -262,15 +277,22 @@ export default function PracticeScreen() {
         examPlan: s.examPlan,
         sessionConfig: s.config,
       });
+      markExamResponse();
       applyOpaque(turn);
+      pendingAnswer.current = null;
       const next: Bubble[] = [
         ...withAnswer,
         { role: 'examiner', text: turn.examinerMessage ?? '…', assessment: turn.assessment },
       ];
       setBubbles(next);
+      speak(turn.examinerMessage);
       scrollEnd();
 
-      if (turn.assessment?.advance || turn.advance) {
+      if (turn.sessionComplete) {
+        await controller.abort();
+        setPhase('complete');
+      } else if (turn.assessment?.advance || turn.advance) {
+        pendingAdvance.current = true;
         const adv = await nextTask({
           sessionId: s.id,
           history: toHistory(next),
@@ -279,30 +301,92 @@ export default function PracticeScreen() {
           sessionConfig: s.config,
         });
         applyOpaque(adv);
+        pendingAdvance.current = false;
         const advMsg = adv.examinerMessage ?? (adv.sessionComplete ? 'Exam complete.' : '…');
         setBubbles((b) => [...b, { role: 'examiner', text: advMsg }]);
-        if (adv.sessionComplete) setPhase('complete');
+        if (adv.sessionComplete) {
+          await controller.abort();
+          setPhase('complete');
+        } else speak(adv.examinerMessage);
         scrollEnd();
       }
     } catch (e) {
+      if (pendingAnswer.current) setAnswer(pendingAnswer.current);
       fail(e);
     } finally {
+      submitting.current = false;
       setBusy(false);
     }
   }
 
   async function endExam() {
     const s = session.current;
-    if (!s || busy) return;
+    if (!s || busy || submitting.current) return;
+    submitting.current = true;
     setBusy(true);
     try {
+      await controller.abort();
       await completeSession(s.id);
       setPhase('complete');
     } catch (e) {
       fail(e);
     } finally {
+      submitting.current = false;
       setBusy(false);
     }
+  }
+
+  async function recover() {
+    if (submitting.current) return;
+    submitting.current = true;
+    setPhase('loading');
+    try {
+      if (errorStatus === 503) await new Promise((resolve) => setTimeout(resolve, 1000));
+      const s = session.current;
+      if (!s) { setPhase('config'); return; }
+      const { sessions } = await getSessions();
+      if (sessions.find((item) => item.id === s.id)?.status === 'completed') {
+        pendingAdvance.current = false;
+        pendingAnswer.current = null;
+        setPhase('complete');
+        return;
+      }
+      await reactivateSession(s.id);
+      if (!bubbles.length) {
+        const turn = await startExam(s.id, s.config);
+        applyOpaque(turn);
+        setBubbles(restoreTranscript([], turn.examinerMessage));
+        setPhase(turn.sessionComplete ? 'complete' : 'active');
+        if (!turn.sessionComplete) speak(turn.examinerMessage);
+        return;
+      }
+      const oldElement = s.elementCode;
+      const turn = await resumeCurrent({ sessionId: s.id, sessionConfig: s.config });
+      applyOpaque(turn);
+      const rows = await getTranscripts(s.id);
+      const restored = restoreTranscript(rows, turn.sessionComplete ? undefined : turn.examinerMessage);
+      if (pendingAdvance.current && oldElement === turn.elementCode && !turn.sessionComplete) {
+        const next = await nextTask({ sessionId: s.id, sessionConfig: s.config, history: toHistory(restored) });
+        applyOpaque(next);
+        if (next.examinerMessage) restored.push({ role: 'examiner', text: next.examinerMessage });
+        if (next.sessionComplete) {
+          setPhase('complete');
+        } else { setPhase('active'); speak(next.examinerMessage); }
+      } else {
+        setPhase(turn.sessionComplete ? 'complete' : 'active');
+      }
+      pendingAdvance.current = false;
+      setBubbles(restored);
+      // A response may have committed before a network failure. Never resubmit it blindly.
+      const lastStudent = rows.findLast((row) => row.role === 'student');
+      if (pendingAnswer.current && lastStudent?.text === pendingAnswer.current
+        && rows.filter((row) => row.role === 'student').length > pendingStudentCount.current
+        && rows.at(-1)?.role === 'examiner') {
+        pendingAnswer.current = null;
+        setAnswer('');
+      }
+    } catch (error) { fail(error); }
+    finally { submitting.current = false; }
   }
 
   // ---- render ----
@@ -324,8 +408,8 @@ export default function PracticeScreen() {
         <View style={styles.center}>
           <Text style={styles.errTitle}>Exam error</Text>
           <Text style={styles.errMsg}>{error}</Text>
-          <Pressable onPress={() => setPhase('config')} style={styles.retry}>
-            <Text style={styles.retryText}>Back</Text>
+          <Pressable accessibilityRole="button" onPress={recover} style={styles.retry}>
+            <Text style={styles.retryText}>{errorStatus === 409 ? 'Continue here' : 'Retry'}</Text>
           </Pressable>
         </View>
       </Screen>
@@ -398,11 +482,16 @@ export default function PracticeScreen() {
       <Screen scroll>
         <MicroLabel color={colors.greenReadable}>COMPLETE</MicroLabel>
         <H1>Exam complete</H1>
-        <Lead>Nice work. Review your coverage in Progress, or start another exam.</Lead>
+        {session.current ? <ExamResults sessionId={session.current.id} /> : null}
+        <PrimaryButton label="Review in Progress" onPress={() => router.push('/(tabs)/progress')} />
+        <View style={{ height: space[3] }} />
         <PrimaryButton
           label="New exam"
           onPress={() => {
             setBubbles([]);
+            setAnswer('');
+            pendingAnswer.current = null;
+            pendingAdvance.current = false;
             session.current = null;
             setPhase('config');
           }}
@@ -426,9 +515,7 @@ export default function PracticeScreen() {
               accessibilityRole="switch"
               accessibilityState={{ checked: voiceOn }}
               accessibilityLabel="Examiner voice">
-              <Text style={[styles.voiceBtn, voiceOn && styles.voiceBtnOn]}>
-                {voiceOn ? (voice.speaking ? '◉ speaking' : '🔊 voice') : '🔇 voice'}
-              </Text>
+              <Ionicons name={voiceOn ? 'volume-high-outline' : 'volume-mute-outline'} size={24} color={voiceOn ? colors.amber : colors.muted} />
             </Pressable>
             <Pressable onPress={endExam} disabled={busy} hitSlop={8}>
               <Text style={styles.endBtn}>End exam</Text>
@@ -457,7 +544,10 @@ export default function PracticeScreen() {
               </View>
             ) : null}
           </ScrollView>
-          {stt.error ? <Text style={styles.sttError}>{stt.error}</Text> : null}
+          {stt.error ? /permission|microphone access is off/i.test(stt.error)
+            ? <Pressable accessibilityRole="button" accessibilityLabel="Open microphone settings" onPress={() => Linking.openSettings()}><Text style={styles.sttError}>{stt.error}</Text></Pressable>
+            : <Text accessibilityRole="alert" style={styles.sttError}>{stt.error}</Text>
+            : null}
           {stt.listening || stt.connecting ? (
             <View style={styles.sttBar}>
               <View style={[styles.sttDot, stt.listening && styles.sttDotLive]} />
@@ -469,13 +559,11 @@ export default function PracticeScreen() {
           <View style={styles.inputBar}>
             <Pressable
               onPress={toggleMic}
-              disabled={busy}
+              disabled={busy || finalizing}
               accessibilityRole="button"
               accessibilityLabel={stt.listening ? 'Stop voice input' : 'Answer by voice'}
               style={[styles.mic, (stt.listening || stt.connecting) && styles.micOn, busy && { opacity: 0.4 }]}>
-              <Text style={[styles.micGlyph, (stt.listening || stt.connecting) && styles.micGlyphOn]}>
-                {stt.connecting ? '…' : stt.listening ? '■' : '🎤'}
-              </Text>
+              <Ionicons name={stt.listening ? 'stop' : 'mic'} size={22} color={stt.listening ? colors.bg : colors.cyanReadable} />
             </Pressable>
             <TextInput
               value={answer}
@@ -484,11 +572,14 @@ export default function PracticeScreen() {
               placeholderTextColor={colors.dim}
               style={styles.input}
               multiline
-              editable={!busy && !stt.listening && !stt.connecting}
+              accessibilityLabel="Your answer"
+              editable={!busy && !stt.listening && !stt.connecting && !finalizing}
             />
             <Pressable
               onPress={submit}
-              disabled={busy || !answer.trim()}
+              accessibilityRole="button"
+              accessibilityLabel="Send answer"
+              disabled={busy || finalizing || (!answer.trim() && !stt.listening)}
               style={[styles.send, (busy || !answer.trim()) && { opacity: 0.4 }]}>
               <Text style={styles.sendText}>Send</Text>
             </Pressable>

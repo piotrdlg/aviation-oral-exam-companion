@@ -6,6 +6,7 @@ export type Rating = 'private' | 'commercial' | 'instrument';
 
 export interface TierResponse {
   tier: Tier;
+  hasPaidOverride?: boolean;
   subscriptionStatus: string;
   cancelAtPeriodEnd: boolean;
   currentPeriodEnd: string | null;
@@ -65,6 +66,11 @@ export interface ResumableSession {
   rating: string;
   study_mode: string;
   status: string;
+  aircraft_class?: string;
+  difficulty_preference?: 'easy' | 'medium' | 'hard' | 'mixed';
+  selected_areas?: string[];
+  selected_tasks?: string[];
+  metadata?: { sessionConfig?: import('./exam').ExamConfig };
   exchange_count: number;
   acs_tasks_covered: { task_id: string }[] | null;
   created_at: string;

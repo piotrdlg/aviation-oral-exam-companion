@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
 import { config } from './config';
+import { setCrashReportingEnabled } from './crash-reporting';
 
 /**
  * Consent-gated product analytics for HeyDPE mobile.
@@ -27,6 +28,7 @@ function rand() {
 
 let enabled = false;
 let ready = false; // consent + anon id loaded from storage
+let consentRevision = 0;
 let anonId = rand(); // sync-initialised so it's never null; replaced by the persisted id on load
 let distinctId: string = anonId; // user.id once identified, else the anon id
 let identified = false; // distinctId is a real user id (don't realign it to anon on load)
@@ -36,6 +38,7 @@ const queue: { event: string; props: Props }[] = [];
 
 /** Load persisted consent + anon id once at startup. Returns the consent state. */
 export async function loadAnalyticsConsent(): Promise<boolean> {
+  const revision = consentRevision;
   let stored: string | null = null;
   try {
     const [c, anon] = await Promise.all([
@@ -52,8 +55,9 @@ export async function loadAnalyticsConsent(): Promise<boolean> {
   } catch {
     /* keep the sync-generated anonId */
   }
-  enabled = stored === 'true';
+  if (revision === consentRevision) enabled = stored === 'true';
   ready = true;
+  void setCrashReportingEnabled(enabled).catch(() => {});
   if (enabled) {
     flush();
     replayIdentify();
@@ -68,7 +72,10 @@ export async function loadAnalyticsConsent(): Promise<boolean> {
 
 /** Persist + apply the analytics consent decision (Settings toggle / onboarding). */
 export async function setAnalyticsEnabled(on: boolean) {
+  consentRevision++;
   enabled = on;
+  ready = true;
+  void setCrashReportingEnabled(on).catch(() => {});
   try {
     await AsyncStorage.setItem(CONSENT_KEY, on ? 'true' : 'false');
   } catch {
@@ -139,7 +146,6 @@ function flush() {
 
 export function track(event: string, props: Props = {}) {
   if (__DEV__) {
-    // eslint-disable-next-line no-console
     console.log(`[track${enabled ? '' : ready ? ':no-consent' : ':queued'}] ${event}`, props);
   }
   // Consent loads async at startup; briefly buffer events until it resolves, then

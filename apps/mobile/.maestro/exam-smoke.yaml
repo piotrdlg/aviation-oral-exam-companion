@@ -1,0 +1,31 @@
+appId: com.imagineflying.heydpe
+name: Signed-in text exam smoke
+---
+# Establish the test account through real OTP or OAuth before running this flow.
+# No dev-login or embedded credentials: this also works with release simulator JS.
+- launchApp
+- extendedWaitUntil:
+    visible: "Home"
+    timeout: 60000
+- tapOn: "Practice"
+- extendedWaitUntil:
+    visible: "Begin exam"
+    timeout: 30000
+- tapOn: "Begin exam"
+- extendedWaitUntil:
+    visible: "Your answer"
+    timeout: 60000
+- tapOn: "Your answer"
+- inputText: "I would verify the required documents and inspections, aircraft airworthiness, weather, fuel, and my personal readiness before flight."
+- tapOn: "Send answer"
+- extendedWaitUntil:
+    notVisible: "Examiner is considering your answer.*"
+    timeout: 60000
+- tapOn: "End exam"
+- extendedWaitUntil:
+    visible: "Exam complete"
+    timeout: 30000
+- assertVisible: "Review in Progress"
+- takeScreenshot: exam-complete
+- tapOn: "Review in Progress"
+- assertVisible: "Progress"

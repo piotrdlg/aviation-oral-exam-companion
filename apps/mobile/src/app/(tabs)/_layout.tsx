@@ -7,9 +7,9 @@ import { colors, font } from '@/theme/tokens';
 type IoniconName = keyof typeof Ionicons.glyphMap;
 
 function tabIcon(active: IoniconName, inactive: IoniconName) {
-  return ({ focused, color, size }: { focused: boolean; color: ColorValue; size: number }) => (
-    <Ionicons name={focused ? active : inactive} size={size} color={color as string} />
-  );
+  return function TabIcon({ focused, color, size }: { focused: boolean; color: ColorValue; size: number }) {
+    return <Ionicons name={focused ? active : inactive} size={size} color={color as string} />;
+  };
 }
 
 export default function TabsLayout() {

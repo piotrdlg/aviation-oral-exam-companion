@@ -5,6 +5,7 @@ import { TIER_FEATURES } from '@/lib/voice/types';
 import type { VoiceTier } from '@/lib/voice/types';
 import { EXAMINER_PROFILES, type ExaminerProfileKey } from '@/lib/examiner-profile';
 import { invalidateTierCache } from '@/lib/voice/tier-lookup';
+import { hasPaidEquivalentOverride } from '@/lib/instructor-entitlements';
 
 const serviceSupabase = createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
     const { user } = authed;
 
     // Get user's profile, voice options, and AI-data-consent record in parallel
-    const [profileResult, voiceOptionsResult, aiConsentResult] = await Promise.all([
+    const [profileResult, voiceOptionsResult, aiConsentResult, hasPaidOverride] = await Promise.all([
       serviceSupabase
         .from('user_profiles')
         .select('tier, preferred_voice, preferred_rating, preferred_aircraft_class, aircraft_type, home_airport, onboarding_completed, disclaimer_acknowledged_at, preferred_theme, subscription_status, cancel_at_period_end, current_period_end, display_name, avatar_url, voice_enabled, examiner_profile')
@@ -38,6 +39,7 @@ export async function GET(request: NextRequest) {
         .select('id', { count: 'exact', head: true })
         .eq('user_id', user.id)
         .eq('kind', 'ai_data_processing'),
+      hasPaidEquivalentOverride(user.id, serviceSupabase),
     ]);
 
     const profile = profileResult.data;
@@ -74,6 +76,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       tier,
+      hasPaidOverride,
       subscriptionStatus: profile?.subscription_status || 'none',
       cancelAtPeriodEnd: profile?.cancel_at_period_end || false,
       currentPeriodEnd: profile?.current_period_end || null,

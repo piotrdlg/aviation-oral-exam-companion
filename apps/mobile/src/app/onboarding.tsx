@@ -14,7 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError } from '@/lib/api';
-import { setAnalyticsEnabled, track } from '@/lib/analytics';
+import { track } from '@/lib/analytics';
 import { getTier, recordConsent, skipOnboarding, updateTier } from '@/lib/endpoints';
 import { AircraftClass, ExamConfig, Rating, createSession, startExam } from '@/lib/exam';
 import { useOnboardingGate } from '@/lib/onboarding-gate';
@@ -74,6 +74,7 @@ export default function Onboarding() {
   const createdSessionId = useRef<string | null>(null);
   const examStarted = useRef(false);
   const handoffInFlight = useRef(false);
+  const destination = useRef<'exam' | 'explore' | 'config'>('exam');
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -120,34 +121,39 @@ export default function Onboarding() {
 
   // ── Terminal paths ────────────────────────────────────────────────────────
   async function onSkip() {
-    try {
-      await skipOnboarding();
-    } catch {
-      track('onboarding_error', { stage: 'tier', status: 'skip_failed' });
-    }
-    track('onboarding_skipped', { fromStep: step });
-    setOnboarded();
-    router.replace('/(tabs)/practice');
+    requestExit('config');
   }
 
   async function onExplore() {
+    requestExit('explore');
+  }
+
+  function requestExit(path: 'exam' | 'explore' | 'config') {
+    if (busy || handoffInFlight.current) return;
+    destination.current = path;
+    if (!aiConsented.current) return setPhase('ai_consent');
+    if (!disclaimerAcked.current) return setPhase('disclaimer');
+    void finishChosenPath();
+  }
+
+  async function finishChosenPath() {
+    if (destination.current === 'exam') return handoff();
+    if (handoffInFlight.current) return;
+    handoffInFlight.current = true;
     setBusy(true);
+    setError(null);
     try {
-      await updateTier(prefsPayload(true));
+      if (destination.current === 'config') await skipOnboarding();
+      else await updateTier(prefsPayload(true));
+      track('onboarding_completed', { path: destination.current, rating });
+      setOnboarded();
+      router.replace(destination.current === 'config' ? '/(tabs)/practice' : '/(tabs)');
     } catch {
-      track('onboarding_error', { stage: 'tier', status: 'explore' });
+      setError('Could not save your preferences. Please try again.');
+    } finally {
+      handoffInFlight.current = false;
+      setBusy(false);
     }
-    track('onboarding_completed', {
-      rating,
-      aircraftClass,
-      voiceEnabled: false,
-      theme,
-      hasDisplayName: !!displayName.trim(),
-      path: 'explore',
-    });
-    setAnalyticsEnabled(true); // completed the consent flow → enable analytics (opt out in Settings)
-    setOnboarded();
-    router.replace('/(tabs)');
   }
 
   // "Start exam now" → consent gates → handoff. We record consents and create the
@@ -155,10 +161,7 @@ export default function Onboarding() {
   // server computes is_onboarding = !onboarding_completed && noPriorOnboardingExam,
   // so completing first would make the exam count against the 3-exam trial.
   function onStartExam() {
-    if (busy || handoffInFlight.current) return;
-    if (!aiConsented.current) return setPhase('ai_consent');
-    if (!disclaimerAcked.current) return setPhase('disclaimer');
-    void handoff();
+    requestExit('exam');
   }
 
   async function acceptAiConsent() {
@@ -171,7 +174,7 @@ export default function Onboarding() {
       track('onboarding_ai_consent_accepted', { choices: 'third_party_ai_v1' });
       setBusy(false);
       if (!disclaimerAcked.current) return setPhase('disclaimer');
-      void handoff();
+      void finishChosenPath();
     } catch {
       setBusy(false);
       setError('Could not save your consent. Please try again.');
@@ -188,7 +191,7 @@ export default function Onboarding() {
       disclaimerAcked.current = true;
       track('onboarding_consent_accepted', {});
       setBusy(false); // handoff drives its own 'starting' phase from here
-      void handoff();
+      void finishChosenPath();
     } catch {
       setBusy(false);
       setError('Could not save your consent. Please try again.');
@@ -233,7 +236,6 @@ export default function Onboarding() {
         hasDisplayName: !!displayName.trim(),
         path: 'start',
       });
-      setAnalyticsEnabled(true); // completed the consent flow → enable analytics (opt out in Settings)
       setOnboarded();
       router.replace('/(tabs)/practice'); // Practice auto-resumes the new exam
     } catch (e) {

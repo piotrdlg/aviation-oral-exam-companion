@@ -4,20 +4,20 @@
     "slug": "heydpe",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/heydpe-icon.png",
     "scheme": "heydpe",
     "userInterfaceStyle": "automatic",
+    "runtimeVersion": { "policy": "fingerprint" },
     "ios": {
       "bundleIdentifier": "com.imagineflying.heydpe",
       "supportsTablet": false,
-      "icon": "./assets/expo.icon"
+      "usesAppleSignIn": true,
+      "infoPlist": { "ITSAppUsesNonExemptEncryption": false }
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#080c12",
+        "foregroundImage": "./assets/images/heydpe-icon.png"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.imagineflying.heydpe"
@@ -31,9 +31,11 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#080c12",
+          "image": "./assets/images/heydpe-icon.png",
+          "imageWidth": 76,
           "android": {
-            "image": "./assets/images/splash-icon.png",
+            "image": "./assets/images/heydpe-icon.png",
             "imageWidth": 76
           }
         }
@@ -41,12 +43,19 @@
       "expo-font",
       "expo-secure-store",
       "expo-web-browser",
+      "expo-apple-authentication",
       [
         "expo-audio",
         {
+          "enableBackgroundPlayback": false,
+          "enableBackgroundRecording": false,
           "microphonePermission": "HeyDPE uses your microphone so your AI examiner can hear and respond to your spoken answers during practice oral exams."
         }
-      ]
+      ],
+      "expo-image",
+      "expo-asset",
+      "expo-status-bar",
+      "@sentry/react-native/expo"
     ],
     "experiments": {
       "typedRoutes": true,

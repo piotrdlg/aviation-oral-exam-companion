@@ -30,8 +30,8 @@ export const getElementScores = (rating: string) =>
 export const getSessions = () => apiFetch<SessionsResponse>('/api/session');
 
 /** Short-lived Deepgram token + listen URL for native raw-PCM16 STT (linear16@16000). */
-export const getSttToken = () =>
-  apiFetch<SttTokenResponse>('/api/stt/token?encoding=linear16&sample_rate=16000');
+export const getSttToken = (signal?: AbortSignal) =>
+  apiFetch<SttTokenResponse>('/api/stt/token?encoding=linear16&sample_rate=16000', { signal });
 
 /** Reactivate a paused session so /api/exam respond/next-task (which require
  *  status 'active') don't 409 on the first answer after a resume. */
@@ -55,9 +55,8 @@ export const deleteAccount = () =>
     json: { confirm: 'DELETE' },
   });
 
-/** Save onboarding prefs + mark onboarding complete. Non-blocking by design
- *  (the web swallows failures and still starts the exam). */
-export const updateTier = (prefs: OnboardingPrefs) =>
+/** Persist account preferences; callers must handle failure before continuing. */
+export const updateTier = (prefs: Partial<OnboardingPrefs>) =>
   apiFetch<{ ok: boolean }>('/api/user/tier', { method: 'POST', json: prefs });
 
 /** Skip onboarding: marks it complete only (no prefs) → lands on Practice config. */
@@ -73,8 +72,8 @@ export const recordConsent = (kind: ConsentKind, choices: Record<string, unknown
   apiFetch<{ ok: boolean }>('/api/consent', { method: 'POST', json: { kind, choices } });
 
 /** Display-only plan label (the stored enum + every gate is unchanged — decision D5). */
-export function planLabel(tier: string): string {
+export function planLabel(tier: string, hasPaidOverride = false): string {
+  if (hasPaidOverride) return 'Tester';
   if (tier === 'dpe_live') return 'Paid';
-  if (tier === 'ground_school') return 'Tester';
   return 'Trial';
 }

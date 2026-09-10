@@ -10,8 +10,8 @@ import { colors, font, fontSize, space } from '@/theme/tokens';
 //     (sign in as a real OTP/OAuth account whose token is minted out-of-band).
 //  2. Password fallback — a throwaway test account from the gitignored .env.
 // Inert in production builds (the effect early-returns under !__DEV__).
-const DEV_EMAIL = process.env.EXPO_PUBLIC_DEV_EMAIL;
-const DEV_PASSWORD = process.env.EXPO_PUBLIC_DEV_PASSWORD;
+const DEV_EMAIL = __DEV__ ? process.env.EXPO_PUBLIC_DEV_EMAIL : undefined;
+const DEV_PASSWORD = __DEV__ ? process.env.EXPO_PUBLIC_DEV_PASSWORD : undefined;
 
 export default function DevLogin() {
   const { at, rt } = useLocalSearchParams<{ at?: string; rt?: string }>();
