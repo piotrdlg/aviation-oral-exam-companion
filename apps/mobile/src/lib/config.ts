@@ -13,6 +13,8 @@ if (__DEV__ && (!SUPABASE_URL || !SUPABASE_ANON_KEY)) {
 }
 
 export const config = {
+  /** User-visible legal/brand origin, independent of the API environment. */
+  publicUrl: 'https://heydpe.com',
   /** Supabase project (ref pvuiwwqsumoqjepukjhz). */
   supabaseUrl: SUPABASE_URL ?? '',
   supabaseAnonKey: SUPABASE_ANON_KEY ?? '',
