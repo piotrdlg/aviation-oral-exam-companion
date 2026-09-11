@@ -21,12 +21,18 @@ The App ID `com.heydpe.app` ("HeyDPE") already existed under team `45K5W4N8DG` w
 ### A2. App Store Connect: app record — DONE (created 2026-09-11)
 App `HeyDPE`, iOS, English (U.S.), bundle `com.heydpe.app`, SKU `heydpe-ios`, Apple ID **6811163760** (now in `apps/mobile/eas.json` as `ascAppId`). The updated App Store Connect Terms of Service were accepted the same day.
 
-### A3. Supabase: let the native app's Apple token through
+### A3. Supabase — DONE 2026-09-11
+Apple provider Client IDs are `com.heydpe.auth,com.heydpe.app`; the Apple OAuth secret was rotated (valid to 2027-03-10; re-arm the reminders); `heydpe://auth-callback` is in the redirect allow-list.
+
+#### (original steps, kept for reference)
 1. https://supabase.com/dashboard/project/pvuiwwqsumoqjepukjhz/auth/providers → Apple.
 2. **Client IDs** currently `com.heydpe.auth`. Change to `com.heydpe.auth,com.heydpe.app`. Save. (The Services-ID secret stays as is; web login is unaffected.)
 3. Authentication → URL Configuration → Redirect URLs: confirm `heydpe://auth-callback` is listed. Add it if missing.
 
-### A4. EAS: sign in, link the project, set up signing
+### A4. EAS — account and project DONE 2026-09-11; signing still open
+Expo account `@piotrdlg`; EAS project `heydpe`, ID `bdc9dc70-140c-451b-9e32-ce010af65545`, linked in `app.json`. Signing (`eas credentials` or the first `eas build`) still needs your Apple ID login in the terminal.
+
+#### (original steps, kept for reference)
 From your Mac, in `apps/mobile`:
 ```sh
 npx eas-cli login
@@ -42,7 +48,10 @@ npx eas-cli device:create
 ```
 Choose "Website", open the generated link on **each** iPhone in Safari, install the profile (Settings → Profile Downloaded → Install). Use one recent iPhone and one that is 3 to 4 years old. Re-run `npx eas-cli credentials` for the development profile afterwards so the new devices are included.
 
-### A6. Sentry: create the mobile project and the upload token
+### A6. Sentry — project DONE 2026-09-11; token still open
+Project `heydpe-ios` in org `imagine-flying-llc`, IP-address prevention enabled, DSN stored in EAS for preview and production. Still needed: the organization auth token stored as the EAS secret `SENTRY_AUTH_TOKEN` (you create and paste it; hidden input).
+
+#### (original steps, kept for reference)
 1. In the existing Sentry org → Projects → Create Project → platform **React Native** → name `heydpe-ios`.
 2. Copy the **DSN** (Settings → Projects → heydpe-ios → Client Keys).
 3. Settings → Projects → heydpe-ios → Security & Privacy → enable **Prevent Storing of IP Addresses**.
@@ -56,7 +65,10 @@ npx eas-cli env:create --scope project --environment preview --name SENTRY_AUTH_
 ```
 Repeat the four for `--environment production`. Release builds fail on purpose if any of these is missing (decision recorded in PR #71).
 
-### A7. PostHog and public config in EAS
+### A7. PostHog and public config in EAS — DONE 2026-09-11
+Stored for preview and production: Supabase URL and anon key, API URL, PostHog key and host, Sentry DSN, org and project.
+
+#### (original steps, kept for reference)
 For `preview` and `production` environments, also create:
 ```
 EXPO_PUBLIC_SUPABASE_URL=https://pvuiwwqsumoqjepukjhz.supabase.co   (plaintext)
