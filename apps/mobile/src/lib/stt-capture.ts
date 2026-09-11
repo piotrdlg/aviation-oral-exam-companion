@@ -1,7 +1,8 @@
 import { SttParser, type SpeechText } from './stt-parser';
 import type { SpeechCapture } from './voice-session';
+import { PcmNormalizer, type PcmBuffer } from './pcm-normalizer';
 
-export interface PcmBuffer { data: ArrayBuffer; sampleRate: number; channels: number }
+export type { PcmBuffer } from './pcm-normalizer';
 export interface CapturePorts {
   stream: { start(): Promise<void>; stop(): void | Promise<void> };
   permission(): Promise<{ granted: boolean }>;
@@ -28,6 +29,7 @@ export async function startSpeechCapture(
   if (signal.aborted) throw abortError();
   ports.metric('stt_token_ready', performance.now() - startedAt);
   const parser = new SttParser(grant.flux);
+  const normalizer = new PcmNormalizer();
   const ws = new WebSocket(grant.url, [grant.token.startsWith('eyJ') ? 'bearer' : 'token', grant.token]);
   let ended = false;
   let finalizing = false;
@@ -98,8 +100,10 @@ export async function startSpeechCapture(
     const captureAt = performance.now();
     ports.setBufferHandler((buffer) => {
       if (signal.aborted || ended || finalizing || ws.readyState !== WebSocket.OPEN) return;
-      if (buffer.sampleRate !== 16000 || buffer.channels !== 1) {
-        onError(new Error('This microphone returned an unsupported audio format. Please type your answer.'));
+      let data: ArrayBuffer;
+      try { data = normalizer.push(buffer); } catch {
+        ports.metric('stt_pcm_invalid');
+        onError(new Error('Voice input is unavailable (stt_pcm_invalid). You can continue with text.'));
         void close().catch(onError);
         return;
       }
@@ -108,12 +112,12 @@ export async function startSpeechCapture(
         ports.metric('stt_first_buffer', performance.now() - captureAt);
       }
       if (onset === undefined) {
-        const pcm = new DataView(buffer.data);
+        const pcm = new DataView(data);
         let square = 0;
         for (let i = 0; i + 1 < pcm.byteLength; i += 2) square += (pcm.getInt16(i, true) / 32768) ** 2;
         if (Math.sqrt(square / Math.max(1, pcm.byteLength / 2)) >= 0.02) onset = performance.now();
       }
-      try { ws.send(buffer.data); } catch {
+      try { if (data.byteLength) ws.send(data); } catch {
         onError(new Error('Voice input disconnected. Please retry.'));
         void close().catch(onError);
       }
@@ -145,6 +149,8 @@ export async function startSpeechCapture(
         clearInterval(keepalive);
         await ports.stream.stop();
         if (!ended && !signal.aborted && ws.readyState === WebSocket.OPEN) {
+          const tail = normalizer.finish();
+          if (tail.byteLength) ws.send(tail);
           await new Promise<void>((resolve) => {
             finalizeDone = resolve;
             timeout = setTimeout(() => {
