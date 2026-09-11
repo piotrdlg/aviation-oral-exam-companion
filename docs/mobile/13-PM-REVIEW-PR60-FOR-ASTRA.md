@@ -32,6 +32,56 @@ first three items are blocking before the first physical-device build.
 
 ---
 
+## Status after the remediation round (PM, 2026-09-11 evening)
+
+PRs #62 to #72 were reviewed individually and merged to `main` (squash, in the order
+A.1 → A.2/B.6 → A.3 → B.5 → B.4 → C.7/C.8 → C.10 → C.9 → C.11 → C.12 → C.13; three rebases
+resolved by the PM). The receipt migration is applied to production and verified (RLS on,
+owner-only select, partial unique index). Main passes 1,489 root tests, 122 mobile tests,
+typecheck, lint, `expo install --check` and Expo Doctor 21/21. Production deployed.
+
+Every item below is therefore **resolved in code, pending device proof**, except the new
+items in section A2 which came out of the review of your PRs. The owner's device checklist is
+`15-OWNER-DEVICE-TEST-CHECKLIST.md`; nothing in the code blocks it.
+
+## A2. New problems found while reviewing the remediation PRs
+
+### 14. A pending receipt has no operator path and no in-app escape (from #63)
+**Problem:** `executeOnce` deliberately leaves a receipt `pending` after any 5xx or process
+death. The exam route returns 5xx for transient upstream failures too (model overload, a
+Deepgram/Anthropic hiccup), not only for partial writes. From then on that exam answers every
+mutation with 409 `exam_operation_pending`, the client shows "Check saved progress" forever,
+and nobody is told. The student's only way out is to abandon the exam and start another,
+which costs a trial slot. There is no admin view, no way to inspect what the engine actually
+wrote, and no way to release the lock once an operator has checked.
+**Done means:** an operator can see pending receipts (age, session, action), inspect the
+engine state that matters (transcript rows written after the receipt's `created_at`, planner
+metadata), and resolve the receipt with a recorded decision (completed-with-original-outcome,
+or released) without touching the database by hand; the student is told, in the app, what
+happened and what they can do; and a pending receipt older than a defined age is surfaced to
+the owner rather than waiting to be discovered. Choose the safety trade-off explicitly and
+write it in `01-API-ENABLEMENT-AND-CONTRACT.md`.
+
+### 15. There is no way to prove crash capture on a device (from #64 / owner decision B.6)
+**Problem:** the telemetry doc's "proof still required" needs a first-frame JavaScript crash
+and a native crash from the TestFlight build with analytics off. The app has no way to trigger
+either. The owner cannot run that proof, and neither can I.
+**Done means:** a preview/development-only, deliberately hard-to-hit trigger (never in a
+production profile) for both a JavaScript exception at first render and a native crash, so the
+test in `07-TELEMETRY.md` can be executed by the owner from the checklist; plus the exact
+expected shape of the resulting Sentry issue written down so the proof can be judged.
+
+### 16. The JavaScript resampler's cost is unmeasured on the older iPhone (from #62)
+**Problem:** the windowed-sinc filter runs on the JS thread for every buffer (about a hundred
+multiplications per output sample at 48 kHz). Correct and well-tested, but if it costs a
+meaningful share of the JS thread on a 3 to 4 year old device, UI jank during listening will
+show up in the voice gate as a lifecycle failure rather than as its real cause.
+**Done means:** a measured CPU share for the normalizer on the older test iPhone at 48 kHz
+input, recorded next to the T1 samples, and a decision (keep / move off the JS thread / ask
+the platform for 16 kHz where it can deliver it) based on that number.
+
+---
+
 ## A. Blocking before the first physical-device build
 
 ### 1. The capture path assumes the hardware delivers exactly 16 kHz mono
