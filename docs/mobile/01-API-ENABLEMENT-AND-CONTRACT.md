@@ -629,6 +629,36 @@ Error → 500 `{"error":"Internal server error"}` (`:95`). **`tier` is the store
 
 ---
 
+## September 10 Contract Verification
+
+Source-verified for the test-readiness rewrite (not a device or production test):
+
+- `resume-current` in `src/app/api/exam/route.ts` normally returns `taskId`,
+  `taskData`, and `elementCode`. It does **not** generate or return a pending
+  question. Questions must be restored from session transcripts. An exhausted
+  current-element lookup returns `sessionComplete` with a completion message.
+  The client also supports a future nonduplicate pending question defensively.
+- Non-streaming `respond` returns feedback, assessment, and `advance`, not
+  `sessionComplete`. `next-task` returns completion. The client handles completion
+  in either response defensively; planner natural completion is already graded
+  server-side and must not be overwritten by a user-ended completion request.
+- Student transcript rows carry assessments. The native client attaches each
+  assessment to the following examiner bubble for display after resume.
+- `get-resumable` includes stored aircraft class, difficulty, area/task selection,
+  and metadata. Resume uses that exam's configuration, not current account defaults.
+- `POST /api/session` with update/completed computes a user-ended result and
+  returns `ok`, `result`, and `resultV2`. It is used for explicit End exam.
+- `GET /api/session?action=session-element-scores&sessionId=...` uses the
+  session-scoped RPC; results must not show lifetime scores as this exam's grade.
+- `GET /api/user/tier` now also returns `hasPaidOverride` from the existing
+  paid-equivalent entitlement helper. This is display-only; the stored tier enum
+  and server entitlement enforcement are unchanged. Mobile tolerates the field
+  being absent on older deployments. `ground_school` is not a Tester entitlement.
+- Exam generation has a server `maxDuration` of 60 seconds. The native start,
+  respond, and next-task requests use a 70-second ceiling, including body reads;
+  other requests retain a 20-second ceiling. A timed-out response is reconciled
+  with server transcripts before the user can resubmit.
+
 ## Appendix — canonical shared types (Part B references)
 
 From `src/lib/exam-engine.ts`: `ExamMessage = { role:'examiner'|'student', text:string }` (`:31`); `AssessmentData = { score:'satisfactory'|'unsatisfactory'|'partial'|'ungraded', feedback, misconceptions:string[], follow_up_needed:boolean, primary_element:string|null, mentioned_elements:string[], source_summary:string, rag_chunks?:ChunkSearchResult[], usage?:LlmUsage }` (`:36`).

@@ -1,0 +1,65 @@
+{
+  "expo": {
+    "name": "HeyDPE",
+    "slug": "heydpe",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/heydpe-icon.png",
+    "scheme": "heydpe",
+    "userInterfaceStyle": "automatic",
+    "runtimeVersion": { "policy": "fingerprint" },
+    "ios": {
+      "bundleIdentifier": "com.imagineflying.heydpe",
+      "supportsTablet": false,
+      "usesAppleSignIn": true,
+      "infoPlist": { "ITSAppUsesNonExemptEncryption": false }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#080c12",
+        "foregroundImage": "./assets/images/heydpe-icon.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.imagineflying.heydpe"
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#080c12",
+          "image": "./assets/images/heydpe-icon.png",
+          "imageWidth": 76,
+          "android": {
+            "image": "./assets/images/heydpe-icon.png",
+            "imageWidth": 76
+          }
+        }
+      ],
+      "expo-font",
+      "expo-secure-store",
+      "expo-web-browser",
+      "expo-apple-authentication",
+      [
+        "expo-audio",
+        {
+          "enableBackgroundPlayback": false,
+          "enableBackgroundRecording": false,
+          "microphonePermission": "HeyDPE uses your microphone so your AI examiner can hear and respond to your spoken answers during practice oral exams."
+        }
+      ],
+      "expo-image",
+      "expo-asset",
+      "expo-status-bar",
+      "@sentry/react-native/expo"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
