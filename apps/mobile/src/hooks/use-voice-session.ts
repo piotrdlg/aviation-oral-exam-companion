@@ -4,6 +4,7 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 
+import { captureDiagnostic } from '@/lib/crash-reporting';
 import { apiRequest } from '@/lib/api';
 import { getSttToken } from '@/lib/endpoints';
 import { startSpeechCapture, type PcmBuffer } from '@/lib/stt-capture';
@@ -86,7 +87,12 @@ export function useVoiceSession() {
       allowsRecording, playsInSilentMode: true, interruptionMode: 'doNotMix',
       shouldPlayInBackground: false, shouldRouteThroughEarpiece: false,
     }),
-    play: playUtterance,
+    play: async (...args) => {
+      try { await playUtterance(...args); } catch (error) {
+        if (!args[1].aborted && error instanceof Error) captureDiagnostic('tts', error);
+        throw error;
+      }
+    },
     metric: voiceMetric,
     listen: (signal, onText, onError) => startSpeechCapture({
       stream,
@@ -94,7 +100,7 @@ export function useVoiceSession() {
       token: getSttToken,
       setBufferHandler: (handler) => { buffers.handler = handler; },
       metric: voiceMetric,
-    }, signal, onText, onError),
+    }, signal, onText, (error) => { captureDiagnostic('stt', error); onError(error); }),
   }));
   const state = useSyncExternalStore(controller.subscribe, controller.getSnapshot);
   const focused = useRef(false);

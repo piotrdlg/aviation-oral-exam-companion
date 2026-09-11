@@ -40,14 +40,14 @@ describe('telemetry consent', () => {
     expect(body.distinct_id).toBe('user-id');
     expect(body.event).toBe('$identify');
   });
-  it('stops analytics and crash reporting on revocation', async () => {
+  it('stops analytics without touching crash reporting on revocation', async () => {
     const analytics = await import('../analytics');
     await analytics.loadAnalyticsConsent();
     await analytics.setAnalyticsEnabled(true);
     await analytics.setAnalyticsEnabled(false);
     analytics.track('after-opt-out');
     expect(fetch).not.toHaveBeenCalled();
-    expect(crash).toHaveBeenLastCalledWith(false);
+    expect(crash).not.toHaveBeenCalled();
   });
   it('returns to the anonymous id on sign-out', async () => {
     storage.set('heydpe_analytics_anon_id', 'anonymous-id');
@@ -70,7 +70,7 @@ describe('telemetry consent', () => {
     await loading;
     analytics.track('after-opt-out');
     expect(analytics.analyticsEnabled()).toBe(false);
-    expect(crash).toHaveBeenLastCalledWith(false);
+    expect(crash).not.toHaveBeenCalled();
     expect(fetch).not.toHaveBeenCalled();
   });
 });

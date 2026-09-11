@@ -55,7 +55,8 @@
       "expo-image",
       "expo-asset",
       "expo-status-bar",
-      "@sentry/react-native/expo"
+      "@sentry/react-native/expo",
+      "./plugins/with-anonymous-sentry.cjs"
     ],
     "experiments": {
       "typedRoutes": true,

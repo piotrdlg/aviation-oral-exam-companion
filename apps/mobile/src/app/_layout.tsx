@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react-native';
 import {
   IBMPlexSans_400Regular,
   IBMPlexSans_500Medium,
@@ -43,7 +44,7 @@ function GateErrorFrame({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-export default function RootLayout() {
+function RootLayout() {
   const [fontsLoaded] = useFonts({
     IBMPlexSans_400Regular,
     IBMPlexSans_500Medium,
@@ -148,4 +149,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
   },
   retryText: { fontFamily: font.sansSemibold, fontSize: 15, color: colors.bg },
+});
+
+export default Sentry.wrap(function CapturedRoot() {
+  return <Sentry.ErrorBoundary fallback={({ resetError }) => <View style={styles.frame}><Text style={styles.errTitle}>HeyDPE could not start</Text><Pressable accessibilityRole="button" onPress={resetError} style={styles.retry}><Text style={styles.retryText}>Try again</Text></Pressable></View>}><RootLayout /></Sentry.ErrorBoundary>;
 });
