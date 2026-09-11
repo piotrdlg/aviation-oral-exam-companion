@@ -1,0 +1,5 @@
+[
+  { "error": "trial_limit_reached", "upgrade_url": "/pricing", "limit": 3 },
+  { "error": "trial_expired", "upgrade_url": "/pricing", "windowDays": 7 },
+  { "error": "resubscribe_required", "upgrade_url": "/pricing" }
+]
