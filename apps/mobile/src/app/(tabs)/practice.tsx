@@ -133,8 +133,8 @@ export default function PracticeScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function speak(text?: string) {
-    if (text && voiceEnabled.current) void controller.enqueue(text, String(responseId.current));
+  function speak(text?: string, source: 'fresh' | 'replay' | 'resume' = 'fresh') {
+    if (text && voiceEnabled.current) void controller.enqueue(text, String(responseId.current), source);
   }
 
   function toggleVoice() {
@@ -143,7 +143,7 @@ export default function PracticeScreen() {
     setVoiceOn(next);
     if (!next && audio.mode === 'speaking') void controller.abort().catch(() => {});
     if (next && audio.mode !== 'listening' && !finalizing) {
-      speak(bubbles.findLast((bubble) => bubble.role === 'examiner')?.text);
+      speak(bubbles.findLast((bubble) => bubble.role === 'examiner')?.text, 'replay');
     }
     track('voice_mode_toggled', { enabled: next });
   }
@@ -218,7 +218,7 @@ export default function PracticeScreen() {
     setBubbles(restored);
     setPhase(turn.sessionComplete ? 'complete' : 'active');
     if (turn.sessionComplete) await controller.abort();
-    else speak(restored.findLast((bubble) => bubble.role === 'examiner')?.text);
+    else speak(restored.findLast((bubble) => bubble.role === 'examiner')?.text, 'resume');
     scrollEnd();
   }
 
@@ -544,6 +544,17 @@ export default function PracticeScreen() {
               </View>
             ) : null}
           </ScrollView>
+          {voiceOn && bubbles.some((bubble) => bubble.role === 'examiner') && (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Listen to last examiner turn"
+              testID="replay-examiner"
+              disabled={busy || finalizing || stt.listening || stt.connecting || audio.mode === 'speaking'}
+              onPress={() => speak(bubbles.findLast((bubble) => bubble.role === 'examiner')?.text, 'replay')}
+              style={[styles.retry, { alignSelf: 'center', marginBottom: space[2] }]}>
+              <Text style={styles.retryText}>Listen to last examiner turn</Text>
+            </Pressable>
+          )}
           {stt.error ? /permission|microphone access is off/i.test(stt.error)
             ? <Pressable accessibilityRole="button" accessibilityLabel="Open microphone settings" onPress={() => Linking.openSettings()}><Text style={styles.sttError}>{stt.error}</Text></Pressable>
             : <Text accessibilityRole="alert" style={styles.sttError}>{stt.error}</Text>

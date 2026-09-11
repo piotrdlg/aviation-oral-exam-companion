@@ -18,6 +18,7 @@ export interface VoicePorts {
   recordingMode(recording: boolean): Promise<void>;
   play(text: string, signal: AbortSignal, onPlaying: () => void): Promise<void>;
   metric?(name: string, milliseconds: number): void;
+  firstPlayback?(): void;
   listen(signal: AbortSignal, onText: (text: SpeechText) => void,
     onError: (error: Error) => void): Promise<SpeechCapture>;
 }
@@ -59,6 +60,7 @@ export class VoiceSession {
     this.epoch.abort();
     this.epoch = new AbortController();
     this.acceptingSpeech = false;
+    this.previousFinish = undefined;
     this.finish = null;
     return this.epoch.signal;
   }
@@ -81,11 +83,12 @@ export class VoiceSession {
     if (!cleanupSignal.aborted) this.update({ mode: 'error', connecting: false, error: message });
   }
 
-  enqueue(text: string, response?: string): Promise<void> {
+  enqueue(text: string, response?: string, source: 'fresh' | 'replay' | 'resume' = 'fresh'): Promise<void> {
     if (!this.enabled || this.acceptingSpeech) return Promise.resolve();
     const enqueuedAt = performance.now();
-    const first = response === undefined || response !== this.responseId;
-    this.responseId = response;
+    const measured = source === 'fresh';
+    const first = measured && (response === undefined || response !== this.responseId);
+    if (measured) this.responseId = response;
     const signal = this.epoch.signal;
     return this.serial(async () => {
       if (signal.aborted || !this.enabled) return;
@@ -97,12 +100,16 @@ export class VoiceSession {
           this.update({ mode: 'speaking', error: null });
           await this.ports.play(part, signal, () => {
             if (signal.aborted) return;
-            if (first && index === 0) this.ports.metric?.('T2', performance.now() - enqueuedAt);
+            if (!measured) return;
+            if (first && index === 0) {
+              this.ports.metric?.('T2', performance.now() - enqueuedAt);
+              this.ports.firstPlayback?.();
+            }
             else if (this.previousFinish && this.previousFinish.response === response) {
               this.ports.metric?.(index === 0 ? 'T3_feedback_question' : 'T3_split', performance.now() - this.previousFinish.time);
             }
           });
-          if (!signal.aborted) this.previousFinish = { response, time: performance.now() };
+          if (!signal.aborted) this.previousFinish = measured ? { response, time: performance.now() } : undefined;
         }
         if (!signal.aborted) this.update({ mode: 'idle' });
       } catch (error) {

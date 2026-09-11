@@ -60,7 +60,6 @@ async function playUtterance(text: string, signal: AbortSignal, onPlaying: () =>
           if (status.playing && !played) {
             played = true;
             onPlaying();
-            markVoicePlayback();
             voiceMetric('tts_playing', performance.now() - startedAt);
           }
           if (status.didJustFinish) { cleanup(); resolve(); }
@@ -88,6 +87,7 @@ export function useVoiceSession() {
     }),
     play: playUtterance,
     metric: voiceMetric,
+    firstPlayback: markVoicePlayback,
     listen: (signal, onText, onError) => startSpeechCapture({
       stream,
       permission: requestRecordingPermissionsAsync,

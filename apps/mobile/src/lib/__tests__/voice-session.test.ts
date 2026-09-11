@@ -153,3 +153,49 @@ describe('serialized voice session', () => {
     expect(ports.listen).toHaveBeenCalledTimes(2);
   });
 });
+
+
+describe('fresh-response measurement and replay', () => {
+  function measured() {
+    const s = setup();
+    s.ports.metric = vi.fn();
+    s.ports.firstPlayback = vi.fn();
+    vi.mocked(s.ports.play).mockImplementation(async (_text, _signal, playing) => { playing(); });
+    return s;
+  }
+  it('measures first playback once and the feedback-to-question continuation separately', async () => {
+    const { voice, ports } = measured();
+    await voice.enqueue('Feedback', 'response-1');
+    await voice.enqueue('Next question', 'response-1');
+    expect(vi.mocked(ports.metric!).mock.calls.map(([name]) => name)).toEqual(['T2', 'T3_feedback_question']);
+    expect(ports.firstPlayback).toHaveBeenCalledTimes(1);
+  });
+  it.each(['replay', 'resume'] as const)('excludes %s and its long-text splits from T2/T3/E2E', async (source) => {
+    const { voice, ports } = measured();
+    await voice.enqueue('Original', 'response-1');
+    vi.mocked(ports.metric!).mockClear();
+    vi.mocked(ports.firstPlayback!).mockClear();
+    await voice.enqueue('Long examiner text. '.repeat(250), 'response-1', source);
+    expect(ports.metric).not.toHaveBeenCalled();
+    expect(ports.firstPlayback).not.toHaveBeenCalled();
+  });
+  it('allows the unheard background turn to be heard on explicit foreground replay', async () => {
+    const { voice, ports } = measured();
+    await voice.suspend();
+    await voice.enqueue('Arrived in background', 'response-1');
+    await voice.activate();
+    expect(ports.play).not.toHaveBeenCalled();
+    await voice.enqueue('Arrived in background', 'response-1', 'replay');
+    expect(ports.play).toHaveBeenCalledTimes(1);
+    expect(ports.metric).not.toHaveBeenCalled();
+  });
+  it('does not count the gap across suspension as a continuation', async () => {
+    const { voice, ports } = measured();
+    await voice.enqueue('Feedback', 'response-1');
+    await voice.suspend();
+    await voice.activate();
+    vi.mocked(ports.metric!).mockClear();
+    await voice.enqueue('Question', 'response-1', 'resume');
+    expect(ports.metric).not.toHaveBeenCalled();
+  });
+});
