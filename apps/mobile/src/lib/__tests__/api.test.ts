@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import trialErrors from '../../../../../docs/mobile/testing/contracts/session-trial-errors.json';
 import { ApiError, apiFetch, apiRequest } from '../api';
 
 vi.mock('../config', () => ({ config: { apiUrl: 'https://api.example' } }));
@@ -15,9 +16,9 @@ describe('mobile HTTP contract', () => {
       'Content-Type': 'application/json', Authorization: 'Bearer test-token',
     }, body: '{"text":"Hello"}' }));
   });
-  it('prefers the reason code used by trial paywalls', async () => {
-    vi.mocked(fetch).mockResolvedValue(Response.json({ error: 'Forbidden', reason: 'trial_expired' }, { status: 403 }));
-    await expect(apiFetch('/api/session')).rejects.toMatchObject({ status: 403, code: 'trial_expired' });
+  it.each(trialErrors)('reads the actual session $error response', async (body) => {
+    vi.mocked(fetch).mockResolvedValue(Response.json(body, { status: 403 }));
+    await expect(apiFetch('/api/session')).rejects.toMatchObject({ status: 403, code: body.error });
   });
   it('retains non-JSON HTTP failure status', async () => {
     vi.mocked(fetch).mockResolvedValue(new Response('Unavailable', { status: 503 }));

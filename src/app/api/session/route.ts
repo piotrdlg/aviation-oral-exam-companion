@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { after } from 'next/server';
+import { trialErrorBody } from '@/lib/trial-error';
 import { getAuthedUser } from '@/lib/supabase/auth';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { getUserTier } from '@/lib/voice/tier-lookup';
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
     const blockTrial = (reason: string, extra: Record<string, unknown> = {}) => {
       captureServerEvent(user.id, 'trial_blocked', { reason });
       after(() => flushPostHog());
-      return NextResponse.json({ error: reason, upgrade_url: '/pricing', ...extra }, { status: 403 });
+      return NextResponse.json(trialErrorBody(reason, extra), { status: 403 });
     };
 
     if (!isPaying && !isOnboarding) {
