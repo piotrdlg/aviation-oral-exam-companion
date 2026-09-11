@@ -4,7 +4,8 @@ import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { TIER_FEATURES } from '@/lib/voice/types';
 import type { VoiceTier } from '@/lib/voice/types';
 import { EXAMINER_PROFILES, type ExaminerProfileKey } from '@/lib/examiner-profile';
-import { invalidateTierCache } from '@/lib/voice/tier-lookup';
+import { readTrialStatus } from '@/lib/trial-access';
+import { getUserTier, invalidateTierCache } from '@/lib/voice/tier-lookup';
 import { hasPaidEquivalentOverride } from '@/lib/instructor-entitlements';
 
 const serviceSupabase = createServiceClient(
@@ -74,8 +75,11 @@ export async function GET(request: NextRequest) {
     const ttsChars = (ttsResult.data || []).reduce((sum, r) => sum + Number(r.quantity), 0);
     const sttSeconds = (sttResult.data || []).reduce((sum, r) => sum + Number(r.quantity), 0);
 
+    const trial = await readTrialStatus(serviceSupabase, user.id, await getUserTier(serviceSupabase, user.id));
+
     return NextResponse.json({
       tier,
+      trial,
       hasPaidOverride,
       subscriptionStatus: profile?.subscription_status || 'none',
       cancelAtPeriodEnd: profile?.cancel_at_period_end || false,

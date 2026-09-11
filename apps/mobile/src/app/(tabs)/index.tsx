@@ -1,19 +1,26 @@
+import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Card, H1, Lead, MicroLabel, PrimaryButton, Screen, Stat } from '@/components/cockpit';
 import { getResumable, getStats, getTier, planLabel } from '@/lib/endpoints';
 import { useAsync } from '@/lib/use-async';
+import { describeTrial } from '@/lib/trial-display';
 import { colors, font, fontSize, space } from '@/theme/tokens';
 
 async function loadDashboard() {
     const tier = await getTier();
     const [stats, resumable] = await Promise.all([getStats(tier.preferredRating), getResumable()]);
-    return { tier, stats: stats.stats, resumable: resumable.session };
+    return { tier, stats: stats.stats, resumable: resumable.session, loadedAt: Date.now() };
 }
 
 export default function HomeScreen() {
   const { data, error, loading, refresh } = useAsync(loadDashboard);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   if (loading && !data) {
     return (
@@ -40,7 +47,8 @@ export default function HomeScreen() {
   }
 
   const { tier, stats, resumable } = data;
-  const paid = tier.tier === 'dpe_live' || tier.hasPaidOverride;
+  const paid = tier.tier === 'dpe_live' || tier.hasPaidOverride || tier.trial === null;
+  const trial = describeTrial(tier.trial, Math.max(0, now - data.loadedAt));
 
   return (
     <Screen scroll>
@@ -57,6 +65,14 @@ export default function HomeScreen() {
       <Lead>
         Practice the oral with an AI examiner that actually listens — voice-first, ACS-scored.
       </Lead>
+
+      {!paid && (
+        <Card style={{ marginBottom: space[4] }}>
+          <MicroLabel color={colors.amber}>YOUR TRIAL</MicroLabel>
+          <Text style={styles.cardTitle}>{trial.title}</Text>
+          <Text style={styles.cardMeta}>{trial.detail}</Text>
+        </Card>
+      )}
 
       {resumable ? (
         <Card style={{ marginBottom: space[6] }}>

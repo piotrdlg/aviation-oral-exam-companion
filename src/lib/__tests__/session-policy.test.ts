@@ -98,6 +98,8 @@ function getReq(params: Record<string, string>) {
 // ----------------------------------------------------------------
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.serviceFrom.mockReset();
+  mocks.userFrom.mockReset();
   mocks.getUser.mockResolvedValue({ data: { user: { id: USER_ID } } });
   mocks.getUserTier.mockResolvedValue('checkride_prep'); // free tier default
 });
@@ -191,7 +193,7 @@ describe('create — is_onboarding validation', () => {
 // ================================================================
 describe('create — trial limits', () => {
   it('blocks free user at trial limit (3 exams)', async () => {
-    mocks.serviceFrom.mockReturnValueOnce(q({ count: 3 }));
+    mocks.serviceFrom.mockReturnValueOnce(q({ count: 3 })).mockReturnValueOnce(q({ data: { subscription_status: 'active' } }));
 
     const res = await POST(postReq({ action: 'create' }));
     expect(res.status).toBe(403);
@@ -316,12 +318,12 @@ describe('create — trial window + resubscribe', () => {
     expect((insertQ.insert.mock.calls[0][0] as { expires_at: string | null }).expires_at).toBeNull();
   });
 
-  it('the 3-exam cap is checked first (count wins, no profile fetch)', async () => {
-    mocks.serviceFrom.mockReturnValueOnce(q({ count: 3 }));
+  it('the 3-exam cap wins for free users after resolving live subscription access', async () => {
+    mocks.serviceFrom.mockReturnValueOnce(q({ count: 3 })).mockReturnValueOnce(q({ data: { subscription_status: 'active' } }));
     const res = await POST(postReq({ action: 'create' }));
     expect(res.status).toBe(403);
     expect((await res.json()).error).toBe('trial_limit_reached');
-    expect(mocks.serviceFrom).toHaveBeenCalledTimes(1);
+    expect(mocks.serviceFrom).toHaveBeenCalledTimes(2);
   });
 
   it('allows a free user inside the window with no prior subscription', async () => {
@@ -752,4 +754,13 @@ describe('GET — get-all-resumable', () => {
     const body = await res.json();
     expect(body.sessions).toEqual([]);
   });
+});
+
+
+it('allows a newly paid user with three old trial exams despite a stale free-tier cache', async () => {
+  mocks.serviceFrom
+    .mockReturnValueOnce(q({ count: 3 }))
+    .mockReturnValueOnce(q({ data: { stripe_subscription_id: 'sub_live', created_at: '2026-01-01' } }))
+    .mockReturnValueOnce(q({ data: { id: 'paid-session' } }));
+  expect((await POST(postReq({ action: 'create' }))).status).toBe(200);
 });
