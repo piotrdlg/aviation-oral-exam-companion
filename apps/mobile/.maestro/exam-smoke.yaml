@@ -1,4 +1,4 @@
-appId: com.imagineflying.heydpe
+appId: com.heydpe.app
 name: Signed-in text exam smoke
 ---
 # Establish the test account through real OTP or OAuth before running this flow.

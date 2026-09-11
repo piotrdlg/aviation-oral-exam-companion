@@ -15,19 +15,15 @@ run on a physical iPhone yet. The receipt table is live in production.
 
 ## Part A — Accounts and services (one time)
 
-### A1. Apple Developer: register the app identifier
-1. https://developer.apple.com/account → Certificates, Identifiers & Profiles → Identifiers → **+**.
-2. App IDs → App → Description `HeyDPE` → Bundle ID **Explicit**: `com.imagineflying.heydpe`.
-3. Capabilities: tick **Sign In with Apple** (leave "Enable as a primary App ID"). Continue → Register.
+### A1. Apple Developer: app identifier — DONE (found 2026-09-11)
+The App ID `com.heydpe.app` ("HeyDPE") already existed under team `45K5W4N8DG` with Sign In with Apple enabled. The code now uses it. The updated Program License Agreement was accepted the same day.
 
-### A2. App Store Connect: create the app record
-1. https://appstoreconnect.apple.com → My Apps → **+** → New App.
-2. Platform iOS, Name `HeyDPE`, Primary language English (U.S.), Bundle ID `com.imagineflying.heydpe`, SKU `heydpe-ios`, User Access Full.
-3. Open the app → App Information → note the numeric **Apple ID** of the app. **Send me that number**; it goes into `apps/mobile/eas.json` as `ascAppId`.
+### A2. App Store Connect: app record — DONE (created 2026-09-11)
+App `HeyDPE`, iOS, English (U.S.), bundle `com.heydpe.app`, SKU `heydpe-ios`, Apple ID **6811163760** (now in `apps/mobile/eas.json` as `ascAppId`). The updated App Store Connect Terms of Service were accepted the same day.
 
 ### A3. Supabase: let the native app's Apple token through
 1. https://supabase.com/dashboard/project/pvuiwwqsumoqjepukjhz/auth/providers → Apple.
-2. **Client IDs** currently `com.heydpe.auth`. Change to `com.heydpe.auth,com.imagineflying.heydpe`. Save. (The Services-ID secret stays as is; web login is unaffected.)
+2. **Client IDs** currently `com.heydpe.auth`. Change to `com.heydpe.auth,com.heydpe.app`. Save. (The Services-ID secret stays as is; web login is unaffected.)
 3. Authentication → URL Configuration → Redirect URLs: confirm `heydpe://auth-callback` is listed. Add it if missing.
 
 ### A4. EAS: sign in, link the project, set up signing
