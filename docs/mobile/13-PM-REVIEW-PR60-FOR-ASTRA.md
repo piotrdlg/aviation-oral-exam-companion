@@ -24,8 +24,8 @@ first three items are blocking before the first physical-device build.
 
 1. **Small PRs against `main`.** One concern per PR, each with its own tests. No more 100-file PRs.
 2. **Owner decisions are not yours or mine to change in code.** Two product behaviours changed in
-   this PR without a recorded owner decision (items 5 and 6). Leave them as they are until Piotr
-   decides; do not flip them back or forward.
+   this PR without a recorded owner decision; Piotr has now decided them (section B). Implement
+   exactly as decided.
 3. **The approved plan's gates stand.** Sentence-level TTS, prefetch and SSE remain conditional on
    attributed device measurements (`10-TEST-READINESS-PLAN.md` Phase 5). Do not pre-build them.
 4. **Report honestly, as you did.** "Prepared, not proven" wording in the ledger was exactly right.
@@ -52,8 +52,8 @@ Include a unit test for a non-16 kHz buffer stream.
 - Sentry is only initialised after the stored analytics consent has been read, from inside the
   analytics module. Nothing wraps the root component. Crashes during startup, before consent
   resolves, and native crashes whose handlers must be installed at launch are outside its reach.
-- One switch ("Usage analytics") governs both product analytics and crash reporting. Whether
-  those should share a consent is an owner decision (see B.6); the code currently decides it.
+- One switch ("Usage analytics") governs both product analytics and crash reporting. The owner has
+  decided (B.6) that crash reporting is anonymous and always on, independent of that switch.
 - `beforeSend` replaces every exception message with a fixed string and `beforeBreadcrumb`
   drops everything. A report will contain a type and stack frames only. For a voice pipeline
   whose failures are mostly messages ("connect_timeout", "Keychain unavailable", HTTP status),
@@ -76,21 +76,30 @@ double-counted exam).
 
 ---
 
-## B. Owner decisions surfaced by this PR (do not change in code; flagged to Piotr)
+## B. Owner decisions — DECIDED 2026-09-11 (Piotr). Implement as stated; do not re-litigate.
 
-### 4. Trial usage counter removed from Home
-Home previously showed `TRIAL · n/3`; it now shows `TRIAL`. The old counter used a monthly
-figure that did not match the lifetime 3-exam trial, so removing it was defensible, but a trial
-user now has no in-app view of remaining exams. Owner to decide what Home should show.
+### 4. The trial exam counter stays on Home
+**Decision:** Home shows the trial user how many of the 3 trial exams remain (or are used). The
+June figure used a monthly count that did not match the lifetime 3-exam trial, so the display
+must reflect the real gate: 3 exams **or** 7 days from signup, whichever comes first, as enforced
+by `POST /api/session` create. Paid and Tester accounts show no counter.
+**Done means:** a trial user can always see, on Home, how much trial is left, and the number agrees
+with what the server will actually allow next.
 
-### 5. Analytics default after onboarding changed from on-with-opt-out to off
-The June design enabled analytics on onboarding completion (opt out in Settings). This PR removed
-that, so analytics stays off unless a user visits Settings. Legally safer, but it turns off the
-funnel for nearly every tester and user. Owner decision; record it in the plan when made.
+### 5. Analytics is on after onboarding, with opt-out in Settings
+**Decision:** restore the June behaviour: completing onboarding (which contains the consent
+flow) enables product analytics; the Settings "Usage analytics" switch is the opt-out and must
+keep working exactly as now (revocation drops buffered events and stops sending).
+**Done means:** a freshly onboarded account emits the client funnel events; toggling the switch
+off stops them and survives restart.
 
-### 6. Whether crash reporting shares the analytics consent
-See A.2. A crash-only consent, an "always on but anonymous" posture, or the current coupling are
-all defensible; the owner picks. Your job is to make whichever posture is chosen actually work.
+### 6. Crash reporting runs anonymously, always on, decoupled from the analytics consent
+**Decision:** crash reporting is not gated by the analytics switch. It is always on, anonymous
+(no user id, no email, no exam content, no transcripts, no tokens), and must cover startup and
+native crashes (see A.2). The Settings analytics switch no longer affects it.
+**Done means:** a crash on the first frame after launch, with analytics off, is captured with a
+useful message and stack and without any identifying or exam data; the anonymous posture is
+written into `07-TELEMETRY.md` so the App Privacy label at M6 can be authored from it.
 
 ---
 
@@ -152,6 +161,5 @@ defect, but decide a cadence: when is the SDK-pinned set refreshed, and is docto
 
 ## Suggested order for the next session
 
-A.1 → A.3 → A.2 (A.2 depends on the owner's answer to B.6; do the coverage part first) → C.8 →
-C.9 → C.7 → the rest. Each as its own PR with tests. Do not start Phase 5 measurement work until
+A.1 → A.3 → A.2 + B.6 together → B.5 → B.4 → C.8 → C.9 → C.7 → the rest. Each as its own PR with tests. Do not start Phase 5 measurement work until
 A.1 and A.3 are merged.
