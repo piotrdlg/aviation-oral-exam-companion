@@ -115,7 +115,7 @@ requested on day 1.
 ### Phase 0 — Land what exists (½ day)
 
 1. Push the 27 unpushed commits; open the PR `feat/mobile-m1-api-enablement → main`. Rebase onto `main` first: the 7 backend commits on `main` are cherry-picks of commits on this branch and should drop out as already-applied.
-2. Commit the untracked ops material (`docs/ops/`, `scripts/ops/` — identifiers only, no secrets). Fix `AGENTS.md` at repo root (bad find-and-replace: "Codex Sonnet", `Codex-sonnet-4-6`) or generate it from `CLAUDE.md`.
+2. ~~Commit the untracked ops material~~ **Corrected 2026-09-11:** `docs/ops/` and `scripts/ops/` stay LOCAL and gitignored — the repo is public and the owner decided on 2026-06-14 to keep the rotation runbook, key ID and local `.p8` path out of it. They were committed in PR #60 on the PM's mistaken advice and removed again in the follow-up PR. Fix `AGENTS.md` at repo root (bad find-and-replace) or generate it from `CLAUDE.md`.
 3. Separate PR on `main`: delete `src/app/staging-auth/page.tsx` (hardcoded-credential backdoor marked DELETE).
 4. Update `IMPLEMENTATION-PROGRESS.md` with the September restart and link this plan.
 
