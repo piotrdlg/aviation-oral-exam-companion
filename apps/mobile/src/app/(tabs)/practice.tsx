@@ -517,7 +517,7 @@ export default function PracticeScreen() {
               accessibilityLabel="Examiner voice">
               <Ionicons name={voiceOn ? 'volume-high-outline' : 'volume-mute-outline'} size={24} color={voiceOn ? colors.amber : colors.muted} />
             </Pressable>
-            <Pressable onPress={endExam} disabled={busy} hitSlop={8}>
+            <Pressable testID="end-exam" accessibilityRole="button" onPress={endExam} disabled={busy} hitSlop={8}>
               <Text style={styles.endBtn}>End exam</Text>
             </Pressable>
           </View>
@@ -538,7 +538,7 @@ export default function PracticeScreen() {
               )
             )}
             {busy ? (
-              <View style={styles.thinking}>
+              <View testID="exam-thinking" style={styles.thinking}>
                 <ActivityIndicator color={colors.cyanReadable} size="small" />
                 <Text style={styles.thinkingText}>Examiner is considering your answer…</Text>
               </View>
@@ -566,6 +566,7 @@ export default function PracticeScreen() {
               <Ionicons name={stt.listening ? 'stop' : 'mic'} size={22} color={stt.listening ? colors.bg : colors.cyanReadable} />
             </Pressable>
             <TextInput
+              testID="exam-answer"
               value={answer}
               onChangeText={setAnswer}
               placeholder="Type or speak your answer…"
@@ -576,6 +577,7 @@ export default function PracticeScreen() {
               editable={!busy && !stt.listening && !stt.connecting && !finalizing}
             />
             <Pressable
+              testID="send-answer"
               onPress={submit}
               accessibilityRole="button"
               accessibilityLabel="Send answer"

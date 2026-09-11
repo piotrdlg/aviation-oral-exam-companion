@@ -14,6 +14,16 @@ npm run ios
 
 Configure the public API and Supabase values listed in `.env.example`. Use a native development build. SDK/native dependency changes require rebuilding the client.
 
+For the installed simulator client, start Metro with an IPv4 loopback address:
+
+```sh
+NODE_OPTIONS=--dns-result-order=ipv4first npx expo start --dev-client --localhost --port 8085
+```
+
+Expo's simulator Tools button can overlap onboarding controls. Disable it in
+the developer menu before UI automation. Unsigned Debug builds use a development-only
+in-memory session fallback; they do not prove Keychain persistence.
+
 ## Release Profiles
 
 - `development`: native development client, internal device distribution.
@@ -33,4 +43,13 @@ Native Apple sign-in requires the bundle ID `com.imagineflying.heydpe` in Supaba
 
 Tests cover controller races, the Deepgram protocol, speech accumulation, HTTP cancellation, exam payloads, secure session storage, and telemetry privacy. Device latency, echo, interruptions, native Apple sign-in, and crash ingestion require physical-device evidence. Follow `../../docs/mobile/11-TESTFLIGHT-TEST-SCRIPT.md`.
 
-The Maestro flow starts from an authenticated test account. It has not replaced real sign-in or physical TestFlight validation.
+The Maestro flow starts from an authenticated test account with exam access. It
+submits one answer and ends the current/new QA exam. Use a dedicated account,
+not a real student's in-progress session. iOS accessibility labels include tab
+roles and input placeholders, so the flow uses stable exam-control IDs.
+This does not replace real sign-in or physical TestFlight validation.
+
+`trial-expired.yaml` is a separate negative-path flow, verified on the SDK 57
+Debug simulator. It requires a foreground, signed-in ordinary QA account whose
+trial has expired, with no open exam. It checks the paywall and tab navigation
+without changing entitlements.

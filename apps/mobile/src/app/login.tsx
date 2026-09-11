@@ -198,7 +198,7 @@ export default function LoginScreen() {
       </View> : null}
 
       <Text style={styles.legal}>By continuing you agree to the Terms of Service and Privacy Policy.</Text>
-      <View style={{ flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap' }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap', columnGap: space[5] }}>
         <Pressable accessibilityRole="link" onPress={() => WebBrowser.openBrowserAsync(`${config.apiUrl}/terms`)} style={styles.linkBtn}><Text style={styles.link}>Terms of Service</Text></Pressable>
         <Pressable accessibilityRole="link" onPress={() => WebBrowser.openBrowserAsync(`${config.apiUrl}/privacy`)} style={styles.linkBtn}><Text style={styles.link}>Privacy Policy</Text></Pressable>
       </View>

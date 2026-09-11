@@ -6,7 +6,7 @@
 > submission + the device-only / Apple-account work comes after.
 >
 > Derived from the master plan (`00-MOBILE-MASTER-PLAN.md` §4) and the sub-docs.
-> Branch: `feat/mobile-test-readiness` (preserves `feat/mobile-m1-api-enablement`). Updated 2026-09-10.
+> Branch: `feat/mobile-test-readiness` (preserves `feat/mobile-m1-api-enablement`). Updated 2026-09-11.
 
 ## Takeover Implementation (2026-09-10)
 
@@ -44,6 +44,17 @@ Verification and native smoke evidence are recorded in
 `testing/2026-09-10-takeover.md`. The 30-minute physical test script is
 `11-TESTFLIGHT-TEST-SCRIPT.md`. Existing June claims below are historical evidence,
 not re-certification of the rewritten native pipeline.
+
+Draft review branches are pushed: [mobile #60](https://github.com/piotrdlg/aviation-oral-exam-companion/pull/60)
+and [standalone staging-auth removal #59](https://github.com/piotrdlg/aviation-oral-exam-companion/pull/59).
+Web/mobile CI and Vercel previews passed at `05b85a1`; neither PR is merged.
+SDK 57 Xcode Debug builds and runs on the iPhone 17 Pro simulator. Login, explicit
+consents, Home, and a restored exam question were visually verified. The ordinary
+QA account's expired session correctly blocks answer assessment with the trial
+modal; a graded text exchange still requires an account with current exam access.
+The incomplete-results/Progress/Settings path and new-exam expired-trial gate
+also passed. The reusable `.maestro/trial-expired.yaml` was executed successfully
+against the Debug simulator; this does not close the release-build smoke gate.
 
 **External prerequisites:** EAS CLI reports "Not logged in". The real EAS project,
 App Store Connect app record/signing, Apple bundle-ID provider configuration,

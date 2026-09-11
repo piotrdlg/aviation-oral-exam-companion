@@ -3,29 +3,44 @@ name: Signed-in text exam smoke
 ---
 # Establish the test account through real OTP or OAuth before running this flow.
 # No dev-login or embedded credentials: this also works with release simulator JS.
+# This submits one answer and completes the QA account's current/new exam.
 - launchApp
 - extendedWaitUntil:
-    visible: "Home"
+    visible: "Home, tab.*"
     timeout: 60000
-- tapOn: "Practice"
+- tapOn: "Practice, tab.*"
 - extendedWaitUntil:
-    visible: "Begin exam"
-    timeout: 30000
-- tapOn: "Begin exam"
+    visible: "Begin exam|Your answer.*"
+    timeout: 75000
+- runFlow:
+    when:
+      visible: "Begin exam"
+    commands:
+      - tapOn: "Begin exam"
 - extendedWaitUntil:
-    visible: "Your answer"
-    timeout: 60000
-- tapOn: "Your answer"
+    visible:
+      id: "exam-answer"
+    timeout: 75000
+- tapOn:
+    id: "exam-answer"
 - inputText: "I would verify the required documents and inspections, aircraft airworthiness, weather, fuel, and my personal readiness before flight."
-- tapOn: "Send answer"
+- tapOn:
+    id: "send-answer"
 - extendedWaitUntil:
-    notVisible: "Examiner is considering your answer.*"
-    timeout: 60000
-- tapOn: "End exam"
+    visible: "SATISFACTORY|PARTIAL|UNSATISFACTORY|UNGRADED"
+    timeout: 75000
+- extendedWaitUntil:
+    notVisible:
+      id: "exam-thinking"
+    timeout: 150000
+- tapOn:
+    id: "end-exam"
 - extendedWaitUntil:
     visible: "Exam complete"
     timeout: 30000
 - assertVisible: "Review in Progress"
 - takeScreenshot: exam-complete
 - tapOn: "Review in Progress"
-- assertVisible: "Progress"
+- extendedWaitUntil:
+    visible: "Your readiness"
+    timeout: 30000

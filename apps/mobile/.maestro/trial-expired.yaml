@@ -1,0 +1,28 @@
+appId: com.imagineflying.heydpe
+name: Ordinary expired-trial account
+---
+# Prerequisites: foreground, authenticated ordinary QA account, expired trial,
+# no open exam. No paid override, development login, or account mutation here.
+- tapOn: "Practice, tab.*"
+- extendedWaitUntil:
+    visible: "Begin exam"
+    timeout: 30000
+- tapOn: "Begin exam"
+- extendedWaitUntil:
+    visible: "Your free trial ended"
+    timeout: 30000
+- assertVisible: "Purchases are unavailable in this test build."
+- takeScreenshot: expired-trial
+- tapOn: "Not now"
+- assertVisible: "Begin exam"
+- tapOn: "Progress, tab.*"
+- extendedWaitUntil:
+    visible: "Your readiness"
+    timeout: 30000
+- takeScreenshot: progress
+- tapOn: "Settings, tab.*"
+- extendedWaitUntil:
+    visible: "Account"
+    timeout: 30000
+- takeScreenshot: settings
+- tapOn: "Home, tab.*"

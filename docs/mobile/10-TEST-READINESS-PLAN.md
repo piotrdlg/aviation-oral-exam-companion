@@ -12,13 +12,20 @@
 
 ---
 
-## Execution Update (2026-09-10)
+## Execution Update (2026-09-11)
 
 The audit below describes the pre-takeover baseline. SDK 57, test scaffolding,
 audio lifecycle rewrite, native Apple/Sentry source integration, EAS profiles,
 and several hardening fixes are now implemented locally. See the current
 `IMPLEMENTATION-PROGRESS.md` takeover section and
 `testing/2026-09-10-takeover.md` for measured evidence and open gates.
+
+The inherited history and readiness work are pushed as draft PR #60; the
+credential-route removal is independently reviewable in draft PR #59. CI is
+passing. Neither PR is merged, and production main is unchanged. The SDK 57
+Debug client builds and runs in the simulator. Native ordinary-account testing
+confirmed the expired-session paywall; it did not bypass the trial gate to claim
+a successful graded exchange.
 
 **No exit criterion is checked merely because its code exists.** EAS is not
 authenticated, Apple signing/configuration is unverified, and no physical-device
