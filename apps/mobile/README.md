@@ -35,7 +35,7 @@ Before cloud builds, sign in with `npx eas-cli login`, link the real Imagine Fly
 
 Release profiles reject nonempty `EXPO_PUBLIC_DEV_*` variables. Production credentials such as service-role keys, Sentry upload tokens, and Apple keys must never use the `EXPO_PUBLIC_` prefix. Use `SENTRY_ORG`, `SENTRY_PROJECT`, and `SENTRY_AUTH_TOKEN` at build time for source-map upload.
 
-Native Apple sign-in requires the bundle ID `com.imagineflying.heydpe` in Supabase's Apple client IDs and the Apple App ID capability. Google/Microsoft PKCE requires `heydpe://auth-callback` in the redirect allowlist.
+Native Apple sign-in requires the bundle ID `com.heydpe.app` in Supabase's Apple client IDs and the Apple App ID capability. Google/Microsoft PKCE requires `heydpe://auth-callback` in the redirect allowlist.
 
 ## Voice And Tests
 

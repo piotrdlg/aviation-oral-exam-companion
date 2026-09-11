@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "runtimeVersion": { "policy": "fingerprint" },
     "ios": {
-      "bundleIdentifier": "com.imagineflying.heydpe",
+      "bundleIdentifier": "com.heydpe.app",
       "supportsTablet": false,
       "usesAppleSignIn": true,
       "infoPlist": { "ITSAppUsesNonExemptEncryption": false }
@@ -20,7 +20,7 @@
         "foregroundImage": "./assets/images/heydpe-icon.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.imagineflying.heydpe"
+      "package": "com.heydpe.app"
     },
     "web": {
       "output": "static",

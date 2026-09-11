@@ -1,4 +1,4 @@
-appId: com.imagineflying.heydpe
+appId: com.heydpe.app
 name: Ordinary expired-trial account
 ---
 # Prerequisites: foreground, authenticated ordinary QA account, expired trial,
