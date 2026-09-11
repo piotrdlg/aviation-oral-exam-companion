@@ -40,6 +40,19 @@ beforeEach(() => { Socket.sockets = []; vi.stubGlobal('WebSocket', Socket); vi.u
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 
 describe('native speech adapter protocol', () => {
+  it('sends normalized audio for a 48 kHz stereo native stream', async () => {
+    const { open, ports, onError } = setup();
+    const { capture, socket } = await open();
+    const handler = vi.mocked(ports.setBufferHandler).mock.calls.find(([h]) => h)?.[0];
+    handler?.({ data: new Int16Array(9600).fill(1000).buffer, sampleRate: 48000, channels: 2 });
+    const final = capture.finalize();
+    await vi.advanceTimersByTimeAsync(0);
+    socket.message({ type: 'Metadata' });
+    await final;
+    const audio = socket.send.mock.calls.map(([data]) => data).filter((data) => data instanceof ArrayBuffer);
+    expect(audio.reduce((sum, data) => sum + data.byteLength, 0)).toBe(3200);
+    expect(onError).not.toHaveBeenCalled();
+  });
   it('keeps the socket open for trailing final words', async () => {
     const { open, onText } = setup();
     const { capture, socket } = await open();
