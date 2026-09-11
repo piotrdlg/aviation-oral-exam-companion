@@ -2,7 +2,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
 import { config } from './config';
-import { setCrashReportingEnabled } from './crash-reporting';
 
 /**
  * Consent-gated product analytics for HeyDPE mobile.
@@ -57,7 +56,6 @@ export async function loadAnalyticsConsent(): Promise<boolean> {
   }
   if (revision === consentRevision) enabled = stored === 'true';
   ready = true;
-  void setCrashReportingEnabled(enabled).catch(() => {});
   if (enabled) {
     flush();
     replayIdentify();
@@ -75,7 +73,6 @@ export async function setAnalyticsEnabled(on: boolean) {
   consentRevision++;
   enabled = on;
   ready = true;
-  void setCrashReportingEnabled(on).catch(() => {});
   try {
     await AsyncStorage.setItem(CONSENT_KEY, on ? 'true' : 'false');
   } catch {

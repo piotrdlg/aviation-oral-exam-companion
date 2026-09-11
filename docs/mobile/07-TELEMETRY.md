@@ -1,5 +1,58 @@
 # Mobile Telemetry & Observability — Technical Design (M2–M6 instrumentation; gates the M6/M7 store data-safety forms)
 
+## September 11, 2026 — binding telemetry and privacy posture
+
+This section supersedes the historical design below wherever it says Sentry is
+consent-gated, identified, tracing-enabled, or stopped by “Usage analytics.”
+It implements owner decisions B.5/B.6 in `13-PM-REVIEW-PR60-FOR-ASTRA.md`.
+The owner must review the actual envelope samples before M6 privacy forms are filed.
+
+| Surface | Current policy |
+|---|---|
+| Product analytics | Enabled when onboarding and its consent flow finish; persistent Settings opt-out. Explicit PostHog HTTP events only; no autocapture/replay. Account ID is used to join the existing server funnel. |
+| Crash diagnostics | Always enabled when the build has its required Sentry DSN, independent of onboarding and analytics. No account ID, email, installation/device ID, transcript, student answer, audio or token in event payloads. |
+| JavaScript startup | `index.js` initializes Sentry before Expo Router/application imports; root is wrapped and has an error boundary. |
+| Native iOS startup | `with-anonymous-sentry.cjs` initializes Sentry in Swift AppDelegate before React Native starts, and installs the native scrubber then. JavaScript does not reinitialize/replace the native scrubber. |
+| Messages | Exact developer-owned diagnostics (e.g. `connect_timeout`, `Keychain unavailable`, fixed voice errors, `Request failed (503)`) survive. Unknown dynamic text becomes “Unexpected application failure.” Native reports retain a fixed crash kind and symbolication data. |
+| Breadcrumbs | Only explicit `heydpe.diagnostic` entries with a fixed stage and safe message. No automatic console, HTTP, navigation, touch, form or native breadcrumbs. |
+| Retained debugging data | Event ID/time, severity, build release/dist, platform, safe exception type/message, JS filename basename/function/line/column, Hermes debug IDs, native binary debug IDs and stack addresses. No request/context/extra data, local variables, source context or attachments. |
+| Disabled data streams | Traces/performance sessions, replay, screenshots, view hierarchy, logs and automatic session tracking. Crash-free-session metrics from the older plan are therefore not available from this configuration. |
+| Local native cache | Sentry may cache reports for later upload. Scrubbing occurs before sending; inspect on-device cache/envelopes in release validation as well as the ingested issue. |
+| Network metadata | TLS connections expose an IP address to the processor. Enable Sentry project “Prevent Storing of IP Addresses” before TestFlight; `sendDefaultPii:false` alone is not a server retention control. No claim of network-level anonymity is made. |
+| Android | JavaScript sanitization is implemented; Android native transport is disabled until equivalent early native initialization/scrubbing ships (an Android release blocker). iOS remains first under the approved plan. |
+
+### App Privacy / Data safety input for M6
+
+The intended Sentry declaration is **Diagnostics → Crash Data, not linked to
+identity, used for app functionality, not tracking**. Product analytics remains
+linked to the account ID and optional after onboarding. Crash diagnostics are
+required/always on and must not be described as opt-out. Do not declare Sentry
+performance data, replay or recordings that this implementation does not collect.
+These are implementation inputs, not submitted or legally approved store forms.
+Re-check store terminology at submission and approve the real report samples.
+
+### Proof still required
+
+- A first-render JavaScript exception and a native startup crash from the actual
+  signed TestFlight build arrive with analytics OFF, across a cold launch.
+- Hermes source maps and native dSYMs symbolicate those issues to this build.
+- Inspect original envelopes and ingested reports for identity/content, including
+  malicious exception messages and SDK-added native fields; verify IP prevention.
+- Confirm Settings opt-out/restart stops product events but still permits crashes.
+- Confirm the real DSN/org/project and upload token in EAS. No account, token,
+  source-map upload, crash ingestion or physical-device acceptance was fabricated.
+
+Prepared source is not proof of those outcomes. Unit tests and unsigned native
+compilation are documented in the new Fable handoff. Implementation references:
+`apps/mobile/src/lib/crash-reporting.ts`, `apps/mobile/index.js`, root layout,
+`apps/mobile/plugins/anonymous-sentry.swift` and its Expo config plugin.
+The installed Sentry 7.11 SDK requires manual native initialization; see
+[Sentry native initialization](https://docs.sentry.io/platforms/react-native/manual-setup/native-init/)
+and [Expo Sentry setup](https://docs.expo.dev/guides/using-sentry/).
+
+## Historical implementation plan (not current acceptance evidence)
+
+
 > **Read order:** Read `docs/mobile/01-API-ENABLEMENT-AND-CONTRACT.md` first (it defines the Bearer transport and the server's existing **server-side** event surface that mobile must *not* duplicate). Read `docs/mobile/02-DESIGN-SYSTEM.md` for the FLIGHT DECK typography rule applied to the one piece of telemetry that has UI (the in-app diagnostics annunciator, §10). The billing/entitlement grounding for the purchase funnel lives in the **Payments + Entitlements Grounding Brief** (RevenueCat merge, task M4).
 >
 > **Scope guardrails for this doc:**
