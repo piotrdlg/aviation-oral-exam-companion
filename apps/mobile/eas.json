@@ -1,34 +1,61 @@
 {
-  "cli": { "version": ">= 18.0.0", "appVersionSource": "remote" },
+  "cli": {
+    "version": ">= 18.0.0",
+    "appVersionSource": "remote"
+  },
   "build": {
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "environment": "development"
+      "environment": "development",
+      "env": {
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+      }
     },
     "preview": {
       "distribution": "store",
       "autoIncrement": true,
       "environment": "preview",
-      "ios": { "buildConfiguration": "Release" },
-      "env": { "EXPO_PUBLIC_VOICE_METRICS": "true" }
+      "ios": {
+        "buildConfiguration": "Release"
+      },
+      "env": {
+        "EXPO_PUBLIC_VOICE_METRICS": "true"
+      }
     },
     "smoke": {
       "extends": "preview",
       "distribution": "internal",
       "autoIncrement": false,
-      "env": { "SENTRY_DISABLE_AUTO_UPLOAD": "true" },
-      "ios": { "simulator": true, "buildConfiguration": "Release" }
+      "env": {
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+      },
+      "ios": {
+        "simulator": true,
+        "buildConfiguration": "Release"
+      }
     },
     "production": {
       "distribution": "store",
       "autoIncrement": true,
       "environment": "production",
-      "ios": { "buildConfiguration": "Release" }
+      "ios": {
+        "buildConfiguration": "Release"
+      }
     }
   },
   "submit": {
-    "preview": { "ios": { "appleTeamId": "45K5W4N8DG", "ascAppId": "6811163760" } },
-    "production": { "ios": { "appleTeamId": "45K5W4N8DG", "ascAppId": "6811163760" } }
+    "preview": {
+      "ios": {
+        "appleTeamId": "45K5W4N8DG",
+        "ascAppId": "6811163760"
+      }
+    },
+    "production": {
+      "ios": {
+        "appleTeamId": "45K5W4N8DG",
+        "ascAppId": "6811163760"
+      }
+    }
   }
 }
