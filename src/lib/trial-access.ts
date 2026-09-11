@@ -30,9 +30,9 @@ export function trialStatus(tier: string, profile: Profile | null, count: number
 
 export async function readTrialStatus(db: SupabaseClient, userId: string, tier: string): Promise<TrialStatus | null> {
   if (tier === 'dpe_live') return null;
-  const [profile, sessions] = await Promise.all([
-    db.from('user_profiles').select('created_at, has_trialed, subscription_status, stripe_subscription_id').eq('user_id', userId).maybeSingle(),
+  const [sessions, profile] = await Promise.all([
     db.from('exam_sessions').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('is_onboarding', false),
+    db.from('user_profiles').select('created_at, has_trialed, subscription_status, stripe_subscription_id').eq('user_id', userId).maybeSingle(),
   ]);
   if (profile.error || sessions.error || sessions.count === null) throw new Error('trial_status_unavailable');
   return trialStatus(tier, profile.data, sessions.count);
