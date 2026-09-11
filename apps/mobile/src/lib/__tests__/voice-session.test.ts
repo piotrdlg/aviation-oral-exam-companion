@@ -199,3 +199,15 @@ describe('fresh-response measurement and replay', () => {
     expect(ports.metric).not.toHaveBeenCalled();
   });
 });
+
+it('exposes interim speech separately from the retained typed draft', async () => {
+  const { voice, ports } = setup();
+  await voice.startListening('Typed prefix');
+  const onText = vi.mocked(ports.listen).mock.calls[0][1];
+  onText({ transcript: 'Final words', interim: 'live partial' });
+  expect(voice.getSnapshot()).toMatchObject({ interim: 'live partial', draft: 'Typed prefix Final words live partial' });
+  onText({ transcript: 'Final words live partial', interim: '' });
+  expect(voice.getSnapshot().interim).toBe('');
+  await voice.suspend();
+  expect(voice.getSnapshot().draft).toBe('Typed prefix Final words live partial');
+});
