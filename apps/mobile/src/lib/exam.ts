@@ -1,4 +1,5 @@
 import { apiFetch } from './api';
+import { runExamOperation } from './exam-operation';
 
 // Opaque server-owned state (W2.1): the client passes these back unchanged; the
 // server loads the authoritative copies from exam_sessions.metadata and ignores
@@ -61,7 +62,7 @@ export interface ExamConfig {
 export interface TranscriptRow {
   role: 'examiner' | 'student';
   text: string;
-  exchange_number: number;
+  exchange_number?: number;
   assessment: Assessment | null;
 }
 
@@ -107,10 +108,7 @@ export async function createSession(cfg: ExamConfig, isOnboarding = false): Prom
  *  selectedAreas/selectedTasks default to [] — the planner's buildElementQueue reads their
  *  .length, so a missing field would 500 the start (server now guards this too). */
 export function startExam(sessionId: string, sessionConfig: ExamConfig): Promise<ExamTurn> {
-  return apiFetch<ExamTurn>('/api/exam', {
-    method: 'POST',
-    timeoutMs: 70_000,
-    json: {
+  return runExamOperation({
       action: 'start',
       sessionId,
       sessionConfig: {
@@ -119,7 +117,6 @@ export function startExam(sessionId: string, sessionConfig: ExamConfig): Promise
         selectedTasks: sessionConfig.selectedTasks ?? [],
       },
       stream: false,
-    },
   });
 }
 
@@ -133,11 +130,7 @@ export function respond(args: {
   examPlan?: Json;
   sessionConfig?: ExamConfig;
 }): Promise<ExamTurn> {
-  return apiFetch<ExamTurn>('/api/exam', {
-    method: 'POST',
-    timeoutMs: 70_000,
-    json: { action: 'respond', stream: false, chunkedResponse: false, ...args },
-  });
+  return runExamOperation({ action: 'respond', stream: false, chunkedResponse: false, ...args });
 }
 
 /** next-task → next element question, or { sessionComplete:true }. */
@@ -149,7 +142,7 @@ export function nextTask(args: {
   examPlan?: Json;
   sessionConfig?: ExamConfig;
 }): Promise<ExamTurn> {
-  return apiFetch<ExamTurn>('/api/exam', { method: 'POST', timeoutMs: 70_000, json: { action: 'next-task', ...args } });
+  return runExamOperation({ action: 'next-task', ...args });
 }
 
 /** resume-current → re-render the pending element question (no LLM). */

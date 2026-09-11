@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError } from '@/lib/api';
+import { recoverExamOperation } from '@/lib/exam-operation';
 import { track } from '@/lib/analytics';
 import { getTier, recordConsent, skipOnboarding, updateTier } from '@/lib/endpoints';
 import { AircraftClass, ExamConfig, Rating, createSession, startExam } from '@/lib/exam';
@@ -224,7 +225,10 @@ export default function Onboarding() {
         createdSessionId.current = created.id;
       }
       if (!examStarted.current) {
-        await startExam(createdSessionId.current, cfg); // planner + opening question
+        // A timeout may have committed start. Read its durable receipt first.
+        const recovered = await recoverExamOperation(createdSessionId.current);
+        if (recovered) await recovered.acknowledge();
+        else await startExam(createdSessionId.current, cfg);
         examStarted.current = true;
       }
       await completeOnboarding(); // updateTier with retry — throws if it can't persist

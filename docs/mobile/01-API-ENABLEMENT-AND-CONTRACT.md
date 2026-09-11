@@ -676,3 +676,66 @@ These types are the ones extracted into `packages/shared` (§A.6) and consumed b
 ## FLIGHT DECK typography note (applies wherever this contract drives UI)
 
 Where these endpoints render into the native UI: caps-mono + glow is reserved for **brand instrument moments only** — the attitude-indicator hero, `// cockpit micro-labels`, status annunciators/badges (e.g. a `SUPERSEDED` or `TRIAL` chip derived from a 409/403), ACS task/element codes (`PA.I.A.K1`), and numeric readouts (exchange counts, score percentages, `expiresAt` countdowns). Everything else — examiner message body, feedback prose, settings labels, error toasts — is sentence-case IBM Plex. Never 10px text. Touch targets ≥ 44pt iOS / 48dp Android. (Full design tokens live in the design-system doc, not here.)
+
+## September 11 — timeout and repeat-action contract (PM A.3)
+
+Verified against the route at integration base `31473e5`; this is source inspection
+and automated fault simulation, not a production timeout experiment.
+
+| Existing unkeyed action | Repeating after a lost response |
+|---|---|
+| `start` | Calls `initPlanner` again, generates and inserts another opening turn, overwrites planner metadata. It does not create another session or increment the lifetime trial count; `POST /api/session` create owns that count. |
+| `respond` | Inserts another student row (MAX exchange + 1), assesses/generates again, writes examiner/attempt rows and plan bookkeeping. Not idempotent. |
+| `next-task` | Advances the current server planner, generates another question, inserts it, then persists metadata. Not idempotent; element equality is not a lock. |
+| `resume-current` | Returns task data and element code, normally no question text. It does not prove an earlier request finished. |
+
+Relevant code: `src/app/api/exam/route.ts` blocks `start`, non-streaming `respond`,
+`resume-current`, and `next-task`; `src/app/api/session/route.ts` create and
+transcripts handlers. Transcript reads are not an atomic completion receipt:
+student insertion precedes generation; examiner insertion precedes planner writes.
+The transcripts API returns `{role,text,assessment}` (no exchange number).
+
+### Additive keyed JSON contract
+
+Migration `20260911000001_exam_operation_receipts.sql` MUST be applied before
+releasing the updated mobile client. No migration was applied during this review.
+Existing unkeyed web/SSE callers retain their existing behavior.
+
+- Mobile sends a UUID `Idempotency-Key` on `start`, `respond`, and `next-task`.
+  Only non-streaming JSON actions with an owned session are accepted.
+- A durable receipt is claimed before execution. The primary key deduplicates the
+  user/key; a partial unique index allows at most one pending keyed operation per
+  session. Reusing a key with a changed JSON body returns 409 `operation_key_reused`.
+- Completed repeats return the original HTTP status/body, without executing the
+  engine. Pending repeats/concurrent keyed mutations return 409
+  `exam_operation_pending`. Receipt-store failures return 503 and fail closed.
+- HTTP 5xx or process termination leave the receipt pending: partial writes are
+  possible. There is deliberately no automatic lease expiry or takeover.
+- `GET /api/exam/operation?sessionId=...&operationId=...` returns
+  `{receipt:null}` or `{receipt:{action,state,response_status,response_body}}`.
+  Reads are authenticated, owner-scoped with RLS, and `Cache-Control: no-store`.
+- Mobile persists only the key/action per session in AsyncStorage. Recovery reads
+  the receipt; it does not repeat the failed action. A completed `respond` receipt
+  can initiate its first `next-task`; a recovered `next-task` cannot advance again.
+  Draft/response content is not written into the local operation journal.
+- A completed server session is displayed without calling complete a second time.
+  An unknown create result is looked up through get-resumable, never auto-created
+  again by recovery.
+
+### Limits and deployment verification
+
+Receipts provide at-most-once keyed execution, not transactional rollback of the
+engine's multiple writes. Unknown/partially failed operations stay paused for
+investigation; no successful recovery is claimed for a killed server process.
+Unkeyed web clients do not participate in the receipt lock. Do not use concurrent
+web/mobile exam mutation as a supported recovery mechanism.
+
+The migration ran successfully in an isolated local PostgreSQL 14 cluster:
+unique pending constraint, owner-only reads, denied client writes, completion
+unlock, and session-deletion cascade passed. Hosted Supabase routing and real
+delayed-request recovery still require environment validation before release.
+Unit tests cover all three lost-response replays, concurrent duplicates, changed
+payloads, 5xx, store failures, read-only mobile recovery, and retained pending keys.
+No live trial counter or student exam was mutated to test this contract.
+Receipts contain the same private examiner output as session transcripts, have no
+client write grants, and cascade on session/account deletion.

@@ -40,6 +40,7 @@ import {
   restoreTranscript,
   startExam,
 } from '@/lib/exam';
+import { pendingExamOperation, recoverExamOperation } from '@/lib/exam-operation';
 import { colors, font, fontSize, radius, space } from '@/theme/tokens';
 
 type Bubble = { role: 'examiner' | 'student'; text: string; assessment?: Assessment };
@@ -209,6 +210,7 @@ export default function PracticeScreen() {
 
     // A paused session must be reactivated first, or the first respond/next-task
     // (which require status 'active') 409s straight into the error screen.
+    if (await pendingExamOperation(id)) throw new Error('Check saved progress to recover the last examiner request.');
     if (status === 'paused') await reactivateSession(id);
 
     const transcripts = await getTranscripts(id);
@@ -343,47 +345,49 @@ export default function PracticeScreen() {
     try {
       if (errorStatus === 503) await new Promise((resolve) => setTimeout(resolve, 1000));
       const s = session.current;
-      if (!s) { setPhase('config'); return; }
+      if (!s) {
+        // Creation itself may have succeeded before the client received its ID.
+        const { session: open } = await getResumable();
+        if (!open) throw new Error('No saved exam is visible yet. Check saved progress again before starting another exam.');
+        await resumeExam(open.id, open.rating, open.study_mode, (open.aircraft_class || aircraftClass) as AircraftClass, open.status, open.metadata?.sessionConfig);
+        return;
+      }
       const { sessions } = await getSessions();
       if (sessions.find((item) => item.id === s.id)?.status === 'completed') {
-        pendingAdvance.current = false;
-        pendingAnswer.current = null;
         setPhase('complete');
         return;
       }
+      const recovered = await recoverExamOperation(s.id);
+      if (recovered) applyOpaque(recovered.turn);
       await reactivateSession(s.id);
-      if (!bubbles.length) {
-        const turn = await startExam(s.id, s.config);
-        applyOpaque(turn);
-        setBubbles(restoreTranscript([], turn.examinerMessage));
-        setPhase(turn.sessionComplete ? 'complete' : 'active');
-        if (!turn.sessionComplete) speak(turn.examinerMessage);
-        return;
-      }
-      const oldElement = s.elementCode;
-      const turn = await resumeCurrent({ sessionId: s.id, sessionConfig: s.config });
-      applyOpaque(turn);
       const rows = await getTranscripts(s.id);
-      const restored = restoreTranscript(rows, turn.sessionComplete ? undefined : turn.examinerMessage);
-      if (pendingAdvance.current && oldElement === turn.elementCode && !turn.sessionComplete) {
+      const current = await resumeCurrent({ sessionId: s.id, sessionConfig: s.config });
+      applyOpaque(current);
+      const restored = restoreTranscript(rows, recovered?.turn.examinerMessage);
+      if (recovered?.turn.assessment && restored.at(-1)?.role === 'examiner') {
+        restored[restored.length - 1].assessment = recovered.turn.assessment;
+      }
+      if (!restored.length || restored.at(-1)?.role === 'student') {
+        throw new Error('Saved progress is incomplete. Check again shortly; the last request will not be repeated.');
+      }
+      await recovered?.acknowledge();
+      setBubbles(restored);
+      pendingAnswer.current = null;
+      setAnswer('');
+      pendingAdvance.current = false;
+      if (recovered?.turn.sessionComplete || current.sessionComplete) {
+        setPhase('complete');
+      } else if (recovered?.action === 'respond' && (recovered.turn.advance || recovered.turn.assessment?.advance)) {
+        // Receipt proves respond finished. This is the FIRST next-task request,
+        // not a replay of a timed-out advance (which has its own receipt).
+        pendingAdvance.current = true;
         const next = await nextTask({ sessionId: s.id, sessionConfig: s.config, history: toHistory(restored) });
         applyOpaque(next);
-        if (next.examinerMessage) restored.push({ role: 'examiner', text: next.examinerMessage });
-        if (next.sessionComplete) {
-          setPhase('complete');
-        } else { setPhase('active'); speak(next.examinerMessage); }
+        pendingAdvance.current = false;
+        if (next.examinerMessage) setBubbles([...restored, { role: 'examiner', text: next.examinerMessage }]);
+        setPhase(next.sessionComplete ? 'complete' : 'active');
       } else {
-        setPhase(turn.sessionComplete ? 'complete' : 'active');
-      }
-      pendingAdvance.current = false;
-      setBubbles(restored);
-      // A response may have committed before a network failure. Never resubmit it blindly.
-      const lastStudent = rows.findLast((row) => row.role === 'student');
-      if (pendingAnswer.current && lastStudent?.text === pendingAnswer.current
-        && rows.filter((row) => row.role === 'student').length > pendingStudentCount.current
-        && rows.at(-1)?.role === 'examiner') {
-        pendingAnswer.current = null;
-        setAnswer('');
+        setPhase('active');
       }
     } catch (error) { fail(error); }
     finally { submitting.current = false; }
@@ -409,7 +413,7 @@ export default function PracticeScreen() {
           <Text style={styles.errTitle}>Exam error</Text>
           <Text style={styles.errMsg}>{error}</Text>
           <Pressable accessibilityRole="button" onPress={recover} style={styles.retry}>
-            <Text style={styles.retryText}>{errorStatus === 409 ? 'Continue here' : 'Retry'}</Text>
+            <Text style={styles.retryText}>{errorStatus === 409 ? 'Continue here' : 'Check saved progress'}</Text>
           </Pressable>
         </View>
       </Screen>
