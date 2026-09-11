@@ -4,7 +4,15 @@
 export type Tier = 'checkride_prep' | 'dpe_live' | 'ground_school';
 export type Rating = 'private' | 'commercial' | 'instrument';
 
+export interface TrialStatus {
+  examsUsed: number; examLimit: number; examsRemaining: number;
+  expiresAt: string | null; serverNow: string; canStart: boolean;
+  reason: 'trial_limit_reached' | 'trial_expired' | 'resubscribe_required' | null;
+}
+
 export interface TierResponse {
+  /** null = paid access; missing = backend not upgraded yet. Never use monthly usage as fallback. */
+  trial?: TrialStatus | null;
   tier: Tier;
   hasPaidOverride?: boolean;
   subscriptionStatus: string;

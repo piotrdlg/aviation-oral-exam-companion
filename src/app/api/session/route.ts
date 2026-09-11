@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { after } from 'next/server';
 import { getAuthedUser } from '@/lib/supabase/auth';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
+import { readTrialStatus, FREE_TRIAL_EXAM_LIMIT, FREE_TRIAL_WINDOW_DAYS } from '@/lib/trial-access';
 import { getUserTier } from '@/lib/voice/tier-lookup';
 import { getSystemConfig } from '@/lib/system-config';
 import { requireSafeDbTarget } from '@/lib/app-env';
@@ -13,9 +14,6 @@ const serviceSupabase = createServiceClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-const FREE_TRIAL_EXAM_LIMIT = 3;
-const FREE_TRIAL_WINDOW_DAYS = 7;
-const FREE_TRIAL_WINDOW_MS = FREE_TRIAL_WINDOW_DAYS * 24 * 60 * 60 * 1000;
 
 export async function POST(request: NextRequest) {
   const authed = await getAuthedUser(request);
@@ -71,71 +69,16 @@ export async function POST(request: NextRequest) {
     };
 
     if (!isPaying && !isOnboarding) {
-      // (a) 3-exam cap — counts ALL non-onboarding exams ever (incl. abandoned,
-      //     W3.2 #3, so discarding can't mint new slots). Checked FIRST.
-      const { count, error: countError } = await serviceSupabase
-        .from('exam_sessions')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('is_onboarding', false);
-
-      if (countError) {
-        return NextResponse.json({ error: countError.message }, { status: 500 });
-      }
-
-      if ((count ?? 0) >= FREE_TRIAL_EXAM_LIMIT) {
-        return blockTrial('trial_limit_reached', { limit: FREE_TRIAL_EXAM_LIMIT });
-      }
-
-      // (b) Signup time + REAL subscription signals.
-      //
-      // CRITICAL: do NOT key "ever subscribed" off `stripe_customer_id`. That
-      // column is written at checkout INITIATION (stripe/checkout/route.ts mints a
-      // Stripe customer before any payment), so a trial user who clicks Upgrade and
-      // then ABANDONS Stripe checkout would otherwise be permanently locked out of
-      // the rest of their free trial with a false "Subscription ended".
-      //
-      // Also note `subscription_status` DEFAULTS to 'active' for free users (see
-      // migration 20260214000008), so it is never a positive "is paying" signal on
-      // its own. Only a live `stripe_subscription_id` is (set on
-      // checkout.session.completed, cleared to null on subscription.deleted).
-      const { data: trialProfile } = await serviceSupabase
-        .from('user_profiles')
-        .select('created_at, has_trialed, subscription_status, stripe_subscription_id')
-        .eq('user_id', user.id)
-        .single();
-
-      // Read-through paid check: the 5-min tier cache (getUserTier) can lag a
-      // just-completed upgrade across route instances. A live subscription record
-      // is authoritative — treat as paying (no trial cap), even if isPaying was
-      // stale-false. A grace `past_due` sub still carries its id, so it's covered.
-      const hasLiveSubscription = !!trialProfile?.stripe_subscription_id;
-
-      if (!hasLiveSubscription) {
-        // One trial per account: a genuinely churned / once-subscribed user does
-        // not get the free trial again. Keyed on a real churned status (or the
-        // legacy has_trialed flag from the old Stripe-trial cohort) — NOT a bare
-        // customer id. A never-subscribed account has the default 'active' status
-        // and no subscription id, so it correctly falls through to the window.
-        const status = trialProfile?.subscription_status ?? null;
-        const isChurned =
-          status === 'canceled' || status === 'unpaid' || status === 'past_due';
-        if (trialProfile?.has_trialed === true || isChurned) {
-          return blockTrial('resubscribe_required');
+      try {
+        const trial = await readTrialStatus(serviceSupabase, user.id, tier);
+        if (trial?.reason) {
+          const extra = trial.reason === 'trial_limit_reached' ? { limit: FREE_TRIAL_EXAM_LIMIT }
+            : trial.reason === 'trial_expired' ? { windowDays: FREE_TRIAL_WINDOW_DAYS } : {};
+          return blockTrial(trial.reason, extra);
         }
-
-        // 7-day window from signup. Fail OPEN if created_at is missing (the count
-        // cap still bounds abuse) so a brand-new user is never wrongly blocked.
-        const signupMs = trialProfile?.created_at ? new Date(trialProfile.created_at).getTime() : null;
-        if (signupMs !== null && Date.now() > signupMs + FREE_TRIAL_WINDOW_MS) {
-          return blockTrial('trial_expired', { windowDays: FREE_TRIAL_WINDOW_DAYS });
-        }
-
-        // Stamp expires_at = the trial window END (signup + 7d), so an exam started
-        // late in the window can't be answered past the trial boundary (enforced
-        // mid-exam in exam/route.ts; paid users excepted there).
-        const windowEndMs = signupMs !== null ? signupMs + FREE_TRIAL_WINDOW_MS : Date.now() + FREE_TRIAL_WINDOW_MS;
-        expiresAt = new Date(windowEndMs).toISOString();
+        if (trial) expiresAt = trial.expiresAt ?? new Date(Date.now() + FREE_TRIAL_WINDOW_DAYS * 86400000).toISOString();
+      } catch {
+        return NextResponse.json({ error: 'trial_status_unavailable' }, { status: 503 });
       }
     }
 
