@@ -1,7 +1,8 @@
 import { scrubCrash, safeCrashMessage, scrubBreadcrumb } from '../crash-reporting';
 import { describe, expect, it, vi } from 'vitest';
 vi.mock('@sentry/react-native', () => ({ init: vi.fn(), addBreadcrumb: vi.fn(), captureException: vi.fn() }));
-vi.mock('react-native', () => ({ Platform: { OS: 'ios' } }));
+const platform = vi.hoisted(() => ({ OS: 'ios' }));
+vi.mock('react-native', () => ({ Platform: platform }));
 
 describe('crash privacy', () => {
   it('keeps stack locations while discarding personal and exam payloads', () => {
@@ -35,4 +36,14 @@ describe('early anonymous initialization', () => {
     expect(scrubBreadcrumb({ category: 'console', message: 'private answer' })).toBeNull();
     expect(scrubBreadcrumb({ category: 'heydpe.diagnostic', message: 'connect_timeout', data: { stage: 'stt', answer: 'private' } })).toEqual({ category: 'heydpe.diagnostic', timestamp: undefined, level: 'error', message: 'connect_timeout', data: { stage: 'stt' } });
   });
+});
+
+
+it('does not enable unsanitized native transport on Android before its privacy port', async () => {
+  platform.OS = 'android';
+  vi.resetModules();
+  await import('../crash-reporting');
+  const sentry = await import('@sentry/react-native');
+  expect(sentry.init).toHaveBeenCalledWith(expect.objectContaining({ enableNative: false, autoInitializeNativeSdk: false }));
+  platform.OS = 'ios';
 });

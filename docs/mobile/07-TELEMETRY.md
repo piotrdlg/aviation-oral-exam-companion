@@ -19,7 +19,7 @@ The owner must review the actual envelope samples before M6 privacy forms are fi
 | Disabled data streams | Traces/performance sessions, replay, screenshots, view hierarchy, logs and automatic session tracking. Crash-free-session metrics from the older plan are therefore not available from this configuration. |
 | Local native cache | Sentry may cache reports for later upload. Scrubbing occurs before sending; inspect on-device cache/envelopes in release validation as well as the ingested issue. |
 | Network metadata | TLS connections expose an IP address to the processor. Enable Sentry project “Prevent Storing of IP Addresses” before TestFlight; `sendDefaultPii:false` alone is not a server retention control. No claim of network-level anonymity is made. |
-| Android | JavaScript sanitization is implemented; equivalent early native initialization/scrubbing is an Android release blocker. iOS remains first under the approved plan. |
+| Android | JavaScript sanitization is implemented; Android native transport is disabled until equivalent early native initialization/scrubbing ships (an Android release blocker). iOS remains first under the approved plan. |
 
 ### App Privacy / Data safety input for M6
 

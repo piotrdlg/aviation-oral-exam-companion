@@ -6,6 +6,7 @@ import type { Breadcrumb, ErrorEvent } from '@sentry/react-native';
 // never regex-redacted and forwarded: it may be an answer, token or user name.
 const SAFE_MESSAGES = new Set([
   'connect_timeout', 'stt_pcm_invalid', 'Keychain unavailable',
+  'Voice input is unavailable (stt_pcm_invalid). You can continue with text.',
   'Network request failed', 'Failed to fetch',
   'Voice connection timed out. Tap the mic to retry.',
   'Voice input dropped. Tap the mic to retry.',
@@ -26,7 +27,7 @@ const symbol = (name?: string) => name && /^[\w.$<> -]{1,120}$/.test(name) ? nam
 export function scrubBreadcrumb(crumb: Breadcrumb): Breadcrumb | null {
   if (crumb.category !== 'heydpe.diagnostic') return null;
   const stage = crumb.data?.stage;
-  if (!['startup', 'auth', 'api', 'stt', 'tts', 'storage'].includes(String(stage))) return null;
+  if (typeof stage !== 'string' || !['startup', 'auth', 'api', 'stt', 'tts', 'storage'].includes(stage)) return null;
   return { category: 'heydpe.diagnostic', timestamp: crumb.timestamp, level: 'error',
     message: safeCrashMessage(crumb.message), data: { stage } };
 }
@@ -59,7 +60,9 @@ export function scrubCrash(event: ErrorEvent): ErrorEvent {
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
   enabled: Boolean(process.env.EXPO_PUBLIC_SENTRY_DSN),
-  autoInitializeNativeSdk: Platform.OS !== 'ios',
+  // Android native capture stays disabled until its equivalent scrubber ships.
+  enableNative: Platform.OS === 'ios',
+  autoInitializeNativeSdk: false,
   sendDefaultPii: false, tracesSampleRate: 0,
   enableAutoSessionTracking: false, enableAutoPerformanceTracing: false,
   enableAppStartTracking: false, enableNativeFramesTracking: false,
