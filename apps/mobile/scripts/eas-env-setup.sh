@@ -27,7 +27,7 @@ read -r -s -p "Paste the Sentry organization auth token (input hidden): " SENTRY
 
 put() { # env name value visibility
   local env="$1" name="$2" value="$3" vis="$4"
-  npx eas-cli env:create --scope project --environment "$env" --name "$name" --value "$value" --visibility "$vis" --type string --non-interactive --force >/dev/null \
+  npx eas-cli env:set --scope project --environment "$env" --name "$name" --value "$value" --visibility "$vis" --type string --non-interactive >/dev/null \
     && echo "  $env  $name  ($vis)"
 }
 
