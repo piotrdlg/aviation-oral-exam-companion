@@ -17,6 +17,7 @@
       "extends": "preview",
       "distribution": "internal",
       "autoIncrement": false,
+      "env": { "SENTRY_DISABLE_AUTO_UPLOAD": "true" },
       "ios": { "simulator": true, "buildConfiguration": "Release" }
     },
     "production": {

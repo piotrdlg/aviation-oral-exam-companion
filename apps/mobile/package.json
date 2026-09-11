@@ -58,7 +58,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "eas-build-post-install": "node scripts/sentry-build-policy.cjs"
   },
   "private": true
 }
