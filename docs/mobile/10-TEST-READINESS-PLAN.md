@@ -316,3 +316,9 @@ Recommended adopted: contract checks moved to Phase 2.4 (before the loop rewrite
 All four round-2 required items resolved; recommended items adopted. No new required changes. Two non-blocking notes, both folded into Phase 5: T3(b) explicitly covers the mandatory 2,000-char splits even when the sentence port is skipped; SSE selection requires E2E attribution (finalize vs generation vs playback), since passing T2 alone does not prove generation dominance.
 
 **Status: plan approved for execution. Next action: Phase 0.**
+
+### Owner decisions (2026-09-11, after PR #60 review)
+- Home keeps a trial exam counter that reflects the real gate (3 exams or 7 days).
+- Product analytics is on after onboarding; Settings "Usage analytics" is the opt-out.
+- Crash reporting is anonymous and always on, decoupled from the analytics consent.
+Details and acceptance bars: `13-PM-REVIEW-PR60-FOR-ASTRA.md` §B.
