@@ -74,3 +74,7 @@ scripts/load/users.local.json
 baseline/
 after/
 .playwright-mcp/
+
+# Operational secrets-adjacent material stays LOCAL (public repo) — owner decision 2026-06-14
+docs/ops/
+scripts/ops/
