@@ -17,7 +17,11 @@ describe('mobile timeout recovery', () => {
     await expect(runExamOperation({ sessionId: 'session', action, studentAnswer: 'private answer' })).rejects.toThrow('timeout');
     expect(JSON.stringify([...values])).not.toContain('private answer');
     vi.mocked(apiFetch).mockResolvedValueOnce({ receipt: { action, state: 'completed', response_status: 200, response_body: { examinerMessage: 'Original question' } } });
-    expect(await recoverExamOperation('session')).toEqual({ action, turn: { examinerMessage: 'Original question' } });
+    const recovered = await recoverExamOperation('session');
+    expect(recovered).toMatchObject({ action, turn: { examinerMessage: 'Original question' } });
+    // A subsequent transcript/resume fetch may fail: retain the key until restored.
+    expect(await pendingExamOperation('session')).not.toBeNull();
+    await recovered?.acknowledge();
     expect(vi.mocked(apiFetch).mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1);
     expect(await pendingExamOperation('session')).toBeNull();
   });

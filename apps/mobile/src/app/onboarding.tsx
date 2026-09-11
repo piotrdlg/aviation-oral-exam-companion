@@ -227,7 +227,8 @@ export default function Onboarding() {
       if (!examStarted.current) {
         // A timeout may have committed start. Read its durable receipt first.
         const recovered = await recoverExamOperation(createdSessionId.current);
-        if (!recovered) await startExam(createdSessionId.current, cfg);
+        if (recovered) await recovered.acknowledge();
+        else await startExam(createdSessionId.current, cfg);
         examStarted.current = true;
       }
       await completeOnboarding(); // updateTier with retry — throws if it can't persist

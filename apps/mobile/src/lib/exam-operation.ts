@@ -32,7 +32,7 @@ export async function runExamOperation(body: { sessionId: string; action: string
   }
 }
 
-export async function recoverExamOperation(sessionId: string): Promise<{ action: string; turn: ExamTurn } | null> {
+export async function recoverExamOperation(sessionId: string): Promise<{ action: string; turn: ExamTurn; acknowledge(): Promise<void> } | null> {
   const pending = await pendingExamOperation(sessionId);
   if (!pending) return null;
   const { receipt } = await apiFetch<{ receipt: null | { state: string; action: string; response_status: number; response_body: ExamTurn & { error?: string } } }>(
@@ -41,7 +41,13 @@ export async function recoverExamOperation(sessionId: string): Promise<{ action:
   if (!receipt || receipt.state !== 'completed') {
     throw new Error('The examiner’s result is not confirmed yet. Check saved progress again shortly. Your answer will not be sent twice.');
   }
-  await AsyncStorage.removeItem(storageKey(sessionId));
-  if (receipt.response_status >= 400) throw new ApiError(receipt.response_status, receipt.response_body.error, receipt.response_body.error ?? 'Exam request failed');
-  return { action: receipt.action, turn: receipt.response_body };
+  const acknowledge = async () => {
+    if ((await pendingExamOperation(sessionId))?.key === pending.key) await AsyncStorage.removeItem(storageKey(sessionId));
+  };
+  if (receipt.response_status >= 400) {
+    await acknowledge();
+    throw new ApiError(receipt.response_status, receipt.response_body.error, receipt.response_body.error ?? 'Exam request failed');
+  }
+  // Keep the key until the caller has restored its supporting session data.
+  return { action: receipt.action, turn: receipt.response_body, acknowledge };
 }

@@ -363,10 +363,14 @@ export default function PracticeScreen() {
       const rows = await getTranscripts(s.id);
       const current = await resumeCurrent({ sessionId: s.id, sessionConfig: s.config });
       applyOpaque(current);
-      const restored = restoreTranscript(rows);
+      const restored = restoreTranscript(rows, recovered?.turn.examinerMessage);
+      if (recovered?.turn.assessment && restored.at(-1)?.role === 'examiner') {
+        restored[restored.length - 1].assessment = recovered.turn.assessment;
+      }
       if (!restored.length || restored.at(-1)?.role === 'student') {
         throw new Error('Saved progress is incomplete. Check again shortly; the last request will not be repeated.');
       }
+      await recovered?.acknowledge();
       setBubbles(restored);
       pendingAnswer.current = null;
       setAnswer('');
