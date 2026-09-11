@@ -74,3 +74,41 @@ describe('telemetry consent', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 });
+
+
+describe('owner-decided onboarding default', () => {
+  it('enables client events for a fresh onboarding and survives restart', async () => {
+    let analytics = await import('../analytics');
+    await analytics.loadAnalyticsConsent();
+    await analytics.enableOnboardingAnalytics();
+    analytics.track('onboarding_completed');
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(storage.get('heydpe_analytics_consent')).toBe('true');
+    vi.resetModules();
+    analytics = await import('../analytics');
+    await analytics.loadAnalyticsConsent();
+    expect(analytics.analyticsEnabled()).toBe(true);
+  });
+  it('preserves an explicit Settings opt-out on restart and onboarding retry', async () => {
+    let analytics = await import('../analytics');
+    await analytics.enableOnboardingAnalytics();
+    await analytics.setAnalyticsEnabled(false);
+    vi.resetModules();
+    analytics = await import('../analytics');
+    await analytics.loadAnalyticsConsent();
+    await analytics.enableOnboardingAnalytics();
+    analytics.track('onboarding_completed');
+    expect(fetch).not.toHaveBeenCalled();
+    expect(storage.get('heydpe_analytics_consent')).toBe('false');
+  });
+  it('does not overrule an opt-out while onboarding reads stored consent', async () => {
+    let resolve!: (value: string | null) => void;
+    vi.mocked(AsyncStorage.getItem).mockImplementationOnce(() => new Promise((done) => { resolve = done; }));
+    const analytics = await import('../analytics');
+    const onboarding = analytics.enableOnboardingAnalytics();
+    await analytics.setAnalyticsEnabled(false);
+    resolve(null);
+    await onboarding;
+    expect(analytics.analyticsEnabled()).toBe(false);
+  });
+});

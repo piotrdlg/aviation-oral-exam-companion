@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError } from '@/lib/api';
 import { recoverExamOperation } from '@/lib/exam-operation';
-import { track } from '@/lib/analytics';
+import { enableOnboardingAnalytics, track } from '@/lib/analytics';
 import { getTier, recordConsent, skipOnboarding, updateTier } from '@/lib/endpoints';
 import { AircraftClass, ExamConfig, Rating, createSession, startExam } from '@/lib/exam';
 import { useOnboardingGate } from '@/lib/onboarding-gate';
@@ -146,6 +146,7 @@ export default function Onboarding() {
     try {
       if (destination.current === 'config') await skipOnboarding();
       else await updateTier(prefsPayload(true));
+      await enableOnboardingAnalytics();
       track('onboarding_completed', { path: destination.current, rating });
       setOnboarded();
       router.replace(destination.current === 'config' ? '/(tabs)/practice' : '/(tabs)');
@@ -232,6 +233,7 @@ export default function Onboarding() {
         examStarted.current = true;
       }
       await completeOnboarding(); // updateTier with retry — throws if it can't persist
+      await enableOnboardingAnalytics();
       track('onboarding_completed', {
         rating,
         aircraftClass,

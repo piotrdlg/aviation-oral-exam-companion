@@ -87,6 +87,14 @@ export async function setAnalyticsEnabled(on: boolean) {
   }
 }
 
+/** Onboarding grants analytics once. A prior explicit Settings opt-out wins. */
+export async function enableOnboardingAnalytics() {
+  const revision = consentRevision;
+  const stored = await AsyncStorage.getItem(CONSENT_KEY);
+  if (revision !== consentRevision || stored === 'false') return;
+  await setAnalyticsEnabled(true);
+}
+
 export function analyticsEnabled() {
   return enabled;
 }
