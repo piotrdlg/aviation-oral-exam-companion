@@ -7,12 +7,16 @@
     "icon": "./assets/images/heydpe-icon.png",
     "scheme": "heydpe",
     "userInterfaceStyle": "automatic",
-    "runtimeVersion": { "policy": "fingerprint" },
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
     "ios": {
       "bundleIdentifier": "com.heydpe.app",
       "supportsTablet": false,
       "usesAppleSignIn": true,
-      "infoPlist": { "ITSAppUsesNonExemptEncryption": false }
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -61,6 +65,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "owner": "piotrdlg",
+    "extra": {
+      "eas": {
+        "projectId": "bdc9dc70-140c-451b-9e32-ce010af65545"
+      }
     }
   }
 }
