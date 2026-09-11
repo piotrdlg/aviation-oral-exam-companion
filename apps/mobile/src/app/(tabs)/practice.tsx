@@ -84,7 +84,7 @@ export default function PracticeScreen() {
   const voiceEnabled = useRef(false);
   const audio = useVoiceSession();
   const controller = audio.controller;
-  const stt = { listening: audio.mode === 'listening' && !audio.connecting, connecting: audio.connecting, interim: '', error: audio.error };
+  const stt = { listening: audio.mode === 'listening' && !audio.connecting, connecting: audio.connecting, interim: audio.interim, error: audio.error };
   const finalizing = audio.mode === 'finalizing';
   const submitting = useRef(false);
   const pendingAnswer = useRef<string | null>(null);
@@ -566,7 +566,7 @@ export default function PracticeScreen() {
           {stt.listening || stt.connecting ? (
             <View style={styles.sttBar}>
               <View style={[styles.sttDot, stt.listening && styles.sttDotLive]} />
-              <Text style={styles.sttBarText} numberOfLines={1}>
+              <Text style={styles.sttBarText} numberOfLines={2} ellipsizeMode="head">
                 {stt.connecting ? 'Connecting…' : stt.interim ? stt.interim : 'Listening — speak your answer'}
               </Text>
             </View>

@@ -6,6 +6,7 @@ export interface VoiceSnapshot {
   mode: VoiceMode;
   connecting: boolean;
   draft: string;
+  interim: string;
   error: string | null;
 }
 
@@ -25,7 +26,7 @@ export interface VoicePorts {
 
 /** All native transitions share one queue; cancellation invalidates callbacks immediately. */
 export class VoiceSession {
-  private snapshot: VoiceSnapshot = { mode: 'idle', connecting: false, draft: '', error: null };
+  private snapshot: VoiceSnapshot = { mode: 'idle', connecting: false, draft: '', interim: '', error: null };
   private listeners = new Set<() => void>();
   private tail: Promise<unknown> = Promise.resolve();
   private epoch = new AbortController();
@@ -122,7 +123,7 @@ export class VoiceSession {
     if (!this.enabled || this.acceptingSpeech) return Promise.resolve();
     const signal = this.invalidate();
     this.acceptingSpeech = true;
-    this.update({ mode: 'listening', connecting: true, draft: prefix, error: null });
+    this.update({ mode: 'listening', connecting: true, draft: prefix, interim: '', error: null });
     return this.serial(async () => {
       if (signal.aborted) return;
       try {
@@ -131,7 +132,7 @@ export class VoiceSession {
         await this.ports.recordingMode(true);
         if (signal.aborted) return;
         const capture = await this.ports.listen(signal, (text) => {
-          if (!signal.aborted) this.update({ draft: mergeSpeechDraft(prefix, text) });
+          if (!signal.aborted) this.update({ draft: mergeSpeechDraft(prefix, text), interim: text.interim });
         }, (error) => {
           if (signal.aborted) return;
           // Queue cleanup behind a pending native start, but cancel its callbacks now.
