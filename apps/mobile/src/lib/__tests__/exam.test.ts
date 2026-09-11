@@ -4,6 +4,7 @@ import { createSession, restoreTranscript, startExam, type ExamConfig, type Tran
 import { planLabel } from '../endpoints';
 
 vi.mock('../api', () => ({ apiFetch: vi.fn() }));
+vi.mock('../exam-operation', () => ({ runExamOperation: (json: unknown) => apiFetch('/api/exam', { method: 'POST', json }) }));
 const cfg: ExamConfig = { rating: 'private', studyMode: 'linear', difficulty: 'mixed', aircraftClass: 'ASEL' };
 beforeEach(() => vi.mocked(apiFetch).mockResolvedValue({ session: { id: 'session' } }));
 

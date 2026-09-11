@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { after } from 'next/server';
 import { getAuthedUser } from '@/lib/supabase/auth';
+import { executeOnce, operationStore, requestHash } from '@/lib/exam-operation';
 import { createClient as createServiceClient, type SupabaseClient } from '@supabase/supabase-js';
 import {
   pickStartingTask,
@@ -318,6 +319,30 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const key = request.headers.get('Idempotency-Key');
+  if (!key) return executeExam(request);
+  try {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key)) {
+      return NextResponse.json({ error: 'invalid_operation_key' }, { status: 400 });
+    }
+    const authed = await getAuthedUser(request);
+    if (!authed) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const body = await request.clone().json();
+    if (!['start', 'respond', 'next-task'].includes(body.action) || !body.sessionId || body.stream || body.chunkedResponse) {
+      return NextResponse.json({ error: 'invalid_operation' }, { status: 400 });
+    }
+    const { data: owned } = await authed.supabase.from('exam_sessions').select('id')
+      .eq('id', body.sessionId).eq('user_id', authed.user.id).maybeSingle();
+    if (!owned) return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+    const hash = requestHash(body);
+    return await executeOnce(operationStore(serviceSupabase, authed.user.id, key, body.sessionId, body.action, hash), hash, () => executeExam(request));
+  } catch {
+    // Fail closed if receipt persistence is unavailable; never fall through to execution.
+    return NextResponse.json({ error: 'exam_operation_unavailable' }, { status: 503 });
+  }
+}
+
+async function executeExam(request: NextRequest) {
   // Flush PostHog buffer before the serverless function exits
   after(async () => {
     const { flushPostHog } = await import('@/lib/posthog-server');
