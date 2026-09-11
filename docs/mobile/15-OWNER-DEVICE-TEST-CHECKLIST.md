@@ -29,8 +29,8 @@ Apple provider Client IDs are `com.heydpe.auth,com.heydpe.app`; the Apple OAuth 
 2. **Client IDs** currently `com.heydpe.auth`. Change to `com.heydpe.auth,com.heydpe.app`. Save. (The Services-ID secret stays as is; web login is unaffected.)
 3. Authentication → URL Configuration → Redirect URLs: confirm `heydpe://auth-callback` is listed. Add it if missing.
 
-### A4. EAS — account and project DONE 2026-09-11; signing still open
-Expo account `@piotrdlg`; EAS project `heydpe`, ID `bdc9dc70-140c-451b-9e32-ce010af65545`, linked in `app.json`. Signing (`eas credentials` or the first `eas build`) still needs your Apple ID login in the terminal.
+### A4. EAS — DONE 2026-09-11
+Expo account `@piotrdlg`; EAS project `heydpe`, ID `bdc9dc70-140c-451b-9e32-ce010af65545`, linked in `app.json`. Apple authentication for EAS uses an **App Store Connect API key** (Key ID `6CKW78LC6N`, Issuer `96cb83cb-fcc9-4530-ae44-711c5cf359e0`, role App Manager, file `~/Downloads/AuthKey_6CKW78LC6N.p8` — keep it out of the repo) because Apple-ID password login failed with "iTunes service key is empty". Pass it as `EXPO_ASC_API_KEY_PATH`, `EXPO_ASC_KEY_ID`, `EXPO_ASC_ISSUER_ID`, `EXPO_APPLE_TEAM_ID=45K5W4N8DG`, `EXPO_APPLE_TEAM_TYPE=INDIVIDUAL`. Ad-hoc distribution certificate and provisioning profile (Developer Portal ID `8KUZUD8V37`) were created on 2026-09-11, valid to 2027-09-11.
 
 #### (original steps, kept for reference)
 From your Mac, in `apps/mobile`:
@@ -42,14 +42,17 @@ npx eas-cli credentials   # iOS → preview profile (App Store distribution) →
 ```
 Commit the `app.json` change (`extra.eas.projectId`) or send me the project ID and I will.
 
-### A5. Register the two test iPhones
+### A5. Test iPhones — one registered 2026-09-11
+`Piotr iPhone` (iPhone 14 Pro Max, UDID `00008120-0004591E3AD8C01E`) registered in the Apple portal and included in the ad-hoc profile. A second, older iPhone is still needed for the voice gate; register it the same way (Apple portal → Devices → +, or `eas device:create`), then rerun the development build so the profile includes it.
+
+#### (original steps, kept for reference)
 ```sh
 npx eas-cli device:create
 ```
 Choose "Website", open the generated link on **each** iPhone in Safari, install the profile (Settings → Profile Downloaded → Install). Use one recent iPhone and one that is 3 to 4 years old. Re-run `npx eas-cli credentials` for the development profile afterwards so the new devices are included.
 
-### A6. Sentry — project DONE 2026-09-11; token still open
-Project `heydpe-ios` in org `imagine-flying-llc`, IP-address prevention enabled, DSN stored in EAS for preview and production. Still needed: the organization auth token stored as the EAS secret `SENTRY_AUTH_TOKEN` (you create and paste it; hidden input).
+### A6. Sentry — DONE 2026-09-11
+Project `heydpe-ios` in org `imagine-flying-llc`, IP-address prevention enabled, DSN stored in EAS for preview and production. Organization token `heydpe-ios-eas-sourcemaps` stored as the EAS secret `SENTRY_AUTH_TOKEN` for preview and production (an earlier token was exposed in chat and revoked).
 
 #### (original steps, kept for reference)
 1. In the existing Sentry org → Projects → Create Project → platform **React Native** → name `heydpe-ios`.
@@ -78,7 +81,10 @@ EXPO_PUBLIC_POSTHOG_KEY=<the existing PostHog project key>          (plaintext)
 ```
 Do **not** create any `EXPO_PUBLIC_DEV_*` variable in these environments; the build rejects them.
 
-### A8. Test accounts and the Tester override
+### A8. Test accounts — your account needs no override
+`pd@imagineflying.com` is already tier `dpe_live` and an admin, so it bypasses the trial gate and shows *Paid*. Create one fresh ordinary account for trial-gate tests.
+
+#### (original steps, kept for reference)
 1. You will use your own account (`pd@imagineflying.com`) as the main tester. Create **one fresh ordinary account** with a new email for trial-gate tests; leave it without any override.
 2. After your first sign-in on the device (Part B), open the web admin → Users → your account → Entitlement overrides → grant **`paid_equivalent`**, reason `TestFlight tester`, expiry = end of the testing window. This is what unlocks unlimited exams and shows "Tester" in the app. The ordinary account keeps the 3-exam / 7-day trial.
 
@@ -91,10 +97,10 @@ Users and Access → **+** → add each tester's Apple ID with role **App Manage
 
 This is the fastest way to see the app on a device. It needs A1, A4 and A5. It does **not** need Sentry or PostHog.
 
-1. Build in the cloud and install:
+1. Build in the cloud and install (the first attempt on 2026-09-11 failed in the Sentry upload phase; fixed in PR #79 by disabling upload for the development profile):
 ```sh
 cd apps/mobile
-npx eas-cli build --profile development --platform ios
+EXPO_ASC_API_KEY_PATH=~/Downloads/AuthKey_6CKW78LC6N.p8 EXPO_ASC_KEY_ID=6CKW78LC6N EXPO_ASC_ISSUER_ID=96cb83cb-fcc9-4530-ae44-711c5cf359e0 EXPO_APPLE_TEAM_ID=45K5W4N8DG EXPO_APPLE_TEAM_TYPE=INDIVIDUAL npx eas-cli build --profile development --platform ios
 ```
 When it finishes, open the build link on the iPhone and tap Install.
 2. Start the JavaScript server on your Mac (same Wi-Fi as the phone):
