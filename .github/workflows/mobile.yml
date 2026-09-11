@@ -8,6 +8,8 @@ on:
       - 'src/app/api/**'
       - 'src/lib/voice/**'
       - 'src/lib/exam-*.ts'
+      - 'src/lib/trial-*.ts'
+      - 'docs/mobile/testing/contracts/**'
   push:
     branches: [main]
     paths:
@@ -16,6 +18,8 @@ on:
       - 'src/app/api/**'
       - 'src/lib/voice/**'
       - 'src/lib/exam-*.ts'
+      - 'src/lib/trial-*.ts'
+      - 'docs/mobile/testing/contracts/**'
 
 jobs:
   mobile:
@@ -31,6 +35,8 @@ jobs:
           cache: npm
           cache-dependency-path: apps/mobile/package-lock.json
       - run: npm ci
+      - run: npx expo install --check
+      - run: npm run doctor
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
