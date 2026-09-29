@@ -747,3 +747,55 @@ describe('mode × flag matrix — scenario is ONE option; every other mode is pr
     expect(linearQueue).toEqual(['PA.I.A.K1', 'PA.II.A.K1']); // linear keeps ACS order too
   });
 });
+
+describe('assessment usage metadata', () => {
+  beforeEach(() => {
+    h.reset();
+    h.pendingAfters.length = 0;
+    h.events.length = 0;
+    h.tier = 'dpe_live';
+    h.config = {};
+  });
+
+  it.each([false, true])('logs aggregate usage and attempt details (stream: %s)', async (stream) => {
+    const { assessAnswer, generateExaminerTurnStreaming } = await import('@/lib/exam-engine');
+    const usage = {
+      input_tokens: 500, output_tokens: 950, latency_ms: 180,
+      cache_creation_input_tokens: 50, cache_read_input_tokens: 100,
+      stop_reason: 'end_turn',
+      attempts: [
+        { attempt: 1, max_tokens: 800, stop_reason: 'max_tokens', output_tokens: 800, latency_ms: 70 },
+        { attempt: 2, max_tokens: 1200, stop_reason: 'end_turn', output_tokens: 150, latency_ms: 110 },
+      ],
+    };
+    vi.mocked(assessAnswer).mockResolvedValueOnce({
+      score: 'satisfactory', feedback: 'Correct.', misconceptions: [], follow_up_needed: false,
+      primary_element: 'PA.I.A.K1', mentioned_elements: [], source_summary: 'Test source.', usage,
+    });
+    if (stream) {
+      vi.mocked(generateExaminerTurnStreaming).mockResolvedValueOnce({
+        stream: new ReadableStream({ start(controller) { controller.close(); } }),
+        fullTextPromise: Promise.resolve('Next question.'),
+      });
+    }
+    const res = await examPost(req({
+      action: 'respond', sessionId: 'sess-1', sessionConfig: SESSION_CONFIG,
+      taskData: h.db.acs_tasks[0], history: [{ role: 'examiner', text: 'Question?' }],
+      studentAnswer: 'Answer.', stream,
+    }));
+    expect(res.status).toBe(200);
+    await res.text();
+    await flushAfters();
+    const logs = h.db.usage_logs.filter((row) =>
+      (row.metadata as Record<string, unknown>).call === 'assessAnswer');
+    expect(logs).toHaveLength(1);
+    expect(logs[0]).toMatchObject({
+      quantity: 1450, latency_ms: 180,
+      metadata: {
+        action: 'respond', call: 'assessAnswer', input_tokens: 500, output_tokens: 950,
+        cache_creation_input_tokens: 50, cache_read_input_tokens: 100,
+        stop_reason: 'end_turn', attempts: usage.attempts,
+      },
+    });
+  });
+});

@@ -60,6 +60,15 @@ export interface LlmUsage {
   // W5.2: Anthropic prompt-cache metrics (present when caching is active)
   cache_creation_input_tokens?: number;
   cache_read_input_tokens?: number;
+  stop_reason?: string | null;
+  attempts?: Array<{
+    /** One-based assessment attempt; image fallback stays within the attempt. */
+    attempt: number;
+    max_tokens: number;
+    stop_reason: string | null;
+    output_tokens: number;
+    latency_ms: number;
+  }>;
 }
 
 /** Anthropic system content block with optional cache breakpoint. */
@@ -869,13 +878,13 @@ OUTPUT FORMAT — Respond in JSON only with this exact schema:
   // poison the element_attempts write.
   const validElementCodes = new Set(allElements.map((e) => e.split(':')[0].trim()));
 
-  const callOnce = async (withImages: boolean) => {
+  const callOnce = async (withImages: boolean, maxTokens: number) => {
     const startMs = Date.now();
     let response;
     try {
       response = await anthropic.messages.create({
         model: 'claude-sonnet-4-6',
-        max_tokens: 400,
+        max_tokens: maxTokens,
         // W5.2: task-stable prefix cached; per-exchange RAG uncached.
         system: buildCachedSystem(staticSection, ragSection),
         messages: [{ role: 'user', content: withImages && imageContent ? imageContent : textOnlyContent }],
@@ -886,7 +895,7 @@ OUTPUT FORMAT — Respond in JSON only with this exact schema:
         console.warn('[assessAnswer] Image download failed, retrying without images');
         response = await anthropic.messages.create({
           model: 'claude-sonnet-4-6',
-          max_tokens: 400,
+          max_tokens: maxTokens,
           system: buildCachedSystem(staticSection, ragSection),
           messages: [{ role: 'user', content: textOnlyContent }],
         });
@@ -901,6 +910,7 @@ OUTPUT FORMAT — Respond in JSON only with this exact schema:
       latency_ms: latencyMs,
       cache_creation_input_tokens: response.usage.cache_creation_input_tokens ?? undefined,
       cache_read_input_tokens: response.usage.cache_read_input_tokens ?? undefined,
+      stop_reason: response.stop_reason,
     };
     // W2.2: find the text block — content can be empty on max-tokens/refusal stops
     const textBlock = response.content.find((b) => b.type === 'text');
@@ -908,17 +918,34 @@ OUTPUT FORMAT — Respond in JSON only with this exact schema:
     return { text, usageData };
   };
 
-  // W2.2: one retry on unparseable/empty output before falling back to
+  // One larger, text-only retry on truncated/unparseable/empty output before falling back to
   // 'ungraded'. Infrastructure failures must never masquerade as a real
   // 'partial' grade (review-02 bug 7).
-  let lastUsage: LlmUsage | undefined;
+  const totalUsage: LlmUsage = { input_tokens: 0, output_tokens: 0, latency_ms: 0, attempts: [] };
   for (let attempt = 0; attempt < 2; attempt++) {
-    const { text, usageData } = await callOnce(attempt === 0);
-    lastUsage = usageData;
-    if (!text) continue;
+    const maxTokens = attempt === 0 ? 800 : 1200;
+    const { text, usageData } = await callOnce(attempt === 0, maxTokens);
+    totalUsage.input_tokens += usageData.input_tokens;
+    totalUsage.output_tokens += usageData.output_tokens;
+    totalUsage.latency_ms += usageData.latency_ms;
+    for (const key of ['cache_creation_input_tokens', 'cache_read_input_tokens'] as const) {
+      if (usageData[key] !== undefined) totalUsage[key] = (totalUsage[key] ?? 0) + usageData[key];
+    }
+    totalUsage.stop_reason = usageData.stop_reason;
+    totalUsage.attempts!.push({
+      attempt: attempt + 1,
+      max_tokens: maxTokens,
+      stop_reason: usageData.stop_reason ?? null,
+      output_tokens: usageData.output_tokens,
+      latency_ms: usageData.latency_ms,
+    });
+    if (usageData.stop_reason === 'max_tokens' || !text.trim()) continue;
     try {
       const cleaned = text.replace(/```json\n?|\n?```/g, '').trim();
       const parsed = JSON.parse(cleaned);
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        throw new Error('Expected an assessment JSON object');
+      }
 
       // Score validation: anything outside the enum is an LLM malfunction
       const score: AssessmentData['score'] = VALID_SCORES.has(parsed.score)
@@ -957,7 +984,7 @@ OUTPUT FORMAT — Respond in JSON only with this exact schema:
         mentioned_elements: mentionedElements,
         source_summary: parsed.source_summary || 'Insufficient FAA sources to verify this answer.',
         rag_chunks: ragChunks.length > 0 ? ragChunks : undefined,
-        usage: usageData,
+        usage: totalUsage,
       };
     } catch {
       if (attempt === 0) {
@@ -976,6 +1003,6 @@ OUTPUT FORMAT — Respond in JSON only with this exact schema:
     mentioned_elements: [],
     source_summary: 'Insufficient FAA sources to verify this answer.',
     rag_chunks: ragChunks.length > 0 ? ragChunks : undefined,
-    usage: lastUsage,
+    usage: totalUsage,
   };
 }
