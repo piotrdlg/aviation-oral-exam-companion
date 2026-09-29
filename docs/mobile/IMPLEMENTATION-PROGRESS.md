@@ -6,7 +6,46 @@
 > submission + the device-only / Apple-account work comes after.
 >
 > Derived from the master plan (`00-MOBILE-MASTER-PLAN.md` §4) and the sub-docs.
-> Branch: `feat/mobile-test-readiness` (preserves `feat/mobile-m1-api-enablement`). Updated 2026-09-11.
+> Current local integration: `review/mobile-pr60-remediation`; focused review branches below.
+> Updated 2026-09-11.
+
+## PR #60 PM-review remediation (2026-09-11)
+
+**Current status: code prepared and tested; PM review and device/release gates remain open.**
+This section supersedes the older status below, including the statements that
+PR #60 is unmerged and crash reporting is consent-gated. PR #60 is merged.
+
+Read [14-FABLE-5.1-PM-REVIEW-HANDOFF.md](14-FABLE-5.1-PM-REVIEW-HANDOFF.md) for the
+item-by-item response to [review 13](13-PM-REVIEW-PR60-FOR-ASTRA.md), verified PR
+heads, migration/rollout instructions, and the next PM actions.
+
+- Eleven focused draft PRs against `main`: [#62](https://github.com/piotrdlg/aviation-oral-exam-companion/pull/62)
+  through [#72](https://github.com/piotrdlg/aviation-oral-exam-companion/pull/72).
+  All have passing web/mobile CI and Vercel preview checks. None was merged this session.
+- PCM hardware normalization; durable exam-operation receipts and read-only
+  timeout recovery; early anonymous JS/native iOS crashes independent of analytics;
+  onboarding analytics with persistent opt-out; Home trial balance using the server
+  gate; foreground replay with clean metric attribution; live interim feedback;
+  actual trial-error fixtures; canonical legal links; release Sentry configuration
+  enforcement; SDK 57.0.22 patch refresh and Doctor CI gate.
+- Combined validation: **1,489 root tests / 84 files; 122 mobile tests / 13 files**;
+  root/mobile typecheck and mobile lint passed. Clean mobile install, Expo package
+  compatibility, and Doctor **21/21** passed. The receipt migration's constraints
+  and RLS were exercised in an isolated local PostgreSQL cluster.
+- Final SDK 57 unsigned iOS simulator Debug build succeeded. Production iOS JS
+  and source-map export succeeded; 75 exported files scanned with no configured
+  development login credential matches. Neither proves a signed release or physical voice.
+
+**Before shipping:** apply the receipt migration and deploy its API support before
+the updated client; validate hosted timeout recovery. EAS still reports “Not logged
+in.” Signed preview/source-map upload, startup/native crash ingestion with analytics
+off, owner review of actual privacy envelopes, currently entitled graded-exam QA,
+and physical-device T1–T4 remain open. No hosted migration, account override, or
+production deployment was performed. Android native crash privacy remains a later
+Android release prerequisite. Phase 5 optimizations remain conditional on the
+approved measured gates.
+
+---
 
 ## Takeover Implementation (2026-09-10)
 
