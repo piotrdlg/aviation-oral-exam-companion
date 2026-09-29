@@ -9,6 +9,7 @@ import {
   generateExaminerTurn,
   generateExaminerTurnStreaming,
   assessAnswer,
+  ASSESSMENT_HISTORY_LIMIT,
   fetchRagContext,
   loadPromptFromDB,
   type ExamMessage,
@@ -693,8 +694,10 @@ async function executeExam(request: NextRequest) {
               },
             } })
             .eq('id', sessionId);
-          if (metaErr) console.error('Planner state persist error:', metaErr.message);
-          captureToSentry(new Error('Planner state persist error'), { route: 'exam.next_task.persist', sessionId });
+          if (metaErr) {
+            console.error('Planner state persist error:', metaErr.message);
+            captureToSentry(new Error('Planner state persist error'), { route: 'exam.next_task.persist', sessionId });
+          }
         }
 
         // Fire PostHog event for flow quality monitoring (Phase 9, non-blocking)
@@ -898,6 +901,7 @@ async function executeExam(request: NextRequest) {
         fetchRagContext(respondTask, history, studentAnswer, 5, {
           systemConfig: config,
           timing,
+          sessionId,
         }),
       ]);
       const studentTranscriptId = studentTranscriptResult.data?.id ?? null;
@@ -936,6 +940,48 @@ async function executeExam(request: NextRequest) {
         respondGradingContract = formatContractForAssessment(respondContract);
       }
 
+      const deferredAssessment: AssessmentData | undefined = rag.grounding === 'missing' ? {
+        score: 'ungraded',
+        feedback: 'Grading deferred while FAA reference lookup is unavailable.',
+        misconceptions: [],
+        follow_up_needed: false,
+        primary_element: null,
+        mentioned_elements: [],
+        source_summary: 'FAA reference lookup unavailable.',
+        grounding: 'missing',
+        regrade_pending: true,
+        reason: 'grounding_missing',
+        grounding_error_class: rag.groundingError ?? 'unknown',
+        deferred_at: new Date().toISOString(),
+        regrade_context: {
+          task_id: respondTask.id,
+          task: respondTask,
+          rating: respondRating,
+          history: history.slice(-ASSESSMENT_HISTORY_LIMIT),
+          study_mode: respondConfig?.studyMode,
+          difficulty: respondDifficulty,
+          grading_contract: respondGradingContract,
+          current_element: currentElementCode,
+        },
+      } : undefined;
+
+      // Save the recovery obligation before generating the examiner, including
+      // when that call fails or the stream disconnects. The answer is already saved.
+      if (deferredAssessment && studentTranscriptId) {
+        const { error } = await serviceSupabase.from('session_transcripts')
+          .update({ assessment: deferredAssessment }).eq('id', studentTranscriptId);
+        if (error) {
+          console.error('Deferred assessment update failed:', error.code);
+          captureToSentry(new Error('Deferred assessment update failed'), { route: 'exam.respond.defer', sessionId });
+          throw new Error('Could not persist deferred assessment');
+        }
+      }
+
+      const assessOrDefer = (): Promise<AssessmentData> => deferredAssessment
+        ? Promise.resolve(deferredAssessment)
+        : assessAnswer(respondTask, history, studentAnswer, rag, rag.ragImages, respondRating, respondConfig?.studyMode, respondDifficulty, respondGradingContract)
+          .then(assessment => ({ ...assessment, grounding: rag.grounding }));
+
       if (stream) {
         // Streaming path: start assessment in background, stream examiner immediately.
         // The assessment is decorated with the server's advancement decision so the
@@ -944,7 +990,7 @@ async function executeExam(request: NextRequest) {
         timing.start('llm.examiner.total');
         timing.start('llm.examiner.ttft');
         const assessmentPromise: Promise<AssessmentData & { advance?: boolean }> =
-          assessAnswer(respondTask, history, studentAnswer, rag, rag.ragImages, respondRating, respondConfig?.studyMode, respondDifficulty, respondGradingContract)
+          assessOrDefer()
             .then(a => {
               timing.end('llm.assessment.total');
               // W6.4 funnel events (streaming path)
@@ -1021,8 +1067,10 @@ async function executeExam(request: NextRequest) {
                 .from('session_transcripts')
                 .update({ assessment })
                 .eq('id', studentTranscriptId);
-              if (assessErr) console.error('Assessment update error:', assessErr.message);
-          captureToSentry(new Error('Assessment update error'), { route: 'exam.respond.assessment_update', sessionId });
+              if (assessErr) {
+                console.error('Assessment update error:', assessErr.message);
+                captureToSentry(new Error('Assessment update error'), { route: 'exam.respond.assessment_update', sessionId });
+              }
 
               // 3. Element attempts
               if (sessionId) {
@@ -1132,7 +1180,7 @@ async function executeExam(request: NextRequest) {
       timing.start('llm.assessment.total');
       timing.start('llm.examiner.total');
       const [assessment, turn] = await Promise.all([
-        assessAnswer(respondTask, history, studentAnswer, rag, rag.ragImages, respondRating, respondConfig?.studyMode, respondDifficulty, respondGradingContract)
+        assessOrDefer()
           .then(a => { timing.end('llm.assessment.total'); return a; }),
         generateExaminerTurn(respondTask, updatedHistory, respondDifficulty, respondConfig?.aircraftClass as import('@/types/database').AircraftClass | undefined, rag, respondRating, respondConfig?.studyMode, personaSection, studentName, undefined, respondExaminerContract, respondScenarioSection)
           .then(t => { timing.end('llm.examiner.total'); return t; }),
@@ -1154,8 +1202,10 @@ async function executeExam(request: NextRequest) {
           .from('session_transcripts')
           .update({ assessment })
           .eq('id', studentTranscriptId);
-        if (assessErr) console.error('Assessment update error:', assessErr.message);
+        if (assessErr) {
+          console.error('Assessment update error:', assessErr.message);
           captureToSentry(new Error('Assessment update error'), { route: 'exam.respond.assessment_update', sessionId });
+        }
 
         // 2. Element attempts
         if (sessionId) {
@@ -1244,8 +1294,10 @@ async function executeExam(request: NextRequest) {
               },
             })
             .eq('id', sessionId);
-          if (metaErr) console.error('ExamPlan persist error:', metaErr.message);
-          captureToSentry(new Error('ExamPlan persist error'), { route: 'exam.respond.plan_persist', sessionId });
+          if (metaErr) {
+            console.error('ExamPlan persist error:', metaErr.message);
+            captureToSentry(new Error('ExamPlan persist error'), { route: 'exam.respond.plan_persist', sessionId });
+          }
         }
       }
 
@@ -1254,6 +1306,7 @@ async function executeExam(request: NextRequest) {
         taskData: respondTask,
         examinerMessage: turn.examinerMessage,
         assessment: { ...assessment, advance: respondAdvance },
+        grounding: rag.grounding,
         advance: respondAdvance,
         ...(updatedExamPlan ? { examPlan: updatedExamPlan } : {}),
       });
@@ -1436,8 +1489,10 @@ async function executeExam(request: NextRequest) {
                         ...(plannerResult.depthDifficultyContract ? { depthDifficultyContract: plannerResult.depthDifficultyContract } : {}),
                       } })
                       .eq('id', sessionId);
-                    if (metaErr) console.error('Scenario transition persist error:', metaErr.message);
-          captureToSentry(new Error('Scenario transition persist error'), { route: 'exam.next_task.scenario_persist', sessionId });
+                    if (metaErr) {
+                      console.error('Scenario transition persist error:', metaErr.message);
+                      captureToSentry(new Error('Scenario transition persist error'), { route: 'exam.next_task.scenario_persist', sessionId });
+                    }
                   }
 
                   return NextResponse.json({
@@ -1625,8 +1680,10 @@ async function executeExam(request: NextRequest) {
               ...(plannerResult.depthDifficultyContract ? { depthDifficultyContract: plannerResult.depthDifficultyContract } : {}),
             } })
             .eq('id', sessionId);
-          if (metaErr) console.error('Planner state persist error:', metaErr.message);
-          captureToSentry(new Error('Planner state persist error'), { route: 'exam.next_task.persist', sessionId });
+          if (metaErr) {
+            console.error('Planner state persist error:', metaErr.message);
+            captureToSentry(new Error('Planner state persist error'), { route: 'exam.next_task.persist', sessionId });
+          }
         }
 
         return NextResponse.json({

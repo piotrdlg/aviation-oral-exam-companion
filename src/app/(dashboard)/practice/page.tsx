@@ -57,6 +57,7 @@ interface Source {
 
 interface Assessment {
   score: 'satisfactory' | 'unsatisfactory' | 'partial' | 'ungraded';
+  grounding?: 'present' | 'missing';
   advance?: boolean;
   feedback: string;
   misconceptions: string[];
@@ -242,6 +243,7 @@ export default function PracticePage() {
   }, [allResumableSessions.length, showOpenExamsModal]);
 
   // Track per-task assessment scores (ref avoids stale closures in fire-and-forget fetches)
+  const groundingMissing = [...messages].reverse().find(m => m.assessment)?.assessment?.grounding === 'missing';
   const taskScoresRef = useRef<Record<string, { score: 'satisfactory' | 'unsatisfactory' | 'partial'; attempts: number }>>({});
   // W2.1: guards the server-driven advancement call (one per exchange)
   const advanceInFlightRef = useRef(false);
@@ -2483,6 +2485,18 @@ export default function PracticePage() {
               </button>
             )}
           </div>
+        </div>
+      )}
+
+      {groundingMissing && (
+        <div role="status" className="mb-3 shrink-0 rounded-lg border border-c-amber/30 bg-c-bezel px-4 py-3">
+          <div className="flex items-center gap-2 font-mono text-[11px] tracking-[0.12em] text-c-amber">
+            <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-c-amber" />
+            FAA REFERENCES UNAVAILABLE
+          </div>
+          <p className="mt-1 text-sm text-c-text">
+            FAA reference lookup is temporarily unavailable. Your answer is saved and will be graded automatically when it&apos;s back.
+          </p>
         </div>
       )}
 

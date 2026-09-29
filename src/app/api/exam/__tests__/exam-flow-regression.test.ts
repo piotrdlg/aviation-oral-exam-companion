@@ -190,9 +190,11 @@ vi.mock('@/lib/rag-retrieval', () => ({
   formatChunksForPrompt: vi.fn(() => ''),
   getImagesForChunks: vi.fn(async () => []),
 }));
+vi.mock('@/lib/sentry-capture', () => ({ captureToSentry: vi.fn() }));
 // Deterministic LLM: assessAnswer scores the CURRENT planner element
 // satisfactory; the examiner replies with a fixed question.
 vi.mock('@/lib/exam-engine', () => ({
+  ASSESSMENT_HISTORY_LIMIT: 4,
   pickStartingTask: vi.fn(),
   pickNextTask: vi.fn(),
   generateExaminerTurn: vi.fn(async () => ({
@@ -216,7 +218,7 @@ vi.mock('@/lib/exam-engine', () => ({
       usage: { input_tokens: 10, output_tokens: 10, latency_ms: 5 },
     };
   }),
-  fetchRagContext: vi.fn(async () => ({ ragContext: '', ragChunks: [], ragImages: [] })),
+  fetchRagContext: vi.fn(async () => ({ ragContext: '', ragChunks: [], ragImages: Promise.resolve([]), grounding: 'present' })),
   loadPromptFromDB: vi.fn(async () => ({ content: '', versionId: null })),
 }));
 
@@ -797,5 +799,98 @@ describe('assessment usage metadata', () => {
         stop_reason: 'end_turn', attempts: usage.attempts,
       },
     });
+  });
+});
+
+describe('respond grounding containment', () => {
+  beforeEach(() => {
+    h.reset();
+    h.pendingAfters.length = 0;
+    h.events.length = 0;
+    h.tier = 'dpe_live';
+    h.config = {};
+    vi.clearAllMocks();
+  });
+
+  it.each([false, true])('defers without grading or attempts and preserves planner (stream=%s)', async (stream) => {
+    const engine = await import('@/lib/exam-engine');
+    await examPost(req({ action: 'start', sessionId: 'sess-1', sessionConfig: SESSION_CONFIG }));
+    await flushAfters();
+    const initialMeta = structuredClone(h.db.exam_sessions[0].metadata) as Record<string, unknown>;
+    const history = Array.from({ length: 9 }, (_, i) => ({
+      role: i % 2 === 0 ? 'examiner' as const : 'student' as const, text: `History message ${i}`,
+    }));
+    vi.mocked(engine.fetchRagContext).mockResolvedValueOnce({
+      grounding: 'missing', groundingError: 'openai_insufficient_quota',
+      ragContext: '', ragChunks: [], ragImages: Promise.resolve([]),
+    });
+    const assertEarlyPersistence = () => {
+      expect(h.db.session_transcripts.find(t => t.role === 'student')?.assessment).toMatchObject({
+        score: 'ungraded', regrade_pending: true, grounding: 'missing',
+      });
+    };
+    if (stream) {
+      vi.mocked(engine.generateExaminerTurnStreaming).mockImplementationOnce(async (_task, _history, _difficulty, _aircraft, _rag, assessmentPromise) => {
+        assertEarlyPersistence();
+        return {
+          fullTextPromise: Promise.resolve('Next examiner question.'),
+          stream: new ReadableStream({ async start(controller) {
+            const assessment = await assessmentPromise;
+            controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ assessment, grounding: assessment?.grounding })}\n\n`));
+            controller.close();
+          } }),
+        };
+      });
+    } else {
+      vi.mocked(engine.generateExaminerTurn).mockImplementationOnce(async () => {
+        assertEarlyPersistence();
+        return { examinerMessage: 'Next examiner question.' };
+      });
+    }
+    const response = await examPost(req({ action: 'respond', sessionId: 'sess-1', history, studentAnswer: 'My saved answer', stream }));
+    expect(response.status).toBe(200);
+    const payload = stream ? JSON.parse((await response.text()).split('data: ')[1].trim()) : await response.json();
+    await flushAfters();
+    expect(engine.assessAnswer).not.toHaveBeenCalled();
+    expect(payload.grounding).toBe('missing');
+    expect(payload.assessment).toMatchObject({ score: 'ungraded', grounding: 'missing', advance: false });
+    const student = h.db.session_transcripts.find(t => t.role === 'student')!;
+    expect(student.text).toBe('My saved answer');
+    expect(student.assessment).toMatchObject({
+      score: 'ungraded', grounding: 'missing', regrade_pending: true,
+      reason: 'grounding_missing', grounding_error_class: 'openai_insufficient_quota',
+      deferred_at: expect.any(String),
+      regrade_context: {
+        task_id: 'PA.I.A', rating: 'private', history: history.slice(-4),
+        task: expect.objectContaining({ id: 'PA.I.A', knowledge_elements: expect.any(Array) }),
+        study_mode: 'linear', difficulty: 'medium', grading_contract: expect.any(String), current_element: 'PA.I.A.K1',
+      },
+    });
+    const deferredAt = (student.assessment as { deferred_at: string }).deferred_at;
+    expect(new Date(deferredAt).toISOString()).toBe(deferredAt);
+    expect(h.db.element_attempts).toEqual([]);
+    expect(h.db.transcript_citations).toEqual([]);
+    const meta = h.db.exam_sessions[0].metadata as Record<string, unknown>;
+    expect(meta.plannerState).toEqual(initialMeta.plannerState);
+    expect(meta.examPlan).toEqual(initialMeta.examPlan);
+    expect(meta.advanceDue).toBe(false);
+    expect(h.db.session_transcripts.filter(t => t.role === 'examiner')).toHaveLength(2);
+  });
+
+  it('keeps the deferred marker if examiner generation fails', async () => {
+    const engine = await import('@/lib/exam-engine');
+    await examPost(req({ action: 'start', sessionId: 'sess-1', sessionConfig: SESSION_CONFIG }));
+    await flushAfters();
+    vi.mocked(engine.fetchRagContext).mockResolvedValueOnce({
+      grounding: 'missing', groundingError: 'openai_auth', ragContext: '', ragChunks: [], ragImages: Promise.resolve([]),
+    });
+    vi.mocked(engine.generateExaminerTurn).mockRejectedValueOnce(new Error('examiner unavailable'));
+    const response = await examPost(req({ action: 'respond', sessionId: 'sess-1', history: [], studentAnswer: 'Saved before failure', stream: false }));
+    expect(response.status).toBe(500);
+    expect(engine.assessAnswer).not.toHaveBeenCalled();
+    expect(h.db.session_transcripts.find(t => t.role === 'student')).toMatchObject({
+      text: 'Saved before failure', assessment: { regrade_pending: true, grounding: 'missing', score: 'ungraded' },
+    });
+    expect(h.db.element_attempts).toEqual([]);
   });
 });
