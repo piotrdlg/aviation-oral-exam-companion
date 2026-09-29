@@ -2,6 +2,7 @@ import 'server-only';
 import OpenAI from 'openai';
 import { createHash } from 'crypto';
 import { createClient } from '@supabase/supabase-js';
+import { RagSearchError } from './provider-error';
 
 /** Minimal timing interface to avoid coupling to timing.ts imports. */
 interface TimingLike {
@@ -9,7 +10,13 @@ interface TimingLike {
   end(name: string): void;
 }
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+let openai: OpenAI | undefined;
+function getOpenAI(): OpenAI {
+  if (!process.env.OPENAI_API_KEY) {
+    throw Object.assign(new Error('OpenAI key is not configured'), { code: 'missing_api_key' });
+  }
+  return openai ??= new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 2_500, maxRetries: 1 });
+}
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -69,7 +76,7 @@ export async function generateEmbedding(text: string, timing?: TimingLike): Prom
 
   // Cache miss — call OpenAI
   timing?.start('rag.embedding.openai');
-  const response = await openai.embeddings.create({
+  const response = await getOpenAI().embeddings.create({
     model: 'text-embedding-3-small',
     input: text,
   });
@@ -129,12 +136,11 @@ export async function searchChunks(
     similarity_threshold: similarityThreshold,
     filter_doc_type: filterDocType ?? null,
     filter_abbreviation: filterAbbreviation ?? null,
-  });
+  }).then(result => result, () => { throw new RagSearchError(); });
   timing?.end('rag.hybridSearch');
 
   if (error) {
-    console.error('RAG search error:', error.message);
-    return [];
+    throw new RagSearchError();
   }
 
   return (data ?? []) as ChunkSearchResult[];
@@ -222,7 +228,7 @@ export async function generateEmbeddingsBatch(
 
   for (let i = 0; i < texts.length; i += batchSize) {
     const batch = texts.slice(i, i + batchSize);
-    const response = await openai.embeddings.create({
+    const response = await getOpenAI().embeddings.create({
       model: 'text-embedding-3-small',
       input: batch,
     });

@@ -1,13 +1,16 @@
 import { NextResponse } from 'next/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
+import { checkOpenAIHealth } from '@/lib/openai-health';
 
 /**
  * W6.1: enriched health check — the external uptime monitor's target.
  * Verifies DB reachability (cheap HEAD-count select) and the presence of the
- * critical service keys. Returns 503 with per-check detail on failure so the
+ * critical service keys, plus cached live OpenAI embedding and TTS probes.
+ * Returns 503 with per-check detail on failure so the
  * monitor alert says WHAT is down, not just "down".
  */
 export async function GET() {
+  const openaiProbes = checkOpenAIHealth();
   const checks: Record<string, boolean> = {
     db: false,
     anthropic_key: !!process.env.ANTHROPIC_API_KEY,
@@ -31,12 +34,14 @@ export async function GET() {
     }
   }
 
-  const healthy = checks.db && checks.anthropic_key && checks.supabase_env;
+  const openai = await openaiProbes;
+  const healthy = checks.db && checks.anthropic_key && checks.supabase_env
+    && openai.openai_embeddings.ok && openai.openai_tts.ok;
 
   return NextResponse.json(
     {
       status: healthy ? 'ok' : 'degraded',
-      checks,
+      checks: { ...checks, ...openai },
       timestamp: new Date().toISOString(),
       version: process.env.npm_package_version || '0.1.0',
     },

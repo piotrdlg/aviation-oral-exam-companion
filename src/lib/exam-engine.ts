@@ -20,6 +20,8 @@ import type { TimingContext } from './timing';
 import { getPromptContent } from './prompts';
 import { TtlCache } from './ttl-cache';
 import { captureServerEvent } from './posthog-server';
+import { captureToSentry } from './sentry-capture';
+import { classifyProviderError, type ProviderErrorClass } from './provider-error';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
@@ -49,6 +51,32 @@ export interface AssessmentData {
   source_summary: string;
   rag_chunks?: ChunkSearchResult[];
   usage?: LlmUsage;
+  grounding?: 'present' | 'missing';
+  regrade_pending?: boolean;
+  reason?: 'grounding_missing';
+  grounding_error_class?: ProviderErrorClass;
+  deferred_at?: string;
+  regrade_context?: {
+    task_id: string;
+    task: AcsTaskRow;
+    rating: Rating;
+    history: ExamMessage[];
+    study_mode?: string;
+    difficulty?: string;
+    grading_contract?: string;
+    current_element?: string;
+  };
+}
+
+// Keep deferred snapshots and the assessor's prompt window identical.
+export const ASSESSMENT_HISTORY_LIMIT = 4;
+
+export interface RagContext {
+  ragContext: string;
+  ragChunks: ChunkSearchResult[];
+  ragImages: Promise<ImageResult[]>;
+  grounding: 'present' | 'missing';
+  groundingError?: ProviderErrorClass;
 }
 
 const VALID_SCORES = new Set(['satisfactory', 'unsatisfactory', 'partial']);
@@ -258,8 +286,9 @@ export async function fetchRagContext(
   options?: {
     systemConfig?: SystemConfigMap;
     timing?: TimingContext;
+    sessionId?: string;
   }
-): Promise<{ ragContext: string; ragChunks: ChunkSearchResult[]; ragImages: Promise<ImageResult[]> }> {
+): Promise<RagContext> {
   try {
     // Combine task, recent history, and student answer for a comprehensive query
     const recentText = history.slice(-2).map(m => m.text).join(' ');
@@ -302,10 +331,15 @@ export async function fetchRagContext(
       return [] as ImageResult[];
     });
 
-    return { ragContext, ragChunks, ragImages };
+    return { ragContext, ragChunks, ragImages, grounding: 'present' };
   } catch (err) {
-    console.error('fetchRagContext failed:', err instanceof Error ? err.message : err);
-    return { ragContext: '', ragChunks: [], ragImages: Promise.resolve([]) };
+    const errorClass = classifyProviderError(err);
+    const tags = { component: 'rag', failure: 'grounding_missing', error_class: errorClass };
+    console.error('[rag] grounding_missing', { ...tags, sessionId: options?.sessionId });
+    captureToSentry(new Error('FAA grounding unavailable'), { route: 'rag.fetch', sessionId: options?.sessionId }, {
+      tags, fingerprint: ['rag-grounding-missing', errorClass],
+    });
+    return { ragContext: '', ragChunks: [], ragImages: Promise.resolve([]), grounding: 'missing', groundingError: errorClass };
   }
 }
 
@@ -711,7 +745,7 @@ export async function generateExaminerTurnStreaming(
           try {
             const assessment = await assessmentPromise;
             clearInterval(keepAlive);
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ assessment })}\n\n`));
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ assessment, grounding: assessment.grounding })}\n\n`));
           } catch (err) {
             clearInterval(keepAlive);
             const errMsg = err instanceof Error ? err.message : String(err);
@@ -791,7 +825,7 @@ export async function assessAnswer(
   const elementList = allElements.join('\n');
 
   const recentContext = history
-    .slice(-4)
+    .slice(-ASSESSMENT_HISTORY_LIMIT)
     .map((m) => `${m.role}: ${m.text}`)
     .join('\n');
 

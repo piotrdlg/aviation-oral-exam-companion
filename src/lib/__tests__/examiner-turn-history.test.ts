@@ -119,4 +119,20 @@ describe('generateExaminerTurnStreaming — conversation must end with a user tu
     expect(lastRole(sent)).toBe('user');
     expect(sent.map((m) => m.role)).toEqual(['assistant', 'user']);
   });
+
+  it('serializes deferred grounding in the real SSE assessment frame while generating the examiner', async () => {
+    const assessment = {
+      score: 'ungraded' as const, grounding: 'missing' as const, regrade_pending: true,
+      feedback: 'Deferred', misconceptions: [], follow_up_needed: false,
+      primary_element: null, mentioned_elements: [], source_summary: '',
+    };
+    const { stream, fullTextPromise } = await generateExaminerTurnStreaming(
+      task, historyEndingWithStudent, undefined, 'ASEL', prefetchedRag as never, Promise.resolve(assessment),
+    );
+    const frames = (await new Response(stream).text()).split('\n\n')
+      .filter(line => line.startsWith('data: {')).map(line => JSON.parse(line.slice(6)));
+    expect(frames.find(frame => frame.assessment)).toEqual({ assessment, grounding: 'missing' });
+    expect(await fullTextPromise).toContain('Next question.');
+    expect(h.create).toHaveBeenCalledTimes(1);
+  });
 });
