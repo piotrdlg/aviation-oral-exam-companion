@@ -8,7 +8,8 @@ interface ProbeResult {
   error_class: ProviderErrorClass | null;
 }
 type Probe = 'openai_embeddings' | 'openai_tts';
-const TTL_MS = 10 * 60_000;
+const SUCCESS_TTL_MS = 10 * 60_000;
+const FAILURE_TTL_MS = 60_000;
 const TIMEOUT_MS = 8_000;
 const cache: Partial<Record<Probe, { result: ProbeResult; expires: number }>> = {};
 const inFlight: Partial<Record<Probe, Promise<ProbeResult>>> = {};
@@ -55,7 +56,7 @@ function cachedProbe(kind: Probe): Promise<ProbeResult> {
   if (cached && cached.expires > Date.now()) return Promise.resolve(cached.result);
   if (inFlight[kind]) return inFlight[kind];
   const pending = probe(kind).then(result => {
-    cache[kind] = { result, expires: Date.now() + TTL_MS };
+    cache[kind] = { result, expires: Date.now() + (result.ok ? SUCCESS_TTL_MS : FAILURE_TTL_MS) };
     return result;
   }).finally(() => { delete inFlight[kind]; });
   inFlight[kind] = pending;
