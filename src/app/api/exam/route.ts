@@ -133,6 +133,8 @@ function logLlmUsage(
         // W5.2: prompt-cache savings visible per call in usage_logs
         ...(usage.cache_creation_input_tokens !== undefined ? { cache_creation_input_tokens: usage.cache_creation_input_tokens } : {}),
         ...(usage.cache_read_input_tokens !== undefined ? { cache_read_input_tokens: usage.cache_read_input_tokens } : {}),
+        ...(usage.stop_reason !== undefined ? { stop_reason: usage.stop_reason } : {}),
+        ...(usage.attempts !== undefined ? { attempts: usage.attempts } : {}),
         ...metadata,
       },
     })
